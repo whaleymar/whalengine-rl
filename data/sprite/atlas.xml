@@ -1,0 +1,30 @@
+<atlas>
+	<trim>false</trim>
+	<rotate>false</trim>
+	<tex n="atlas0">
+		<img n="map/celeste-trees" x="0" y="0" w="320" h="152" />
+		<img n="map/reduced_tiledset" x="321" y="0" w="40" h="40" />
+		<img n="effect/explosion6" x="362" y="0" w="32" h="32" />
+		<img n="effect/explosion5" x="395" y="0" w="32" h="32" />
+		<img n="effect/explosion4" x="428" y="0" w="32" h="32" />
+		<img n="effect/explosion3" x="461" y="0" w="32" h="32" />
+		<img n="effect/explosion2" x="494" y="0" w="32" h="32" />
+		<img n="effect/explosion1" x="527" y="0" w="32" h="32" />
+		<img n="effect/bluefire4" x="560" y="0" w="15" h="20" />
+		<img n="effect/bluefire3" x="576" y="0" w="15" h="20" />
+		<img n="effect/bluefire2" x="592" y="0" w="15" h="20" />
+		<img n="effect/bluefire1" x="608" y="0" w="15" h="20" />
+		<img n="actor/player-jump1" x="624" y="0" w="16" h="16" />
+		<img n="actor/player-fall1" x="624" y="0" w="16" h="16" />
+		<img n="actor/player-idle2" x="641" y="0" w="16" h="16" />
+		<img n="actor/player-idle1" x="624" y="0" w="16" h="16" />
+		<img n="actor/player-run4" x="658" y="0" w="16" h="16" />
+		<img n="actor/player-run3" x="675" y="0" w="16" h="16" />
+		<img n="actor/player-run2" x="692" y="0" w="16" h="16" />
+		<img n="actor/player-run1" x="675" y="0" w="16" h="16" />
+		<img n="map/collision-binary-tile" x="709" y="0" w="8" h="8" />
+		<img n="tile/translucent" x="718" y="0" w="8" h="8" />
+		<img n="tile/dirtblock" x="727" y="0" w="8" h="8" />
+		<img n="tile/purpledirt" x="736" y="0" w="8" h="8" />
+	</tex>
+</atlas>

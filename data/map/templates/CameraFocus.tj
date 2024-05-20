@@ -1,0 +1,13 @@
+{ "object":
+    {
+     "height":0,
+     "id":1,
+     "name":"CameraFocus",
+     "point":true,
+     "rotation":0,
+     "type":"CameraPoint",
+     "visible":true,
+     "width":0
+    },
+ "type":"template"
+}

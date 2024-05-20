@@ -1,0 +1,3 @@
+[submodule "lib/whalECS"]
+	path = lib/whalECS
+	url = https://github.com/whaleymar/whalECS.git

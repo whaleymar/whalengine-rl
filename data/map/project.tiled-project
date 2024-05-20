@@ -1,0 +1,488 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 17,
+            "members": [
+            ],
+            "name": "CameraPoint",
+            "type": "class",
+            "useAs": [
+                "map",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+                {
+                    "name": "move1",
+                    "propertyType": "RailsMovement",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "move2",
+                    "propertyType": "RailsMovement",
+                    "type": "int",
+                    "value": 3
+                }
+            ],
+            "name": "CheckpointsN2",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "id": 20,
+            "name": "CollisionDir",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "ALL",
+                "LEFT",
+                "RIGHT",
+                "DOWN",
+                "UP"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+                {
+                    "name": "Material",
+                    "propertyType": "Material",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsX",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsY",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Component_ActorCollider",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 6,
+            "members": [
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                }
+            ],
+            "name": "Component_Draw",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 16,
+            "members": [
+                {
+                    "name": "FollowTarget",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "boundsHalflenX",
+                    "type": "int",
+                    "value": 10
+                },
+                {
+                    "name": "boundsHalflenY",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "name": "dampingX",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "dampingY",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "deadZoneX",
+                    "type": "int",
+                    "value": 96
+                },
+                {
+                    "name": "deadZoneY",
+                    "type": "int",
+                    "value": 96
+                },
+                {
+                    "name": "lookAheadX",
+                    "type": "int",
+                    "value": 48
+                },
+                {
+                    "name": "lookAheadY",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "name": "Component_Follow",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "Checkpoints",
+                    "type": "object",
+                    "value": 0
+                },
+                {
+                    "name": "isCycle",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "speed",
+                    "type": "float",
+                    "value": 5
+                },
+                {
+                    "name": "waitTime",
+                    "type": "float",
+                    "value": 0
+                }
+            ],
+            "name": "Component_RailsControl",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 12,
+            "members": [
+                {
+                    "name": "coyoteTimeSecondsMax",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "jumpInitialVelocity",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "jumpSecondsMax",
+                    "type": "float",
+                    "value": 0
+                }
+            ],
+            "name": "Component_RigidBody",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 21,
+            "members": [
+                {
+                    "name": "Material",
+                    "propertyType": "Material",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsX",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsY",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Component_SemiSolidCollider",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "CollisionDir",
+                    "propertyType": "CollisionDir",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "Material",
+                    "propertyType": "Material",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsX",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "halflenTexelsY",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Component_SolidCollider",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 9,
+            "members": [
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "Sprite",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "Component_Sprite_NoAnim",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 11,
+            "members": [
+                {
+                    "name": "velX",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "velY",
+                    "type": "float",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Velocity",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "id": 19,
+            "name": "Depth",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "Background3",
+                "Background2",
+                "Background1",
+                "Level",
+                "Player",
+                "Foreground3",
+                "Foreground2",
+                "Foreground1",
+                "Debug"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffffaaff",
+            "drawFill": true,
+            "id": 5,
+            "members": [
+            ],
+            "name": "Entity",
+            "type": "class",
+            "useAs": [
+                "object",
+                "tile",
+                "project"
+            ]
+        },
+        {
+            "id": 18,
+            "name": "Material",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "None",
+                "Dirt",
+                "Rock",
+                "Soft",
+                "Wood",
+                "Grass",
+                "Water",
+                "Metal"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 15,
+            "members": [
+                {
+                    "name": "CameraFollowParams",
+                    "propertyType": "Component_Follow",
+                    "type": "class",
+                    "value": {
+                        "deadZoneX": 96
+                    }
+                }
+            ],
+            "name": "Meta_CameraParams",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 14,
+            "members": [
+            ],
+            "name": "Meta_FixedCamera",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 13,
+            "members": [
+                {
+                    "name": "x",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "y",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Meta_SpawnPoint",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "project"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "RailsMovement",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "LINEAR",
+                "EASEIO_BEZIER",
+                "EASEIO_SINE",
+                "EASEI_QUAD",
+                "EASEI_CUBE",
+                "EASEO_QUAD",
+                "EASEO_CUBE"
+            ],
+            "valuesAsFlags": false
+        }
+    ]
+}

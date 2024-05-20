@@ -1,0 +1,27 @@
+{
+    "maps": [
+        {
+            "fileName": "testmap.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "fileName": "testmap2.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 320,
+            "y": 0
+        },
+        {
+            "fileName": "widemap.tmj",
+            "height": 192,
+            "width": 480,
+            "x": 640,
+            "y": -56
+        }
+    ],
+    "onlyShowAdjacentMaps": false,
+    "type": "world"
+}

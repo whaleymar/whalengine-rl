@@ -1,0 +1,741 @@
+{ "class":"Meta_CameraParams",
+ "compressionlevel":-1,
+ "height":24,
+ "infinite":false,
+ "layers":[
+        {
+         "id":7,
+         "image":"..\/sprite\/map\/celeste-trees.png",
+         "name":"Trees",
+         "offsetx":0,
+         "offsety":40,
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":0
+                }],
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":24,
+         "id":4,
+         "name":"Background",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":1
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":40,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 2, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0,
+            2, 2, 0, 2, 3, 0, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 1, 2, 3, 4, 5, 6, 6, 0,
+            0, 0, 21, 22, 23, 24, 22, 23, 24, 22, 23, 24, 22, 23, 24, 22, 23, 24, 22, 23, 24, 25, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 6, 2, 2,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 6, 6, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 6, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":24,
+         "id":1,
+         "name":"Base",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":3
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":40,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":6,
+         "name":"Test Object Layer",
+         "objects":[
+                {
+                 "gid":4,
+                 "height":8,
+                 "id":2,
+                 "name":"TestPlatform",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "CollisionDir":0,
+                             "halflenTexelsX":12,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Draw",
+                         "propertytype":"Component_Draw",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff9600"
+                            }
+                        }, 
+                        {
+                         "name":"RailsControl",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":9,
+                             "isCycle":true,
+                             "speed":130,
+                             "waitTime":1
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":24,
+                 "x":144,
+                 "y":104
+                }, 
+                {
+                 "gid":4,
+                 "height":8,
+                 "id":19,
+                 "name":"TestPlatformRED",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "CollisionDir":4,
+                             "halflenTexelsX":12,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Draw",
+                         "propertytype":"Component_Draw",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff3264"
+                            }
+                        }, 
+                        {
+                         "name":"RailsControl",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":18,
+                             "isCycle":true,
+                             "speed":130,
+                             "waitTime":1
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":24,
+                 "x":96,
+                 "y":40
+                }, 
+                {
+                 "height":0,
+                 "id":9,
+                 "name":"TestCheckpoints",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-64
+                        }],
+                 "properties":[
+                        {
+                         "name":"move1",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"move2",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":3
+                        }],
+                 "rotation":0,
+                 "type":"CheckpointsN2",
+                 "visible":true,
+                 "width":0,
+                 "x":156,
+                 "y":108
+                }, 
+                {
+                 "height":0,
+                 "id":18,
+                 "name":"TestCheckpoints2",
+                 "polyline":[
+                        {
+                         "x":-88,
+                         "y":-64
+                        }, 
+                        {
+                         "x":0,
+                         "y":-64
+                        }],
+                 "properties":[
+                        {
+                         "name":"move1",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"move2",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"CheckpointsN2",
+                 "visible":true,
+                 "width":0,
+                 "x":108,
+                 "y":108
+                }, 
+                {
+                 "height":8,
+                 "id":16,
+                 "name":"BottomLeftRef",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":0,
+                 "y":184
+                }, 
+                {
+                 "height":8,
+                 "id":27,
+                 "name":"TopLeftRef",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":8,
+                 "id":30,
+                 "name":"SemiSolidTest",
+                 "properties":[
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"SemiSolidCollider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":158,
+                 "y":70
+                }, 
+                {
+                 "height":8,
+                 "id":32,
+                 "name":"SemiSolidTest",
+                 "properties":[
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"SemiSolidCollider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":158,
+                 "y":38
+                }, 
+                {
+                 "height":8,
+                 "id":31,
+                 "name":"SemiSolidTest",
+                 "properties":[
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"SemiSolidCollider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":158,
+                 "y":56
+                }, 
+                {
+                 "gid":2,
+                 "height":8,
+                 "id":25,
+                 "name":"Obj2",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Sprite":"tile\/purpledirt"
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":128,
+                 "y":104
+                }, 
+                {
+                 "height":32,
+                 "id":26,
+                 "name":"TestBlockBig",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":8,
+                             "halflenTexelsY":16
+                            }
+                        }, 
+                        {
+                         "name":"Draw",
+                         "propertytype":"Component_Draw",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffc83264"
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":88
+                }, 
+                {
+                 "height":8,
+                 "id":34,
+                 "name":"SemiSolidTest",
+                 "properties":[
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"SemiSolidCollider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":88,
+                 "y":92
+                }, 
+                {
+                 "height":8,
+                 "id":36,
+                 "name":"SemiSolidTest",
+                 "properties":[
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"SemiSolidCollider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":4,
+                             "halflenTexelsY":4
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ff8c00ff",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":88,
+                 "y":78
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":3
+                }],
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 13, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 13, 13, 0, 0, 0, 0, 13, 13, 13, 0, 0, 0, 13, 0, 13, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":24,
+         "id":5,
+         "name":"Foreground",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":5
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":40,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":8,
+ "nextobjectid":37,
+ "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"CameraFollowParams",
+         "propertytype":"Component_Follow",
+         "type":"class",
+         "value":
+            {
+             "FollowTarget":"Player",
+             "boundsHalflenX":50,
+             "dampingX":1,
+             "deadZoneX":64,
+             "deadZoneY":64,
+             "lookAheadX":32
+            }
+        }, 
+        {
+         "name":"Name",
+         "type":"string",
+         "value":"DebugLevel"
+        }],
+ "renderorder":"right-down",
+ "tiledversion":"1.10.2",
+ "tileheight":8,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "source":"tileset-small.tsj"
+        }, 
+        {
+         "firstgid":26,
+         "source":"tile-collision.tsj"
+        }],
+ "tilewidth":8,
+ "type":"map",
+ "version":"1.10",
+ "width":40
+}
