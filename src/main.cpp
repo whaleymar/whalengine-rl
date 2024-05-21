@@ -1,10 +1,10 @@
 #include "raylib.h"
 
 #include "Settings.h"
-#include "Types.h"
+#include "Util/Types.h"
 
 int main(void) {
-    InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, "whalengine");
+    InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
 
     // do this before any font/texture stuff or the settings seem to get fucked
     Camera2D camera;

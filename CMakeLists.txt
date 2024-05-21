@@ -16,17 +16,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE SOURCES_BASE ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.c ${PROJECT_SOURCE_DIR}/src/*.hpp ${PROJECT_SOURCE_DIR}/src/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES_BASE})
-set_target_properties(engine PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-# TODO include dirs
+target_include_directories(${PROJECT_NAME} 
+    PUBLIC src
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS"
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/RapidXML"
+    )
 
-target_compile_options(engine PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
-target_compile_options(engine PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
-target_compile_options(engine PRIVATE -fno-rtti -fno-exceptions)
-target_compile_options(engine PRIVATE -Wall -Wextra -Wdeprecated)
-target_compile_options(engine PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
-target_compile_options(engine PRIVATE -fno-strict-aliasing)
-target_compile_options(engine PRIVATE -Wno-invalid-offsetof)
+target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
+target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
+target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
+target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
+
+include_directories(lib)
 
 target_link_libraries(${PROJECT_NAME} raylib)
 
