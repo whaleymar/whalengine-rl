@@ -9,13 +9,13 @@ namespace ecs {
 class Entity;
 }
 
-struct Transform;
+struct Transform2D;
 struct Draw;
 struct Sprite;
 
-Expected<ecs::Entity> createBlock(Transform transform);
-Expected<ecs::Entity> createBlock(Transform transform, Draw draw);
-Expected<ecs::Entity> createBlock(Transform transform, Sprite sprite, Material material = Material::None);
-Expected<ecs::Entity> createDecal(Transform transform, Sprite sprite);
+Expected<ecs::Entity> createBlock(Transform2D transform);
+Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw);
+Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, Material material = Material::None);
+Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite);
 
 }  // namespace whal

@@ -5,14 +5,11 @@
 
 #include "Settings.h"
 
-#include "ECS/Name.h"
 #include "ECS/Systems/CollisionManager.h"
-#include "Gfx/GfxUtil.h"
 #include "Physics/Collision/HitInfo.h"
 #include "Physics/IUseCollision.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 
 namespace whal {
 
@@ -24,7 +21,7 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, IUseCollision*
     callbackEntityCollider->squish();
 }
 
-ActorCollider::ActorCollider(Transform transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, bool canCollideWithActors)
+ActorCollider::ActorCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, bool canCollideWithActors)
     : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCanCollideWithActors(canCollideWithActors) {}
 
 std::optional<HitInfo> ActorCollider::moveX(const Vector2f amount, const CollisionCallback callback) {
@@ -321,7 +318,7 @@ bool ActorCollider::isRiding(const SolidCollider* solid) const {
 bool ActorCollider::tryCornerCorrection(const std::vector<SolidCollider*>& solids, Vector2i nextPosition, s32 moveSignX, Vector2i moveNormal) {
     // if we are on a half texel x coord, start at 0.5 texels of movement
     if (moveSignX >= 0) {
-        for (s32 i = SPIXELS_PER_TEXEL - nextPosition.x() % SPIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += SPIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(i, 0);
             if (!checkCollisionSolids(solids, nextPos, moveNormal)) {
                 mCollider.setPosition(nextPos);
@@ -330,7 +327,7 @@ bool ActorCollider::tryCornerCorrection(const std::vector<SolidCollider*>& solid
         }
     }
     if (moveSignX <= 0) {
-        for (s32 i = SPIXELS_PER_TEXEL - nextPosition.x() % SPIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += SPIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(-i, 0);
             if (!checkCollisionSolids(solids, nextPos, moveNormal)) {
                 mCollider.setPosition(nextPos);
@@ -345,7 +342,7 @@ bool ActorCollider::tryCornerCorrection(const std::vector<SolidCollider*>& solid
 bool ActorCollider::tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCollider*>& semis, Vector2i nextPosition, s32 moveSignX) {
     // if we are on a half texel x coord, start at 0.5 texels of movement
     if (moveSignX >= 0) {
-        for (s32 i = SPIXELS_PER_TEXEL - nextPosition.x() % SPIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += SPIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(i, 0);
             if (!checkCollisionSemiSolids(semis, nextPos)) {
                 mCollider.setPosition(nextPos);
@@ -354,7 +351,7 @@ bool ActorCollider::tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCol
         }
     }
     if (moveSignX <= 0) {
-        for (s32 i = SPIXELS_PER_TEXEL - nextPosition.x() % SPIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += SPIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(-i, 0);
             if (!checkCollisionSemiSolids(semis, nextPos)) {
                 mCollider.setPosition(nextPos);
@@ -366,7 +363,7 @@ bool ActorCollider::tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCol
     return false;
 }
 
-SolidCollider::SolidCollider(Transform transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir)
+SolidCollider::SolidCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir)
     : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCollisionDir(collisionDir) {}
 
 void SolidCollider::move(f32 x, f32 y, bool isManualMove) {
@@ -524,7 +521,7 @@ bool SolidCollider::isGround() const {
     return mCollisionDir == CollisionDir::ALL || mCollisionDir == CollisionDir::UP;
 }
 
-SemiSolidCollider::SemiSolidCollider(Transform transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_)
+SemiSolidCollider::SemiSolidCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_)
     : SolidCollider(transform, half, material, onCollisionEnter_) {}
 
 std::optional<HitInfo> SemiSolidCollider::moveX(const f32 amount, const CollisionCallback callback, std::vector<ActorCollider*>& ridingActors,

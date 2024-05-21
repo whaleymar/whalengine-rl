@@ -4,7 +4,7 @@
 
 namespace whal {
 
-struct Transform;
+struct Transform2D;
 struct Velocity;
 struct TriggerZone;
 class ActorCollider;
@@ -14,6 +14,6 @@ public:
     void update() override;
 };
 
-class MovableActorTracker : public ecs::ISystem<Transform, Velocity, ActorCollider> {};
+class MovableActorTracker : public ecs::ISystem<Transform2D, Velocity, ActorCollider> {};
 
 }  // namespace whal

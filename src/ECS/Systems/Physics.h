@@ -6,12 +6,12 @@
 
 namespace whal {
 
-struct Transform;
+struct Transform2D;
 struct Velocity;
 
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
-class PhysicsSystem : public ecs::ISystem<Transform, Velocity> {
+class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity> {
 public:
     void update() override;
 };

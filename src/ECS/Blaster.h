@@ -8,7 +8,7 @@
 // TODO game specific components/systems should go in another folder
 
 namespace whal {
-struct Transform;
+struct Transform2D;
 }
 
 struct Blaster {
@@ -19,7 +19,7 @@ struct Blaster {
 };
 
 // TODO should require a generic PlayerControl component too, and can have a separate system for NPCs -- see note in Blaster.cpp
-class ProjectileSystem : public whal::ecs::ISystem<Blaster, whal::Transform> {
+class ProjectileSystem : public whal::ecs::ISystem<Blaster, whal::Transform2D> {
 public:
     ProjectileSystem();
 

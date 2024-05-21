@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include "whalECS/src/ECS.h"
+
 #include "ECS/Callback.h"
 #include "ECS/Name.h"
 #include "ECS/RailsControl.h"
@@ -8,7 +10,6 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 #include "Systems/System.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 
@@ -21,7 +22,7 @@ Expected<ecs::Entity> createCamera(ecs::Entity target) {
     }
 
     auto camera = expected.value();
-    camera.add(target.get<Transform>());
+    camera.add(target.get<Transform2D>());
     camera.add(Follow(target));
     // camera.add<PlayerControlFree>();
     camera.add<Velocity>();

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <raylib.h>
+
+#include "Gfx/Depth.h"
 #include "Gfx/Texture.h"
 #include "Util/Vector.h"
 
@@ -7,15 +10,14 @@ namespace whal {
 
 class Texture;
 
+Color hexStringARGBToColor(std::string hexstring);
+
 // hard coded as rectangles until I need something else
 struct IDraw {
-    IDraw(Depth depth_, RGB rgb, Vector2i frameSizeTexels);
+    IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels);
     Depth depth;
-    RGB color;
-    u32 nVertices = N_VERTS_RECT;
+    Color color;
     Vector2f scale = {1, 1};
-    Vao vao;
-    Vbo vbo;
 
     Vector2i getFrameSizeTexels() const { return mFrameSizeTexels; }
 
@@ -24,33 +26,23 @@ protected:
 };
 
 struct Sprite : public IDraw {
-    Sprite(Depth depth_ = Depth::Player, Frame frame = {}, RGB rgb = Color::WHITE);
+    Sprite(Depth depth_ = Depth::Player, Frame frame = {}, Color color_ = WHITE);
 
     Vector2i atlasPositionTexels;
-    bool isVertsUpdateNeeded = true;  // anim, size, color, and/or scale changed
+    // bool isVertsUpdateNeeded = true;  // anim, size, color, and/or scale changed
 
-    VertArrayRectRGBUV getVertices() const { return mVertices; }
-    void updateVertices(bool flipX = false);
     void setFrame(Frame frame);
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
-    void setColor(RGB rgb);
-
-private:
-    VertArrayRectRGBUV mVertices;
+    void setColor(Color color_);
 };
 
 struct Draw : public IDraw {
-    Draw(RGB color_ = Color::WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player);
+    Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player);
 
-    VertArrayRectRGB getVertices() const { return mVertices; }
-    void updateVertices();
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
-    void setColor(RGB rgb);
-
-private:
-    VertArrayRectRGB mVertices;
+    void setColor(Color color_);
 };
 
 }  // namespace whal

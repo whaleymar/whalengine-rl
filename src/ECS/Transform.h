@@ -10,15 +10,15 @@ enum Facing : u8 {
 };
 
 // entity position in pixels
-struct Transform {
+struct Transform2D {
     Vector2i position;
     f32 rotationDegrees = 0.0;     // counterclockwise
     Facing facing = Facing::Left;  // draw calls flipped if facing right
     bool isDirectionChanged = false;
     bool isManuallyMoved = true;  // tells physics system to sync collider position
 
-    static Transform texels(s32 x, s32 y);
-    static Transform tiles(s32 x, s32 y);
+    static Transform2D texels(s32 x, s32 y);
+    static Transform2D tiles(s32 x, s32 y);
 };
 
 }  // namespace whal

@@ -1,12 +1,17 @@
 #include <algorithm>
 
+#include "whalECS/src/ECS.h"
+
+#include "Systems/System.h"
+#include "Util/MathUtil.h"
+#include "Util/Print.h"
+
 #include "ECS/AnimUtil.h"
 #include "ECS/Animator.h"
 #include "ECS/Blaster.h"
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Entities/Camera.h"
-#include "ECS/Lib/ECS.h"
 #include "ECS/Name.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RigidBody.h"
@@ -15,10 +20,6 @@
 #include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
-#include "Systems/System.h"
-#include "Util/MathUtil.h"
-
-#include "Gfx/GfxUtil.h"
 
 namespace whal {
 
@@ -61,7 +62,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
 
     f32 unsquishStep = System::dt() * 1.50;
     sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
-    sprite.isVertsUpdateNeeded = true;
+    // sprite.isVertsUpdateNeeded = true;
     if (rb.isGrounded) {
         if (rb.isLanding) {
             f32 squish = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
@@ -69,7 +70,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {
-                System::audio.play(Sfx::FOOTSTEPTEST, 0.1);
+                // System::audio.play(Sfx::FOOTSTEPTEST, 0.1); // TODO
                 return true;
             }
         } else {
@@ -93,7 +94,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     // animation did not change
     bool frameChanged = basicAnimation(animator, entity);
     if (frameChanged && animator.getAnimation().id == RUN && animator.curFrameIx % 2 == 1) {
-        System::audio.play(Sfx::FOOTSTEPTEST, 0.08);
+        // System::audio.play(Sfx::FOOTSTEPTEST, 0.08); // TODO
     }
     return frameChanged;
 }
@@ -108,7 +109,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
         return expected;
     }
     auto player = expected.value();
-    Transform transform = Transform::tiles(15, 10);
+    Transform2D transform = Transform2D::tiles(15, 10);
     player.add(transform);
     player.add(Name("Player"));
     player.add<Player>();

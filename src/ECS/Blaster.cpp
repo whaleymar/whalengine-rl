@@ -11,7 +11,7 @@
 void onBlasterFired(whal::Vector2i target) {
     using namespace whal;
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
-        Transform trans = entity.get<Transform>();
+        Transform2D trans = entity.get<Transform2D>();
 
         // change where the projectile starts (relative to shooting entity)
         Vector2i offset = {0, PIXELS_PER_TILE};

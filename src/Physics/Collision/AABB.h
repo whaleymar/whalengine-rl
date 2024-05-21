@@ -15,7 +15,7 @@ struct AABB {
 
     AABB(Vector2i half);
     AABB(Vector2i center, Vector2i half);
-    AABB(Transform transform, Vector2i half);
+    AABB(Transform2D transform, Vector2i half);
     void setPosition(Vector2i position);
     void setPosition(Vector2f position);
     void setPositionFromBottom(Vector2i position);

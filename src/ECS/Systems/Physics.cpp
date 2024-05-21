@@ -61,7 +61,7 @@ void PhysicsSystem::update() {
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesRef()) {
-        Transform& trans = entity.get<Transform>();
+        Transform2D& trans = entity.get<Transform2D>();
         if (!trans.isManuallyMoved) {
             continue;
         }
@@ -119,7 +119,7 @@ void PhysicsSystem::update() {
         const f32 frictionStepGround = dt * FRICTION_GROUND;
         const f32 frictionStepAir = dt * FRICTION_AIR;
         const f32 gravityStep = dt * GRAVITY * 3;
-        Transform& trans = entity.get<Transform>();
+        Transform2D& trans = entity.get<Transform2D>();
         Velocity& vel = entity.get<Velocity>();
 
         // if impulse ends, use residual
@@ -320,14 +320,14 @@ void PhysicsSystem::update() {
 
     // actors/semisolids can be moved by other colliders, so wait until all collisions are processed to update position
     for (auto& entity : allActors) {
-        Transform& trans = entity.get<Transform>();
+        Transform2D& trans = entity.get<Transform2D>();
         ActorCollider& actor = entity.get<ActorCollider>();
 
         // position is bottom-middle of collider
         trans.position = actor.getCollider().getPositionEdge(Vector2i::unitDown);
     }
     for (auto& entity : allSemiSolids) {
-        Transform& trans = entity.get<Transform>();
+        Transform2D& trans = entity.get<Transform2D>();
         SemiSolidCollider& semi = entity.get<SemiSolidCollider>();
 
         // position is bottom-middle of collider

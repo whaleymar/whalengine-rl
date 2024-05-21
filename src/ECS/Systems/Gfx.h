@@ -6,11 +6,11 @@
 
 namespace whal {
 
-struct Transform;
+struct Transform2D;
 struct Sprite;
 struct Draw;
 
-class SpriteSystem : public ecs::ISystem<Transform, Sprite> {
+class SpriteSystem : public ecs::ISystem<Transform2D, Sprite> {
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
@@ -20,7 +20,7 @@ private:
     std::forward_list<ecs::Entity> mSorted;
 };
 
-class DrawSystem : public ecs::ISystem<Transform, Draw> {
+class DrawSystem : public ecs::ISystem<Transform2D, Draw> {
 public:
     void drawEntities();
 };

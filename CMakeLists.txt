@@ -22,6 +22,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC src
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/RapidXML"
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/json"
     )
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")

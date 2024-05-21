@@ -5,13 +5,12 @@
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Transform.h"
-#include "Gfx/GfxUtil.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
 
-Expected<ecs::Entity> createBlock(Transform transform) {
+Expected<ecs::Entity> createBlock(Transform2D transform) {
     auto& ecs = ecs::ECS::getInstance();
 
     auto expected = ecs.entity();
@@ -30,7 +29,7 @@ Expected<ecs::Entity> createBlock(Transform transform) {
     return block;
 }
 
-Expected<ecs::Entity> createBlock(Transform transform, Draw draw) {
+Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
     auto& ecs = ecs::ECS::getInstance();
 
     auto expected = ecs.entity();
@@ -49,7 +48,7 @@ Expected<ecs::Entity> createBlock(Transform transform, Draw draw) {
     return block;
 }
 
-Expected<ecs::Entity> createBlock(Transform transform, Sprite sprite, Material material) {
+Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, Material material) {
     auto& ecs = ecs::ECS::getInstance();
 
     auto expected = ecs.entity();
@@ -68,7 +67,7 @@ Expected<ecs::Entity> createBlock(Transform transform, Sprite sprite, Material m
     return block;
 }
 
-Expected<ecs::Entity> createDecal(Transform transform, Sprite sprite) {
+Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
     auto& ecs = ecs::ECS::getInstance();
 
     auto expected = ecs.entity();

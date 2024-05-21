@@ -4,7 +4,7 @@
 
 namespace whal {
 
-struct Transform;
+struct Transform2D;
 
 namespace ecs {
 class Entity;
@@ -15,7 +15,7 @@ using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 // a bounding box which executes callbacks on the actors it holds
 struct TriggerZone : public AABB {
     TriggerZone() = default;
-    TriggerZone(Transform transform, Vector2i halflen, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr);
+    TriggerZone(Transform2D transform, Vector2i halflen, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr);
 
     TriggerCallback onTriggerEnter;
     TriggerCallback onTriggerExit;

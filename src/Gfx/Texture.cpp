@@ -25,6 +25,8 @@ namespace whal {
 
 Frame::Frame(Rectangle rect) : atlasPositionTexels(rect.x, rect.y), dimensionsTexels(rect.width, rect.height) {}
 
+Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPositionTexels(atlasPosition), dimensionsTexels(dimensions) {}
+
 std::optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
     mTexture = texture;
     Expected<std::string> content = readFile(atlasDataPath);

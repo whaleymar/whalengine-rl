@@ -1,19 +1,18 @@
 #include "Projectile.h"
 
 #include "Settings.h"
+#include "whalECS/src/ECS.h"
 
 #include "ECS/AnimUtil.h"
 #include "ECS/Animator.h"
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Entities/Explosion.h"
-#include "ECS/Lib/ECS.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Name.h"
 #include "ECS/Radius.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
-#include "Gfx/GfxUtil.h"
 #include "Physics/IUseCollision.h"
 #include "Util/MathUtil.h"
 
@@ -23,7 +22,7 @@ void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
     f32 explosionRadius = self.get<Radius>().r;
     if (explosionRadius > 0) {
-        Vector2i pos = self.get<Transform>().position;
+        Vector2i pos = self.get<Transform2D>().position;
         makeExplosionZone(pos, explosionRadius);
     }
 }
@@ -61,7 +60,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     f32 dot = moveNormal.dot(referenceAngle);
     f32 det = moveNormal.det(referenceAngle);
     f32 angleRadians = std::atan2(det, dot);
-    Transform trans(position, angleRadians * RAD_TO_DEG);
+    Transform2D trans(position, angleRadians * RAD_TO_DEG);
 
     Velocity vel(velocity);
     s32 len = 4;
@@ -86,7 +85,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, Material::None, &Explode, true);
     collider.setIsCollidable(false);
     entity.add<ActorCollider>(collider);
-    System::schedule.after(&enableCollision, 0.075, entity);
+    // System::schedule.after(&enableCollision, 0.075, entity); // TODO
 
     return entity;
 }

@@ -1,8 +1,8 @@
 #include "Relationships.h"
 
-// #include "ECS/Components/Draw.h"
-// #include "ECS/Components/Name.h"
-#include "ECS/Components/Transform.h"
+// #include "ECS/Draw.h"
+// #include "ECS/Name.h"
+#include "ECS/Transform.h"
 // #include "Gfx/Color.h"
 
 namespace whal {
@@ -11,7 +11,7 @@ Follow::Follow(ecs::Entity target_) : targetEntity(target_) {}
 
 void Follow::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
-    currentTarget = targetEntity.get<Transform>().position;
+    currentTarget = targetEntity.get<Transform2D>().position;
 
     // this is kind of hacky. Definitely shouldn't be adding children dynamically like this for game logic
     // #ifndef NDEBUG

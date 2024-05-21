@@ -12,7 +12,9 @@
 namespace whal {
 
 struct Frame {
+    Frame() = default;
     Frame(Rectangle rect);
+    Frame(Vector2i, Vector2i);
     Vector2i atlasPositionTexels;
     Vector2i dimensionsTexels;
 };
@@ -25,7 +27,7 @@ public:
     Vector2f getSize() const;
     std::optional<Rectangle> getFrame(const char* name) const;
     bool isValid() const { return mIsValid; }
-    const Texture2D& getTexture() { return mTexture; }
+    const Texture2D& getTexture() const { return mTexture; }
 
 private:
     Texture2D mTexture;

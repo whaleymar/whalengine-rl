@@ -8,8 +8,8 @@
 
 namespace {
 
-inline constexpr f32 PI = 3.14159265358979323846;
-inline constexpr f32 RAD_TO_DEG = 180.0f / PI;
+inline constexpr f32 PI_MINE = 3.14159265358979323846;
+inline constexpr f32 RAD_TO_DEG = 180.0f / PI_MINE;
 
 template <class T>
 concept SignedNumber = std::signed_integral<T> || std::floating_point<T>;
@@ -78,12 +78,12 @@ inline f32 easeInOutBezierDt(const f32 n1, const f32 n2, const f32 t) {
 
 inline f32 easeInOutSine(const f32 n1, const f32 n2, const f32 t) {
     // trough @ t=0, crest @ t=1
-    return lerp(n1, n2, 0.5 * (1 + std::sin(PI * (t - 0.5))));
+    return lerp(n1, n2, 0.5 * (1 + std::sin(PI_MINE * (t - 0.5))));
 }
 
 inline f32 easeInOutSineDt(const f32 n1, const f32 n2, const f32 t) {
     // trough @ t=0, crest @ t=0.5, trough @ t=1
-    return lerp(n1, n2, 0.5 * PI * std::cos(PI * (t - 0.5)));
+    return lerp(n1, n2, 0.5 * PI_MINE * std::cos(PI_MINE * (t - 0.5)));
 }
 
 inline f32 easeInQuad(const f32 n1, const f32 n2, const f32 t) {

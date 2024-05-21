@@ -29,12 +29,12 @@ FollowSystem::FollowSystem() : mEntityDeathListener(&unfollowEntity) {
 
 void FollowSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
-        Transform trans = entity.get<Transform>();
+        Transform2D trans = entity.get<Transform2D>();
         auto& follow = entity.get<Follow>();
         if (!follow.isTargetInitialized) {
             follow.initTarget(entity);
         }
-        Transform targetTrans = follow.targetEntity.get<Transform>();
+        Transform2D targetTrans = follow.targetEntity.get<Transform2D>();
         // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
         f32 lookAheadX = follow.lookAheadTexels.x();
         f32 lookAheadY = follow.lookAheadTexels.y();

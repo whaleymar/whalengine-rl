@@ -28,7 +28,7 @@ bool Game::startup() {
 
     std::optional<Error> err = TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
     if (err) {
-        print(err);
+        print(*err);
         return true;
     }
 

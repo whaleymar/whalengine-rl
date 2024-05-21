@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Gfx/Texture.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -12,7 +13,6 @@ class Entity;
 
 struct Animator;
 struct Animation;
-struct Frame;
 
 // returns True if frame changed
 using AnimBrain = bool (*)(Animator& animator, ecs::Entity entity);

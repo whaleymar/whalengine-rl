@@ -15,7 +15,7 @@ Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        auto lastPosOpt = eOpt.value().tryGet<Transform>();
+        auto lastPosOpt = eOpt.value().tryGet<Transform2D>();
         if (lastPosOpt) {
             lastPos = lastPosOpt.value()->position;
         }

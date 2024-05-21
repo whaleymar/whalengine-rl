@@ -27,7 +27,7 @@ void RailsSystem::update() {
             print("skipping invalid RailsControl component for entity", entityid);
             continue;
         }
-        auto& transform = entity.get<Transform>();
+        auto& transform = entity.get<Transform2D>();
 
         const Vector2f delta = toFloatVec(rails.getTarget().position - transform.position);
         f32 distance = delta.len();
@@ -76,20 +76,20 @@ void RailsSystem::update() {
             // if entity has collider, use its move function
             if (std::optional<SolidCollider*> sb = entity.tryGet<SolidCollider>(); sb) {
                 sb.value()->move(delta.x(), delta.y(), true);
-                entity.set(Transform(sb.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
+                entity.set(Transform2D(sb.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
             } else if (std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>(); actor) {
                 actor.value()->moveX(delta, nullptr);
                 actor.value()->moveY(delta, nullptr);
-                entity.set(Transform(actor.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
+                entity.set(Transform2D(actor.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
             } else if (std::optional<SemiSolidCollider*> semi = entity.tryGet<SemiSolidCollider>(); semi) {
                 auto ridingActors = semi.value()->getRidingActors();
                 auto ridingSemis = semi.value()->getRidingSemiSolids();
 
                 semi.value()->moveX(delta.x(), nullptr, ridingActors, ridingSemis, true);
                 semi.value()->moveY(delta.y(), nullptr, ridingActors, ridingSemis, true);
-                entity.set(Transform(semi.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
+                entity.set(Transform2D(semi.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
             } else {
-                entity.set(Transform(rails.getTarget().position));
+                entity.set(Transform2D(rails.getTarget().position));
             }
 
             entity.remove<Velocity>();

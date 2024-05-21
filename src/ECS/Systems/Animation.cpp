@@ -1,9 +1,8 @@
 #include "Animation.h"
 
-#include "ECS/Components/Animator.h"
-#include "ECS/Components/Draw.h"
-#include "ECS/Components/Transform.h"
-#include "ECS/Lib/ECS.h"
+#include "ECS/Animator.h"
+#include "ECS/Draw.h"
+#include "ECS/Transform.h"
 #include "Gfx/Texture.h"
 
 namespace whal {
@@ -20,12 +19,12 @@ void AnimationSystem::update() {
             // frame changed
             const Frame frame = anim.getFrame();
             sprite.atlasPositionTexels = frame.atlasPositionTexels;
-            sprite.isVertsUpdateNeeded = true;
+            // sprite.isVertsUpdateNeeded = true;
         } else {
             // frame unchanged
-            auto& trans = entity.get<Transform>();
+            auto& trans = entity.get<Transform2D>();
             if (trans.isDirectionChanged) {
-                sprite.isVertsUpdateNeeded = true;
+                // sprite.isVertsUpdateNeeded = true;
                 trans.isDirectionChanged = false;
             }
         }

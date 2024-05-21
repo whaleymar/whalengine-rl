@@ -8,7 +8,7 @@ namespace whal {
 struct Children;
 struct Follow;
 struct Velocity;
-struct Transform;
+struct Transform2D;
 
 class EntityChildSystem : public ecs::ISystem<Children> {
 public:
@@ -23,7 +23,7 @@ private:
     EventListener<ecs::Entity> mEntityDeathListener;
 };
 
-class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform> {
+class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D> {
 public:
     FollowSystem();
     void update() override;

@@ -2,10 +2,11 @@
 
 #include <cstring>
 
+#include "whalECS/src/ECS.h"
+
 #include "Gfx/Texture.h"
 #include "Systems/System.h"
 #include "Util/Print.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 

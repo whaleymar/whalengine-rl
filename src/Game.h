@@ -7,7 +7,7 @@
 
 namespace whal {
 
-class Scene;
+struct Scene;
 
 namespace ecs {
 class Entity;
