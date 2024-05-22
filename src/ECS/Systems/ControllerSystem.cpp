@@ -1,6 +1,5 @@
-#include "Controller.h"
+#include "ControllerSystem.h"
 
-#include "ECS/Draw.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Transform.h"
@@ -24,31 +23,31 @@ void ControllerSystemRB::update() {
         Velocity& vel = entity.get<Velocity>();
         PlayerControlRB& control = entity.get<PlayerControlRB>();
 
-#ifndef NDEBUG
-        auto sprite = entity.tryGet<Sprite>();
-        if (sprite) {
-            bool changed = false;
-            if (input.isShrinkX()) {
-                sprite.value()->scale.e[0] -= 0.1;
-                changed = true;
-            }
-            if (input.isShrinkY()) {
-                sprite.value()->scale.e[1] -= 0.1;
-                changed = true;
-            }
-            if (input.isGrowX()) {
-                sprite.value()->scale.e[0] += 0.1;
-                changed = true;
-            }
-            if (input.isGrowY()) {
-                sprite.value()->scale.e[1] += 0.1;
-                changed = true;
-            }
-            if (changed) {
-                sprite.value()->isVertsUpdateNeeded = true;
-            }
-        }
-#endif
+        // #ifndef NDEBUG
+        //         auto sprite = entity.tryGet<Sprite>();
+        //         if (sprite) {
+        //             bool changed = false;
+        //             if (input.isShrinkX()) {
+        //                 sprite.value()->scale.e[0] -= 0.1;
+        //                 changed = true;
+        //             }
+        //             if (input.isShrinkY()) {
+        //                 sprite.value()->scale.e[1] -= 0.1;
+        //                 changed = true;
+        //             }
+        //             if (input.isGrowX()) {
+        //                 sprite.value()->scale.e[0] += 0.1;
+        //                 changed = true;
+        //             }
+        //             if (input.isGrowY()) {
+        //                 sprite.value()->scale.e[1] += 0.1;
+        //                 changed = true;
+        //             }
+        //             if (changed) {
+        //                 sprite.value()->isVertsUpdateNeeded = true;
+        //             }
+        //         }
+        // #endif
 
         f32 impulseX = 0;
         if (input.isLeft()) {

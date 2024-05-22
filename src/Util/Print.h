@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-namespace {
-
 template <std::size_t N = 2, std::size_t M = 2>
 struct Format {
     char sep[N] = " ";
@@ -23,5 +21,3 @@ void printArray(T* array, int len) {
         std::cout << array[i] << std::endl;
     }
 }
-
-}  // namespace

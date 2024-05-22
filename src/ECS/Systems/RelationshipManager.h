@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Systems/Event.h"
+#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -14,7 +15,7 @@ class EntityChildSystem : public ecs::ISystem<Children> {
 public:
     EntityChildSystem();
     static std::shared_ptr<EntityChildSystem> instance() {
-        static std::shared_ptr<EntityChildSystem> instance_ = ecs::ECS::getInstance().registerSystem<EntityChildSystem>();
+        static std::shared_ptr<EntityChildSystem> instance_ = System::ecs.registerSystem<EntityChildSystem>();
         return instance_;
     }
     void onRemove(ecs::Entity entity) override;

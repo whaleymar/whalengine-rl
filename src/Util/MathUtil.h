@@ -6,8 +6,6 @@
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
-namespace {
-
 inline constexpr f32 PI_MINE = 3.14159265358979323846;
 inline constexpr f32 RAD_TO_DEG = 180.0f / PI_MINE;
 
@@ -57,7 +55,7 @@ inline f32 lerp(const f32 n1, const f32 n2, const f32 t) {
     return std::lerp(n1, n2, clamp(t, 0.0f, 1.0f));
 }
 
-whal::Vector2f lerp(const whal::Vector2f vec1, const whal::Vector2f vec2, const f32 t) {
+inline whal::Vector2f lerp(const whal::Vector2f vec1, const whal::Vector2f vec2, const f32 t) {
     return whal::Vector2f(lerp(vec1.x(), vec2.x(), t), lerp(vec1.y(), vec2.y(), t));
 }
 
@@ -117,5 +115,3 @@ inline f32 easeOutCubic(const f32 n1, const f32 n2, const f32 t) {
 inline f32 easeOutCubicDt(const f32 n1, const f32 n2, const f32 t) {
     return lerp(n1, n2, 1 / (3 * std::cbrt(t * t)));
 }
-
-}  // namespace

@@ -157,4 +157,13 @@ const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
     return mTextureAtlases[getTextureAtlasIndex(name)];
 }
 
+void TextureManager::unloadAll() {
+    for (auto texture : getAllTextures()) {
+        UnloadTexture(texture);
+    }
+    for (auto atlas : getAllAtlases()) {
+        UnloadTexture(atlas.getTexture());
+    }
+}
+
 }  // namespace whal

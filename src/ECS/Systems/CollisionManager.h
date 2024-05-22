@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -10,9 +11,9 @@ class SemiSolidCollider;
 
 class ActorsManager : public ecs::ISystem<ActorCollider> {
 public:
-    static std::shared_ptr<ActorsManager> getInstance() {
-        static std::shared_ptr<ActorsManager> instance = ecs::ECS::getInstance().registerSystem<ActorsManager>();
-        return instance;
+    static std::shared_ptr<ActorsManager> instance() {
+        static std::shared_ptr<ActorsManager> instance_ = System::ecs.registerSystem<ActorsManager>();
+        return instance_;
     }
 
     void update() override;
@@ -28,9 +29,9 @@ private:
 
 class SolidsManager : public ecs::ISystem<SolidCollider> {
 public:
-    static std::shared_ptr<SolidsManager> getInstance() {
-        static std::shared_ptr<SolidsManager> instance = ecs::ECS::getInstance().registerSystem<SolidsManager>();
-        return instance;
+    static std::shared_ptr<SolidsManager> instance() {
+        static std::shared_ptr<SolidsManager> instance_ = System::ecs.registerSystem<SolidsManager>();
+        return instance_;
     }
 
     void update() override;
@@ -48,9 +49,9 @@ private:
 
 class SemiSolidsManager : public ecs::ISystem<SemiSolidCollider> {
 public:
-    static std::shared_ptr<SemiSolidsManager> getInstance() {
-        static std::shared_ptr<SemiSolidsManager> instance = ecs::ECS::getInstance().registerSystem<SemiSolidsManager>();
-        return instance;
+    static std::shared_ptr<SemiSolidsManager> instance() {
+        static std::shared_ptr<SemiSolidsManager> instance_ = System::ecs.registerSystem<SemiSolidsManager>();
+        return instance_;
     }
 
     void update() override;

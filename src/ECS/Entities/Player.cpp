@@ -102,9 +102,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
 }  // namespace PlayerAnim
 
 Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
-    auto& ecs = ecs::ECS::getInstance();
-
-    auto expected = ecs.entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected;
     }

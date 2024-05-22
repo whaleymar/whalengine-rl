@@ -51,6 +51,9 @@ public:
 
     const Texture2D& getTexture(const char* name);
     const TextureAtlas& getTextureAtlas(const char* name);
+    std::vector<Texture2D>& getAllTextures() { return mTextures; };
+    std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
+    void unloadAll();
 
 private:
     TextureManager() = default;

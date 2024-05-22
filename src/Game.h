@@ -2,8 +2,12 @@
 
 #include <optional>
 
+#include "Map/Level.h"
+#include "Systems/Event.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
+
+typedef struct Font Font;
 
 namespace whal {
 
@@ -35,10 +39,13 @@ public:
     whal::Scene& getScene();
     void updateLoadedLevels(whal::Vector2f cameraWorldPosPixels);
     void updateLevelCamera(bool overrideCache = false);
+    void setFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
+    const Font* getFont() const;
 
 private:
     Game();
-    // whal::Scene mActiveScene;
-    // EventListener<ecs::Entity> mEntityDeathListener;
+    whal::Scene mActiveScene;
+    whal::EventListener<whal::ecs::Entity> mEntityDeathListener;
+    Font* mFont;
     bool mIsSceneLoaded;
 };

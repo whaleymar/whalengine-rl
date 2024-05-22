@@ -4,6 +4,7 @@
 
 #include "Gfx/Depth.h"
 #include "Settings.h"
+#include "Systems/System.h"
 #include "Util/MathUtil.h"
 
 #include "ECS/AnimUtil.h"
@@ -19,7 +20,7 @@
 Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen) {
     using namespace whal;
 
-    auto eEntity = ecs::ECS::getInstance().entity();
+    auto eEntity = System::ecs.entity();
     if (!eEntity.isExpected()) {
         return eEntity;
     }

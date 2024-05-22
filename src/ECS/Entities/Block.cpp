@@ -1,6 +1,7 @@
 #include "Block.h"
 
 #include "Settings.h"
+#include "Systems/System.h"
 
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
@@ -11,9 +12,7 @@
 namespace whal {
 
 Expected<ecs::Entity> createBlock(Transform2D transform) {
-    auto& ecs = ecs::ECS::getInstance();
-
-    auto expected = ecs.entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected;
     }
@@ -30,9 +29,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
-    auto& ecs = ecs::ECS::getInstance();
-
-    auto expected = ecs.entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected;
     }
@@ -49,9 +46,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, Material material) {
-    auto& ecs = ecs::ECS::getInstance();
-
-    auto expected = ecs.entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected;
     }
@@ -68,9 +63,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, Material
 }
 
 Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
-    auto& ecs = ecs::ECS::getInstance();
-
-    auto expected = ecs.entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected;
     }

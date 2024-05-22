@@ -14,6 +14,7 @@
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
 #include "Physics/Material.h"
+#include "Systems/System.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 
@@ -124,8 +125,6 @@ void parseTileLayer(nlohmann::json layer, TileMap& map) {
 
 void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
     // this will create entities and immediately add them to the level
-    auto& ecs = ecs::ECS::getInstance();
-
     using json = nlohmann::json;
 
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -153,7 +152,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
 
-        auto eEntity = ecs.entity();
+        auto eEntity = System::ecs.entity();
         if (!eEntity.isExpected()) {
             continue;
         }
@@ -191,7 +190,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
 }
 
 void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
-    auto eEntity = ecs::ECS::getInstance().entity();
+    auto eEntity = System::ecs.entity();
     if (!eEntity.isExpected()) {
         return;
     }

@@ -5,6 +5,8 @@
 
 #include "Types.h"
 
+typedef struct Vector2 Vector2;
+
 // TODO remove namespace
 namespace whal {
 
@@ -106,5 +108,7 @@ typedef Vector2T<s32> Vector2i;
 
 Vector2f toFloatVec(const Vector2i intVec);
 Vector2i toIntVec(const Vector2f floatVec);
+Vector2f fromRaylib(Vector2 rlVec);
+Vector2i fromRaylibInt(Vector2 rlVec);
 
 }  // namespace whal

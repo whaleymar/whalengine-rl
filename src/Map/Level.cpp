@@ -10,6 +10,7 @@
 
 #include "Game.h"
 #include "Gfx/Texture.h"
+#include "Systems/System.h"
 #include "Tiled.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
@@ -158,7 +159,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     Vector2i halflen = {meshWidthTiles * PIXELS_PER_TILE / 2, meshHeightTiles * PIXELS_PER_TILE / 2};
     SolidCollider collider = SolidCollider(Transform2D({centerX, centerY}), halflen);
 
-    auto eEntity = ecs::ECS::getInstance().entity();
+    auto eEntity = System::ecs.entity();
     if (!eEntity.isExpected()) {
         print("Error creating entity for mesh");
     } else {

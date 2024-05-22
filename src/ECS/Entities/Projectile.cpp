@@ -13,7 +13,9 @@
 #include "ECS/Radius.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
+
 #include "Physics/IUseCollision.h"
+#include "Systems/System.h"
 #include "Util/MathUtil.h"
 
 namespace whal {
@@ -46,7 +48,7 @@ void enableCollision(ecs::Entity entity) {
 }
 
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
-    auto expected = ecs::ECS::getInstance().entity();
+    auto expected = System::ecs.entity();
     if (!expected.isExpected()) {
         return expected.error();
     }
@@ -85,7 +87,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, Material::None, &Explode, true);
     collider.setIsCollidable(false);
     entity.add<ActorCollider>(collider);
-    // System::schedule.after(&enableCollision, 0.075, entity); // TODO
+    System::schedule.after(&enableCollision, 0.075, entity);
 
     return entity;
 }
