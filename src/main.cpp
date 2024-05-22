@@ -29,13 +29,14 @@ int main(void) {
     Rectangle destRect = {WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f, 64, 64};  // scaling 4x
     // origin is the reference point used for rotation and scaling
     // relative to the DESTINATION rectangle size
-    Vector2 origin = {32, 32};
+    // Vector2 origin = {32, 32};
+    Vector2 origin = {0, 0};
     s32 rotation = 0;
 
     SetTargetFPS(FPS_TARGET);
 
     while (!WindowShouldClose()) {
-        rotation++;
+        // rotation++;
         BeginDrawing();
 
         ClearBackground(RAYWHITE);
@@ -46,7 +47,8 @@ int main(void) {
 
         DrawRectangle(-6000, 320, 13000, 8000, DARKGRAY);
         DrawRectangleRec(testRect, RED);
-        DrawTexturePro(testSprite, sourceRect, destRect, origin, rotation, WHITE);
+        // DrawTexturePro(testSprite, sourceRect, destRect, origin, rotation, WHITE);
+        DrawTexturePro(testSprite, sourceRect, testRect, origin, rotation, WHITE);
 
         EndMode2D();
 
