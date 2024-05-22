@@ -65,7 +65,6 @@ bool Game::startup() {
     SetTargetFPS(FPS_TARGET);
 
     // TODO audio
-    // parse map project
 
     System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
@@ -117,7 +116,6 @@ void Game::mainloop() {
     // }
     // System::audio.play(music);
 
-    bool isTimeNormal = true;
     actorsMgr->update();
     solidsMgr->update();
     semiSolidsMgr->update();
@@ -125,6 +123,7 @@ void Game::mainloop() {
         System::input.update();
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = toFloatVec(getCameraPosition());
+            print("Camera position: ", cameraPos);
             updateLoadedLevels(cameraPos);
         }
 
@@ -155,7 +154,7 @@ void Game::mainloop() {
 
         BeginDrawing();  //////////////////////////////////////////////////////////////////////////// DRAW START
 
-        ClearBackground(GRAY);
+        ClearBackground({51, 76, 76, 255});
         BeginMode2D(*mCamera);
 
         drawSystem->drawEntities();
@@ -256,7 +255,6 @@ void Game::updateLevelCamera(bool overrideCache) {
 
     bool doDefaultCamera = false;
     if (!levelOpt) {
-        // print("Not within any level boundaries");
         doDefaultCamera = true;
     } else {
         curLevel = levelOpt.value().filepath;

@@ -41,10 +41,10 @@ void SpriteSystem::drawEntities() {
         Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), frameSize.x(), frameSize.y());
 
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), trans.position.y() - cameraPosF.y()};
+        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * (trans.position.y() + cameraPosF.y())};
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
-        Vector2f origin = dstSize * 0.5;
+        Vector2f origin = dstSize * 0.5;  // TODO this should center at bottom for certain things?
 
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, 0.0f, sprite.color);
     }
@@ -60,7 +60,7 @@ void DrawSystem::drawEntities() {
 
         auto frameSize = toFloatVec(draw.getFrameSizeTexels());
         Vector2f dstSize = {frameSize.x() * draw.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * draw.scale.y() * FPIXELS_PER_TEXEL};
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), trans.position.y() - cameraPosF.y()};
+        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * (trans.position.y() + cameraPosF.y())};
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
         DrawRectangleRec(dstRect, draw.color);
     }
