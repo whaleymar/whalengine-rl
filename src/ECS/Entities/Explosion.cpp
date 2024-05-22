@@ -20,7 +20,7 @@
 Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen) {
     using namespace whal;
 
-    auto eEntity = System::ecs.entity();
+    auto eEntity = System::ecs->entity();
     if (!eEntity.isExpected()) {
         return eEntity;
     }

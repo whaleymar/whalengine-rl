@@ -18,6 +18,11 @@ void killListeners() {
     System::eventMgr.stopListening(Event::DEATH_EVENT, Listeners::PLAYER_DEATH_LISTENER);
 }
 
+// ECS callback
+void emitEntityDeathEvent(ecs::Entity entity) {
+    System::eventMgr.triggerEvent(Event::DEATH_EVENT, entity);
+}
+
 void onEntityDeath(ecs::Entity entity) {
     // if (entity.has<Name>()) {
     //     print("Killed entity: ", entity.get<Name>());

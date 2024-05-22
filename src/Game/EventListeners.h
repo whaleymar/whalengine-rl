@@ -7,6 +7,7 @@ namespace whal {
 namespace ecs {
 class Entity;
 }
+void emitEntityDeathEvent(ecs::Entity entity);
 
 void onEntityDeath(ecs::Entity entity);
 

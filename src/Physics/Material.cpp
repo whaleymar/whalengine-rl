@@ -2,30 +2,30 @@
 
 namespace whal {
 
-const char* toString(Material material) {
+const char* toString(WorldMaterial material) {
     switch (material) {
-    case Material::None:
+    case WorldMaterial::None:
         return "None";
 
-    case Material::Dirt:
+    case WorldMaterial::Dirt:
         return "Dirt";
 
-    case Material::Rock:
+    case WorldMaterial::Rock:
         return "Rock";
 
-    case Material::Soft:
+    case WorldMaterial::Soft:
         return "Soft";
 
-    case Material::Wood:
+    case WorldMaterial::Wood:
         return "Wood";
 
-    case Material::Grass:
+    case WorldMaterial::Grass:
         return "Grass";
 
-    case Material::Water:
+    case WorldMaterial::Water:
         return "Water";
 
-    case Material::Metal:
+    case WorldMaterial::Metal:
         return "Metal";
     }
 }

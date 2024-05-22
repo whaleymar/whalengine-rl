@@ -12,6 +12,15 @@ class Texture;
 
 Color hexStringARGBToColor(std::string hexstring);
 
+namespace Colors {
+
+inline static Color Magenta = {255, 0, 255, 255};
+inline static Color Emerald = {80, 204, 96, 255};
+inline static Color Purple = {198, 51, 242, 255};
+inline static Color Pink = {242, 116, 217, 255};
+
+}  // namespace Colors
+
 // hard coded as rectangles until I need something else
 struct IDraw {
     IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels);

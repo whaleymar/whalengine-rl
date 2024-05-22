@@ -2,8 +2,21 @@
 
 #include <raylib.h>
 
+#include "ECS/Blaster.h"
 #include "ECS/Entities/Camera.h"
+#include "ECS/Systems/Animation.h"
+#include "ECS/Systems/CallbackSystem.h"
+#include "ECS/Systems/CollisionManager.h"
+#include "ECS/Systems/ControllerSystem.h"
+#include "ECS/Systems/Gfx.h"
+#include "ECS/Systems/Lifetime.h"
+#include "ECS/Systems/Physics.h"
+#include "ECS/Systems/Rails.h"
+#include "ECS/Systems/RelationshipManager.h"
 #include "ECS/Systems/TagTrackers.h"
+#include "ECS/Systems/TriggerSystem.h"
+
+#include "Game/DebugScene.h"
 #include "Game/EventListeners.h"
 #include "Gfx/Texture.h"
 #include "Map/Level.h"
@@ -23,16 +36,25 @@ using namespace whal;
 
 Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFromLevel)) {
     System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
+    mCamera = new Camera2D;
+    mFont = new Font;
+}
+
+Game::~Game() {
+    delete mCamera;
+    delete mFont;
 }
 
 bool Game::startup() {
     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
 
     // do this before any font/texture stuff or the settings seem to get fucked
-    Camera2D camera;
-    camera.target = Vector2(0.0f, 0.0f);
-    camera.offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
-    camera.zoom = 1.0f;
+    mCamera->target = Vector2(0.0f, 0.0f);
+    mCamera->offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
+    mCamera->zoom = 1.0f;
+    // TODO set 320x180 screen size
+
+    loadFont(FONT_PATH, 18, 0, 0);
 
     std::optional<Error> err = TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
     if (err) {
@@ -45,6 +67,7 @@ bool Game::startup() {
     // TODO audio
     // parse map project
 
+    System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
     startListeners();
 
@@ -52,7 +75,98 @@ bool Game::startup() {
 }
 
 void Game::mainloop() {
-    // TODO
+    auto controlSystemRB = System::ecs->registerSystem<ControllerSystemRB>();
+    auto controlSystemFree = System::ecs->registerSystem<ControllerSystemFree>();
+    auto pathSystem = System::ecs->registerSystem<RailsSystem>();
+    auto physicsSystem = System::ecs->registerSystem<PhysicsSystem>();
+    auto spriteSystem = System::ecs->registerSystem<SpriteSystem>();
+    auto drawSystem = System::ecs->registerSystem<DrawSystem>();
+    auto animationSystem = System::ecs->registerSystem<AnimationSystem>();
+    auto lifetimeSystem = System::ecs->registerSystem<LifetimeSystem>();
+    System::ecs->registerSystem<MovableActorTracker>();  // dependency of TriggerSystem
+    auto triggerSystem = System::ecs->registerSystem<TriggerSystem>();
+    auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
+
+    // single-component systems for running psuedo-destructors / updating some global var
+    auto actorsMgr = ActorsManager::instance();
+    auto solidsMgr = SolidsManager::instance();
+    auto semiSolidsMgr = SemiSolidsManager::instance();
+    auto followMgr = System::ecs->registerSystem<FollowSystem>();
+
+    // these don't have update methods:
+    // auto spriteMgr = System::ecs->registerSystem<SpriteManager>();
+    // auto drawMgr = System::ecs->registerSystem<DrawManager>();
+    auto playerMgr = PlayerSystem::instance();
+    auto cameraMgr = CameraSystem::instance();
+    auto childMgr = EntityChildSystem::instance();
+    // System::ecs->registerSystem<ProjectileSystem>();
+
+    // load scene // TODO separate function
+    auto err = loadTestMap();
+    if (err) {
+        print("Error loading debug scene: ", err.value());
+        return;
+    }
+
+    // std::optional<Error> errOpt;
+    // Music music;
+    // errOpt = music.load("data/provingGroundsTheme.mp3");
+    // if (errOpt) {
+    //     print(errOpt.value());
+    //     return;
+    // }
+    // System::audio.play(music);
+
+    bool isTimeNormal = true;
+    actorsMgr->update();
+    solidsMgr->update();
+    semiSolidsMgr->update();
+    while (!WindowShouldClose()) {
+        System::input.update();
+        if (System::frame.getFrame() == 0) {
+            Vector2f cameraPos = toFloatVec(getCameraPosition());
+            updateLoadedLevels(cameraPos);
+        }
+
+        System::dt.update();
+        System::schedule.tick(System::dt());
+        System::frame.update();
+
+        controlSystemRB->update();
+        controlSystemFree->update();
+        pathSystem->update();
+        followMgr->update();
+        physicsSystem->update();
+        triggerSystem->update();
+
+        lifetimeSystem->update();
+
+        // Update Scene
+        updateLevelCamera();
+
+        // Only rendering remains, so we can do "end of frame" stuff now
+        frameEndSystem->update();
+        System::ecs->killEntities();
+        actorsMgr->update();
+        solidsMgr->update();
+        semiSolidsMgr->update();
+
+        animationSystem->update();
+
+        BeginDrawing();  //////////////////////////////////////////////////////////////////////////// DRAW START
+
+        ClearBackground(GRAY);
+        BeginMode2D(*mCamera);
+
+        drawSystem->drawEntities();
+        spriteSystem->drawEntities();
+
+        EndMode2D();
+
+        EndDrawing();  ////////////////////////////////////////////////////////////////////////////// DRAW END
+    }
+    System::schedule.end();
+    // TODO end audio
 }
 
 void Game::end() {
@@ -191,7 +305,7 @@ void Game::updateLevelCamera(bool overrideCache) {
     }
 }
 
-void Game::setFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount) {
+void Game::loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount) {
     *mFont = LoadFontEx(fontPath, size, codePoints, codePointsCount);
 }
 

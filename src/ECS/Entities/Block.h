@@ -15,7 +15,7 @@ struct Sprite;
 
 Expected<ecs::Entity> createBlock(Transform2D transform);
 Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw);
-Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, Material material = Material::None);
+Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMaterial material = WorldMaterial::None);
 Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite);
 
 }  // namespace whal

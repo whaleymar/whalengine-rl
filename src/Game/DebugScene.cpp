@@ -1,0 +1,234 @@
+#include "Game/DebugScene.h"
+
+#include <raylib.h>
+
+#include "whalECS/src/ECS.h"
+
+#include "Game.h"
+#include "Gfx/Texture.h"
+#include "Map/Level.h"
+#include "Systems/System.h"
+
+#include "ECS/Callback.h"
+#include "ECS/Collision.h"
+#include "ECS/Draw.h"
+#include "ECS/Entities/Block.h"
+#include "ECS/Entities/Camera.h"
+#include "ECS/Entities/Player.h"
+#include "ECS/Name.h"
+#include "ECS/RailsControl.h"
+#include "ECS/RigidBody.h"
+#include "ECS/Transform.h"
+#include "ECS/TriggerZone.h"
+#include "ECS/Velocity.h"
+
+void createTestPlatform();
+void createTestTrigger();
+void createTestSemiSolid();
+void createDepthTest();
+void createTestMouseTracker();
+
+using namespace whal;
+
+std::optional<Error> loadMap() {
+    using namespace whal;
+
+    const char* scenefile = "testworld.world";
+    return Game::instance().loadScene(scenefile);
+}
+
+std::optional<Error> loadTestMap() {
+    auto player = whal::createPlayer();
+    if (!player.isExpected()) {
+        return player.error();
+    }
+    // createTestPlatform();
+    auto err = loadMap();
+    createTestPlatform();
+    // createTestMouseTracker();
+    // createTestTrigger();
+    // createTestSemiSolid();
+    // createDepthTest();
+    return err;
+}
+
+std::optional<Error> loadDebugScene() {
+    using namespace whal;
+
+    // auto player = createPlayer().value();
+    // player.remove<PlayerControlRB>();
+
+    auto player = createPlayer();
+
+    // TODO copied play gets different momentum sometimes?
+    // auto playerCopyExpected = createPlayer();
+    // // player.value().kill();
+    // if (playerCopyExpected.isExpected()) {
+    //     auto playerCopy = playerCopyExpected.value();
+    //     playerCopy.set(Transform::tiles(20, 10));
+    //     playerCopy.get<Sprite>().setColor(Color::EMERALD);
+    // } else {
+    //     return playerCopyExpected.error();
+    // }
+
+    for (s32 i = 0; i < 50; i++) {
+        createBlock(Transform2D::tiles(i, 1));
+    }
+
+    // auto tmp = createBlock(Position::tiles(5, 15));
+    // if (tmp.isExpected()) {
+    //     auto tmpBlock = tmp.value();
+    //     tmpBlock.add<PlayerControlFree>();
+    //     tmpBlock.add<Velocity>();
+    // } else {
+    //     print(tmp.error());
+    // }
+
+    for (s32 i = 21; i < 50; i++) {
+        s32 y = 4;
+        if (i < 26) {
+            y = i - 19;
+        } else if (i % 7 < 4) {
+            continue;
+        }
+        createBlock(
+            Transform2D::tiles(i, y),
+            Sprite(Depth::Player, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Magenta));
+    }
+
+    for (s32 i = 10; i < 15; i++) {
+        Depth d = i % 2 == 0 ? Depth::Foreground1 : Depth::Background1;
+        auto invisBlock =
+            createBlock(Transform2D::tiles(i, 2),
+                        Sprite(d, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Emerald))
+                .value();
+        invisBlock.remove<SolidCollider>();
+        auto invisBlock2 = createBlock(Transform2D::tiles(i - 5, 2), Draw(Colors::Emerald, {8, 8}, d)).value();
+        invisBlock2.remove<SolidCollider>();
+    }
+
+    auto platform = createBlock(Transform2D::tiles(5, 1)).value();
+    auto pathControl = RailsControl(14,
+                                    {
+                                        {Transform2D::tiles(5, 1).position, RailsControl::Movement::LINEAR},
+                                        {Transform2D::tiles(5, 15).position, RailsControl::Movement::EASEI_CUBE},
+                                        // {Transform::tiles(15, 15).position, RailsControl::Movement::EASEI_CUBE},
+                                    },
+                                    2, true);
+    platform.add<RailsControl>(pathControl);
+
+    auto platformClone = createBlock(Transform2D::tiles(6, 1)).value();
+    auto pathControlClone = RailsControl(
+        14,
+        {
+            {Transform2D::tiles(6, 1).position, RailsControl::Movement::LINEAR}, {Transform2D::tiles(6, 15).position, RailsControl::Movement::LINEAR},
+            // {Transform::tiles(5, 15).position, RailsControl::Movement::EASEIO_BEZIER},
+            // {Transform::tiles(15, 15).position, RailsControl::Movement::EASEI_CUBE},
+        },
+        2, true);
+    platformClone.add<RailsControl>(pathControlClone);
+
+    auto rightPlatform = createBlock(Transform2D::tiles(36, 1)).value();
+    rightPlatform.add(RailsControl(4,
+                                   {
+                                       {Transform2D::tiles(36, 1).position, RailsControl::Movement::LINEAR},
+                                       {Transform2D::tiles(36, 7).position, RailsControl::Movement::LINEAR},
+                                   },
+                                   2));
+
+    return std::nullopt;
+}
+
+void startRailsMovement(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
+    auto& rails = self.get<RailsControl>();
+    if (rails.isWaiting && rails.curTarget == 0) {
+        rails.startManually();
+    }
+}
+
+void killEntityCallback(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
+    other.kill();
+}
+
+void createTestPlatform() {
+    for (s32 x = 2; x < 6; x += 3) {
+        auto trans = Transform2D::tiles(x, -15);
+        auto platform = createBlock(trans).value();
+        auto pathControl = RailsControl(112,
+                                        {
+                                            {Transform2D::tiles(x, -15).position, RailsControl::Movement::LINEAR},
+                                            {Transform2D::tiles(x, -10).position, RailsControl::Movement::EASEI_CUBE},
+                                        },
+                                        2, false);
+        platform.add<RailsControl>(pathControl);
+        platform.add(Name("callback platform"));
+        platform.get<SolidCollider>().setCollisionCallback(&startRailsMovement);
+        // platform.get<SolidCollider>().setCollisionCallback(&killEntityCallback);
+
+        // platform.remove<SolidCollider>();
+        // platform.add(SemiSolidCollider(trans, Vector2i(8, 8), Material::None, &startRailsMovement));
+    }
+}
+
+void createTestTrigger() {
+    // TriggerCallback callback = [](ecs::Entity entity) { System::audio.play(Sfx::ENEMY_CRY); };
+    TriggerCallback callback = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
+
+    // TriggerZone trigger = TriggerZone(Transform::tiles(5, -5), {4, 4}, callback);
+    // TriggerZone trigger = TriggerZone(Transform::tiles(5, -9), {4, 4}, nullptr);
+    TriggerZone trigger = TriggerZone(Transform2D::tiles(2, -9), {8, 8}, nullptr, callback);
+    auto newEntity = System::ecs->entity().value();
+    newEntity.add(trigger);
+}
+
+void createTestSemiSolid() {
+    auto newEntity = System::ecs->entity().value();
+    newEntity.add(Draw(Color(90, 127, 224, 255)));
+    Transform2D trans = Transform2D::tiles(18, 10);
+    // Transform2D trans = Transform2D::tiles(10, -14);
+    // auto pathControl = RailsControl(64,
+    //                                 {
+    //                                     {Transform2D::tiles(10, -14).position, RailsControl::Movement::LINEAR},
+    //                                     {Transform2D::tiles(10, -10).position, RailsControl::Movement::LINEAR},
+    //                                 },
+    //                                 2, true);
+    // auto pathControl = RailsControl(64,
+    //                                 {
+    //                                     {Transform2D::tiles(10, -14).position, RailsControl::Movement::LINEAR},
+    //                                     {Transform2D::tiles(12, -14).position, RailsControl::Movement::LINEAR},
+    //                                 },
+    //                                 1, true);
+    newEntity.add(trans);
+    // newEntity.add(pathControl);
+    newEntity.add<Velocity>();
+    newEntity.add<RigidBody>();
+    auto collider = SemiSolidCollider(trans, Vector2i(8, 8), WorldMaterial::None, nullptr);
+    newEntity.add(collider);
+
+    newEntity = System::ecs->entity().value();
+    newEntity.add(Draw(Color(255, 127, 225, 255)));
+    trans = Transform2D::tiles(18, 0);
+    newEntity.add(trans);
+    newEntity.add<Velocity>();
+    newEntity.add<RigidBody>();
+    newEntity.add(collider);
+}
+
+void createDepthTest() {
+    auto newEntity = System::ecs->entity().value();
+    newEntity.add(Draw(Color(56, 56, 255, 255), {8, 8}, Depth::Background1));
+    newEntity.add(Transform2D::tiles(7, -14));
+
+    newEntity = System::ecs->entity().value();
+    newEntity.add(Draw(Color(56, 56, 200, 255), {8, 8}, Depth::Foreground1));
+    newEntity.add(Transform2D::tiles(8, -14));
+}
+
+void createTestMouseTracker() {
+    // auto newEntity = System::ecs->entity().value();
+    // newEntity.add<Transform>();
+    // newEntity.add(Draw(Color(56, 127, 150, 255), {8, 8}, Depth::Debug));
+    //
+    // auto setPositionToCamera = [](ecs::Entity entity) { entity.set(Transform(screenToWorldCoords(System::input.MousePosition))); };
+    // newEntity.add(OnFrameEnd(setPositionToCamera, false));
+}

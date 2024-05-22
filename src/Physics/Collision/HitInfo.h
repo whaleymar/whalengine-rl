@@ -27,7 +27,7 @@ struct HitInfo {
     bool isOtherSolid = false;
     bool isOtherSemiSolid = false;
     bool isOtherActor = false;
-    Material otherMaterial = Material::None;
+    WorldMaterial otherMaterial = WorldMaterial::None;
 
     HitInfo();
     HitInfo(Vector2i normal);

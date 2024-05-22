@@ -12,7 +12,7 @@ class SemiSolidCollider;
 class ActorsManager : public ecs::ISystem<ActorCollider> {
 public:
     static std::shared_ptr<ActorsManager> instance() {
-        static std::shared_ptr<ActorsManager> instance_ = System::ecs.registerSystem<ActorsManager>();
+        static std::shared_ptr<ActorsManager> instance_ = System::ecs->registerSystem<ActorsManager>();
         return instance_;
     }
 
@@ -30,7 +30,7 @@ private:
 class SolidsManager : public ecs::ISystem<SolidCollider> {
 public:
     static std::shared_ptr<SolidsManager> instance() {
-        static std::shared_ptr<SolidsManager> instance_ = System::ecs.registerSystem<SolidsManager>();
+        static std::shared_ptr<SolidsManager> instance_ = System::ecs->registerSystem<SolidsManager>();
         return instance_;
     }
 
@@ -50,7 +50,7 @@ private:
 class SemiSolidsManager : public ecs::ISystem<SemiSolidCollider> {
 public:
     static std::shared_ptr<SemiSolidsManager> instance() {
-        static std::shared_ptr<SemiSolidsManager> instance_ = System::ecs.registerSystem<SemiSolidsManager>();
+        static std::shared_ptr<SemiSolidsManager> instance_ = System::ecs->registerSystem<SemiSolidsManager>();
         return instance_;
     }
 

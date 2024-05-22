@@ -4,7 +4,7 @@
 namespace whal {
 
 // IUseCollision(AABB collider, Material material = Material::None) : mCollider(collider), mMaterial(material){};
-IUseCollision::IUseCollision(AABB collider, Material material, CollisionCallback callback)
+IUseCollision::IUseCollision(AABB collider, WorldMaterial material, CollisionCallback callback)
     : mCollider(collider), mOnCollisionEnter(callback), mMaterial(material) {}
 
 void IUseCollision::setCollisionCallback(CollisionCallback callback) {

@@ -19,7 +19,7 @@ class Entity;
 class ActorCollider : public IUseCollision {
 public:
     ActorCollider() = default;
-    ActorCollider(Transform2D transform, Vector2i half, Material material = Material::None, CollisionCallback onCollisionEnter_ = nullptr,
+    ActorCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                   bool collidesWithActors = false);
 
     std::optional<HitInfo> moveX(const Vector2f amount, const CollisionCallback callback);
@@ -58,7 +58,7 @@ private:
 class SolidCollider : public IUseCollision {
 public:
     SolidCollider() = default;
-    SolidCollider(Transform2D transform, Vector2i half, Material material = Material::None, CollisionCallback onCollisionEnter_ = nullptr,
+    SolidCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                   CollisionDir collisionDir = CollisionDir::ALL);
 
     void move(f32 x, f32 y, bool isManualMove = false);
@@ -90,7 +90,8 @@ private:
 class SemiSolidCollider : public SolidCollider {
 public:
     SemiSolidCollider() = default;
-    SemiSolidCollider(Transform2D transform, Vector2i half, Material material = Material::None, CollisionCallback onCollisionEnter_ = nullptr);
+    SemiSolidCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None,
+                      CollisionCallback onCollisionEnter_ = nullptr);
 
     std::optional<HitInfo> moveX(const f32 amount, const CollisionCallback callback, std::vector<ActorCollider*>& riding,
                                  std::vector<SemiSolidCollider*>& ridingSemis, bool isManualMove = false);

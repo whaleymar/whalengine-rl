@@ -15,7 +15,7 @@ struct RigidBody {
     RigidBody() = default;
     RigidBody(f32 jumpInitialVelocity_, f32 jumpSecondsMax_, f32 coyoteTimeSecondsMax_);
 
-    void setGrounded(Material material);
+    void setGrounded(WorldMaterial material);
     void setNotGrounded();
 
     f32 jumpInitialVelocity = 124;
@@ -25,7 +25,7 @@ struct RigidBody {
     f32 jumpSecondsRemaining = 0;
     f32 coyoteSecondsRemaining = 0;
     s32 momentumCooldownFrames = 0;
-    Material groundMaterial = Material::None;
+    WorldMaterial groundMaterial = WorldMaterial::None;
     bool isJumping = false;
     bool isLanding = false;
     bool isGrounded = false;

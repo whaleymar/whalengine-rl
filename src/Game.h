@@ -8,6 +8,7 @@
 #include "whalECS/src/Expected.h"
 
 typedef struct Font Font;
+typedef struct Camera2D Camera2D;
 
 namespace whal {
 
@@ -39,13 +40,16 @@ public:
     whal::Scene& getScene();
     void updateLoadedLevels(whal::Vector2f cameraWorldPosPixels);
     void updateLevelCamera(bool overrideCache = false);
-    void setFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
+    void loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
     const Font* getFont() const;
 
 private:
     Game();
+    ~Game();
+
     whal::Scene mActiveScene;
     whal::EventListener<whal::ecs::Entity> mEntityDeathListener;
     Font* mFont;
+    Camera2D* mCamera;
     bool mIsSceneLoaded;
 };

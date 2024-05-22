@@ -14,13 +14,13 @@ using CollisionCallback = void (*)(ecs::Entity callbackEntity, ecs::Entity other
 class IUseCollision {
 public:
     IUseCollision() = default;
-    IUseCollision(AABB collider, Material material = Material::None, CollisionCallback callback = nullptr);
+    IUseCollision(AABB collider, WorldMaterial material = WorldMaterial::None, CollisionCallback callback = nullptr);
     const AABB& getCollider() const { return mCollider; }
     AABB& getColliderMut() { return mCollider; }
     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
     virtual void setCollisionCallback(CollisionCallback callback);
-    Material getMaterial() const { return mMaterial; }
-    void setMaterial(Material material) { mMaterial = material; }
+    WorldMaterial getMaterial() const { return mMaterial; }
+    void setMaterial(WorldMaterial material) { mMaterial = material; }
     ecs::Entity getEntity() const { return mSelf; }
     bool isCollidable() const { return mIsCollidable; }
     void setIsCollidable(bool isCollidable) { mIsCollidable = isCollidable; }
@@ -36,7 +36,7 @@ protected:
     f32 mXRemainder = 0.0;
     f32 mYRemainder = 0.0;
     CollisionCallback mOnCollisionEnter;
-    Material mMaterial;
+    WorldMaterial mMaterial;
     bool mIsTrigger = false;
     bool mIsCollidable = true;
 };

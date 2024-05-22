@@ -8,6 +8,7 @@
 #include "Game/Events.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -141,6 +142,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
 }
 
 void unfollowEntity(ecs::Entity killedEntity) {
+    print("RUNNING UNFOLLOW CALLBACK");
     std::vector<ecs::Entity> toRemove;
     for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {
         if (entity.get<Follow>().targetEntity == killedEntity) {

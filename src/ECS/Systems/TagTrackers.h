@@ -12,7 +12,7 @@ struct Camera;
 class PlayerSystem : public ecs::ISystem<Player> {
 public:
     static std::shared_ptr<PlayerSystem> instance() {
-        static std::shared_ptr<PlayerSystem> instance_ = System::ecs.registerSystem<PlayerSystem>();
+        static std::shared_ptr<PlayerSystem> instance_ = System::ecs->registerSystem<PlayerSystem>();
         return instance_;
     }
 };
@@ -20,7 +20,7 @@ public:
 class CameraSystem : public ecs::ISystem<Camera> {
 public:
     static std::shared_ptr<CameraSystem> instance() {
-        static std::shared_ptr<CameraSystem> instance_ = System::ecs.registerSystem<CameraSystem>();
+        static std::shared_ptr<CameraSystem> instance_ = System::ecs->registerSystem<CameraSystem>();
         return instance_;
     }
 };

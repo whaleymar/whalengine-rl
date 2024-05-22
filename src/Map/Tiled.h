@@ -49,7 +49,7 @@ struct TileSet {
     s32 spacing;
     std::string fileName;
     std::string spriteFileName;
-    std::vector<Material> materials;
+    std::vector<WorldMaterial> materials;
 };
 
 struct TileMap {

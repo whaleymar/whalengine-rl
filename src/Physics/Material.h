@@ -4,8 +4,8 @@
 
 namespace whal {
 
-enum class Material : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal };
+enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal };
 
-const char* toString(Material material);
+const char* toString(WorldMaterial material);
 
 }  // namespace whal

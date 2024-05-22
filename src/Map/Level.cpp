@@ -77,7 +77,7 @@ std::optional<Error> loadLevel(const Level level) {
                         if (layer.metadata.depth == Depth::Level || layer.metadata.depth == Depth::Player) {
                             // not using collision mesh because i lose material info
                             const TileSet* tset = getTileSet(map, blockID);
-                            Material material = tset->materials[blockID - tset->firstgid];
+                            WorldMaterial material = tset->materials[blockID - tset->firstgid];
                             auto eEntity = createBlock(trans, sprite, material);
                             if (eEntity.isExpected()) {
                                 lvl.childEntities.insert(eEntity.value());
@@ -159,7 +159,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     Vector2i halflen = {meshWidthTiles * PIXELS_PER_TILE / 2, meshHeightTiles * PIXELS_PER_TILE / 2};
     SolidCollider collider = SolidCollider(Transform2D({centerX, centerY}), halflen);
 
-    auto eEntity = System::ecs.entity();
+    auto eEntity = System::ecs->entity();
     if (!eEntity.isExpected()) {
         print("Error creating entity for mesh");
     } else {

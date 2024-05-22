@@ -152,7 +152,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
 
-        auto eEntity = System::ecs.entity();
+        auto eEntity = System::ecs->entity();
         if (!eEntity.isExpected()) {
             continue;
         }
@@ -190,7 +190,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
 }
 
 void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
-    auto eEntity = System::ecs.entity();
+    auto eEntity = System::ecs->entity();
     if (!eEntity.isExpected()) {
         return;
     }
@@ -261,9 +261,9 @@ Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
     s32 heightTiles = heightTexels / tileHeight;
     s32 tilecount = data["tilecount"];
 
-    std::vector<Material> materials;
+    std::vector<WorldMaterial> materials;
     for (s32 i = 0; i < tilecount; i++) {
-        materials.push_back(Material::None);
+        materials.push_back(WorldMaterial::None);
     }
 
     if (data.contains("tiles")) {

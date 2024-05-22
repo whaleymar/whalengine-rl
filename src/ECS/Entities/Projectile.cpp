@@ -48,7 +48,7 @@ void enableCollision(ecs::Entity entity) {
 }
 
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
-    auto expected = System::ecs.entity();
+    auto expected = System::ecs->entity();
     if (!expected.isExpected()) {
         return expected.error();
     }
@@ -84,7 +84,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
 
     // add collider slightly after creation so it doesn't collide with shooter
     // TODO this still sucks, should use a layer mask or something so it can't collide with shooter
-    auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, Material::None, &Explode, true);
+    auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, WorldMaterial::None, &Explode, true);
     collider.setIsCollidable(false);
     entity.add<ActorCollider>(collider);
     System::schedule.after(&enableCollision, 0.075, entity);

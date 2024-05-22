@@ -21,7 +21,8 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, IUseCollision*
     callbackEntityCollider->squish();
 }
 
-ActorCollider::ActorCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, bool canCollideWithActors)
+ActorCollider::ActorCollider(Transform2D transform, Vector2i half, WorldMaterial material, CollisionCallback onCollisionEnter_,
+                             bool canCollideWithActors)
     : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCanCollideWithActors(canCollideWithActors) {}
 
 std::optional<HitInfo> ActorCollider::moveX(const Vector2f amount, const CollisionCallback callback) {
@@ -363,7 +364,8 @@ bool ActorCollider::tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCol
     return false;
 }
 
-SolidCollider::SolidCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir)
+SolidCollider::SolidCollider(Transform2D transform, Vector2i half, WorldMaterial material, CollisionCallback onCollisionEnter_,
+                             CollisionDir collisionDir)
     : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCollisionDir(collisionDir) {}
 
 void SolidCollider::move(f32 x, f32 y, bool isManualMove) {
@@ -521,7 +523,7 @@ bool SolidCollider::isGround() const {
     return mCollisionDir == CollisionDir::ALL || mCollisionDir == CollisionDir::UP;
 }
 
-SemiSolidCollider::SemiSolidCollider(Transform2D transform, Vector2i half, Material material, CollisionCallback onCollisionEnter_)
+SemiSolidCollider::SemiSolidCollider(Transform2D transform, Vector2i half, WorldMaterial material, CollisionCallback onCollisionEnter_)
     : SolidCollider(transform, half, material, onCollisionEnter_) {}
 
 std::optional<HitInfo> SemiSolidCollider::moveX(const f32 amount, const CollisionCallback callback, std::vector<ActorCollider*>& ridingActors,

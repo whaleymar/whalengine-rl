@@ -297,7 +297,7 @@ void addComponentActorCollider(nlohmann::json& values, nlohmann::json& allObject
                                ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     ActorCollider actor = ComponentFactory::DefaultActorCollider;
     Vector2i halflenTexels = actor.getCollider().half / PIXELS_PER_TEXEL;
-    Material material = actor.getMaterial();
+    WorldMaterial material = actor.getMaterial();
 
     if (values.contains("halflenTexelsX")) {
         halflenTexels.e[0] = values["halflenTexelsX"];
@@ -316,7 +316,7 @@ void addComponentSemiSolidCollider(nlohmann::json& values, nlohmann::json& allOb
                                    ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     SemiSolidCollider semi = ComponentFactory::DefaultSemiSolidCollider;
     Vector2i halflenTexels = semi.getCollider().half / PIXELS_PER_TEXEL;
-    Material material = semi.getMaterial();
+    WorldMaterial material = semi.getMaterial();
 
     if (values.contains("halflenTexelsX")) {
         halflenTexels.e[0] = values["halflenTexelsX"];
@@ -336,7 +336,7 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
     SolidCollider solid = ComponentFactory::DefaultSolidCollider;
     Vector2i halflenTexels = solid.getCollider().half / PIXELS_PER_TEXEL;
     CollisionDir collisionDir = solid.getCollisionDir();
-    Material material = solid.getMaterial();
+    WorldMaterial material = solid.getMaterial();
 
     if (values.contains("halflenTexelsX")) {
         halflenTexels.e[0] = values["halflenTexelsX"];
