@@ -42,9 +42,12 @@ void SpriteSystem::drawEntities() {
 
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
         Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * (trans.position.y() + cameraPosF.y())};
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
-        Vector2f origin = dstSize * 0.5;  // TODO this should center at bottom for certain things?
+        // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
+        // TODO this won't work for scaling from the middle though
+        Vector2f origin(dstSize.x() * 0.5, 0);
+        dstPosition += origin;
+        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, 0.0f, sprite.color);
     }

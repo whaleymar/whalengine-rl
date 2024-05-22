@@ -160,6 +160,12 @@ void Game::mainloop() {
         drawSystem->drawEntities();
         spriteSystem->drawEntities();
 
+#ifndef NDEBUG
+        if (System::input.isDebug()) {
+            drawColliders();
+        }
+#endif
+
         EndMode2D();
 
         EndDrawing();  ////////////////////////////////////////////////////////////////////////////// DRAW END
