@@ -191,7 +191,6 @@ void Game::mainloop() {
             drawDebugSystem->drawEntities();
             drawColliders();
         }
-
 #endif
 
         EndMode2D();

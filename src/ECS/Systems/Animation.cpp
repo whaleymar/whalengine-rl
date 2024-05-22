@@ -2,7 +2,6 @@
 
 #include "ECS/Animator.h"
 #include "ECS/Draw.h"
-#include "ECS/Transform.h"
 #include "Gfx/Texture.h"
 
 namespace whal {
@@ -19,14 +18,6 @@ void AnimationSystem::update() {
             // frame changed
             const Frame frame = anim.getFrame();
             sprite.atlasPositionTexels = frame.atlasPositionTexels;
-            // sprite.isVertsUpdateNeeded = true;
-        } else {
-            // frame unchanged
-            auto& trans = entity.get<Transform2D>();
-            if (trans.isDirectionChanged) {
-                // sprite.isVertsUpdateNeeded = true;
-                trans.isDirectionChanged = false;
-            }
         }
     }
 }

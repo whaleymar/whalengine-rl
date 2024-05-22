@@ -115,12 +115,10 @@ void ControllerSystemRB::update() {
         vel.impulse += Vector2f(0.0, impulseY);
 
         auto& trans = entity.get<Transform2D>();
-        if (impulseX > 0 && trans.facing != Facing::Right) {
+        if (impulseX > 0) {
             trans.facing = Facing::Right;
-            trans.isDirectionChanged = true;
-        } else if (impulseX < 0 && trans.facing != Facing::Left) {
+        } else if (impulseX < 0) {
             trans.facing = Facing::Left;
-            trans.isDirectionChanged = true;
         }
     }
 }
