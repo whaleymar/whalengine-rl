@@ -128,8 +128,8 @@ void FollowSystem::update() {
         }
 
 #ifndef NDEBUG
-        // follow.debugTargetTracker.set(Transform(follow.currentTarget));
-        // follow.debugPositionTracker.set(trans);
+        follow.debugTargetTracker.set(Transform2D(follow.currentTarget));
+        follow.debugPositionTracker.set(trans);
 #endif  // !NDEBUG
     }
 }

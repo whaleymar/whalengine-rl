@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <ostream>
+#include <sstream>
 
 #include "Types.h"
 
@@ -96,6 +97,12 @@ struct Vector2T {
     }
 
     inline Vector2T<T> absolute() const { return Vector2T<T>(abs(e[0]), abs(e[1])); }
+
+    inline std::string toString() const {
+        std::ostringstream ss;
+        ss << *this;
+        return ss.str();
+    }
 };
 
 template <typename T>

@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include <format>
 #include <raylib.h>
 
 #include "ECS/Blaster.h"
@@ -52,7 +53,7 @@ bool Game::startup() {
 
     // do this before any font/texture stuff or the settings seem to get fucked
     mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
-    // mWorldSpaceCamera->offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
+    mWorldSpaceCamera->offset = Vector2(WINDOW_WIDTH_PIXELS / 2.0f, WINDOW_HEIGHT_PIXELS / 2.0f);  // center camera
     mWorldSpaceCamera->zoom = 1.0f;
 
     mScreenSpaceCamera->target = Vector2(0.0f, 0.0f);
@@ -84,6 +85,7 @@ void Game::mainloop() {
     auto physicsSystem = System::ecs->registerSystem<PhysicsSystem>();
     auto spriteSystem = System::ecs->registerSystem<SpriteSystem>();
     auto drawSystem = System::ecs->registerSystem<DrawSystem>();
+    auto drawDebugSystem = System::ecs->registerSystem<DrawDebugSystem>();
     auto animationSystem = System::ecs->registerSystem<AnimationSystem>();
     auto lifetimeSystem = System::ecs->registerSystem<LifetimeSystem>();
     System::ecs->registerSystem<MovableActorTracker>();  // dependency of TriggerSystem
@@ -135,7 +137,6 @@ void Game::mainloop() {
         System::input.update();
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = toFloatVec(getCameraPosition());
-            print("Camera position: ", cameraPos);
             updateLoadedLevels(cameraPos);
         }
 
@@ -182,13 +183,15 @@ void Game::mainloop() {
 
         BeginMode2D(*mWorldSpaceCamera);
 
-        drawSystem->drawEntities();
         spriteSystem->drawEntities();
+        drawSystem->drawEntities();
 
 #ifndef NDEBUG
         if (System::input.isDebug()) {
+            drawDebugSystem->drawEntities();
             drawColliders();
         }
+
 #endif
 
         EndMode2D();
@@ -197,7 +200,7 @@ void Game::mainloop() {
         // TEXTURE END
 
         // DRAW START
-        // -------------------------------------------------------------------
+        // -----------------------------------------------------------------------
         BeginDrawing();
 
         ClearBackground(clearColor);
@@ -207,8 +210,20 @@ void Game::mainloop() {
 
         EndMode2D();
 
+        // TEXT STUFF
+        DrawTextEx(*mFont, std::format("Camera position: {}", getCameraPosition().toString()).c_str(), Vector2(20, 20), 18, 2, WHITE);
+        int i = 1;
+        for (const auto& lvl : mActiveScene.allLevels) {
+            auto str = std::format("Level: {}. Origin: {}. Size: {}.", i, (lvl.worldPosOriginTexels * FTEXELS_PER_PIXEL).toString(),
+                                   (lvl.sizeTexels * FTEXELS_PER_PIXEL).toString());
+            DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
+            i++;
+        }
+
+        // DrawText
+
         EndDrawing();
-        // -------------------------------------------------------------------
+        // -----------------------------------------------------------------------
         // DRAW END
     }
     System::schedule.end();

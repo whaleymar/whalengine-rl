@@ -43,7 +43,7 @@ void SpriteSystem::drawEntities() {
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
 
         // subtract size.y() so we draw from bottom left instead of top left
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() - cameraPosF.y() - dstSize.y()};
+        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
 
         // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
         // TODO this won't work for scaling from the middle though
@@ -66,7 +66,29 @@ void DrawSystem::drawEntities() {
         Vector2f dstSize = {frameSize.x() * draw.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * draw.scale.y() * FPIXELS_PER_TEXEL};
 
         // subtract size.y() so we draw from bottom left instead of top left
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() - cameraPosF.y() - dstSize.y()};
+        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
+        // add halfX to pos to match the origin thingy done w/ sprites
+        dstPosition -= {dstSize.x() * 0.5f, 0};
+        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        DrawRectangleRec(dstRect, draw.color);
+    }
+}
+
+void DrawDebugSystem::drawEntities() {
+    auto cameraPosF = toFloatVec(getCameraPosition());
+
+    // sorting not required since Draw components don't have transparency
+    for (auto const& [entityid, entity] : getEntitiesRef()) {
+        Transform2D& trans = entity.get<Transform2D>();
+        Draw& draw = entity.get<DrawDebug>();
+
+        auto frameSize = toFloatVec(draw.getFrameSizeTexels());
+        Vector2f dstSize = {frameSize.x() * draw.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * draw.scale.y() * FPIXELS_PER_TEXEL};
+
+        // subtract size.y() so we draw from bottom left instead of top left
+        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
+        // add halfX to pos to match the origin thingy done w/ sprites
+        dstPosition -= {dstSize.x() * 0.5f, 0};
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
         DrawRectangleRec(dstRect, draw.color);
     }

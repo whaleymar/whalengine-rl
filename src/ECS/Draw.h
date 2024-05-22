@@ -54,4 +54,6 @@ struct Draw : public IDraw {
     void setColor(Color color_);
 };
 
+struct DrawDebug : public Draw {};
+
 }  // namespace whal
