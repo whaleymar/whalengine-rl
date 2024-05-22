@@ -1,5 +1,7 @@
 import os 
 
+errorFound = False;
+
 def walk(path):
     for f in os.listdir(path):
         fullpath = os.path.join(path, f)
@@ -14,5 +16,8 @@ def checkheader(path):
         s = f.read()
     if not s.startswith("#pragma once"):
         print(path + " missing header guard")
+        errorFound = True
 
 walk("src/")
+if (not errorFound):
+    print("no issues found")
