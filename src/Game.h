@@ -50,6 +50,7 @@ private:
     whal::Scene mActiveScene;
     whal::EventListener<whal::ecs::Entity> mEntityDeathListener;
     Font* mFont;
-    Camera2D* mCamera;
+    Camera2D* mWorldSpaceCamera;
+    Camera2D* mScreenSpaceCamera;
     bool mIsSceneLoaded;
 };

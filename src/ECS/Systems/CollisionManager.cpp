@@ -116,7 +116,8 @@ void drawCollider(Vector2f cameraPos, const AABB& aabb, const Color color) {
     Vector2f position(aabb.left(), aabb.bottom());
     Vector2f size = Vector2f(aabb.half.x(), aabb.half.y()) * 2;
 
-    Vector2f dstPosition = {position.x() - cameraPos.x(), -1 * (position.y() + cameraPos.y())};
+    // subtract size.y() so we draw from bottom left instead of top left
+    Vector2f dstPosition = {position.x() - cameraPos.x(), -1 * position.y() - cameraPos.y() - size.y()};
     DrawRectangleLines(dstPosition.x(), dstPosition.y(), size.x(), size.y(), color);
 }
 

@@ -36,12 +36,14 @@ using namespace whal;
 
 Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFromLevel)) {
     System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
-    mCamera = new Camera2D;
+    mWorldSpaceCamera = new Camera2D;
+    mScreenSpaceCamera = new Camera2D;
     mFont = new Font;
 }
 
 Game::~Game() {
-    delete mCamera;
+    delete mWorldSpaceCamera;
+    delete mScreenSpaceCamera;
     delete mFont;
 }
 
@@ -49,10 +51,12 @@ bool Game::startup() {
     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
 
     // do this before any font/texture stuff or the settings seem to get fucked
-    mCamera->target = Vector2(0.0f, 0.0f);
-    mCamera->offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
-    mCamera->zoom = 1.0f;
-    // TODO set 320x180 screen size
+    mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
+    // mWorldSpaceCamera->offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
+    mWorldSpaceCamera->zoom = 1.0f;
+
+    mScreenSpaceCamera->target = Vector2(0.0f, 0.0f);
+    mScreenSpaceCamera->zoom = 1.0f;
 
     loadFont(FONT_PATH, 18, 0, 0);
 
@@ -119,6 +123,14 @@ void Game::mainloop() {
     actorsMgr->update();
     solidsMgr->update();
     semiSolidsMgr->update();
+
+    RenderTexture2D targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);  // where we'll draw objects to
+    Color clearColor = {51, 76, 76, 255};
+
+    // flip y axis bc openGL
+    Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), -1 * static_cast<f32>(targetTexture.texture.height)};
+    Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
+                               WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
     while (!WindowShouldClose()) {
         System::input.update();
         if (System::frame.getFrame() == 0) {
@@ -152,10 +164,23 @@ void Game::mainloop() {
 
         animationSystem->update();
 
-        BeginDrawing();  //////////////////////////////////////////////////////////////////////////// DRAW START
+        // CAMERA
+        // -----------------------------------------------------------------------
+        // round worldspace coords, keep decimals in screen space
+        mWorldSpaceCamera->target.x = static_cast<s32>(mScreenSpaceCamera->target.x);
+        mScreenSpaceCamera->target.x -= mWorldSpaceCamera->target.x;
+        mScreenSpaceCamera->target.x *= VIRTUAL_SCREEN_RATIO;
 
-        ClearBackground({51, 76, 76, 255});
-        BeginMode2D(*mCamera);
+        mWorldSpaceCamera->target.y = static_cast<s32>(mScreenSpaceCamera->target.y);
+        mScreenSpaceCamera->target.y -= mWorldSpaceCamera->target.y;
+        mScreenSpaceCamera->target.y *= VIRTUAL_SCREEN_RATIO;
+
+        // TEXTURE START
+        // -----------------------------------------------------------------------
+        BeginTextureMode(targetTexture);
+        ClearBackground(clearColor);
+
+        BeginMode2D(*mWorldSpaceCamera);
 
         drawSystem->drawEntities();
         spriteSystem->drawEntities();
@@ -167,8 +192,24 @@ void Game::mainloop() {
 #endif
 
         EndMode2D();
+        EndTextureMode();
+        // -----------------------------------------------------------------------
+        // TEXTURE END
 
-        EndDrawing();  ////////////////////////////////////////////////////////////////////////////// DRAW END
+        // DRAW START
+        // -------------------------------------------------------------------
+        BeginDrawing();
+
+        ClearBackground(clearColor);
+        BeginMode2D(*mScreenSpaceCamera);
+
+        DrawTexturePro(targetTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+
+        EndMode2D();
+
+        EndDrawing();
+        // -------------------------------------------------------------------
+        // DRAW END
     }
     System::schedule.end();
     // TODO end audio
