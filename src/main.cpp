@@ -60,6 +60,8 @@
 //     return 0;
 // }
 
+#include <fmod.hpp>
+#include "fmod_common.h"
 #include "raylib.h"
 
 #include <math.h>  // Required for: sinf(), cosf()
@@ -106,12 +108,35 @@ int main(void) {
     float cameraX = 0.0f;
     float cameraY = 0.0f;
 
+    // AUDIO SHIT
+    // ------------------------------------------
+
+    FMOD::System* system = nullptr;
+    FMOD::System_Create(&system);
+
+    system->init(512, FMOD_INIT_NORMAL, nullptr);
+
+    FMOD::Sound* sound = nullptr;
+    system->createStream("data/audio/music/provingGroundsTheme.mp3", FMOD_DEFAULT, nullptr, &sound);
+
+    FMOD::Channel* channel = nullptr;
+    system->playSound(sound, nullptr, false, &channel);
+    bool isPlayingAudio = true;
+
+    // ------------------------------------------
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
     while (!WindowShouldClose())  // Detect window close button or ESC key
     {
+        // AUDIO SHIT JODSHFO{ISAJDFJSDJF:ILJ:DSFL
+        if (isPlayingAudio) {
+            system->update();
+            channel->isPlaying(&isPlayingAudio);
+        }
+
         // Update
         //----------------------------------------------------------------------------------
         // rotation += 60.0f * GetFrameTime();  // Rotate the rectangles, 60 degrees per second
@@ -160,6 +185,12 @@ int main(void) {
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
+
+    // AUDIO SHIT
+
+    sound->release();
+    system->close();
+    system->release();
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
