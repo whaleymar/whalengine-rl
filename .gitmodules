@@ -1,3 +1,6 @@
 [submodule "lib/whalECS"]
 	path = lib/whalECS
 	url = https://github.com/whaleymar/whalECS.git
+[submodule "lib/raylib"]
+	path = lib/raylib
+	url = https://github.com/raysan5/raylib.git
