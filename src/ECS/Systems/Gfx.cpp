@@ -55,7 +55,8 @@ void SpriteSystem::drawEntities() {
             origin = Vector2f(dstSize.x() * 0.5, 0);
         } else {
             // TODO y position not centered for all collider sizes
-            // maybe I should adjust Y based on (optional) collider height?
+            // this is because i place colliders based on transform (bottom), so the projectile's bottom always passes through mouse click location
+            // so I think this code is fine, but i need to change the physics system to draw centered colliders based on some param
 
             // draw centered
             // dstPosition += dstSize * Vector2f(0, 0.75);
