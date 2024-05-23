@@ -4,6 +4,7 @@
 #include "Settings.h"
 
 #include "ECS/Systems/TagTrackers.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/Draw.h"
@@ -44,14 +45,28 @@ void SpriteSystem::drawEntities() {
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
 
         // subtract size.y() so we draw from bottom left instead of top left
+        // RESEARCH ? offset left by half a tile to fix camera detecting bottom left instead of bottom middle?
         Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
 
-        // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
-        // TODO this won't work for scaling from the middle though
-        Vector2f origin(dstSize.x() * 0.5, 0);
+        Vector2f origin;
+        if (trans.rotationDegrees == 0) {
+            // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
+            // TODO this won't work for scaling from the middle though
+            origin = Vector2f(dstSize.x() * 0.5, 0);
+        } else {
+            // TODO y position not centered for all collider sizes
+            // maybe I should adjust Y based on (optional) collider height?
+
+            // draw centered
+            // dstPosition += dstSize * Vector2f(0, 0.75);
+            dstPosition += dstSize * Vector2f(0, 0.5);
+            // dstPosition += dstSize * Vector2f(0, 0.25);
+            origin = dstSize * 0.5;
+        }
+
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
-        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, 0.0f, sprite.color);
+        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
     }
 }
 

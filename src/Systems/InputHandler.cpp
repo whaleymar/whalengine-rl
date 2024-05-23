@@ -2,9 +2,12 @@
 
 #include <raylib.h>
 
-namespace whal {
+#include "Game/Events.h"
+#include "Gfx/Coordinates.h"
+#include "System.h"
+#include "Util/Print.h"
 
-enum Mouse : u8 { LEFT = 1, MIDDLE = 2, RIGHT = 3 };
+namespace whal {
 
 InputHandler::InputHandler() {
     loadMappings();
@@ -19,7 +22,13 @@ void InputHandler::update() {
         }
     }
     MousePosition = fromRaylibInt(GetMousePosition());
-    // mouse left/right/middle
+    for (auto [mouseButton, inputType] : MouseMap) {
+        if (IsMouseButtonPressed(mouseButton)) {
+            set(inputType);
+        } else if (IsKeyReleased(mouseButton)) {
+            reset(inputType);
+        }
+    }
 }
 
 void InputHandler::set(InputType input) {
@@ -54,7 +63,7 @@ void InputHandler::set(InputType input) {
         break;
 
     case InputType::SHOOT: {
-        // System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition)); // TODO
+        System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
         break;
     }
 
@@ -162,6 +171,8 @@ void InputHandler::loadMappings() const {
     // EVENTUALLY load from file once i have, like, menus working
 
     KeyMap.clear();
+    MouseMap.clear();
+
     KeyMap.insert({KEY_A, InputType::LEFT});
     KeyMap.insert({KEY_D, InputType::RIGHT});
     KeyMap.insert({KEY_W, InputType::UP});
@@ -169,7 +180,7 @@ void InputHandler::loadMappings() const {
     KeyMap.insert({KEY_SPACE, InputType::JUMP});
     KeyMap.insert({KEY_ESCAPE, InputType::QUIT});
 
-    // KeyMap.insert({Mouse::LEFT, InputType::SHOOT}); // TODO
+    MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
 
 #ifndef NDEBUG
     KeyMap.insert({KEY_ZERO, InputType::DEBUG});

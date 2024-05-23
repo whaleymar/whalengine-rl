@@ -108,7 +108,7 @@ void Game::mainloop() {
     auto playerMgr = PlayerSystem::instance();
     auto cameraMgr = CameraSystem::instance();
     auto childMgr = EntityChildSystem::instance();
-    // System::ecs->registerSystem<ProjectileSystem>();
+    System::ecs->registerSystem<ProjectileSystem>();
 
     // load scene // TODO separate function
     auto err = loadTestMap();
@@ -119,7 +119,7 @@ void Game::mainloop() {
 
     std::optional<Error> errOpt;
 
-    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
+    // System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
     actorsMgr->update();
     solidsMgr->update();
@@ -142,7 +142,6 @@ void Game::mainloop() {
         System::dt.update();
         System::schedule.tick(System::dt());
         System::frame.update();
-        System::audio.update();
 
         controlSystemRB->update();
         controlSystemFree->update();
@@ -224,6 +223,7 @@ void Game::mainloop() {
         EndDrawing();
         // -----------------------------------------------------------------------
         // DRAW END
+        // System::audio.update();
     }
     System::schedule.end();
     System::audio.end();

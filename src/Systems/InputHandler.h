@@ -61,6 +61,7 @@ public:
 #endif
 
     inline static std::unordered_map<int, InputType> KeyMap;
+    inline static std::unordered_map<int, InputType> MouseMap;
     inline static Vector2i MousePosition;
 
 private:
