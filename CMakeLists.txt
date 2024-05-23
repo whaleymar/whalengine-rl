@@ -1,21 +1,24 @@
 cmake_minimum_required(VERSION 3.15)
 project(engine CXX C)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 11) # required by raylib
+
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+# set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_DEBUG_POSTFIX d)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
-set(CMAKE_C_STANDARD 11) # Requires C11 standard
-
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 file(GLOB_RECURSE SOURCES_BASE ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.c ${PROJECT_SOURCE_DIR}/src/*.hpp ${PROJECT_SOURCE_DIR}/src/*.h ${PROJECT_SOURCE_DIR}/lib/whalECS/src/*)
 
@@ -24,7 +27,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POS
 
 target_include_directories(${PROJECT_NAME} 
     PUBLIC src
-    # PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/RapidXML"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/json"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/SDL/include"
