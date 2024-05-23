@@ -55,9 +55,11 @@ bool Game::startup() {
     mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
     mWorldSpaceCamera->offset = Vector2(WINDOW_WIDTH_PIXELS / 2.0f, WINDOW_HEIGHT_PIXELS / 2.0f);  // center camera
     mWorldSpaceCamera->zoom = 1.0f;
+    mWorldSpaceCamera->rotation = 0.0f;
 
     mScreenSpaceCamera->target = Vector2(0.0f, 0.0f);
     mScreenSpaceCamera->zoom = 1.0f;
+    mScreenSpaceCamera->rotation = 0.0f;
 
     loadFont(FONT_PATH, 18, 0, 0);
 
@@ -69,14 +71,13 @@ bool Game::startup() {
 
     SetTargetFPS(FPS_TARGET);
 
-    InitAudioDevice();
-    if (!IsAudioDeviceReady()) {
-        print("Coudn't initialize audio device");
+    if (!System::audio.isValid()) {
+        print("Error initializing audio manager");
         return true;
     }
+    System::audio.start();
     System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
-    System::audio.start();
     startListeners();
 
     return false;
@@ -119,7 +120,7 @@ void Game::mainloop() {
 
     std::optional<Error> errOpt;
 
-    // System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
+    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
     actorsMgr->update();
     solidsMgr->update();
@@ -223,7 +224,6 @@ void Game::mainloop() {
         EndDrawing();
         // -----------------------------------------------------------------------
         // DRAW END
-        // System::audio.update();
     }
     System::schedule.end();
     System::audio.end();
@@ -235,7 +235,6 @@ void Game::end() {
     killListeners();
 
     // raylib stuff:
-    CloseAudioDevice();
     TextureManager::instance().unloadAll();
     UnloadFont(*mFont);
     CloseWindow();

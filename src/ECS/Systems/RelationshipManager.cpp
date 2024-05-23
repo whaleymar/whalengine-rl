@@ -97,10 +97,10 @@ void FollowSystem::update() {
         f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y() - trans.position.y()) * FTEXELS_PER_PIXEL;
 
         if (abs(targetSpeedX) > abs(vel.stable.x())) {
-            targetSpeedX = lerp(vel.stable.x(), targetSpeedX, follow.damping.x());
+            targetSpeedX = myLerp(vel.stable.x(), targetSpeedX, follow.damping.x());
         }
         if (abs(targetSpeedY) > abs(vel.stable.y())) {
-            targetSpeedY = lerp(vel.stable.y(), targetSpeedY, follow.damping.y());
+            targetSpeedY = myLerp(vel.stable.y(), targetSpeedY, follow.damping.y());
         }
 
         vel.stable = {targetSpeedX, targetSpeedY};

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 project(engine CXX C)
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 set(CMAKE_DEBUG_POSTFIX d)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
@@ -25,7 +27,7 @@ target_include_directories(${PROJECT_NAME}
     # PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/RapidXML"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/json"
-    # PUBLIC "${PROJECT_SOURCE_DIR}/lib/SDL/include"
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/SDL/include"
     PUBLIC "${SDL2_INCLUDE_DIRS}"
     )
 

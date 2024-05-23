@@ -66,7 +66,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     if (rb.isGrounded) {
         if (rb.isLanding) {
             f32 squish = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
-            sprite.scale = {lerp(1, 1.25, squish), lerp(1, 0.8, squish)};
+            sprite.scale = {myLerp(1, 1.25, squish), myLerp(1, 0.8, squish)};
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {

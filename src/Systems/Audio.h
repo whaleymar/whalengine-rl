@@ -1,5 +1,8 @@
 #pragma once
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+
 #include <condition_variable>
 #include <mutex>
 #include <optional>
@@ -7,44 +10,45 @@
 #include "Util/Types.h"
 #include "whalECS/src/Expected.h"
 
-typedef struct Music Music;
-
 namespace whal {
 
 struct System;
 
-class MusicClip {
+class Music {
 public:
-    MusicClip(const char* path);
-    ~MusicClip();
+    Music(const char* path);
+    ~Music();
 
-    MusicClip(const MusicClip&) = delete;
-    void operator=(const MusicClip&) = delete;
+    Music(const Music&) = delete;
+    void operator=(const Music&) = delete;
 
-    bool isValid() const;
-    Music* get() const { return mMusic; };
+    bool isValid() const { return mData != nullptr; }
+    Mix_Music* get() const { return mData; }
 
 private:
-    Music* mMusic;
-    bool mIsValid;
+    const char* mPath = nullptr;
+    Mix_Music* mData = nullptr;
 };
 
 class AudioClip {
 public:
     AudioClip() = default;
     AudioClip(const char* path);
-    // ~AudioClip();
+    ~AudioClip();
 
     AudioClip(const AudioClip&) = delete;
     void operator=(const AudioClip&) = delete;
 
-    bool isValid() const;
+    std::optional<Error> load(const char* path);
+    bool isValid() const { return mData != nullptr; }
+    Mix_Chunk* get() const { return mData; }
 
 private:
     const char* mPath;
-    bool mIsValid = false;
+    Mix_Chunk* mData = nullptr;
 };
 
+// TODO should be able to set volume
 class AudioPlayer {
 public:
     friend System;
@@ -52,30 +56,31 @@ public:
     void start();
     void await();
     void end();
-    void update();
 
+    // void play(const Music& music);
     void playMusic(const char* path);
     void play(const AudioClip& clip, f32 volume = 1.0) const;
     void stopMusic();
     void stopAll();
-    // bool isValid() const { return mIsValid; }
+    bool isValid() const { return mIsValid; }
 
 private:
     AudioPlayer();
+    ~AudioPlayer();
 
-    // AudioPlayer(const AudioPlayer&) = delete;
-    // void operator=(const AudioPlayer&) = delete;
+    AudioPlayer(const AudioPlayer&) = delete;
+    void operator=(const AudioPlayer&) = delete;
 
     void playerThread();
 
     std::mutex mMutex;
     std::thread mMusicThread;
     std::condition_variable mCondition;
-    std::optional<MusicClip> mQueuedMusic;
-    // bool mIsValid = false;
+    const Music* mQueuedMusic = nullptr;
+    std::optional<Music> mMusic;
+    bool mIsValid = false;
     bool mIsMusicStopSignal = false;
     bool mIsTerminated = false;
-    bool mIsUpdateSignal = false;
 };
 
 class Sfx {
