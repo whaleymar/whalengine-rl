@@ -1,6 +1,6 @@
 #pragma once
 
-// #include "Systems/Audio.h"
+#include "Systems/Audio.h"
 #include "Systems/Deltatime.h"
 #include "Systems/Event.h"
 #include "Systems/Frametracker.h"
@@ -17,7 +17,7 @@ struct System {
     inline static RNG rng;
     inline static Frametracker frame;
     inline static EventManager eventMgr;
-    // inline static AudioPlayer audio;
+    inline static AudioPlayer audio;
     inline static JobScheduler schedule;
     inline static ecs::ECS* ecs = &ecs::ECS::getInstance();
 };

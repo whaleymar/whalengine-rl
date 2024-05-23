@@ -69,10 +69,14 @@ bool Game::startup() {
 
     SetTargetFPS(FPS_TARGET);
 
-    // TODO audio
-
+    InitAudioDevice();
+    if (!IsAudioDeviceReady()) {
+        print("Coudn't initialize audio device");
+        return true;
+    }
     System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
+    System::audio.start();
     startListeners();
 
     return false;
@@ -113,14 +117,9 @@ void Game::mainloop() {
         return;
     }
 
-    // std::optional<Error> errOpt;
-    // Music music;
-    // errOpt = music.load("data/provingGroundsTheme.mp3");
-    // if (errOpt) {
-    //     print(errOpt.value());
-    //     return;
-    // }
-    // System::audio.play(music);
+    std::optional<Error> errOpt;
+
+    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
     actorsMgr->update();
     solidsMgr->update();
@@ -143,6 +142,7 @@ void Game::mainloop() {
         System::dt.update();
         System::schedule.tick(System::dt());
         System::frame.update();
+        System::audio.update();
 
         controlSystemRB->update();
         controlSystemFree->update();
@@ -226,15 +226,16 @@ void Game::mainloop() {
         // DRAW END
     }
     System::schedule.end();
-    // TODO end audio
+    System::audio.end();
 }
 
 void Game::end() {
+    System::audio.await();
     System::schedule.await();
-    // TODO audio
     killListeners();
 
     // raylib stuff:
+    CloseAudioDevice();
     TextureManager::instance().unloadAll();
     UnloadFont(*mFont);
     CloseWindow();
