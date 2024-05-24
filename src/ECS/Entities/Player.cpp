@@ -70,7 +70,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {
-                // System::audio.play(Sfx::FOOTSTEPTEST, 0.1); // TODO
+                System::audio.playClip(Sfx::FOOTSTEPTEST, 0.1);
                 return true;
             }
         } else {
@@ -94,7 +94,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     // animation did not change
     bool frameChanged = basicAnimation(animator, entity);
     if (frameChanged && animator.getAnimation().id == RUN && animator.curFrameIx % 2 == 1) {
-        // System::audio.play(Sfx::FOOTSTEPTEST, 0.08); // TODO
+        System::audio.playClip(Sfx::FOOTSTEPTEST, 0.08);
     }
     return frameChanged;
 }

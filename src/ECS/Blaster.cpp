@@ -32,7 +32,7 @@ void onBlasterFired(whal::Vector2i target) {
             velOpt.value()->stable += moveNormal * -1 * blaster.shotKnockback;
         }
 
-        // System::audio.play(Sfx::SHOTFIRED, 0.2); // TODO
+        System::audio.playClip(Sfx::SHOTFIRED, 0.2);
     }
 }
 

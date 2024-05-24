@@ -20,6 +20,22 @@ struct System {
     inline static AudioPlayer audio;
     inline static JobScheduler schedule;
     inline static ecs::ECS* ecs = &ecs::ECS::getInstance();
+
+    static void setPaused(bool pause) {
+        if (pause) {
+            dt.setMultiplier(0.0);
+            audio.pauseClips(true);
+        } else {
+            dt.setMultiplier(1.0);
+            audio.pauseClips(false);
+        }
+        IsPaused = pause;
+    }
+
+    static void togglePause() { setPaused(!IsPaused); }
+
+private:
+    inline static bool IsPaused = false;
 };
 
 }  // namespace whal

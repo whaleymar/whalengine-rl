@@ -57,7 +57,7 @@ struct TileMap {
 
     static inline ComponentFactory componentFactory;
 
-    const char* name;
+    std::string name;
     s32 widthTiles;
     s32 heightTiles;
     s32 tileSize;

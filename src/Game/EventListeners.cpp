@@ -32,7 +32,7 @@ void onEntityDeath(ecs::Entity entity) {
     }
     Sprite sprite;  // needs to be created in main thread bc OpenGL
     System::schedule.after(&createPlayerAsynch, 2, sprite);
-    // System::audio.play(Sfx::GAMEOVER); // TODO
+    System::audio.playClip(Sfx::GAMEOVER);
 }
 
 }  // namespace whal

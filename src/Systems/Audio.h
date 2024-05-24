@@ -1,34 +1,26 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-
-#include <condition_variable>
-#include <mutex>
+// #include <condition_variable>
+// #include <mutex>
 #include <optional>
 
 #include "Util/Types.h"
 #include "whalECS/src/Expected.h"
 
+namespace FMOD {
+
+class System;
+class Sound;
+class Channel;
+class ChannelGroup;
+
+}  // namespace FMOD
+
 namespace whal {
 
+static constexpr s32 MAX_CHANNELS = 256;  // upper limit. just used for AudioPlayer's channel pool
+
 struct System;
-
-class Music {
-public:
-    Music(const char* path);
-    ~Music();
-
-    Music(const Music&) = delete;
-    void operator=(const Music&) = delete;
-
-    bool isValid() const { return mData != nullptr; }
-    Mix_Music* get() const { return mData; }
-
-private:
-    const char* mPath = nullptr;
-    Mix_Music* mData = nullptr;
-};
 
 class AudioClip {
 public:
@@ -40,29 +32,30 @@ public:
     void operator=(const AudioClip&) = delete;
 
     std::optional<Error> load(const char* path);
-    bool isValid() const { return mData != nullptr; }
-    Mix_Chunk* get() const { return mData; }
+    bool isValid() const { return mSound != nullptr; }
+    FMOD::Sound* get() const { return mSound; }
 
 private:
-    const char* mPath;
-    Mix_Chunk* mData = nullptr;
+    FMOD::Sound* mSound = nullptr;
 };
 
-// TODO should be able to set volume
 class AudioPlayer {
 public:
     friend System;
+    friend AudioClip;
 
-    void start();
-    void await();
-    void end();
-
-    // void play(const Music& music);
-    void playMusic(const char* path);
-    void play(const AudioClip& clip, f32 volume = 1.0) const;
+    void playMusic(const char* path, f32 volume = 1.0);
+    void playClip(const AudioClip& clip, f32 volume = 1.0);
     void stopMusic();
+    void stopClips();
     void stopAll();
+    bool isMusicPaused() const;
+    bool isClipsPaused() const;
+    void pauseMusic(bool pause);
+    void pauseClips(bool pause);
+    void pauseAll(bool pause);
     bool isValid() const { return mIsValid; }
+    void update();
 
 private:
     AudioPlayer();
@@ -71,16 +64,19 @@ private:
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 
-    void playerThread();
+    FMOD::System* getSystem() const;
 
-    std::mutex mMutex;
-    std::thread mMusicThread;
-    std::condition_variable mCondition;
-    const Music* mQueuedMusic = nullptr;
-    std::optional<Music> mMusic;
+    FMOD::Sound* mMusic = nullptr;
+    FMOD::ChannelGroup* mClipChannelGroup = nullptr;
+    FMOD::Channel* mClipChannelPool[MAX_CHANNELS];
+    FMOD::Channel* mMusicChannel = nullptr;
+    FMOD::System* mSystem = nullptr;
+    s32 mMaxChannelCount = 0;
+    s32 mNumMusicChannels = 1;
+    s32 mNumClipChannels = 0;
     bool mIsValid = false;
-    bool mIsMusicStopSignal = false;
-    bool mIsTerminated = false;
+    bool mIsPlayingMusic = false;
+    bool mIsPlayingChannels = false;
 };
 
 class Sfx {

@@ -37,7 +37,7 @@ void onCameraAtDestination(ecs::Entity cameraEntity, RailsControl& rails) {
     };  // don't call this immediately cause it will mutate the Rails system's entity list while it's iterating
     cameraEntity.add(OnFrameEnd(frameEndCallback));
     cameraEntity.add<Velocity>();  // railscontrol removed it
-    System::dt.setMultiplier(1.0);
+    System::setPaused(false);
 }
 
 RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextPosition) {

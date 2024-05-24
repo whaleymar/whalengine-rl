@@ -1,5 +1,6 @@
 #include "Explosion.h"
 
+#include "ECS/Systems/TagTrackers.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -68,11 +69,11 @@ Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen
     entity.add(Lifetime(lifetime));
 
     // scale volume with distance from camera
-    // f32 distance = toFloatVec(getCameraPosition() - trans.position).len();
-    // f32 maxVolume = 0.2f;
-    // f32 maxDistance = 1500.0f;
-    // f32 volume = easeOutQuad(maxVolume, 0.0f, distance / maxDistance);
-    // System::audio.play(Sfx::EXPLOSION, volume); // TODO
+    f32 distance = toFloatVec(getCameraPosition() - trans.position).len();
+    f32 maxVolume = 0.2f;
+    f32 maxDistance = 1500.0f;
+    f32 volume = easeOutQuad(maxVolume, 0.0f, distance / maxDistance);
+    System::audio.playClip(Sfx::EXPLOSION, volume);
 
     return entity;
 }

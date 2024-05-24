@@ -1,145 +1,204 @@
 #include "Audio.h"
 
-#include <SDL2/SDL_mixer.h>
-#include <thread>
+#include <fmod.hpp>
+#include "fmod_common.h"
 
+#include "System.h"
 #include "Util/Print.h"
 
 namespace whal {
 
-Music::Music(const char* path) {
-    mPath = path;
-    mData = Mix_LoadMUS(path);
-    if (mData == nullptr) {
-        print(Mix_GetError());
-        mData = nullptr;
-        mPath = nullptr;
-    }
-}
-
-Music::~Music() {
-    if (mData) {
-        Mix_FreeMusic(mData);
-    }
-}
+static const char* CHANNEL_GROUP_NAME_CLIPS = "Clips";
 
 AudioClip::AudioClip(const char* path) {
-    if (auto errOpt = load(path); errOpt) {
-        print("Failed to load audio clip:", path, "\nGot error:", errOpt.value());
-    }
+    print("LOADING AUDIO CLIP");
+    load(path);
 }
 
 AudioClip::~AudioClip() {
-    if (mData) {
-        Mix_FreeChunk(mData);
+    if (isValid()) {
+        mSound->release();
     }
 }
 
 std::optional<Error> AudioClip::load(const char* path) {
-    if (isValid()) {
-        return Error("Cannot load path into already loaded AudioClip");
-    }
-    mPath = path;
-    // can be mp3 or wav (or others?)
-    mData = Mix_LoadWAV(path);
-    if (mData == nullptr) {
-        return Error(Mix_GetError());
+    auto result = System::audio.getSystem()->createSound(path, FMOD_DEFAULT, nullptr, &mSound);
+    if (result != FMOD_OK) {
+        mSound = nullptr;
+        return Error("Error loading clip");
     }
     return std::nullopt;
 }
 
 AudioPlayer::AudioPlayer() {
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 8, 2048) < 0) {
+    print("RUNNING AUDIO CONSTRUCTOR");
+    // Init System
+    auto result = FMOD::System_Create(&mSystem);
+    if (result != FMOD_OK) {
+        print("Got bad result for System_Create");
+        return;
+    }
+    auto outputSettings = FMOD_OUTPUTTYPE_AUTODETECT;
+    result = mSystem->init(MAX_CHANNELS, FMOD_INIT_NORMAL, &outputSettings);
+    if (result != FMOD_OK) {
+        print("Got bad result for mSystem->init");
         return;
     }
     mIsValid = true;
 
+    // Init Clip Channel Pool
+    mSystem->getSoftwareChannels(&mMaxChannelCount);
+    print("AudioPlayer has", mMaxChannelCount, "channels");
+    if (mMaxChannelCount > MAX_CHANNELS) {
+        mMaxChannelCount = MAX_CHANNELS;
+    }
+    mNumClipChannels = mMaxChannelCount - mNumMusicChannels;
+    mSystem->createChannelGroup(CHANNEL_GROUP_NAME_CLIPS, &mClipChannelGroup);
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        mClipChannelPool[i] = nullptr;
+    }
+
+    // Init Sfx Clips
     if (auto errOpt = Sfx::instance().load(); errOpt) {
         print(errOpt.value());
     }
 }
 
 AudioPlayer::~AudioPlayer() {
+    print("++++++++++ RUNNING DESTRUCTOR+++++++++++++++");
     if (mIsValid) {
-        Mix_CloseAudio();
+        mSystem->close();
+        mSystem->release();
     }
 }
 
-void AudioPlayer::start() {
-    mMusicThread = std::thread(&AudioPlayer::playerThread, this);
-}
-
-void AudioPlayer::await() {
-    mMusicThread.join();
-}
-
-void AudioPlayer::end() {
-    mIsTerminated = true;
-    mCondition.notify_one();
-}
-
-void AudioPlayer::playMusic(const char* path) {
-    mMusic.emplace(path);
-
-    if (!mMusic || !mMusic->isValid()) {
+void AudioPlayer::playMusic(const char* path, f32 volume) {
+    if (!mIsValid) {
         return;
     }
 
-    mQueuedMusic = &mMusic.value();
-    mCondition.notify_one();
+    auto result = mSystem->createStream(path, FMOD_DEFAULT, nullptr, &mMusic);
+    if (result != FMOD_OK) {
+        print("couldn't load music stream:", path);
+    }
+    mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
+    mMusicChannel->setVolume(volume);
+    mIsPlayingMusic = true;
+}
+
+void AudioPlayer::update() {
+    // update music
+    if (mIsPlayingMusic || mIsPlayingChannels) {
+        mSystem->update();
+    }
+
+    if (mIsPlayingMusic) {
+        mMusicChannel->isPlaying(&mIsPlayingMusic);
+    } else if (mMusic != nullptr) {
+        stopMusic();
+    }
+
+    if (mIsPlayingChannels) {
+        bool isPlayingAnyClip = false;
+        bool isPlaying = false;
+        for (s32 i = 0; i < mNumClipChannels; i++) {
+            FMOD::Channel* channel = mClipChannelPool[i];
+            if (channel == nullptr) {
+                continue;
+            }
+            channel->isPlaying(&isPlaying);
+            isPlayingAnyClip = isPlayingAnyClip || isPlaying;
+
+            if (!isPlaying) {
+                channel->stop();
+                mClipChannelPool[i] = nullptr;
+            }
+        }
+
+        mIsPlayingChannels = isPlayingAnyClip;
+    }
+}
+
+FMOD::System* AudioPlayer::getSystem() const {
+    return mSystem;
 }
 
 // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
-void AudioPlayer::play(const AudioClip& clip, f32 volume) const {
+void AudioPlayer::playClip(const AudioClip& clip, f32 volume) {
     if (!clip.isValid()) {
         return;
     }
 
-    // TODO should probably track which channels are being used + set some aside for ECS?
-    // arg 1: -1 to choose any channel
-    // arg 3:
-    // 0 == play once and stop
-    // -1 == play forever?
-
-    // volume ranges from 0-128
-    s32 sVolume = static_cast<s32>(128.0 * volume);
-    auto channel = Mix_PlayChannel(-1, clip.get(), 0);
-    if (channel == -1) {
-        print("couldn't play audio clip");
+    s32 channelIx = -1;
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        if (mClipChannelPool[i] == nullptr) {
+            channelIx = i;
+            break;
+        }
+    }
+    if (channelIx < 0) {
+        print("Couldn't find channel available for clip");
         return;
     }
-    Mix_Volume(channel, sVolume);
+
+    FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
+    mSystem->playSound(clip.get(), mClipChannelGroup, false, pChannel);
+    // don't loop
+    (*pChannel)->setLoopCount(0);
+    (*pChannel)->setVolume(volume);
+    mIsPlayingChannels = true;
 }
 
 void AudioPlayer::stopMusic() {
-    mIsMusicStopSignal = true;
-    mCondition.notify_one();
+    print("stopping music");
+    if (mIsPlayingMusic) {
+        mMusicChannel->stop();
+    }
+    mMusic->release();
+    mMusic = nullptr;
+    mIsPlayingMusic = false;
+}
+
+void AudioPlayer::stopClips() {
+    if (!mIsPlayingChannels) {
+        return;
+    }
+
+    mClipChannelGroup->stop();
+
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        mClipChannelPool[i] = nullptr;
+    }
 }
 
 void AudioPlayer::stopAll() {
     stopMusic();
-    // TODO stop clips
+    stopClips();
 }
 
-void AudioPlayer::playerThread() {
-    while (!mIsTerminated) {
-        std::unique_lock<std::mutex> lock(mMutex);
-        mCondition.wait(lock, [this] { return mQueuedMusic != nullptr || mIsTerminated || mIsMusicStopSignal; });
-        if (mIsMusicStopSignal && Mix_PlayingMusic()) {
-            Mix_HaltMusic();
-            mQueuedMusic = nullptr;
-            mIsMusicStopSignal = false;
-        }
-        if (mQueuedMusic == nullptr || !mQueuedMusic->isValid()) {
-            mQueuedMusic = nullptr;
-            continue;
-        }
+bool AudioPlayer::isMusicPaused() const {
+    bool isPaused = false;
+    mMusicChannel->getPaused(&isPaused);
+    return isPaused;
+}
 
-        // 0 == play once and stop
-        // -1 == play forever?
-        Mix_PlayMusic(mQueuedMusic->get(), 0);
-        mQueuedMusic = nullptr;
-    }
+bool AudioPlayer::isClipsPaused() const {
+    bool isPaused = false;
+    mClipChannelGroup->getPaused(&isPaused);
+    return isPaused;
+}
+
+void AudioPlayer::pauseMusic(bool pause) {
+    mMusicChannel->setPaused(pause);
+}
+
+void AudioPlayer::pauseClips(bool pause) {
+    mClipChannelGroup->setPaused(pause);
+}
+
+void AudioPlayer::pauseAll(bool pause) {
+    pauseMusic(pause);
+    pauseClips(pause);
 }
 
 std::optional<Error> Sfx::load() {
@@ -150,7 +209,7 @@ std::optional<Error> Sfx::load() {
     mIsLoaded = true;
     std::optional<Error> errOpt;
 
-    errOpt = GAMEOVER.load("data/zeldaGameOverSound.mp3");
+    errOpt = GAMEOVER.load("data/audio/sfx/zeldaGameOverSound.mp3");
     if (errOpt)
         return errOpt;
 

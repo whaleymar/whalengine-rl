@@ -37,9 +37,9 @@ using namespace whal;
 
 Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFromLevel)) {
     System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
-    mWorldSpaceCamera = new Camera2D;
-    mScreenSpaceCamera = new Camera2D;
-    mFont = new Font;
+    mWorldSpaceCamera = new Camera2D();
+    mScreenSpaceCamera = new Camera2D();
+    mFont = new Font();
 }
 
 Game::~Game() {
@@ -75,7 +75,6 @@ bool Game::startup() {
         print("Error initializing audio manager");
         return true;
     }
-    System::audio.start();
     System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
     startListeners();
@@ -143,6 +142,7 @@ void Game::mainloop() {
         System::dt.update();
         System::schedule.tick(System::dt());
         System::frame.update();
+        System::audio.update();
 
         controlSystemRB->update();
         controlSystemFree->update();
@@ -164,6 +164,21 @@ void Game::mainloop() {
         semiSolidsMgr->update();
 
         animationSystem->update();
+
+#ifndef NDEBUG
+        if (IsKeyPressed(KEY_P)) {
+            if (System::audio.isMusicPaused()) {
+                System::audio.pauseAll(false);
+            } else {
+                System::audio.pauseAll(true);
+            }
+        }
+        if (IsKeyPressed(KEY_K)) {
+            for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
+                entity.kill();
+            }
+        }
+#endif
 
         // CAMERA
         // -----------------------------------------------------------------------
@@ -226,11 +241,9 @@ void Game::mainloop() {
         // DRAW END
     }
     System::schedule.end();
-    System::audio.end();
 }
 
 void Game::end() {
-    System::audio.await();
     System::schedule.await();
     killListeners();
 
@@ -344,7 +357,7 @@ void Game::updateLevelCamera(bool overrideCache) {
                     camera.remove<Follow>();
                 }
                 camera.add(createCameraMoveController(camera.get<Transform2D>().position, focalPoint));
-                System::dt.setMultiplier(0.0);
+                System::setPaused(true);
                 return;
             }
         }

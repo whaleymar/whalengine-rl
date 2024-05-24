@@ -80,7 +80,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         std::string propName = property["name"];
         if (propName == "Name") {
             std::string mapName = property["value"];
-            map.name = mapName.c_str();
+            map.name = mapName;
             isNameFound = true;
         } else if (propName == "CameraFollowParams") {
             level.cameraFollow = loadFollowComponent(property["value"], level);
