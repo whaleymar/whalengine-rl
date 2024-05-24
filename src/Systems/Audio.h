@@ -90,6 +90,8 @@ public:
     inline static AudioClip EXPLOSION;
     inline static AudioClip FOOTSTEPTEST;
     inline static AudioClip SHOTFIRED;
+    inline static AudioClip JUMP;
+    inline static AudioClip LAND;
 
     std::optional<Error> load();
 

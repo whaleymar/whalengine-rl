@@ -227,6 +227,16 @@ std::optional<Error> Sfx::load() {
         return errOpt;
     }
 
+    errOpt = JUMP.load("data/audio/sfx/jump.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = LAND.load("data/audio/sfx/land.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
     return std::nullopt;
 }
 

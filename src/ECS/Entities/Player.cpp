@@ -67,6 +67,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
         if (rb.isLanding) {
             f32 squish = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
             sprite.scale = {myLerp(1, 1.25, squish), myLerp(1, 0.8, squish)};
+            System::audio.playClip(Sfx::LAND, 0.1);
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {
@@ -82,6 +83,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
         if (rb.isJumping) {
             if (animator.setAnimation(JUMP)) {
                 sprite.scale = {0.8, 1.25};
+                System::audio.playClip(Sfx::JUMP, 0.5);
                 return true;
             }
         } else {
