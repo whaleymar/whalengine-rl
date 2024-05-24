@@ -26,12 +26,14 @@
 ## Entity Prefabs
 - particle
     - draw(?), position, velocity, lifetime
-    - instead of draw, could do custom component & *instance* it
 - death plane
 
 ## Physics
 - idea: overlapping actors/semisolids nudge each other away or exert a force or something
 - low priority: actors always check for a collision with a solid before a semisolid, so semisolid callbacks don't always run. Could be fixed by storing solids and semisolid pointers together for these collision checks, but it's not a huge deal
+- actor collision callbacks don't run if they're pushed
+- solid/semisolid callbacks don't run if they're pushing
+    - --> should have some onPush[ed] callbacks for these cases i guess? bc not all callbacks should run when pushing
 
 ## Map 
 - support rotations / flips? (leaning towards no)
@@ -50,8 +52,6 @@
 
 ## Non-ECS Systems
 - chunk loading/unloading (quad tree?)
-- text rendering\*\*
-- Level editor\*\*
 
 ## Misc
 - ECS lib tasks

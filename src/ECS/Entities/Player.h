@@ -12,6 +12,6 @@ struct Sprite;
 Expected<ecs::Entity> createPlayer();
 
 // use sprite with pre-constructed vao/vbo created on main thread
-void createPlayerAsynch(Sprite sprite);
+void respawnPlayer(Sprite sprite);
 
 }  // namespace whal

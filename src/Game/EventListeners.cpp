@@ -23,6 +23,11 @@ void emitEntityDeathEvent(ecs::Entity entity) {
     System::eventMgr.triggerEvent(Event::DEATH_EVENT, entity);
 }
 
+void playGameOverSound() {
+    System::audio.playClip(Sfx::GAMEOVER);
+}
+
+// more like onPlayerDeath
 void onEntityDeath(ecs::Entity entity) {
     // if (entity.has<Name>()) {
     //     print("Killed entity: ", entity.get<Name>());
@@ -31,8 +36,11 @@ void onEntityDeath(ecs::Entity entity) {
         return;
     }
     Sprite sprite;  // needs to be created in main thread bc OpenGL
-    System::schedule.after(&createPlayerAsynch, 2, sprite);
-    System::audio.playClip(Sfx::GAMEOVER);
+    System::schedule.after(&respawnPlayer, 2, sprite);
+
+    // System::schedule.after(&playGameOverSound, 1.5);
+    System::audio.playClip(Sfx::DEATH);
+    System::audio.setMusicVolume(0.2);  // RESEARCH should also apply low pass filter here
 }
 
 }  // namespace whal

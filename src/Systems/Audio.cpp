@@ -11,7 +11,6 @@ namespace whal {
 static const char* CHANNEL_GROUP_NAME_CLIPS = "Clips";
 
 AudioClip::AudioClip(const char* path) {
-    print("LOADING AUDIO CLIP");
     load(path);
 }
 
@@ -31,7 +30,6 @@ std::optional<Error> AudioClip::load(const char* path) {
 }
 
 AudioPlayer::AudioPlayer() {
-    print("RUNNING AUDIO CONSTRUCTOR");
     // Init System
     auto result = FMOD::System_Create(&mSystem);
     if (result != FMOD_OK) {
@@ -65,7 +63,6 @@ AudioPlayer::AudioPlayer() {
 }
 
 AudioPlayer::~AudioPlayer() {
-    print("++++++++++ RUNNING DESTRUCTOR+++++++++++++++");
     if (mIsValid) {
         mSystem->close();
         mSystem->release();
@@ -176,6 +173,12 @@ void AudioPlayer::stopAll() {
     stopClips();
 }
 
+void AudioPlayer::setMusicVolume(f32 volume) {
+    if (mMusicChannel != nullptr && mIsPlayingMusic) {
+        mMusicChannel->setVolume(volume);
+    }
+}
+
 bool AudioPlayer::isMusicPaused() const {
     bool isPaused = false;
     mMusicChannel->getPaused(&isPaused);
@@ -233,6 +236,11 @@ std::optional<Error> Sfx::load() {
     }
 
     errOpt = LAND.load("data/audio/sfx/land.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = DEATH.load("data/audio/sfx/death.wav");
     if (errOpt) {
         return errOpt;
     }

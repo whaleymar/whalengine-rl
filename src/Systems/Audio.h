@@ -1,7 +1,5 @@
 #pragma once
 
-// #include <condition_variable>
-// #include <mutex>
 #include <optional>
 
 #include "Util/Types.h"
@@ -54,6 +52,7 @@ public:
     void pauseMusic(bool pause);
     void pauseClips(bool pause);
     void pauseAll(bool pause);
+    void setMusicVolume(f32 volume);
     bool isValid() const { return mIsValid; }
     void update();
 
@@ -92,6 +91,7 @@ public:
     inline static AudioClip SHOTFIRED;
     inline static AudioClip JUMP;
     inline static AudioClip LAND;
+    inline static AudioClip DEATH;
 
     std::optional<Error> load();
 

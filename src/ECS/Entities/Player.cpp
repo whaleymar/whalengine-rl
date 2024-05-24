@@ -146,18 +146,17 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
 }
 
 Expected<ecs::Entity> createPlayer() {
-    print("called createPlayer");
     Sprite sprite;
     return createPlayerWithSprite(sprite);
 }
 
 // use sprite with pre-constructed vao/vbo created on main thread
-void createPlayerAsynch(Sprite sprite) {
-    print("called createPlayerAsynch");
+void respawnPlayer(Sprite sprite) {
     Expected<ecs::Entity> player = createPlayerWithSprite(sprite);
     if (!player.isExpected()) {
         print(player.error());
     }
+    System::audio.setMusicVolume(1);  // music was reduced to play death sfx
 }
 
 }  // namespace whal

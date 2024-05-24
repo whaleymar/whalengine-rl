@@ -40,6 +40,8 @@ Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFrom
     mWorldSpaceCamera = new Camera2D();
     mScreenSpaceCamera = new Camera2D();
     mFont = new Font();
+
+    SetTraceLogLevel(LOG_WARNING);
 }
 
 Game::~Game() {
@@ -335,7 +337,6 @@ void Game::updateLevelCamera(bool overrideCache) {
         if (!overrideCache && curLevel == lastLevel) {
             return;
         }
-        print("not skipping");
         lastLevel = curLevel;
         Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(levelOpt.value());
         if (!activeOpt.isExpected()) {
