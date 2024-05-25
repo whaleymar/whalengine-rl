@@ -57,7 +57,6 @@ public:
 
     const Texture2D& getTexture(const char* name);
     const TextureAtlas& getTextureAtlas(const char* name);
-    RenderTexture2D& getBackgroundTexture(BGTexture bgEnum);
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
 
@@ -68,7 +67,7 @@ public:
     void unloadAll();
 
 private:
-    TextureManager();
+    TextureManager() = default;
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 
@@ -82,9 +81,9 @@ private:
 
     // RenderTexture2D mBGTextureStatic;
     std::optional<RenderTexture2D> mBGTextureStatic;
-    RenderTexture2D mBGTextureFar;
-    RenderTexture2D mBGTextureMid;
-    RenderTexture2D mBGTextureNear;
+    std::optional<RenderTexture2D> mBGTextureFar;
+    std::optional<RenderTexture2D> mBGTextureMid;
+    std::optional<RenderTexture2D> mBGTextureNear;
 };
 
 }  // namespace whal

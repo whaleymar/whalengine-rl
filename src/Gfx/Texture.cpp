@@ -109,22 +109,15 @@ std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameNam
 
     EndTextureMode();
 
-    const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
-    Image img = LoadImageFromTexture(texture.texture);
-    if (ExportImage(img, exportPath)) {
-        print("wrote static bg texture to ", exportPath);
-    } else {
-        print("error writing image");
-    }
+    // const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
+    // Image img = LoadImageFromTexture(texture.texture);
+    // if (ExportImage(img, exportPath)) {
+    //     print("wrote static bg texture to ", exportPath);
+    // } else {
+    //     print("error writing image");
+    // }
 
     return texture;
-}
-
-TextureManager::TextureManager() {
-    // mBGTextureStatic = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-    mBGTextureFar = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-    mBGTextureMid = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-    mBGTextureNear = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
 }
 
 std::optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
@@ -199,24 +192,36 @@ const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
     return mTextureAtlases[getTextureAtlasIndex(name)];
 }
 
-RenderTexture2D& TextureManager::getBackgroundTexture(BGTexture bgEnum) {
-    switch (bgEnum) {
-    case BGTexture::STATIC:
-        // return mBGTextureStatic;
-    case BGTexture::FAR:
-        return mBGTextureFar;
-    case BGTexture::MID:
-        return mBGTextureMid;
-    case BGTexture::NEAR:
-        return mBGTextureNear;
-    }
-}
-
 std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                   bool isRepeatVertical) {
-    mBGTextureStatic = getTextureAtlas(atlasName).frameToTexture(spriteName);
-    if (!mBGTextureStatic) {
-        return Error("Couldn't create texture");
+    switch (dstBG) {
+    case BGTexture::STATIC:
+        mBGTextureStatic = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        if (!mBGTextureStatic) {
+            return Error("Couldn't create texture");
+        }
+        break;
+
+    case BGTexture::FAR:
+        mBGTextureFar = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        if (!mBGTextureFar) {
+            return Error("Couldn't create texture");
+        }
+        break;
+
+    case BGTexture::MID:
+        mBGTextureMid = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        if (!mBGTextureMid) {
+            return Error("Couldn't create texture");
+        }
+        break;
+
+    case BGTexture::NEAR:
+        mBGTextureNear = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        if (!mBGTextureNear) {
+            return Error("Couldn't create texture");
+        }
+        break;
     }
 
     // raylib: ""
@@ -235,9 +240,9 @@ void TextureManager::drawBackgroundTextures() const {
                                        -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
     //
     DrawTexturePro(mBGTextureStatic->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    // DrawTexturePro(mBGTextureFar.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    // DrawTexturePro(mBGTextureMid.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    // DrawTexturePro(mBGTextureNear.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTexturePro(mBGTextureFar->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTexturePro(mBGTextureMid->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTexturePro(mBGTextureNear->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
 }
 
 void TextureManager::unloadAll() {
@@ -248,11 +253,18 @@ void TextureManager::unloadAll() {
         UnloadTexture(atlas.getTexture());
     }
 
-    if (mBGTextureStatic)
+    if (mBGTextureStatic) {
         UnloadRenderTexture(*mBGTextureStatic);
-    UnloadRenderTexture(mBGTextureFar);
-    UnloadRenderTexture(mBGTextureMid);
-    UnloadRenderTexture(mBGTextureNear);
+    }
+    if (mBGTextureFar) {
+        UnloadRenderTexture(*mBGTextureFar);
+    }
+    if (mBGTextureMid) {
+        UnloadRenderTexture(*mBGTextureMid);
+    }
+    if (mBGTextureNear) {
+        UnloadRenderTexture(*mBGTextureNear);
+    }
 }
 
 }  // namespace whal
