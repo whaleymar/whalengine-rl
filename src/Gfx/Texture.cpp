@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ECS/Draw.h"
+#include "ECS/Systems/TagTrackers.h"
 #include "Settings.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
@@ -109,13 +110,13 @@ std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameNam
 
     EndTextureMode();
 
-    // const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
-    // Image img = LoadImageFromTexture(texture.texture);
-    // if (ExportImage(img, exportPath)) {
-    //     print("wrote static bg texture to ", exportPath);
-    // } else {
-    //     print("error writing image");
-    // }
+    const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
+    Image img = LoadImageFromTexture(texture.texture);
+    if (ExportImage(img, exportPath)) {
+        print("wrote bg texture to ", exportPath);
+    } else {
+        print("error writing image");
+    }
 
     return texture;
 }
@@ -196,6 +197,9 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
                                                                   bool isRepeatVertical) {
     switch (dstBG) {
     case BGTexture::STATIC:
+        if (mBGTextureStatic) {
+            UnloadRenderTexture(*mBGTextureStatic);
+        }
         mBGTextureStatic = getTextureAtlas(atlasName).frameToTexture(spriteName);
         if (!mBGTextureStatic) {
             return Error("Couldn't create texture");
@@ -203,24 +207,36 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
         break;
 
     case BGTexture::FAR:
+        if (mBGTextureFar) {
+            UnloadRenderTexture(*mBGTextureFar);
+        }
         mBGTextureFar = getTextureAtlas(atlasName).frameToTexture(spriteName);
         if (!mBGTextureFar) {
             return Error("Couldn't create texture");
         }
+        mScrollFar = {};
         break;
 
     case BGTexture::MID:
+        if (mBGTextureMid) {
+            UnloadRenderTexture(*mBGTextureMid);
+        }
         mBGTextureMid = getTextureAtlas(atlasName).frameToTexture(spriteName);
         if (!mBGTextureMid) {
             return Error("Couldn't create texture");
         }
+        mScrollMid = {};
         break;
 
     case BGTexture::NEAR:
+        if (mBGTextureNear) {
+            UnloadRenderTexture(*mBGTextureNear);
+        }
         mBGTextureNear = getTextureAtlas(atlasName).frameToTexture(spriteName);
         if (!mBGTextureNear) {
             return Error("Couldn't create texture");
         }
+        mScrollNear = {};
         break;
     }
 
@@ -234,15 +250,76 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
     return std::nullopt;
 }
 
-void TextureManager::drawBackgroundTextures() const {
+f32 depth2PFactor(BGTexture bgEnum) {
+    // TODO this is temporary, should come from map data parallax factor
+    switch (bgEnum) {
+    case BGTexture::STATIC:
+        return 0;
+    case BGTexture::FAR:
+        return 0.1;
+    case BGTexture::MID:
+        return 0.5;
+    case BGTexture::NEAR:
+        return 0.8;
+    }
+}
+
+void TextureManager::drawBackgroundTextures() {
     const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
-    const Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width),
-                                       -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
-    //
+    Rectangle screenSourceRec;
+
+    static Vector2i prevCameraPos = getCameraPosition();
+    Vector2i cameraPos = getCameraPosition();
+    Vector2f mvmt = toFloatVec(cameraPos - prevCameraPos);
+    prevCameraPos = cameraPos;
+
+    mScrollFar -= (mvmt * depth2PFactor(BGTexture::FAR));
+    if (std::abs(mScrollFar.x()) >= mBGTextureFar->texture.width)
+        mScrollFar.e[0] = 0;
+    if (std::abs(mScrollFar.y()) >= mBGTextureFar->texture.height)
+        mScrollFar.e[1] = 0;
+
+    mScrollMid -= (mvmt * depth2PFactor(BGTexture::MID));
+    if (std::abs(mScrollMid.x()) >= mBGTextureMid->texture.width * 2)
+        mScrollMid.e[0] = 0;
+    if (std::abs(mScrollMid.y()) >= mBGTextureMid->texture.height * 2)
+        mScrollMid.e[1] = 0;
+
+    mScrollNear -= (mvmt * depth2PFactor(BGTexture::NEAR));
+    if (std::abs(mScrollNear.x()) >= mBGTextureNear->texture.width * 2)
+        mScrollNear.e[0] = 0;
+    if (std::abs(mScrollNear.y()) >= mBGTextureNear->texture.height * 2)
+        mScrollNear.e[1] = 0;
+
+    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
     DrawTexturePro(mBGTextureStatic->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    DrawTexturePro(mBGTextureFar->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    DrawTexturePro(mBGTextureMid->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
-    DrawTexturePro(mBGTextureNear->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+
+    // TODO draw 3 or 5 times based on repeatX/repeatY values
+
+    // FAR BG:
+    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureFar->texture.width), -1 * static_cast<f32>(mBGTextureFar->texture.height)};
+
+    DrawTexturePro(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), -mScrollFar.y(), bgTextureDestRec.width, bgTextureDestRec.height},
+                   {0.0f, 0.0f}, 0.0f, WHITE);
+    // x repeat right:
+    DrawTexturePro(mBGTextureFar->texture, screenSourceRec,
+                   {bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y(), bgTextureDestRec.width, bgTextureDestRec.height}, {0.0f, 0.0f}, 0.0f,
+                   WHITE);
+    // x repeat left:
+    DrawTexturePro(mBGTextureFar->texture, screenSourceRec,
+                   {-bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y(), bgTextureDestRec.width, bgTextureDestRec.height}, {0.0f, 0.0f}, 0.0f,
+                   WHITE);
+
+    if (System::frame.getFrame() == 0) {
+        print("Scroll factor (far)", mScrollFar);
+    }
+
+    // TODO
+    // DrawTexturePro(mBGTextureFar->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    //
+    // DrawTexturePro(mBGTextureMid->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    //
+    // DrawTexturePro(mBGTextureNear->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
 }
 
 void TextureManager::unloadAll() {

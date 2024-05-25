@@ -62,7 +62,7 @@ public:
 
     // RESEARCH might need y position val?
     std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, bool isRepeatVertical);
-    void drawBackgroundTextures() const;
+    void drawBackgroundTextures();
 
     void unloadAll();
 
@@ -84,6 +84,9 @@ private:
     std::optional<RenderTexture2D> mBGTextureFar;
     std::optional<RenderTexture2D> mBGTextureMid;
     std::optional<RenderTexture2D> mBGTextureNear;
+    Vector2f mScrollFar;
+    Vector2f mScrollMid;
+    Vector2f mScrollNear;
 };
 
 }  // namespace whal

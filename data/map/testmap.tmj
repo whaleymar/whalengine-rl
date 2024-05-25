@@ -15,7 +15,7 @@
                  "name":"Depth",
                  "propertytype":"Depth",
                  "type":"int",
-                 "value":0
+                 "value":1
                 }],
          "type":"imagelayer",
          "visible":true,
