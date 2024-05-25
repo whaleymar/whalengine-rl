@@ -104,11 +104,13 @@ bool brain(Animator& animator, ecs::Entity entity) {
 }  // namespace PlayerAnim
 
 Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
     auto player = expected.value();
+    auto _ = ecs::DeferActivate(player);
+
     Transform2D transform = Transform2D::tiles(15, 10);
     player.add(transform);
     player.add(Name("Player"));

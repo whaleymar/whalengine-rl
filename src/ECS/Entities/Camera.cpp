@@ -15,10 +15,11 @@
 namespace whal {
 
 Expected<ecs::Entity> createCamera(ecs::Entity target) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
+    auto _ = ecs::DeferActivate(expected.value());
 
     auto camera = expected.value();
     camera.add(target.get<Transform2D>());

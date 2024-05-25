@@ -12,10 +12,11 @@
 namespace whal {
 
 Expected<ecs::Entity> createBlock(Transform2D transform) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
+    auto _ = ecs::DeferActivate(expected.value());
     auto block = expected.value();
 
     block.add(transform);
@@ -29,10 +30,11 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
+    auto _ = ecs::DeferActivate(expected.value());
     auto block = expected.value();
 
     block.add(transform);
@@ -46,10 +48,11 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMaterial material) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
+    auto _ = ecs::DeferActivate(expected.value());
     auto block = expected.value();
 
     block.add(transform);
@@ -63,10 +66,11 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
 }
 
 Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
+    auto _ = ecs::DeferActivate(expected.value());
     auto decal = expected.value();
 
     decal.add(transform);

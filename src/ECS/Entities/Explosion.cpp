@@ -21,12 +21,13 @@
 Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen) {
     using namespace whal;
 
-    auto eEntity = System::ecs->entity();
+    auto eEntity = System::ecs->entity(false);
     if (!eEntity.isExpected()) {
         return eEntity;
     }
 
     auto entity = eEntity.value();
+    auto _ = ecs::DeferActivate(entity);
 
     Transform2D trans = Transform2D(center - Vector2i(0, halflen));
     entity.add(trans);

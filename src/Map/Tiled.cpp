@@ -152,7 +152,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
 
-        auto eEntity = System::ecs->entity();
+        auto eEntity = System::ecs->entity(false);
         if (!eEntity.isExpected()) {
             continue;
         }
@@ -170,10 +170,6 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         s32 thisId = object["id"];
 
         Transform2D trans = getTransformFromMapPosition(positionTexels, dimensionsTexels, level, false);
-        // if (name.size()) {
-        //     print("\twith pos", positionTexels);
-        //     print("\tand trans pos", trans.position);
-        // }
         entity.add(trans);
 
         for (auto& property : object["properties"]) {
@@ -186,6 +182,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
 
             creatorFunc(property["value"], objects, idToIndex, thisId, level, entity, layerData);
         }
+        entity.activate();
     }
 }
 

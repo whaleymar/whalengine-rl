@@ -48,12 +48,13 @@ void enableCollision(ecs::Entity entity) {
 }
 
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
-    auto expected = System::ecs->entity();
+    auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
         return expected.error();
     }
 
     auto entity = expected.value();
+    auto _ = ecs::DeferActivate(entity);
 
     // the sprite is pointing down by default. Get angle between for rotation
     Vector2f moveNormal = velocity.norm();
