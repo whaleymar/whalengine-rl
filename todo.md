@@ -61,11 +61,13 @@
 - hot-reloading code (youtube video is bookmarked)
 - a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this? #CLEANUP
 - the thing that checks what level i'm in is based on left edge of transform instead of the center?
+- put camera transform in screen precision coordinates to reduce jiggle ? (saint11 blog about it)
 
 ## Bugs
 - isNearZero not working
 - cppcheck issues
 - actors sometimes fall through one way solids if the solid is moving fast enough, probably because solids don't move one pixel at a time, so if the actor isn't already riding the solid, it misses the solid's boundary
+- shooting during a screen change makes projectile go to position where mouse is in changed screen
 
 ## Research
 - things i might want to reconsider in the future -- ctrl+f for "RESEARCH" 

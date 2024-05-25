@@ -3,6 +3,7 @@
 #include <format>
 #include <memory>
 
+#include "Gfx/Depth.h"
 #include "json.hpp"
 
 #include "Settings.h"
@@ -187,14 +188,6 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
 }
 
 void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
-    auto eEntity = System::ecs->entity();
-    if (!eEntity.isExpected()) {
-        return;
-    }
-
-    ecs::Entity entity = eEntity.value();
-    level.childEntities.insert(entity);
-
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
@@ -219,14 +212,60 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
     std::string imgPath = layer["image"];
     std::string spriteKey = getSpriteKeyFromPath(imgPath);
 
-    std::optional<Frame> frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
-    if (!frame) {
-        entity.kill();
+    if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
+        // use background textures instead of an entity
+        BGTexture bgEnum;
+        std::string bgName;
+        switch (layerDepth) {
+        case Depth::BackgroundStatic:
+            bgEnum = BGTexture::STATIC;
+            bgName = "static";
+            break;
+
+        case Depth::BackgroundFar:
+            bgEnum = BGTexture::FAR;
+            bgName = "far";
+            break;
+
+        case Depth::BackgroundMid:
+            bgEnum = BGTexture::MID;
+            bgName = "mid";
+            break;
+
+        case Depth::BackgroundNear:
+            bgEnum = BGTexture::NEAR;
+            bgName = "near";
+            break;
+
+        default:
+            print("Found Depth enum value which doesn't match one of {Static, Far, Mid, Near}. Defeaulting to Mid");
+            bgEnum = BGTexture::MID;
+        }
+
+        print("sending ", spriteKey, " to backgroundtexture: ", bgName);
+        auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum,
+                                                                              false);  // TODO last arg + parallax + position(?)
+        if (errOpt) {
+            print("Got error: ", errOpt.value());
+        }
+
         return;
     }
 
-    Transform2D trans = getTransformFromMapPosition(position + offset, frame.value().dimensionsTexels, level, false);
+    std::optional<Frame> frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
+    if (!frame) {
+        return;
+    }
 
+    auto eEntity = System::ecs->entity();
+    if (!eEntity.isExpected()) {
+        return;
+    }
+
+    ecs::Entity entity = eEntity.value();
+    level.childEntities.insert(entity);
+
+    Transform2D trans = getTransformFromMapPosition(position + offset, frame.value().dimensionsTexels, level, false);
     entity.add(trans);
 
     entity.add(Sprite(layerData.depth, frame.value()));

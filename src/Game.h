@@ -42,6 +42,7 @@ public:
     void updateLevelCamera(bool overrideCache = false);
     void loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
     const Font* getFont() const;
+    Camera2D* getWorldCamera() const { return mWorldSpaceCamera; }
 
 private:
     Game();
@@ -49,6 +50,8 @@ private:
 
     whal::Scene mActiveScene;
     whal::EventListener<whal::ecs::Entity> mEntityDeathListener;
+
+    // I can't figure out to unique_ptr a forward declared type
     Font* mFont;
     Camera2D* mWorldSpaceCamera;
     Camera2D* mScreenSpaceCamera;

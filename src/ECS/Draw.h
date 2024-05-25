@@ -14,6 +14,7 @@ Color hexStringARGBToColor(std::string hexstring);
 
 namespace Colors {
 
+inline static Color Clear = {0, 0, 0, 0};
 inline static Color Magenta = {255, 0, 255, 255};
 inline static Color Emerald = {80, 204, 96, 255};
 inline static Color Purple = {198, 51, 242, 255};

@@ -105,8 +105,6 @@ void Game::mainloop() {
     auto followMgr = System::ecs->registerSystem<FollowSystem>();
 
     // these don't have update methods:
-    // auto spriteMgr = System::ecs->registerSystem<SpriteManager>();
-    // auto drawMgr = System::ecs->registerSystem<DrawManager>();
     auto playerMgr = PlayerSystem::instance();
     auto cameraMgr = CameraSystem::instance();
     auto childMgr = EntityChildSystem::instance();
@@ -196,7 +194,10 @@ void Game::mainloop() {
         // TEXTURE START
         // -----------------------------------------------------------------------
         BeginTextureMode(targetTexture);
+
         ClearBackground(clearColor);
+
+        TextureManager::instance().drawBackgroundTextures();
 
         BeginMode2D(*mWorldSpaceCamera);
 
@@ -220,6 +221,7 @@ void Game::mainloop() {
         BeginDrawing();
 
         ClearBackground(clearColor);
+
         BeginMode2D(*mScreenSpaceCamera);
 
         DrawTexturePro(targetTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
@@ -227,16 +229,16 @@ void Game::mainloop() {
         EndMode2D();
 
         // TEXT STUFF
-        DrawTextEx(*mFont, std::format("Camera position: {}", getCameraPosition().toString()).c_str(), Vector2(20, 20), 18, 2, WHITE);
-        int i = 1;
-        for (const auto& lvl : mActiveScene.allLevels) {
-            auto str = std::format("Level: {}. Origin: {}. Size: {}.", i, (lvl.worldPosOriginTexels * FTEXELS_PER_PIXEL).toString(),
-                                   (lvl.sizeTexels * FTEXELS_PER_PIXEL).toString());
-            DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
-            i++;
-        }
+        // DrawTextEx(*mFont, std::format("Camera position: {}", getCameraPosition().toString()).c_str(), Vector2(20, 20), 18, 2, WHITE);
+        // int i = 1;
+        // for (const auto& lvl : mActiveScene.allLevels) {
+        //     auto str = std::format("Level: {}. Origin: {}. Size: {}.", i, (lvl.worldPosOriginTexels * FTEXELS_PER_PIXEL).toString(),
+        //                            (lvl.sizeTexels * FTEXELS_PER_PIXEL).toString());
+        //     DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
+        //     i++;
+        // }
 
-        // DrawText
+        DrawFPS(10, 10);
 
         EndDrawing();
         // -----------------------------------------------------------------------

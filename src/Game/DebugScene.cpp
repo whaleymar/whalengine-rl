@@ -97,7 +97,7 @@ std::optional<Error> loadDebugScene() {
     }
 
     for (s32 i = 10; i < 15; i++) {
-        Depth d = i % 2 == 0 ? Depth::Foreground1 : Depth::Background1;
+        Depth d = i % 2 == 0 ? Depth::Foreground1 : Depth::BackgroundNear;
         auto invisBlock =
             createBlock(Transform2D::tiles(i, 2),
                         Sprite(d, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Emerald))
@@ -216,7 +216,7 @@ void createTestSemiSolid() {
 
 void createDepthTest() {
     auto newEntity = System::ecs->entity().value();
-    newEntity.add(Draw(Color(56, 56, 255, 255), {8, 8}, Depth::Background1));
+    newEntity.add(Draw(Color(56, 56, 255, 255), {8, 8}, Depth::BackgroundNear));
     newEntity.add(Transform2D::tiles(7, -14));
 
     newEntity = System::ecs->entity().value();

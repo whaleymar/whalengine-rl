@@ -6,6 +6,8 @@
 #include <raylib.h>
 #include <string>
 
+#include "ECS/Draw.h"
+#include "Settings.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 
@@ -88,13 +90,53 @@ std::optional<Rectangle> TextureAtlas::getFrame(const char* name) const {
     return search->second;
 }
 
+std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameName) const {
+    std::optional<Rectangle> frameOpt = getFrame(frameName);
+    if (!frameOpt) {
+        return std::nullopt;
+    }
+
+    RenderTexture2D texture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+
+    // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
+    f32 heightDiff = WINDOW_HEIGHT_TEXELS - frameOpt->height;
+    Rectangle dstRect = Rectangle(0, heightDiff * 2, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
+    BeginTextureMode(texture);
+
+    ClearBackground(Colors::Clear);
+
+    DrawTexturePro(getTexture(), frameOpt.value(), dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
+
+    EndTextureMode();
+
+    const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
+    Image img = LoadImageFromTexture(texture.texture);
+    if (ExportImage(img, exportPath)) {
+        print("wrote static bg texture to ", exportPath);
+    } else {
+        print("error writing image");
+    }
+
+    return texture;
+}
+
+TextureManager::TextureManager() {
+    // mBGTextureStatic = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    mBGTextureFar = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    mBGTextureMid = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    mBGTextureNear = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+}
+
 std::optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
-        return Error(std::format("Texture with name '{}' already registered", name));
+        print(std::format("Texture with name '{}' already registered", name), ". Replacing it.");
+        UnloadTexture(mTextures[ix]);
+        mTextures[ix] = texture;
+    } else {
+        mTextures.push_back(std::move(texture));
+        mTextureNames.push_back(name);
     }
-    mTextures.push_back(std::move(texture));
-    mTextureNames.push_back(name);
     return std::nullopt;
 }
 
@@ -157,6 +199,47 @@ const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
     return mTextureAtlases[getTextureAtlasIndex(name)];
 }
 
+RenderTexture2D& TextureManager::getBackgroundTexture(BGTexture bgEnum) {
+    switch (bgEnum) {
+    case BGTexture::STATIC:
+        // return mBGTextureStatic;
+    case BGTexture::FAR:
+        return mBGTextureFar;
+    case BGTexture::MID:
+        return mBGTextureMid;
+    case BGTexture::NEAR:
+        return mBGTextureNear;
+    }
+}
+
+std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
+                                                                  bool isRepeatVertical) {
+    mBGTextureStatic = getTextureAtlas(atlasName).frameToTexture(spriteName);
+    if (!mBGTextureStatic) {
+        return Error("Couldn't create texture");
+    }
+
+    // raylib: ""
+    // NOTE: Be careful, background width must be equal or bigger than screen width
+    // if not, texture should be draw more than two times for scrolling effect
+    // TODO i need a param for that ^
+
+    // TODO repeat, parallax, etc...
+
+    return std::nullopt;
+}
+
+void TextureManager::drawBackgroundTextures() const {
+    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
+    const Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width),
+                                       -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
+    //
+    DrawTexturePro(mBGTextureStatic->texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    // DrawTexturePro(mBGTextureFar.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    // DrawTexturePro(mBGTextureMid.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+    // DrawTexturePro(mBGTextureNear.texture, screenSourceRec, bgTextureDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+}
+
 void TextureManager::unloadAll() {
     for (auto texture : getAllTextures()) {
         UnloadTexture(texture);
@@ -164,6 +247,12 @@ void TextureManager::unloadAll() {
     for (auto atlas : getAllAtlases()) {
         UnloadTexture(atlas.getTexture());
     }
+
+    if (mBGTextureStatic)
+        UnloadRenderTexture(*mBGTextureStatic);
+    UnloadRenderTexture(mBGTextureFar);
+    UnloadRenderTexture(mBGTextureMid);
+    UnloadRenderTexture(mBGTextureNear);
 }
 
 }  // namespace whal

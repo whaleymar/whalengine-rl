@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "testmap2.tmj",
+    "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
         "templates",
         "."
@@ -14,22 +14,22 @@
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 2,
-            "selectedLayer": 3,
+            "scale": 2.1889583333333333,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 206,
-                "y": 111.75
+                "x": 259.0273151232512,
+                "y": 62.81526601313409
             }
         },
         "testmap2.tmj": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2,
-            "selectedLayer": 0,
+            "scale": 2.1889583333333333,
+            "selectedLayer": -1,
             "viewCenter": {
-                "x": -16,
-                "y": 111.25
+                "x": -61.216331969163434,
+                "y": 62.35842771485676
             }
         },
         "tile-collision.tsj": {
@@ -45,17 +45,18 @@
                 2
             ],
             "scale": 2.1889583333333333,
-            "selectedLayer": 2,
+            "selectedLayer": -1,
             "viewCenter": {
-                "x": 239.84010659560295,
-                "y": 124.03159798229754
+                "x": -380.0894641667459,
+                "y": 119.00637670124678
             }
         }
     },
     "last.objectTemplatePath": "/home/whaley/code/unnamed-engine/data/map/templates",
     "last.worldFilePath": "/home/whaley/code/unnamed-engine/data/map",
     "loadedWorlds": [
-        "/home/whaley/code/unnamed-engine/data/map/testworld.world"
+        "/home/whaley/code/unnamed-engine/data/map/testworld.world",
+        "/home/whaley/code/whalengine-rl/data/map/testworld.world"
     ],
     "map.height": 24,
     "map.lastUsedFormat": "json",

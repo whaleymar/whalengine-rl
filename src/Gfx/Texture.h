@@ -21,6 +21,11 @@ struct Frame {
 
 static const char* TEXNAME_SPRITE = "sprite";
 
+// static does not have parallax
+enum class BGTexture { STATIC, FAR, MID, NEAR };
+
+static const char* TEXNAME_BGSTATIC = "bgstatic";
+
 class TextureAtlas {
 public:
     std::optional<Error> init(const Texture2D& texture, const char* atlasDataPath);
@@ -28,6 +33,7 @@ public:
     std::optional<Rectangle> getFrame(const char* name) const;
     bool isValid() const { return mIsValid; }
     const Texture2D& getTexture() const { return mTexture; }
+    std::optional<RenderTexture2D> frameToTexture(const char* frameName) const;
 
 private:
     Texture2D mTexture;
@@ -51,12 +57,18 @@ public:
 
     const Texture2D& getTexture(const char* name);
     const TextureAtlas& getTextureAtlas(const char* name);
+    RenderTexture2D& getBackgroundTexture(BGTexture bgEnum);
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
+
+    // RESEARCH might need y position val?
+    std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, bool isRepeatVertical);
+    void drawBackgroundTextures() const;
+
     void unloadAll();
 
 private:
-    TextureManager() = default;
+    TextureManager();
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 
@@ -67,6 +79,12 @@ private:
     std::vector<std::string> mTextureAtlasNames;
     std::vector<Texture2D> mTextures;
     std::vector<std::string> mTextureNames;
+
+    // RenderTexture2D mBGTextureStatic;
+    std::optional<RenderTexture2D> mBGTextureStatic;
+    RenderTexture2D mBGTextureFar;
+    RenderTexture2D mBGTextureMid;
+    RenderTexture2D mBGTextureNear;
 };
 
 }  // namespace whal

@@ -365,9 +365,10 @@
             "storageType": "int",
             "type": "enum",
             "values": [
-                "Background3",
-                "Background2",
-                "Background1",
+                "BackgroundStatic",
+                "BackgroundFar",
+                "BackgroundMid",
+                "BackgroundNear",
                 "Level",
                 "Player",
                 "Foreground3",
