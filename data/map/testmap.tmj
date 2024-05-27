@@ -8,8 +8,10 @@
          "image":"..\/sprite\/map\/celeste-trees.png",
          "name":"Trees",
          "offsetx":0,
-         "offsety":40,
+         "offsety":1,
          "opacity":1,
+         "parallaxx":0.2,
+         "parallaxy":0,
          "properties":[
                 {
                  "name":"Depth",
@@ -17,6 +19,7 @@
                  "type":"int",
                  "value":1
                 }],
+         "repeatx":true,
          "type":"imagelayer",
          "visible":true,
          "x":0,

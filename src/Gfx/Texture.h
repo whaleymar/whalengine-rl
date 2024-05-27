@@ -44,6 +44,13 @@ private:
 };
 
 class TextureManager {
+    struct BGData {
+        Vector2f parallax;
+        Vector2i worldPosTopLeftTexels;
+        bool isRepeatX;
+        bool isRepeatY;
+    };
+
 public:
     static TextureManager& instance() {
         static TextureManager instance_;
@@ -61,7 +68,8 @@ public:
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
 
     // RESEARCH might need y position val?
-    std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, bool isRepeatVertical);
+    std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, Vector2f parallax,
+                                                      Vector2i offset, bool isRepeatX, bool isRepeatY);
     void drawBackgroundTextures();
 
     void unloadAll();
@@ -87,6 +95,9 @@ private:
     Vector2f mScrollFar;
     Vector2f mScrollMid;
     Vector2f mScrollNear;
+    BGData mBGDataFar;
+    BGData mBGDataMid;
+    BGData mBGDataNear;
 };
 
 }  // namespace whal

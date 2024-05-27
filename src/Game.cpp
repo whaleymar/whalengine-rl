@@ -117,7 +117,14 @@ void Game::mainloop() {
         return;
     }
 
-    std::optional<Error> errOpt;
+    // TEMP
+    // -----------------------------
+
+    // err = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, "effect/explosion4", BGTexture::MID, false);
+    // err = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, "map/reduced_tiledset", BGTexture::NEAR, false);
+
+    // END
+    // -----------------------------
 
     System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 

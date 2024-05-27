@@ -201,6 +201,17 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         offset.e[1] = layer["offsety"];
     }
 
+    position += offset + toIntVec(level.worldPosOriginTexels);
+
+    bool isRepeatX = false;
+    if (layer.contains("repeatx")) {
+        isRepeatX = layer["repeatx"];
+    }
+    bool isRepeatY = false;
+    if (layer.contains("repeaty")) {
+        isRepeatY = layer["repeaty"];
+    }
+
     Vector2f parallax = {1.0, 1.0};
     if (layer.contains("parallaxx")) {
         parallax.e[0] = layer["parallaxx"];
@@ -243,8 +254,9 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         }
 
         print("sending ", spriteKey, " to backgroundtexture: ", bgName);
-        auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum,
-                                                                              false);  // TODO last arg + parallax + position(?)
+        // TODO some sort of position or offset from origin?
+        auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
+                                                                              isRepeatX, isRepeatY);
         if (errOpt) {
             print("Got error: ", errOpt.value());
         }
