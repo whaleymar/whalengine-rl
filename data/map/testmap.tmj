@@ -681,10 +681,30 @@
          "y":0
         }, 
         {
-         "id":8,
+         "id":9,
+         "image":"..\/sprite\/map\/celeste-treesbg.png",
+         "name":"TreesBg",
+         "opacity":1,
+         "parallaxx":0.9,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":1
+                }],
+         "repeatx":true,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":10,
          "image":"..\/sprite\/map\/celeste-trees.png",
          "name":"Trees",
          "opacity":1,
+         "parallaxx":0.8,
          "properties":[
                 {
                  "name":"Depth",
@@ -692,12 +712,13 @@
                  "type":"int",
                  "value":2
                 }],
+         "repeatx":true,
          "type":"imagelayer",
          "visible":true,
          "x":0,
          "y":0
         }],
- "nextlayerid":9,
+ "nextlayerid":11,
  "nextobjectid":37,
  "orientation":"orthogonal",
  "properties":[

@@ -264,74 +264,39 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
 }
 
 void TextureManager::drawBackgroundTextures() {
-    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
+    // subtract half tile of height/width so it lines up correctly with lvl geometry
+    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS - PIXELS_PER_TILE / 2, WINDOW_HEIGHT_PIXELS + PIXELS_PER_TILE / 2};
     Rectangle screenSourceRec;
 
     const Vector2i cameraPos = getCameraPosition();
 
+    auto checkWrapping = [](const Vector2i cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
+        f32 distance = cameraPos.x() - (bgdata.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
+        s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x());
+        if (bgdata.isRepeatX) {
+            scrollVar.e[0] = (texWidth - (static_cast<s32>(distance * bgdata.parallax.x()) % texWidth) - offset) % texWidth;
+        } else {
+            scrollVar.e[0] = texWidth - static_cast<s32>(distance * bgdata.parallax.x()) - offset;
+        }
+
+        distance = cameraPos.y() + texHeight - (bgdata.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
+        offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y());
+        if (bgdata.isRepeatY) {
+            scrollVar.e[1] = (texHeight - (static_cast<s32>(distance * bgdata.parallax.y()) % texHeight) - offset) % texHeight;
+        } else {
+            scrollVar.e[1] = texHeight - (static_cast<s32>(distance * bgdata.parallax.y())) - offset;
+        }
+    };
+
     // check if we need to wrap
-    // FAR
-    f32 distance = cameraPos.x() - (mBGDataFar.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
-    if (mBGDataFar.isRepeatX) {
-        mScrollFar.e[0] = (mBGTextureFar->texture.width - (static_cast<s32>(distance * mBGDataFar.parallax.x()) % mBGTextureFar->texture.width) -
-                           mBGTextureFar->texture.width / 2) %
-                          mBGTextureFar->texture.width;
-    } else {
-        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
-        mScrollFar.e[0] = mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) - mBGTextureFar->texture.width / 2;
+    if (mBGTextureFar) {
+        checkWrapping(cameraPos, mBGDataFar, mBGTextureFar->texture.width, mBGTextureFar->texture.height, mScrollFar);
     }
-
-    distance = cameraPos.y() + mBGTextureFar->texture.height - (mBGDataFar.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
-    if (mBGDataFar.isRepeatY) {
-        mScrollFar.e[1] = (mBGTextureFar->texture.height -
-                           (static_cast<s32>(distance * mBGDataFar.parallax.y()) % static_cast<s32>(mBGTextureFar->texture.height)) -
-                           mBGTextureFar->texture.height / 2) %
-                          mBGTextureFar->texture.height;
-    } else {
-        mScrollFar.e[1] = mBGTextureFar->texture.height - (static_cast<s32>(distance * mBGDataFar.parallax.y())) - mBGTextureFar->texture.height / 2;
+    if (mBGTextureMid) {
+        checkWrapping(cameraPos, mBGDataMid, mBGTextureMid->texture.width, mBGTextureMid->texture.height, mScrollMid);
     }
-
-    // MID
-    distance = cameraPos.x() - (mBGDataMid.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
-    if (mBGDataMid.isRepeatX) {
-        mScrollMid.e[0] = (mBGTextureMid->texture.width - (static_cast<s32>(distance * mBGDataMid.parallax.x()) % mBGTextureMid->texture.width) -
-                           mBGTextureMid->texture.width / 2) %
-                          mBGTextureMid->texture.width;
-    } else {
-        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
-        mScrollMid.e[0] = mBGTextureMid->texture.width - static_cast<s32>(distance * mBGDataMid.parallax.x()) - mBGTextureMid->texture.width / 2;
-    }
-
-    distance = cameraPos.y() + mBGTextureMid->texture.height - (mBGDataMid.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
-    if (mBGDataMid.isRepeatY) {
-        mScrollMid.e[1] = (mBGTextureMid->texture.height -
-                           (static_cast<s32>(distance * mBGDataMid.parallax.y()) % static_cast<s32>(mBGTextureMid->texture.height)) -
-                           mBGTextureMid->texture.height / 2) %
-                          mBGTextureMid->texture.height;
-    } else {
-        mScrollMid.e[1] = mBGTextureMid->texture.height - (static_cast<s32>(distance * mBGDataMid.parallax.y())) - mBGTextureMid->texture.height / 2;
-    }
-
-    // NEAR
-    distance = cameraPos.x() - (mBGDataNear.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
-    if (mBGDataNear.isRepeatX) {
-        mScrollNear.e[0] = (mBGTextureNear->texture.width - (static_cast<s32>(distance * mBGDataNear.parallax.x()) % mBGTextureNear->texture.width) -
-                            mBGTextureNear->texture.width / 2) %
-                           mBGTextureNear->texture.width;
-    } else {
-        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
-        mScrollNear.e[0] = mBGTextureNear->texture.width - static_cast<s32>(distance * mBGDataNear.parallax.x()) - mBGTextureNear->texture.width / 2;
-    }
-
-    distance = cameraPos.y() + mBGTextureNear->texture.height - (mBGDataNear.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
-    if (mBGDataNear.isRepeatY) {
-        mScrollNear.e[1] = (mBGTextureNear->texture.height -
-                            (static_cast<s32>(distance * mBGDataNear.parallax.y()) % static_cast<s32>(mBGTextureNear->texture.height)) -
-                            mBGTextureNear->texture.height / 2) %
-                           mBGTextureNear->texture.height;
-    } else {
-        mScrollNear.e[1] =
-            mBGTextureNear->texture.height - (static_cast<s32>(distance * mBGDataNear.parallax.y())) - mBGTextureNear->texture.height / 2;
+    if (mBGTextureNear) {
+        checkWrapping(cameraPos, mBGDataNear, mBGTextureNear->texture.width, mBGTextureNear->texture.height, mScrollNear);
     }
 
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
@@ -340,73 +305,69 @@ void TextureManager::drawBackgroundTextures() {
                        WHITE);
     };
 
+    auto drawBackgrounds = [drawBG, bgTextureDestRec](RenderTexture2D tex, Rectangle screenSourceRec, const BGData bgdata, Vector2f& scrollVar) {
+        screenSourceRec = {0.0f, 0.0f, static_cast<f32>(tex.texture.width), -1 * static_cast<f32>(tex.texture.height)};
+
+        drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -scrollVar.y()});
+        if (bgdata.isRepeatX && bgdata.isRepeatY) {
+            // repeat right:
+            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+
+            // repeat left:
+            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+
+            // repeat up:
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat down:
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat top right
+            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat top left
+            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat bottom right
+            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat bottom left
+            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+
+        } else if (bgdata.isRepeatX) {
+            // repeat right:
+            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+
+            // repeat left:
+            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+        } else if (bgdata.isRepeatY) {
+            // repeat up:
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+
+            // repeat down:
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+        }
+    };
+
     drawBG(mBGTextureStatic->texture, screenSourceRec, {});
 
     // FAR BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureFar->texture.width), -1 * static_cast<f32>(mBGTextureFar->texture.height)};
 
-    drawBG(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), -mScrollFar.y()});
-    if (mBGDataFar.isRepeatX && mBGDataFar.isRepeatY) {
-        // repeat right:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y()});
-
-        // repeat left:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y()});
-
-        // repeat up:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat down:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), -bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat top right
-        drawBG(mBGTextureFar->texture, screenSourceRec, {bgTextureDestRec.width + mScrollFar.x(), bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat top left
-        drawBG(mBGTextureFar->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollFar.x(), bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat bottom right
-        drawBG(mBGTextureFar->texture, screenSourceRec, {bgTextureDestRec.width + mScrollFar.x(), -bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat bottom left
-        drawBG(mBGTextureFar->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollFar.x(), -bgTextureDestRec.height - mScrollFar.y()});
-
-    } else if (mBGDataFar.isRepeatX) {
-        // repeat right:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y()});
-
-        // repeat left:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollFar.x(), -mScrollFar.y()});
-    } else if (mBGDataFar.isRepeatY) {
-        // repeat up:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), bgTextureDestRec.height - mScrollFar.y()});
-
-        // repeat down:
-        drawBG(mBGTextureFar->texture, screenSourceRec, {mScrollFar.x(), -bgTextureDestRec.height - mScrollFar.y()});
+    if (mBGTextureFar) {
+        drawBackgrounds(mBGTextureFar.value(), screenSourceRec, mBGDataFar, mScrollFar);
     }
 
     // MID BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureMid->texture.width), -1 * static_cast<f32>(mBGTextureMid->texture.height)};
-
-    drawBG(mBGTextureMid->texture, screenSourceRec, {mScrollMid.x(), -mScrollMid.y()});
-    if (mBGDataMid.isRepeatX) {
-        // repeat right:
-        drawBG(mBGTextureMid->texture, screenSourceRec, {bgTextureDestRec.width + mScrollMid.x(), -mScrollMid.y()});
-
-        // repeat left:
-        drawBG(mBGTextureMid->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollMid.x(), -mScrollMid.y()});
+    if (mBGTextureMid) {
+        drawBackgrounds(mBGTextureMid.value(), screenSourceRec, mBGDataMid, mScrollMid);
     }
 
     // NEAR BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureNear->texture.width), -1 * static_cast<f32>(mBGTextureNear->texture.height)};
-
-    drawBG(mBGTextureNear->texture, screenSourceRec, {mScrollNear.x(), -mScrollNear.y()});
-    if (mBGDataNear.isRepeatX) {
-        // repeat right:
-        drawBG(mBGTextureNear->texture, screenSourceRec, {bgTextureDestRec.width + mScrollNear.x(), -mScrollNear.y()});
-
-        // repeat left:
-        drawBG(mBGTextureNear->texture, screenSourceRec, {-bgTextureDestRec.width + mScrollNear.x(), -mScrollNear.y()});
+    if (mBGTextureNear) {
+        drawBackgrounds(mBGTextureNear.value(), screenSourceRec, mBGDataNear, mScrollNear);
     }
 }
 
