@@ -1,5 +1,6 @@
 #include "Gfx/Texture.h"
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <format>
@@ -255,6 +256,7 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
     // NOTE: Be careful, background width must be equal or bigger than screen width
     // if not, texture should be draw more than two times for scrolling effect
     // TODO i need a param for that ^
+    // TODO what if the frame is wider than the window? probably broken
 
     // ^ maybe i should check if the width/height is less than half the screen & then duplicate it
     // so if my frame is 100px wide then it gets drawn 3x
@@ -264,8 +266,7 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
 }
 
 void TextureManager::drawBackgroundTextures() {
-    // subtract half tile of height/width so it lines up correctly with lvl geometry
-    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS - PIXELS_PER_TILE / 2, WINDOW_HEIGHT_PIXELS + PIXELS_PER_TILE / 2};
+    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
     Rectangle screenSourceRec;
 
     const Vector2i cameraPos = getCameraPosition();
@@ -273,18 +274,20 @@ void TextureManager::drawBackgroundTextures() {
     auto checkWrapping = [](const Vector2i cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
         f32 distance = cameraPos.x() - (bgdata.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
         s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x());
+        s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x()));
         if (bgdata.isRepeatX) {
-            scrollVar.e[0] = (texWidth - (static_cast<s32>(distance * bgdata.parallax.x()) % texWidth) - offset) % texWidth;
+            scrollVar.e[0] = (texWidth - (effectiveDistance % texWidth) - offset) % texWidth;
         } else {
-            scrollVar.e[0] = texWidth - static_cast<s32>(distance * bgdata.parallax.x()) - offset;
+            scrollVar.e[0] = texWidth - effectiveDistance - offset;
         }
 
         distance = cameraPos.y() + texHeight - (bgdata.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
         offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y());
+        effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y()));
         if (bgdata.isRepeatY) {
-            scrollVar.e[1] = (texHeight - (static_cast<s32>(distance * bgdata.parallax.y()) % texHeight) - offset) % texHeight;
+            scrollVar.e[1] = (texHeight - (effectiveDistance % texHeight) - offset) % texHeight;
         } else {
-            scrollVar.e[1] = texHeight - (static_cast<s32>(distance * bgdata.parallax.y())) - offset;
+            scrollVar.e[1] = texHeight - effectiveDistance - offset;
         }
     };
 
@@ -300,9 +303,10 @@ void TextureManager::drawBackgroundTextures() {
     }
 
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
-    auto drawBG = [bgTextureDestRec](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset) -> void {
-        DrawTexturePro(texture, screenSourceRec, {offset.x(), offset.y(), bgTextureDestRec.width, bgTextureDestRec.height}, {0.0f, 0.0f}, 0.0f,
-                       WHITE);
+    auto drawBG = [bgTextureDestRec](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset, Color color = WHITE) -> void {
+        DrawTexturePro(texture, screenSourceRec,
+                       {offset.x() - PIXELS_PER_TILE / 2, offset.y() + PIXELS_PER_TILE / 2, bgTextureDestRec.width, bgTextureDestRec.height},
+                       {0.0f, 0.0f}, 0.0f, color);
     };
 
     auto drawBackgrounds = [drawBG, bgTextureDestRec](RenderTexture2D tex, Rectangle screenSourceRec, const BGData bgdata, Vector2f& scrollVar) {

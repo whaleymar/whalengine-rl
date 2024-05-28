@@ -67,7 +67,6 @@ public:
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
 
-    // RESEARCH might need y position val?
     std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, Vector2f parallax,
                                                       Vector2i offset, bool isRepeatX, bool isRepeatY);
     void drawBackgroundTextures();

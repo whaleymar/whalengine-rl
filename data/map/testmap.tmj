@@ -685,7 +685,8 @@
          "image":"..\/sprite\/map\/celeste-treesbg.png",
          "name":"TreesBg",
          "opacity":1,
-         "parallaxx":0.9,
+         "parallaxx":0.85,
+         "parallaxy":0,
          "properties":[
                 {
                  "name":"Depth",
@@ -704,7 +705,8 @@
          "image":"..\/sprite\/map\/celeste-trees.png",
          "name":"Trees",
          "opacity":1,
-         "parallaxx":0.8,
+         "parallaxx":0.7,
+         "parallaxy":0,
          "properties":[
                 {
                  "name":"Depth",
