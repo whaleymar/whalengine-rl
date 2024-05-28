@@ -7,6 +7,7 @@
 namespace whal {
 
 struct Children;
+struct Attach;
 struct Follow;
 struct Velocity;
 struct Transform2D;
@@ -22,6 +23,12 @@ public:
 
 private:
     EventListener<ecs::Entity> mEntityDeathListener;
+};
+
+class AttachSystem : public ecs::ISystem<Attach, Transform2D> {
+public:
+    void update() override;
+    void onAdd(ecs::Entity entity) override;
 };
 
 class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D> {

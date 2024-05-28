@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "Settings.h"
 #include "whalECS/src/ECS.h"
 
 #include "Game.h"
@@ -167,6 +168,18 @@ void createTestPlatform() {
 
         // platform.remove<SolidCollider>();
         // platform.add(SemiSolidCollider(trans, Vector2i(8, 8), Material::None, &startRailsMovement));
+
+        // TESTING ATTACH COMPONENT
+        // ------------------------
+        auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock");
+        if (frameOpt) {
+            Sprite sprite = Sprite(Depth::Level, frameOpt.value());
+            Expected<ecs::Entity> grassOpt = createDecal(trans, sprite);
+            if (grassOpt.isExpected()) {
+                auto grass = grassOpt.value();
+                grass.add(Attach(platform, {0, TEXELS_PER_TILE}));
+            }
+        }
     }
 }
 

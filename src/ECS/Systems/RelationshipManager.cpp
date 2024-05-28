@@ -23,6 +23,18 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
     }
 }
 
+void AttachSystem::onAdd(ecs::Entity entity) {
+    entity.get<Attach>().initTarget(entity);
+}
+
+void AttachSystem::update() {
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        Transform2D& trans = entity.get<Transform2D>();
+        Attach attach = entity.get<Attach>();
+        trans.position = attach.targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
+    }
+}
+
 FollowSystem::FollowSystem() : mEntityDeathListener(&unfollowEntity) {
     System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
 }

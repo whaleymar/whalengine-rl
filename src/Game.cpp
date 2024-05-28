@@ -97,12 +97,13 @@ void Game::mainloop() {
     System::ecs->registerSystem<MovableActorTracker>();  // dependency of TriggerSystem
     auto triggerSystem = System::ecs->registerSystem<TriggerSystem>();
     auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
+    auto followSystem = System::ecs->registerSystem<FollowSystem>();
+    auto attachSystem = System::ecs->registerSystem<AttachSystem>();
 
     // single-component systems for running psuedo-destructors / updating some global var
     auto actorsMgr = ActorsManager::instance();
     auto solidsMgr = SolidsManager::instance();
     auto semiSolidsMgr = SemiSolidsManager::instance();
-    auto followMgr = System::ecs->registerSystem<FollowSystem>();
 
     // these don't have update methods:
     auto playerMgr = PlayerSystem::instance();
@@ -154,8 +155,12 @@ void Game::mainloop() {
         controlSystemRB->update();
         controlSystemFree->update();
         pathSystem->update();
-        followMgr->update();
         physicsSystem->update();
+
+        // relationships should run after physics
+        attachSystem->update();
+        followSystem->update();
+
         triggerSystem->update();
 
         lifetimeSystem->update();

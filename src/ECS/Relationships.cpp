@@ -9,6 +9,16 @@
 
 namespace whal {
 
+Attach::Attach(ecs::Entity target_, Vector2i offset_) : targetEntity(target_), offsetTexels(offset_) {}
+
+void Attach::initTarget(ecs::Entity self) {
+    if (targetEntity.has<Children>()) {
+        targetEntity.get<Children>().add(self);
+    } else {
+        targetEntity.add(Children({self}));
+    }
+}
+
 Follow::Follow(ecs::Entity target_) : targetEntity(target_) {}
 
 void Follow::initTarget(ecs::Entity self) {

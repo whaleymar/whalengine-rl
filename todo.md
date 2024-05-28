@@ -17,7 +17,6 @@
 
 ## Components
 - Light 
-- Attached (relationship)
 - EventFlow
     - execute a series of callbacks sequentially
     - max 1 callback per frame 
@@ -34,6 +33,8 @@
 - actor collision callbacks don't run if they're pushed
 - solid/semisolid callbacks don't run if they're pushing
     - --> should have some onPush[ed] callbacks for these cases i guess? bc not all callbacks should run when pushing
+- jumping: instead of applying contant upward velocity, could try reducing gravity while jump button held instead 
+    - can also try the high parameter jump that sakurai suggested in his video
 
 ## Map 
 - support rotations / flips? (leaning towards no)
@@ -43,12 +44,10 @@
         - spawn points
         - camera strat (might want to rework)
     - Templates
-- parallax
 
 ## Graphics
 - outline shader
 - color quantization shader
-- repeating texture
 
 ## Non-ECS Systems
 - chunk loading/unloading (quad tree?)

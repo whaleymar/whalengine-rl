@@ -5,8 +5,15 @@
 
 namespace whal {
 
-// TODO `Attach` component which just sets its transform to match its target + has some offset value -- good for something like spikes on a moving
-// platform
+struct Attach {
+    Attach() = default;
+    Attach(ecs::Entity target, Vector2i offset = {0, 0});
+
+    void initTarget(ecs::Entity self);
+
+    ecs::Entity targetEntity;
+    Vector2i offsetTexels;
+};
 
 // in general, dead zone should be bigger than lookahead
 struct Follow {
