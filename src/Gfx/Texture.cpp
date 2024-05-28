@@ -9,6 +9,7 @@
 #include "ECS/Draw.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Settings.h"
+#include "Systems/System.h"
 #include "Util/FileUtils.h"
 #include "Util/MathUtil.h"
 #include "Util/Print.h"
@@ -111,13 +112,14 @@ std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameNam
 
     EndTextureMode();
 
-    const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
-    Image img = LoadImageFromTexture(texture.texture);
-    if (ExportImage(img, exportPath)) {
-        print("wrote bg texture to ", exportPath);
-    } else {
-        print("error writing image");
-    }
+    // debugging texture:
+    // const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
+    // Image img = LoadImageFromTexture(texture.texture);
+    // if (ExportImage(img, exportPath)) {
+    //     print("wrote bg texture to ", exportPath);
+    // } else {
+    //     print("error writing image");
+    // }
 
     return texture;
 }
@@ -267,26 +269,34 @@ void TextureManager::drawBackgroundTextures() {
     const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
     Rectangle screenSourceRec;
 
-    static Vector2i prevCameraPos = getCameraPosition();
+    // start at (0,0)
+    static Vector2i prevCameraPos = {0, -WINDOW_HEIGHT_PIXELS};
     Vector2i cameraPos = getCameraPosition();
     Vector2f mvmt = toFloatVec(cameraPos - prevCameraPos);
     prevCameraPos = cameraPos;
 
     // check if we need to wrap
     // FAR
-    mScrollFar -= (mvmt * mBGDataFar.parallax);
-    s32 scrollSign;
-    if (std::abs(mScrollFar.x()) >= mBGTextureFar->texture.width) {
-        scrollSign = sign(mScrollFar.x());
-        mScrollFar.e[0] = scrollSign * (std::abs(mScrollFar.x()) - mBGTextureFar->texture.width);
+    f32 distance = cameraPos.x() - (mBGDataFar.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
+    if (mBGDataFar.isRepeatX) {
+        mScrollFar.e[0] = (mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) % mBGTextureFar->texture.width) %
+                          mBGTextureFar->texture.width;
+    } else {
+        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
+        mScrollFar.e[0] = mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) - mBGTextureFar->texture.width;
     }
 
-    if (std::abs(mScrollFar.y()) >= mBGTextureFar->texture.height) {
-        scrollSign = sign(mScrollFar.y());
-        mScrollFar.e[1] = scrollSign * (std::abs(mScrollFar.y()) - mBGTextureFar->texture.height);
+    distance = cameraPos.y() + mBGTextureFar->texture.height - (mBGDataFar.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
+    if (mBGDataFar.isRepeatY) {
+        mScrollFar.e[1] = mBGTextureFar->texture.height -
+                          (static_cast<s32>(distance * mBGDataFar.parallax.y()) % static_cast<s32>(mBGTextureFar->texture.height)) -
+                          mBGTextureFar->texture.height / 2;
+    } else {
+        mScrollFar.e[1] = mBGTextureFar->texture.height - (static_cast<s32>(distance * mBGDataFar.parallax.y())) - mBGTextureFar->texture.height / 2;
     }
 
     // MID
+    s32 scrollSign;
     mScrollMid -= (mvmt * mBGDataMid.parallax);
     if (std::abs(mScrollMid.x()) >= mBGTextureMid->texture.width) {
         scrollSign = sign(mScrollMid.x());
