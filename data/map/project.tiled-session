@@ -5,8 +5,8 @@
     },
     "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -15,10 +15,10 @@
                 6
             ],
             "scale": 2.1889583333333333,
-            "selectedLayer": 0,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 170.40068525744744,
-                "y": 60.98791282002475
+                "x": 152.58399162463118,
+                "y": 84.28666603216902
             }
         },
         "testmap2.tmj": {
@@ -26,10 +26,10 @@
                 4
             ],
             "scale": 2.1889583333333333,
-            "selectedLayer": 0,
+            "selectedLayer": -1,
             "viewCenter": {
-                "x": -149.84296183496716,
-                "y": 60.5310745217474
+                "x": -47.0543447225659,
+                "y": 84.74350433044637
             }
         },
         "tile-collision.tsj": {
@@ -70,7 +70,7 @@
         "widemap.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Material",
+    "property.type": "Depth",
     "recentFiles": [
         "widemap.tmj",
         "testmap2.tmj",

@@ -9,9 +9,7 @@
 #include "ECS/Draw.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Settings.h"
-#include "Systems/System.h"
 #include "Util/FileUtils.h"
-#include "Util/MathUtil.h"
 #include "Util/Print.h"
 
 #define RAPIDXML_NO_EXCEPTIONS
@@ -269,55 +267,71 @@ void TextureManager::drawBackgroundTextures() {
     const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
     Rectangle screenSourceRec;
 
-    // start at (0,0)
-    static Vector2i prevCameraPos = {0, -WINDOW_HEIGHT_PIXELS};
-    Vector2i cameraPos = getCameraPosition();
-    Vector2f mvmt = toFloatVec(cameraPos - prevCameraPos);
-    prevCameraPos = cameraPos;
+    const Vector2i cameraPos = getCameraPosition();
 
     // check if we need to wrap
     // FAR
     f32 distance = cameraPos.x() - (mBGDataFar.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
     if (mBGDataFar.isRepeatX) {
-        mScrollFar.e[0] = (mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) % mBGTextureFar->texture.width) %
+        mScrollFar.e[0] = (mBGTextureFar->texture.width - (static_cast<s32>(distance * mBGDataFar.parallax.x()) % mBGTextureFar->texture.width) -
+                           mBGTextureFar->texture.width / 2) %
                           mBGTextureFar->texture.width;
     } else {
         // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
-        mScrollFar.e[0] = mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) - mBGTextureFar->texture.width;
+        mScrollFar.e[0] = mBGTextureFar->texture.width - static_cast<s32>(distance * mBGDataFar.parallax.x()) - mBGTextureFar->texture.width / 2;
     }
 
     distance = cameraPos.y() + mBGTextureFar->texture.height - (mBGDataFar.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
     if (mBGDataFar.isRepeatY) {
-        mScrollFar.e[1] = mBGTextureFar->texture.height -
-                          (static_cast<s32>(distance * mBGDataFar.parallax.y()) % static_cast<s32>(mBGTextureFar->texture.height)) -
-                          mBGTextureFar->texture.height / 2;
+        mScrollFar.e[1] = (mBGTextureFar->texture.height -
+                           (static_cast<s32>(distance * mBGDataFar.parallax.y()) % static_cast<s32>(mBGTextureFar->texture.height)) -
+                           mBGTextureFar->texture.height / 2) %
+                          mBGTextureFar->texture.height;
     } else {
         mScrollFar.e[1] = mBGTextureFar->texture.height - (static_cast<s32>(distance * mBGDataFar.parallax.y())) - mBGTextureFar->texture.height / 2;
     }
 
     // MID
-    s32 scrollSign;
-    mScrollMid -= (mvmt * mBGDataMid.parallax);
-    if (std::abs(mScrollMid.x()) >= mBGTextureMid->texture.width) {
-        scrollSign = sign(mScrollMid.x());
-        mScrollMid.e[0] = scrollSign * (std::abs(mScrollMid.x()) - mBGTextureMid->texture.width);
+    distance = cameraPos.x() - (mBGDataMid.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
+    if (mBGDataMid.isRepeatX) {
+        mScrollMid.e[0] = (mBGTextureMid->texture.width - (static_cast<s32>(distance * mBGDataMid.parallax.x()) % mBGTextureMid->texture.width) -
+                           mBGTextureMid->texture.width / 2) %
+                          mBGTextureMid->texture.width;
+    } else {
+        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
+        mScrollMid.e[0] = mBGTextureMid->texture.width - static_cast<s32>(distance * mBGDataMid.parallax.x()) - mBGTextureMid->texture.width / 2;
     }
 
-    if (std::abs(mScrollMid.y()) >= mBGTextureMid->texture.height) {
-        scrollSign = sign(mScrollMid.y());
-        mScrollMid.e[1] = scrollSign * (std::abs(mScrollMid.y()) - mBGTextureMid->texture.height);
+    distance = cameraPos.y() + mBGTextureMid->texture.height - (mBGDataMid.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
+    if (mBGDataMid.isRepeatY) {
+        mScrollMid.e[1] = (mBGTextureMid->texture.height -
+                           (static_cast<s32>(distance * mBGDataMid.parallax.y()) % static_cast<s32>(mBGTextureMid->texture.height)) -
+                           mBGTextureMid->texture.height / 2) %
+                          mBGTextureMid->texture.height;
+    } else {
+        mScrollMid.e[1] = mBGTextureMid->texture.height - (static_cast<s32>(distance * mBGDataMid.parallax.y())) - mBGTextureMid->texture.height / 2;
     }
 
     // NEAR
-    mScrollNear -= (mvmt * mBGDataNear.parallax);
-    if (std::abs(mScrollNear.x()) >= mBGTextureNear->texture.width) {
-        scrollSign = sign(mScrollNear.x());
-        mScrollNear.e[0] = scrollSign * (std::abs(mScrollNear.x()) - mBGTextureNear->texture.width);
+    distance = cameraPos.x() - (mBGDataNear.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
+    if (mBGDataNear.isRepeatX) {
+        mScrollNear.e[0] = (mBGTextureNear->texture.width - (static_cast<s32>(distance * mBGDataNear.parallax.x()) % mBGTextureNear->texture.width) -
+                            mBGTextureNear->texture.width / 2) %
+                           mBGTextureNear->texture.width;
+    } else {
+        // make sure the start point is correct by subtracting width. Only matters if it doesn't repeat
+        mScrollNear.e[0] = mBGTextureNear->texture.width - static_cast<s32>(distance * mBGDataNear.parallax.x()) - mBGTextureNear->texture.width / 2;
     }
 
-    if (std::abs(mScrollNear.y()) >= mBGTextureNear->texture.height) {
-        scrollSign = sign(mScrollNear.y());
-        mScrollNear.e[1] = scrollSign * (std::abs(mScrollNear.y()) - mBGTextureNear->texture.height);
+    distance = cameraPos.y() + mBGTextureNear->texture.height - (mBGDataNear.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
+    if (mBGDataNear.isRepeatY) {
+        mScrollNear.e[1] = (mBGTextureNear->texture.height -
+                            (static_cast<s32>(distance * mBGDataNear.parallax.y()) % static_cast<s32>(mBGTextureNear->texture.height)) -
+                            mBGTextureNear->texture.height / 2) %
+                           mBGTextureNear->texture.height;
+    } else {
+        mScrollNear.e[1] =
+            mBGTextureNear->texture.height - (static_cast<s32>(distance * mBGDataNear.parallax.y())) - mBGTextureNear->texture.height / 2;
     }
 
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
@@ -327,9 +341,6 @@ void TextureManager::drawBackgroundTextures() {
     };
 
     drawBG(mBGTextureStatic->texture, screenSourceRec, {});
-
-    // TODO if not repeating in X/Y, needs a root position
-    // ALSo even if it does repeat, should have a root position so things look right
 
     // FAR BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureFar->texture.width), -1 * static_cast<f32>(mBGTextureFar->texture.height)};

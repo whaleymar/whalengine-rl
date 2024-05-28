@@ -4,28 +4,6 @@
  "infinite":false,
  "layers":[
         {
-         "id":7,
-         "image":"..\/sprite\/map\/celeste-trees.png",
-         "name":"Trees",
-         "offsetx":0,
-         "offsety":1,
-         "opacity":1,
-         "parallaxx":0.2,
-         "parallaxy":0,
-         "properties":[
-                {
-                 "name":"Depth",
-                 "propertytype":"Depth",
-                 "type":"int",
-                 "value":1
-                }],
-         "repeatx":true,
-         "type":"imagelayer",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
          "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -701,8 +679,25 @@
          "width":40,
          "x":0,
          "y":0
+        }, 
+        {
+         "id":8,
+         "image":"..\/sprite\/map\/celeste-trees.png",
+         "name":"Trees",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":2
+                }],
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":8,
+ "nextlayerid":9,
  "nextobjectid":37,
  "orientation":"orthogonal",
  "properties":[
