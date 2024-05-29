@@ -4,10 +4,13 @@
 
 namespace whal {
 
+static constexpr f32 MAX_FRAME_TIME = 0.5;  // cap at half a second
+
 Deltatime::Deltatime() {}
 
 void Deltatime::update() {
-    mDeltatimeUnmodified = GetFrameTime();
+    f32 frameTime = GetFrameTime();
+    mDeltatimeUnmodified = frameTime > MAX_FRAME_TIME ? MAX_FRAME_TIME : frameTime;
     mDeltatime = mDeltatimeUnmodified * mTimeMultiplier;
 }
 

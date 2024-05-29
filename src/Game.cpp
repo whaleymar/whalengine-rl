@@ -125,13 +125,14 @@ void Game::mainloop() {
     semiSolidsMgr->update();
 
     RenderTexture2D targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);  // where we'll draw objects to
-    Color clearColor = {51, 76, 76, 255};
+    // Color clearColor = {51, 76, 76, 255};
+    Color clearColor = {5, 5, 5, 255};
 
     // flip y axis bc openGL
     Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), -1 * static_cast<f32>(targetTexture.texture.height)};
     Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose() && !System::isQuit()) {
         System::input.update();
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = toFloatVec(getCameraPosition());
@@ -227,7 +228,8 @@ void Game::mainloop() {
 
         BeginMode2D(*mScreenSpaceCamera);
 
-        DrawTexturePro(targetTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, WHITE);
+        Color color = PauseMenu::instance().isPaused() ? Color(25, 50, 75, 255) : WHITE;
+        DrawTexturePro(targetTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
         EndMode2D();
 
@@ -240,7 +242,7 @@ void Game::mainloop() {
         //     DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
         //     i++;
         // }
-        PauseMenu::instance().draw();
+        PauseMenu::instance().draw(mFont);
 
         DrawFPS(10, 10);
 

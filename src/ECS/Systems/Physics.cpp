@@ -11,6 +11,7 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
+#include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
@@ -111,7 +112,8 @@ void PhysicsSystem::update() {
 
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
-        if (entity.has<Camera>()) {
+        if (entity.has<Camera>() && !PauseMenu::instance().isPaused()) {
+            // move if fake paused
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();

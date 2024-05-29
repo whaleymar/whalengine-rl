@@ -34,9 +34,12 @@ struct System {
 
     static void togglePause() { setPaused(!IsPaused); }
     static bool isPaused() { return IsPaused; }
+    static void quit() { IsQuit = true; }
+    static bool isQuit() { return IsQuit; }
 
 private:
     inline static bool IsPaused = false;
+    inline static bool IsQuit = false;
 };
 
 }  // namespace whal

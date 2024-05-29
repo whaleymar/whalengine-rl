@@ -6,6 +6,7 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
+#include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
@@ -17,7 +18,7 @@ constexpr f32 SPEED_DIVISOR = 1.0f / 40.0f;
 void RailsSystem::update() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
-        if (entity.has<Camera>()) {
+        if (entity.has<Camera>() && !PauseMenu::instance().isPaused()) {
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();

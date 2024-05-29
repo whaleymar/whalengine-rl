@@ -61,7 +61,7 @@ public:
     bool isValid() const { return mIsValid; }
     void update();
 
-    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 1000, f32 resonance = 1);
+    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
     void setFilterMusic(Filter filter);
     void setFilterClips(Filter filter);
 

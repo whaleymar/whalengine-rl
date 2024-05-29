@@ -26,7 +26,7 @@ void PauseMenu::onButtonPressed(InputType input) {
     if (!isPaused()) {
         if (input == InputType::PAUSE) {
             pause();
-            System::audio.playMenuClip(Sfx::MENU_OPEN);
+            System::audio.playMenuClip(Sfx::MENU_OPEN, 0.33);
         }
         return;
     }
@@ -34,32 +34,32 @@ void PauseMenu::onButtonPressed(InputType input) {
     switch (input) {
     case InputType::UP:
         mCursorOption = static_cast<Button>(pythonMod(mCursorOption - 1, N_BUTTONS));
-        System::audio.playMenuClip(Sfx::MENU_MOVE);
+        System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
         break;
     case InputType::DOWN:
         mCursorOption = static_cast<Button>(pythonMod(mCursorOption + 1, N_BUTTONS));
-        System::audio.playMenuClip(Sfx::MENU_MOVE);
+        System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
         break;
     case InputType::PAUSE:
         unpause();
-        System::audio.playMenuClip(Sfx::MENU_CLOSE);
+        System::audio.playMenuClip(Sfx::MENU_CLOSE, 0.33);
         break;
     case InputType::OK:
         doCursorAction();
-        System::audio.playMenuClip(Sfx::MENU_SELECT);
+        System::audio.playMenuClip(Sfx::MENU_SELECT, 0.33);
         break;
     default:
         break;
     }
 }
 
-void PauseMenu::draw() const {
+void PauseMenu::draw(Font* font) const {
     if (!isPaused()) {
         return;
     }
-    constexpr s32 xOffset = -40;  // PARAM
     constexpr s32 spacing = 24;   // PARAM
     constexpr s32 fontSize = 48;  // PARAM
+    constexpr s32 spacingX = 0;   // PARAM
 
     constexpr s32 lineheight = spacing + fontSize;
     constexpr s32 menuHeight = lineheight * N_BUTTONS - spacing;  // n-1 fence posts
@@ -68,7 +68,9 @@ void PauseMenu::draw() const {
     for (s32 i = 0; i < N_BUTTONS; i++) {
         const char* buttonText = S_BUTTON_TO_NAME[i];
         Color color = static_cast<Button>(i) == mCursorOption ? RED : WHITE;
-        DrawText(buttonText, WINDOW_WIDTH_ACTUAL / 2 + xOffset, startHeight + lineheight * i, fontSize, color);
+        Vector2 textDimensions = MeasureTextEx(*font, buttonText, fontSize, spacingX);
+        DrawTextEx(*font, buttonText, Vector2(WINDOW_WIDTH_ACTUAL / 2 - textDimensions.x / 2, startHeight + lineheight * i), fontSize, spacingX,
+                   color);
     }
 }
 
@@ -78,7 +80,7 @@ void PauseMenu::doCursorAction() {
         unpause();
         break;
     case Button::Exit:
-        // TODO
+        System::quit();
         break;
     }
 }

@@ -67,7 +67,6 @@ AudioPlayer::AudioPlayer() {
 AudioPlayer::~AudioPlayer() {
     if (mIsValid) {
         if (mLowpassFilter != nullptr) {
-            print("releasing low pass filter");
             mLowpassFilter->release();
         }
         mSystem->close();
@@ -278,7 +277,7 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel)
         break;
     case Filter::LowPass:
         if (mLowpassFilter == nullptr) {
-            auto eDSP = createLowPassFilter(500, 1);
+            auto eDSP = createLowPassFilter();
             if (eDSP.isExpected()) {
                 dsp = eDSP.value();
                 mLowpassFilter = dsp;

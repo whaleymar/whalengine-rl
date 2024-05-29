@@ -3,6 +3,8 @@
 #include "Event.h"
 #include "Util/Types.h"
 
+typedef struct Font Font;
+
 namespace whal {
 
 enum class InputType;
@@ -18,7 +20,7 @@ public:
     }
 
     void onButtonPressed(InputType input);
-    void draw() const;
+    void draw(Font* font) const;
     bool isPaused() const { return mIsPaused; }
 
 private:
