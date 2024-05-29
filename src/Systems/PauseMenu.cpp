@@ -85,12 +85,14 @@ void PauseMenu::doCursorAction() {
 
 void PauseMenu::pause() {
     System::setPaused(true);
+    System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
     mIsPaused = true;
     mCursorOption = Button::Resume;
 }
 
 void PauseMenu::unpause() {
     System::setPaused(false);
+    System::audio.setFilterMusic(AudioPlayer::Filter::None);
     mIsPaused = false;
 }
 

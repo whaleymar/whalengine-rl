@@ -11,6 +11,8 @@ class System;
 class Sound;
 class Channel;
 class ChannelGroup;
+class ChannelControl;
+class DSP;
 
 }  // namespace FMOD
 
@@ -39,12 +41,14 @@ private:
 
 class AudioPlayer {
 public:
+    enum class Filter { None, LowPass };
+
     friend System;
     friend AudioClip;
 
-    void playMusic(const char* path, f32 volume = 1.0, bool isLooping = false);
-    void playClip(const AudioClip& clip, f32 volume = 1.0, bool isLooping = false);
-    void playMenuClip(const AudioClip& clip, f32 volume = 1.0, bool isLooping = false);
+    void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
+    void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
+    void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
     void stopMusic();
     void stopClips();
     void stopAll();
@@ -57,6 +61,10 @@ public:
     bool isValid() const { return mIsValid; }
     void update();
 
+    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 1000, f32 resonance = 1);
+    void setFilterMusic(Filter filter);
+    void setFilterClips(Filter filter);
+
 private:
     AudioPlayer();
     ~AudioPlayer();
@@ -65,7 +73,8 @@ private:
     void operator=(const AudioPlayer&) = delete;
 
     FMOD::System* getSystem() const;
-    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, bool isLooping);
+    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, bool isInGroup = true);
+    void setChannelFilter(Filter filter, FMOD::ChannelControl* channel);
 
     FMOD::Sound* mMusic = nullptr;
     FMOD::ChannelGroup* mClipChannelGroup = nullptr;
@@ -73,6 +82,7 @@ private:
     FMOD::Channel* mMusicChannel = nullptr;
     FMOD::Channel* mMenuChannel = nullptr;
     FMOD::System* mSystem = nullptr;
+    FMOD::DSP* mLowpassFilter = nullptr;
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;

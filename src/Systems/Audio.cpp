@@ -5,6 +5,7 @@
 
 #include "System.h"
 #include "Util/Print.h"
+#include "fmod_dsp_effects.h"
 
 namespace whal {
 
@@ -65,12 +66,16 @@ AudioPlayer::AudioPlayer() {
 
 AudioPlayer::~AudioPlayer() {
     if (mIsValid) {
+        if (mLowpassFilter != nullptr) {
+            print("releasing low pass filter");
+            mLowpassFilter->release();
+        }
         mSystem->close();
         mSystem->release();
     }
 }
 
-void AudioPlayer::playMusic(const char* path, f32 volume, bool isLooping) {
+void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool isLooping) {
     if (!mIsValid) {
         return;
     }
@@ -78,8 +83,9 @@ void AudioPlayer::playMusic(const char* path, f32 volume, bool isLooping) {
     auto result = mSystem->createStream(path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
     if (result != FMOD_OK) {
         print("couldn't load music stream:", path);
+        return;
     }
-    mMusicChannel->setVolume(volume);
+
     if (isLooping) {
         mMusicChannel->setLoopCount(-1);
         mMusicChannel->setMode(FMOD_LOOP_NORMAL);
@@ -88,6 +94,8 @@ void AudioPlayer::playMusic(const char* path, f32 volume, bool isLooping) {
         mMusicChannel->setMode(FMOD_LOOP_OFF);
     }
     mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
+    mMusicChannel->setVolume(volume);
+    setFilterMusic(filter);
     mIsPlayingMusic = true;
 }
 
@@ -129,7 +137,7 @@ FMOD::System* AudioPlayer::getSystem() const {
 }
 
 // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
-void AudioPlayer::playClip(const AudioClip& clip, f32 volume, bool isLooping) {
+void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
     if (!clip.isValid()) {
         return;
     }
@@ -147,13 +155,13 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, bool isLooping) {
     }
 
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
-    playClipWithChannel(clip, *pChannel, volume, isLooping);
+    playClipWithChannel(clip, *pChannel, volume, filter, isLooping);
 }
-void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, bool isLooping) {
-    playClipWithChannel(clip, mMenuChannel, volume, isLooping);
+void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
+    playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, false);
 }
 
-void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, bool isLooping) {
+void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, bool isInGroup) {
     if (isLooping) {
         // -1 -> loop forever
         // 0 -> don't loop
@@ -164,8 +172,15 @@ void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* chan
         clip.get()->setMode(FMOD_LOOP_OFF);  // on by default
         channel->setLoopCount(0);
     }
+
+    FMOD::ChannelGroup* group = nullptr;
+    if (isInGroup) {
+        group = mClipChannelGroup;
+    }
+    mSystem->playSound(clip.get(), group, false, &channel);
     channel->setVolume(volume);
-    mSystem->playSound(clip.get(), nullptr, false, &channel);
+    setChannelFilter(filter, channel);
+
     mIsPlayingChannels = true;
 }
 
@@ -225,6 +240,64 @@ void AudioPlayer::pauseClips(bool pause) {
 void AudioPlayer::pauseAll(bool pause) {
     pauseMusic(pause);
     pauseClips(pause);
+}
+
+// needs to be free'd with dsp->release();
+Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) {
+    FMOD::DSP* dsp;
+    auto result = mSystem->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &dsp);
+    if (result != FMOD_OK) {
+        return Error("Got error creating DSP");  // TODO include fmod_errors.h and pass result to FMOD_ErrorString
+    }
+
+    result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
+    if (result != FMOD_OK) {
+        return Error("Got error assigning lowpass cutoff");
+    }
+
+    result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, resonance);
+    if (result != FMOD_OK) {
+        return Error("Got error assigning lowpass resonance");
+    }
+
+    return dsp;
+}
+
+void AudioPlayer::setFilterMusic(Filter filter) {
+    setChannelFilter(filter, mMusicChannel);
+}
+
+void AudioPlayer::setFilterClips(Filter filter) {
+    setChannelFilter(filter, mClipChannelGroup);
+}
+
+void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel) {
+    FMOD::DSP* dsp = nullptr;
+    switch (filter) {
+    case Filter::None:
+        break;
+    case Filter::LowPass:
+        if (mLowpassFilter == nullptr) {
+            auto eDSP = createLowPassFilter(500, 1);
+            if (eDSP.isExpected()) {
+                dsp = eDSP.value();
+                mLowpassFilter = dsp;
+            } else {
+                print("got error creating low pass filter: ", eDSP.error());
+            }
+        } else {
+            dsp = mLowpassFilter;
+        }
+    }
+
+    if (dsp != nullptr) {
+        channel->addDSP(0, dsp);  // TODO hard coded index
+    } else {
+        channel->getDSP(0, &dsp);
+        if (dsp != nullptr) {
+            channel->removeDSP(dsp);
+        }
+    }
 }
 
 std::optional<Error> Sfx::load() {
