@@ -11,6 +11,9 @@
 
 void onBlasterFired(whal::Vector2i target) {
     using namespace whal;
+    if (System::isPaused()) {
+        return;
+    }
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
 

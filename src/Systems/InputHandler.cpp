@@ -32,6 +32,7 @@ void InputHandler::update() {
 }
 
 void InputHandler::set(InputType input) {
+    System::eventMgr.triggerEvent(Event::BUTTON_EVENT, input);
     switch (input) {
     case InputType::LEFT:
         mIsLeft = true;
@@ -66,6 +67,9 @@ void InputHandler::set(InputType input) {
         System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
         break;
     }
+
+    case InputType::OK:
+        break;
 
 #ifndef NDEBUG
     case InputType::DEBUG:
@@ -179,6 +183,12 @@ void InputHandler::loadMappings() const {
     KeyMap.insert({KEY_S, InputType::DOWN});
     KeyMap.insert({KEY_SPACE, InputType::JUMP});
     KeyMap.insert({KEY_ESCAPE, InputType::QUIT});
+    KeyMap.insert({KEY_P, InputType::PAUSE});  // TODO should be escape
+    KeyMap.insert({KEY_ENTER, InputType::OK});
+    KeyMap.insert({KEY_LEFT, InputType::LEFT});
+    KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
+    KeyMap.insert({KEY_UP, InputType::UP});
+    KeyMap.insert({KEY_DOWN, InputType::DOWN});
 
     MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
 

@@ -1,6 +1,5 @@
 #include "Game.h"
 
-#include <format>
 #include <raylib.h>
 
 #include "ECS/Blaster.h"
@@ -23,6 +22,7 @@
 #include "Map/Level.h"
 #include "Map/Tiled.h"
 #include "Settings.h"
+#include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/Print.h"
 #include "Util/Types.h"
@@ -118,15 +118,6 @@ void Game::mainloop() {
         return;
     }
 
-    // TEMP
-    // -----------------------------
-
-    // err = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, "effect/explosion4", BGTexture::MID, false);
-    // err = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, "map/reduced_tiledset", BGTexture::NEAR, false);
-
-    // END
-    // -----------------------------
-
     System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
     actorsMgr->update();
@@ -178,13 +169,13 @@ void Game::mainloop() {
         animationSystem->update();
 
 #ifndef NDEBUG
-        if (IsKeyPressed(KEY_P)) {
-            if (System::audio.isMusicPaused()) {
-                System::audio.pauseAll(false);
-            } else {
-                System::audio.pauseAll(true);
-            }
-        }
+        // if (IsKeyPressed(KEY_P)) {
+        //     if (System::audio.isMusicPaused()) {
+        //         System::audio.pauseAll(false);
+        //     } else {
+        //         System::audio.pauseAll(true);
+        //     }
+        // }
         if (IsKeyPressed(KEY_K)) {
             for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
                 entity.kill();
@@ -249,6 +240,7 @@ void Game::mainloop() {
         //     DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
         //     i++;
         // }
+        PauseMenu::instance().draw();
 
         DrawFPS(10, 10);
 

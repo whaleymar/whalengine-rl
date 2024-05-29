@@ -21,10 +21,11 @@ AudioClip::~AudioClip() {
 }
 
 std::optional<Error> AudioClip::load(const char* path) {
-    auto result = System::audio.getSystem()->createSound(path, FMOD_DEFAULT, nullptr, &mSound);
+    auto result =
+        System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL, nullptr, &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
         mSound = nullptr;
-        return Error("Error loading clip");
+        return Error(std::format("Error loading clip {}", path));
     }
     return std::nullopt;
 }
@@ -50,7 +51,7 @@ AudioPlayer::AudioPlayer() {
     if (mMaxChannelCount > MAX_CHANNELS) {
         mMaxChannelCount = MAX_CHANNELS;
     }
-    mNumClipChannels = mMaxChannelCount - mNumMusicChannels;
+    mNumClipChannels = mMaxChannelCount - mNumMiscChannels;
     mSystem->createChannelGroup(CHANNEL_GROUP_NAME_CLIPS, &mClipChannelGroup);
     for (s32 i = 0; i < mNumClipChannels; i++) {
         mClipChannelPool[i] = nullptr;
@@ -69,17 +70,24 @@ AudioPlayer::~AudioPlayer() {
     }
 }
 
-void AudioPlayer::playMusic(const char* path, f32 volume) {
+void AudioPlayer::playMusic(const char* path, f32 volume, bool isLooping) {
     if (!mIsValid) {
         return;
     }
 
-    auto result = mSystem->createStream(path, FMOD_DEFAULT, nullptr, &mMusic);
+    auto result = mSystem->createStream(path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
     if (result != FMOD_OK) {
         print("couldn't load music stream:", path);
     }
-    mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
     mMusicChannel->setVolume(volume);
+    if (isLooping) {
+        mMusicChannel->setLoopCount(-1);
+        mMusicChannel->setMode(FMOD_LOOP_NORMAL);
+    } else {
+        mMusic->setMode(FMOD_LOOP_OFF);
+        mMusicChannel->setMode(FMOD_LOOP_OFF);
+    }
+    mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
     mIsPlayingMusic = true;
 }
 
@@ -121,7 +129,7 @@ FMOD::System* AudioPlayer::getSystem() const {
 }
 
 // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
-void AudioPlayer::playClip(const AudioClip& clip, f32 volume) {
+void AudioPlayer::playClip(const AudioClip& clip, f32 volume, bool isLooping) {
     if (!clip.isValid()) {
         return;
     }
@@ -139,10 +147,25 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume) {
     }
 
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
-    mSystem->playSound(clip.get(), mClipChannelGroup, false, pChannel);
-    // don't loop
-    (*pChannel)->setLoopCount(0);
-    (*pChannel)->setVolume(volume);
+    playClipWithChannel(clip, *pChannel, volume, isLooping);
+}
+void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, bool isLooping) {
+    playClipWithChannel(clip, mMenuChannel, volume, isLooping);
+}
+
+void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, bool isLooping) {
+    if (isLooping) {
+        // -1 -> loop forever
+        // 0 -> don't loop
+        // 1 -> loop once
+        channel->setLoopCount(-1);  // RESEARCH channels also have a setMode function which takes a looping param
+
+    } else {
+        clip.get()->setMode(FMOD_LOOP_OFF);  // on by default
+        channel->setLoopCount(0);
+    }
+    channel->setVolume(volume);
+    mSystem->playSound(clip.get(), nullptr, false, &channel);
     mIsPlayingChannels = true;
 }
 
@@ -241,6 +264,26 @@ std::optional<Error> Sfx::load() {
     }
 
     errOpt = DEATH.load("data/audio/sfx/death.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = MENU_MOVE.load("data/audio/sfx/menu_move.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = MENU_OPEN.load("data/audio/sfx/menu_open.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = MENU_CLOSE.load("data/audio/sfx/menu_close.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = MENU_SELECT.load("data/audio/sfx/menu_choose.wav");
     if (errOpt) {
         return errOpt;
     }

@@ -9,11 +9,12 @@
 ## Systems
 - lighting\*
 - ui -- try building pause menu which\*
-    1. is triggered with a pause event 
-    2. makes music quieter
-    3. pauses all sfx (minus one channel used in pause menu)
+    1. is triggered with a pause event (or triggers one ?)
+    2. makes music quieter, maybe a low pass filter
+    3. pauses all sfx (minus one channel used in pause menu) (DONE)
     4. creates simple text gui : {Resume, Restart, Quit} -- each of these send their own events
-    - maybe just do bitmap font with instanced letters?
+    5. player control is turned off (DONE)
+    6. some visual filter like b&w, dimming, etc
 
 ## Components
 - Light 

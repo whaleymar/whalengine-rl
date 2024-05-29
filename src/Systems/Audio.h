@@ -42,8 +42,9 @@ public:
     friend System;
     friend AudioClip;
 
-    void playMusic(const char* path, f32 volume = 1.0);
-    void playClip(const AudioClip& clip, f32 volume = 1.0);
+    void playMusic(const char* path, f32 volume = 1.0, bool isLooping = false);
+    void playClip(const AudioClip& clip, f32 volume = 1.0, bool isLooping = false);
+    void playMenuClip(const AudioClip& clip, f32 volume = 1.0, bool isLooping = false);
     void stopMusic();
     void stopClips();
     void stopAll();
@@ -64,14 +65,16 @@ private:
     void operator=(const AudioPlayer&) = delete;
 
     FMOD::System* getSystem() const;
+    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, bool isLooping);
 
     FMOD::Sound* mMusic = nullptr;
     FMOD::ChannelGroup* mClipChannelGroup = nullptr;
     FMOD::Channel* mClipChannelPool[MAX_CHANNELS];
     FMOD::Channel* mMusicChannel = nullptr;
+    FMOD::Channel* mMenuChannel = nullptr;
     FMOD::System* mSystem = nullptr;
     s32 mMaxChannelCount = 0;
-    s32 mNumMusicChannels = 1;
+    s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;
     bool mIsValid = false;
     bool mIsPlayingMusic = false;
@@ -92,6 +95,10 @@ public:
     inline static AudioClip JUMP;
     inline static AudioClip LAND;
     inline static AudioClip DEATH;
+    inline static AudioClip MENU_MOVE;
+    inline static AudioClip MENU_SELECT;
+    inline static AudioClip MENU_OPEN;
+    inline static AudioClip MENU_CLOSE;
 
     std::optional<Error> load();
 

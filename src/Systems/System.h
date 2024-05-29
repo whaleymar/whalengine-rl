@@ -33,6 +33,7 @@ struct System {
     }
 
     static void togglePause() { setPaused(!IsPaused); }
+    static bool isPaused() { return IsPaused; }
 
 private:
     inline static bool IsPaused = false;

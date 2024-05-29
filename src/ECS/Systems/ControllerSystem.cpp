@@ -13,6 +13,9 @@ namespace whal {
 constexpr f32 APPROACH_SPEED_X = 7.5;  // 5 frames to max speed
 
 void ControllerSystemRB::update() {
+    if (System::isPaused()) {
+        return;
+    }
     auto& input = System::input;
     f32 dt = System::dt();
 
@@ -124,6 +127,9 @@ void ControllerSystemRB::update() {
 }
 
 void ControllerSystemFree::update() {
+    if (System::isPaused()) {
+        return;
+    }
     auto& input = System::input;
     for (auto& [entityid, entity] : getEntitiesRef()) {
         Vector2f delta;
