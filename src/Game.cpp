@@ -334,7 +334,10 @@ void Game::updateLevelCamera(bool overrideCache) {
     std::string curLevel;
     ecs::Entity player = PlayerSystem::instance()->first();
     ecs::Entity camera = CameraSystem::instance()->first();
-    Vector2f playerPosTexels = toFloatVec(player.get<Transform2D>().position) * FTEXELS_PER_PIXEL;
+    Vector2f playerPosTexels = toFloatVec(player.get<Transform2D>().position) * FTEXELS_PER_PIXEL +
+                               Vector2f(player.get<ActorCollider>().getCollider().half.x() / 2,
+                                        0);  // add halfX so visually the middle of the player has to enter the new level for it to change
+    // idk why i have to take half of the half
     auto levelOpt = mActiveScene.getLevelAt(playerPosTexels);
 
     bool doDefaultCamera = false;

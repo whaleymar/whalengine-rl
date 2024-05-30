@@ -67,11 +67,11 @@ bool brain(Animator& animator, ecs::Entity entity) {
         if (rb.isLanding) {
             f32 squish = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
             sprite.scale = {myLerp(1, 1.25, squish), myLerp(1, 0.8, squish)};
-            System::audio.playClip(Sfx::LAND, 0.1);
+            System::audio.playClip(Sfx::LAND, 0.0375 * squish);
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {
-                System::audio.playClip(Sfx::FOOTSTEPTEST, 0.1);
+                System::audio.playClip(Sfx::FOOTSTEPTEST, 0.075);
                 return true;
             }
         } else {
@@ -83,7 +83,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
         if (rb.isJumping) {
             if (animator.setAnimation(JUMP)) {
                 sprite.scale = {0.8, 1.25};
-                System::audio.playClip(Sfx::JUMP, 0.5);
+                System::audio.playClip(Sfx::JUMP, 0.35);
                 return true;
             }
         } else {
@@ -96,7 +96,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     // animation did not change
     bool frameChanged = basicAnimation(animator, entity);
     if (frameChanged && animator.getAnimation().id == RUN && animator.curFrameIx % 2 == 1) {
-        System::audio.playClip(Sfx::FOOTSTEPTEST, 0.08);
+        System::audio.playClip(Sfx::FOOTSTEPTEST, 0.05);
     }
     return frameChanged;
 }
