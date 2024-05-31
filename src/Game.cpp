@@ -26,6 +26,7 @@
 #include "Systems/System.h"
 #include "Util/Print.h"
 #include "Util/Types.h"
+#include "Util/Vector.h"
 
 // GAME SETTINGS
 
@@ -250,10 +251,10 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         // DRAW END
     }
-    System::schedule.end();
 }
 
 void Game::end() {
+    System::schedule.end();
     System::schedule.await();
     killListeners();
 
@@ -273,9 +274,15 @@ std::optional<Error> Game::loadScene(const char* filename) {
         mIsSceneLoaded = false;
         return errOpt;
     }
-    Vector2f cameraPos = toFloatVec(getCameraPosition());
-    updateLoadedLevels(cameraPos);
-    // TODO spawn player at start pos?
+
+    Vector2i startPos = mActiveScene.getStartPosition();  // this also loads the level
+    setCameraPosition(startPos);
+    updateLoadedLevels(toFloatVec(startPos));
+
+    // spawn entities with player tag at start pos:
+    for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
+        entity.set(Transform2D(startPos));
+    }
 
     mIsSceneLoaded = true;
     return std::nullopt;
@@ -287,6 +294,8 @@ void Game::unloadScene() {
         unloadLevel(lvl);
         mActiveScene.loadedLevels.pop_back();
     }
+    mActiveScene.startLevelIx = -1;
+
     std::set<ecs::Entity> toKill = std::move(mActiveScene.childEntities);
     for (auto entity : toKill) {
         entity.kill();

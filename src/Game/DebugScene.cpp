@@ -61,7 +61,6 @@ std::optional<Error> loadDebugScene() {
 
     auto player = createPlayer();
 
-    // TODO copied play gets different momentum sometimes?
     // auto playerCopyExpected = createPlayer();
     // // player.value().kill();
     // if (playerCopyExpected.isExpected()) {

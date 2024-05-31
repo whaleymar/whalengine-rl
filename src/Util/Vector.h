@@ -1,25 +1,23 @@
 #pragma once
 
-#include <cmath>
+// #include <cmath>
 #include <ostream>
 #include <sstream>
+#include "MathUtil.h"
 
 #include "Types.h"
 
 typedef struct Vector2 Vector2;
 
-// TODO remove namespace
-namespace whal {
-
-template <class T>
-concept SignedNumber = std::signed_integral<T> || std::floating_point<T>;
-
-template <class T>
-concept Number = std::integral<T> || std::floating_point<T>;
-
-inline SignedNumber auto abs(SignedNumber auto const number) {
-    return number < 0 ? -number : number;
-}
+// template <class T>
+// concept SignedNumber = std::signed_integral<T> || std::floating_point<T>;
+//
+// template <class T>
+// concept Number = std::integral<T> || std::floating_point<T>;
+//
+// inline SignedNumber auto abs(SignedNumber auto const number) {
+//     return number < 0 ? -number : number;
+// }
 
 template <Number T>
 struct Vector2T {
@@ -118,4 +116,6 @@ Vector2i toIntVec(const Vector2f floatVec);
 Vector2f fromRaylib(Vector2 rlVec);
 Vector2i fromRaylibInt(Vector2 rlVec);
 
-}  // namespace whal
+inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
+    return Vector2f(myLerp(vec1.x(), vec2.x(), t), myLerp(vec1.y(), vec2.y(), t));
+}

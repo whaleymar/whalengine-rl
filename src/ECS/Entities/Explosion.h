@@ -7,4 +7,4 @@ namespace whal::ecs {
 class Entity;
 }
 
-Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen);
+Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen);

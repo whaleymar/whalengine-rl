@@ -2,8 +2,6 @@
 
 #include <raylib.h>
 
-namespace whal {
-
 Vector2f toFloatVec(const Vector2i intVec) {
     return Vector2f(static_cast<f32>(intVec.x()), static_cast<f32>(intVec.y()));
 }
@@ -19,5 +17,3 @@ Vector2f fromRaylib(Vector2 rlVec) {
 Vector2i fromRaylibInt(Vector2 rlVec) {
     return Vector2i(rlVec.x, rlVec.y);
 }
-
-}  // namespace whal

@@ -4,7 +4,6 @@
 #include <cmath>
 #include <concepts>
 #include "Util/Types.h"
-#include "Util/Vector.h"
 
 inline constexpr f32 PI_MINE = 3.14159265358979323846;
 inline constexpr f32 RAD_TO_DEG = 180.0f / PI_MINE;
@@ -53,10 +52,6 @@ inline bool isNearZerof(const f32 value, const f32 epsilon) {
 // return (1-t) * n1 + t * n2;
 inline f32 myLerp(const f32 n1, const f32 n2, const f32 t) {
     return std::lerp(n1, n2, clamp(t, 0.0f, 1.0f));
-}
-
-inline whal::Vector2f lerp(const whal::Vector2f vec1, const whal::Vector2f vec2, const f32 t) {
-    return whal::Vector2f(myLerp(vec1.x(), vec2.x(), t), myLerp(vec1.y(), vec2.y(), t));
 }
 
 inline f32 approach(const f32 val, const f32 target, const f32 move) {

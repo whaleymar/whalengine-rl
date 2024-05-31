@@ -12,31 +12,32 @@ void IUseCollision::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
 }
 
-bool checkDirectionalCollision(const AABB& actor, const AABB& solid, Vector2i moveNormal, CollisionDir collisionDir) {
+bool checkDirectionalCollision(const AABB& movingCollider, const AABB& oneWayCollider, Vector2i movement, CollisionDir collisionDir) {
+    // check if other's movement will collide with the one way collider
     switch (collisionDir) {
     case CollisionDir::ALL:
         return true;
 
     case CollisionDir::LEFT:
-        if (moveNormal.x() <= 0 || actor.right() != solid.left()) {
+        if (movement.x() <= 0 || movingCollider.right() != oneWayCollider.left()) {
             return false;
         }
         break;
 
     case CollisionDir::RIGHT:
-        if (moveNormal.x() >= 0 || actor.left() != solid.right()) {
+        if (movement.x() >= 0 || movingCollider.left() != oneWayCollider.right()) {
             return false;
         }
         break;
 
     case CollisionDir::DOWN:
-        if (moveNormal.y() <= 0 || actor.top() != solid.bottom()) {
+        if (movement.y() <= 0 || movingCollider.top() != oneWayCollider.bottom()) {
             return false;
         }
         break;
 
     case CollisionDir::UP:
-        if (moveNormal.y() >= 0 || actor.bottom() != solid.top()) {
+        if (movement.y() >= 0 || movingCollider.bottom() != oneWayCollider.top()) {
             return false;
         }
         break;

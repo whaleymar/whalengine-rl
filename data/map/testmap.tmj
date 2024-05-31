@@ -1,8 +1,47 @@
-{ "class":"Meta_CameraParams",
- "compressionlevel":-1,
+{ "compressionlevel":-1,
  "height":24,
  "infinite":false,
  "layers":[
+        {
+         "id":9,
+         "image":"..\/sprite\/map\/celeste-treesbg.png",
+         "name":"TreesBg",
+         "opacity":1,
+         "parallaxx":0.85,
+         "parallaxy":0,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":1
+                }],
+         "repeatx":true,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "id":10,
+         "image":"..\/sprite\/map\/celeste-trees.png",
+         "name":"Trees",
+         "opacity":1,
+         "parallaxx":0.7,
+         "parallaxy":0,
+         "properties":[
+                {
+                 "name":"Depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":2
+                }],
+         "repeatx":true,
+         "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
         {
          "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -79,7 +118,7 @@
                  "name":"Depth",
                  "propertytype":"Depth",
                  "type":"int",
-                 "value":5
+                 "value":4
                 }],
          "type":"tilelayer",
          "visible":true,
@@ -639,6 +678,29 @@
          "y":0
         }, 
         {
+         "draworder":"topdown",
+         "id":11,
+         "name":"Metadata",
+         "objects":[
+                {
+                 "height":0,
+                 "id":37,
+                 "name":"Spawn Point",
+                 "point":true,
+                 "rotation":0,
+                 "type":"Map_SpawnPoint",
+                 "visible":true,
+                 "width":0,
+                 "x":8,
+                 "y":64
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "data":[13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -679,49 +741,9 @@
          "width":40,
          "x":0,
          "y":0
-        }, 
-        {
-         "id":9,
-         "image":"..\/sprite\/map\/celeste-treesbg.png",
-         "name":"TreesBg",
-         "opacity":1,
-         "parallaxx":0.85,
-         "parallaxy":0,
-         "properties":[
-                {
-                 "name":"Depth",
-                 "propertytype":"Depth",
-                 "type":"int",
-                 "value":1
-                }],
-         "repeatx":true,
-         "type":"imagelayer",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "id":10,
-         "image":"..\/sprite\/map\/celeste-trees.png",
-         "name":"Trees",
-         "opacity":1,
-         "parallaxx":0.7,
-         "parallaxy":0,
-         "properties":[
-                {
-                 "name":"Depth",
-                 "propertytype":"Depth",
-                 "type":"int",
-                 "value":2
-                }],
-         "repeatx":true,
-         "type":"imagelayer",
-         "visible":true,
-         "x":0,
-         "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":37,
+ "nextlayerid":12,
+ "nextobjectid":39,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -736,6 +758,15 @@
              "deadZoneX":64,
              "deadZoneY":64,
              "lookAheadX":32
+            }
+        }, 
+        {
+         "name":"Metadata",
+         "propertytype":"Map_MapInfo",
+         "type":"class",
+         "value":
+            {
+             "isWorldEntryPoint":true
             }
         }, 
         {

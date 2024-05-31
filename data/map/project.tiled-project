@@ -13,20 +13,6 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 17,
-            "members": [
-            ],
-            "name": "CameraPoint",
-            "type": "class",
-            "useAs": [
-                "map",
-                "object",
-                "project"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
             "id": 4,
             "members": [
                 {
@@ -171,7 +157,6 @@
             "type": "class",
             "useAs": [
                 "property",
-                "map",
                 "object",
                 "project"
             ]
@@ -393,23 +378,6 @@
             ]
         },
         {
-            "id": 18,
-            "name": "Material",
-            "storageType": "int",
-            "type": "enum",
-            "values": [
-                "None",
-                "Dirt",
-                "Rock",
-                "Soft",
-                "Wood",
-                "Grass",
-                "Water",
-                "Metal"
-            ],
-            "valuesAsFlags": false
-        },
-        {
             "color": "#ffa0a0a4",
             "drawFill": true,
             "id": 15,
@@ -423,26 +391,40 @@
                     }
                 }
             ],
-            "name": "Meta_CameraParams",
+            "name": "Map_CameraParams",
             "type": "class",
             "useAs": [
-                "property",
-                "map",
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 17,
+            "members": [
+            ],
+            "name": "Map_CameraPoint",
+            "type": "class",
+            "useAs": [
+                "object",
                 "project"
             ]
         },
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 14,
+            "id": 22,
             "members": [
+                {
+                    "name": "isWorldEntryPoint",
+                    "type": "bool",
+                    "value": false
+                }
             ],
-            "name": "Meta_FixedCamera",
+            "name": "Map_MapInfo",
             "type": "class",
             "useAs": [
-                "property",
-                "map",
-                "project"
+                "property"
             ]
         },
         {
@@ -461,13 +443,30 @@
                     "value": 0
                 }
             ],
-            "name": "Meta_SpawnPoint",
+            "name": "Map_SpawnPoint",
             "type": "class",
             "useAs": [
                 "property",
-                "map",
+                "object",
                 "project"
             ]
+        },
+        {
+            "id": 18,
+            "name": "Material",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "None",
+                "Dirt",
+                "Rock",
+                "Soft",
+                "Wood",
+                "Grass",
+                "Water",
+                "Metal"
+            ],
+            "valuesAsFlags": false
         },
         {
             "id": 2,

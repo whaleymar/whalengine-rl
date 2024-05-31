@@ -38,7 +38,7 @@ public:
     void unloadScene();
     std::optional<Error> reloadScene();
     whal::Scene& getScene();
-    void updateLoadedLevels(whal::Vector2f cameraWorldPosPixels);
+    void updateLoadedLevels(Vector2f cameraWorldPosPixels);
     void updateLevelCamera(bool overrideCache = false);
     void loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
     const Font* getFont() const;

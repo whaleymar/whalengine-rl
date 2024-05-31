@@ -9,7 +9,7 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
-void onBlasterFired(whal::Vector2i target) {
+void onBlasterFired(Vector2i target) {
     using namespace whal;
     if (System::isPaused()) {
         return;
@@ -39,6 +39,6 @@ void onBlasterFired(whal::Vector2i target) {
     }
 }
 
-ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener<whal::Vector2i>(&onBlasterFired)) {
+ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)) {
     whal::System::eventMgr.registerListener(whal::Event::SHOOT_EVENT, mBlasterEventListener);
 }

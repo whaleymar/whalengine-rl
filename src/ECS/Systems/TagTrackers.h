@@ -17,6 +17,7 @@ public:
     }
 };
 
+// TODO I should add something to this to enforce / warn against multiple entities with this tag
 class CameraSystem : public ecs::ISystem<Camera> {
 public:
     static std::shared_ptr<CameraSystem> instance() {
@@ -27,5 +28,6 @@ public:
 
 std::optional<ecs::Entity> getCamera();
 Vector2i getCameraPosition();
+void setCameraPosition(Vector2i pos);
 
 }  // namespace whal

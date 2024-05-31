@@ -24,5 +24,5 @@ public:
     ProjectileSystem();
 
 private:
-    whal::EventListener<whal::Vector2i> mBlasterEventListener;
+    whal::EventListener<Vector2i> mBlasterEventListener;
 };

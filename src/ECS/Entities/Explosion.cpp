@@ -18,7 +18,7 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
-Expected<whal::ecs::Entity> makeExplosionZone(whal::Vector2i center, s32 halflen) {
+Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     using namespace whal;
 
     auto eEntity = System::ecs->entity(false);

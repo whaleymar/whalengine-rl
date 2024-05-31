@@ -31,9 +31,7 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level);
 std::string getSpriteKeyFromPath(std::string& spritePath);
 
 TileMap TileMap::parse(const char* path, ActiveLevel& level) {
-    // TODO
-    // - visibility?
-    // - BETTER ERROR HANDLING (bad bc copy constructor removed so can't put it in expected container)
+    // error handling sucks in this function but it's whatever
 
     TileMap map;
     using json = nlohmann::json;
@@ -50,8 +48,16 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     map.heightTiles = data["height"];
     map.tileSize = data["tilewidth"];
 
+    // set default spawn point in cause there isn't one
+    level.spawnPoint = getTransformFromMapPosition({0, 0}, {0, 0}, level, true).position;
+
     for (auto& layer : data["layers"]) {
+        bool isVisible = layer["visible"];
+        if (!isVisible) {
+            continue;
+        }
         std::string type = layer["type"];
+
         if (type == "tilelayer") {
             parseTileLayer(layer, map);
         } else if (type == "objectgroup") {
@@ -79,6 +85,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     bool isNameFound = false;
     for (auto& property : data["properties"]) {
         std::string propName = property["name"];
+        std::string propType = property["type"];
         if (propName == "Name") {
             std::string mapName = property["value"];
             map.name = mapName;
@@ -143,12 +150,20 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         if (objType != "Entity") {
             // check for metadata
 
-            if (objType == "CameraPoint") {
+            if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint;
                 cameraPoint.e[0] = object["x"];
                 cameraPoint.e[1] = object["y"];
                 level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).position;
                 // print("loaded camerapoint with pos", cameraPoint, "-->", level.cameraFocalPoint);
+            } else if (objType == "Map_SpawnPoint") {
+                Vector2i spawnPoint;
+                spawnPoint.e[0] = object["x"];
+                spawnPoint.e[1] = object["y"];
+                level.spawnPoint = getTransformFromMapPosition(spawnPoint, {0, 0}, level, true).position;
+                // print("loaded spawnpoint with pos", spawnPoint, "-->", level.spawnPoint);
+            } else {
+                // print("Unrecognized object type: ", objType);
             }
             continue;
         }
@@ -253,8 +268,6 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             bgEnum = BGTexture::MID;
         }
 
-        print("sending ", spriteKey, " to backgroundtexture: ", bgName);
-        // TODO some sort of position or offset from origin?
         auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
                                                                               isRepeatX, isRepeatY);
         if (errOpt) {
@@ -380,6 +393,36 @@ std::optional<Error> parseMapProject(const char* mapfile) {
     return std::nullopt;
 }
 
+Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
+    // parses a level's parameters and returns its LevelInfo struct
+    // returns error if not found
+
+    using json = nlohmann::json;
+
+    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, lvlFileName).c_str());
+    if (!jString.isExpected()) {
+        return jString.error();
+    }
+
+    json data = json::parse(jString.value());
+
+    for (auto& property : data["properties"]) {
+        std::string propName = property["name"];
+        std::string propType = property["propertytype"];
+        if (propType == "Map_MapInfo") {
+            auto mapInfo = property["value"];
+            bool isWorldEntryPoint = false;
+            if (mapInfo.contains("isWorldEntryPoint")) {
+                isWorldEntryPoint = mapInfo["isWorldEntryPoint"];
+            }
+            Level::LevelInfo lvlInfo = {isWorldEntryPoint};
+            return lvlInfo;
+        }
+    }
+
+    return Error(std::format("LevelInfo property not found in level: {}", lvlFileName));
+}
+
 std::optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     using json = nlohmann::json;
 
@@ -402,10 +445,25 @@ std::optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
         s32 y = map["y"];
         s32 width = map["width"];
         s32 height = map["height"];
-        Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height)};
-        dstScene.allLevels.push_back(lvl);
+        Expected<Level::LevelInfo> eLvlInfo = parseLevelInfo(filename.c_str());
+        if (eLvlInfo.isExpected()) {
+            Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo.value()};
+            if (lvl.lvlInfo.isWorldEntryPoint) {
+                auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());
+                if (errOpt) {
+                    return errOpt.value();
+                }
+            }
+
+            dstScene.allLevels.push_back(lvl);
+        } else {
+            return eLvlInfo.error();
+        }
     }
-    // TODO get startPos
+    if (!dstScene.isValid()) {
+        return Error("Scene is not valid");
+    }
+
     return std::nullopt;
 }
 

@@ -28,7 +28,7 @@
 - object layers
     - component factory functions (mostly done)
     - special metadata
-        - spawn points
+        - dynamic spawn points
         - camera strat (might want to rework)
     - Templates
 
@@ -47,6 +47,7 @@
 - isNearZero not working
 - cppcheck issues
 - actors sometimes fall through one way solids if the solid is moving fast enough, probably because solids don't move one pixel at a time, so if the actor isn't already riding the solid, it misses the solid's boundary
+    - it almost never happens though
 
 ---------------------------------------------------------------------------------------------------------------------------
 

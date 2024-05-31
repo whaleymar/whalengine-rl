@@ -12,9 +12,13 @@ class SolidCollider;
 struct TileMap;
 
 struct Level {
+    struct LevelInfo {
+        bool isWorldEntryPoint = false;
+    };
     std::string filepath;           // used for level comparisons
     Vector2f worldPosOriginTexels;  // top left
     Vector2f sizeTexels;
+    LevelInfo lvlInfo;
 
     bool operator==(const Level& other) const { return filepath == other.filepath; }
 };
@@ -26,6 +30,8 @@ struct ActiveLevel : public Level {
 
     std::optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
+    Vector2i spawnPoint;  // TODO i want to support multiple of these in the map data & have them update based on where the player entered the level
+                          // from / update them with triggers
 };
 
 struct Scene {
@@ -34,8 +40,13 @@ struct Scene {
     std::vector<ActiveLevel> loadedLevels;
     Vector2f startPos;
     std::set<ecs::Entity> childEntities;
+    s32 startLevelIx = -1;
 
-    std::optional<Level> getLevelAt(Vector2f worldPosTexels);
+    bool isValid() const;
+    std::optional<Error> setStartLevelIx(s32 ix);
+    Level getStartLevel() const;
+    Vector2i getStartPosition();
+    std::optional<Level> getLevelAt(Vector2f worldPosTexels) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
 };
 

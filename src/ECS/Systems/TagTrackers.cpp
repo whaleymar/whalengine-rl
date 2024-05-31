@@ -23,4 +23,11 @@ Vector2i getCameraPosition() {
     return lastPos;
 }
 
+void setCameraPosition(Vector2i pos) {
+    auto eOpt = getCamera();
+    if (eOpt) {
+        eOpt.value().set(Transform2D(pos));
+    }
+}
+
 }  // namespace whal
