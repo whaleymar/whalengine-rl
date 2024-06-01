@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ECS/RigidBody.h"
 #include "Settings.h"
 
 #include "ECS/Systems/CollisionManager.h"
@@ -142,22 +143,30 @@ std::optional<HitInfo> ActorCollider::moveY(const Vector2f amount, const Collisi
 }
 
 void ActorCollider::setMomentum(const f32 momentum, const bool isXDirection) {
+    auto eRB = getEntity().tryGet<RigidBody>();
+    if (!eRB) {
+        return;
+    }
     if (isXDirection) {
-        mStoredMomentum.e[0] = momentum;
+        mStoredMomentum.e[0] = momentum * eRB.value()->momentumDamping.x();
         mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
     } else {
-        mStoredMomentum.e[1] = momentum;
+        mStoredMomentum.e[1] = momentum * eRB.value()->momentumDamping.y();
         mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
     }
 }
 
 void ActorCollider::addMomentum(const f32 momentum, const bool isXDirection) {
+    auto eRB = getEntity().tryGet<RigidBody>();
+    if (!eRB) {
+        return;
+    }
     if (isXDirection) {
         mStoredMomentum.e[0] += momentum;
-        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
+        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumDamping.x();
     } else {
         mStoredMomentum.e[1] += momentum;
-        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
+        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumDamping.y();
     }
 }
 

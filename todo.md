@@ -1,6 +1,7 @@
 # To Do 
 
 ## Current Goal: 
+- rework tags
 
 ## Camera / Follow
 - different movement types (easein/out stuff)
@@ -83,3 +84,5 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
         - onAdd: update rigidbody vars, store old ones 
         - update: check if still rocket jumping & remove if done 
         - onRemove: restore old rigidbody data
+- circular triggers
+
