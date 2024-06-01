@@ -5,21 +5,21 @@
     },
     "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "testmap.tmj": {
             "expandedObjectLayers": [
-                6,
-                11
+                11,
+                6
             ],
             "scale": 2.1889583333333333,
-            "selectedLayer": 5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 273.18930236984863,
-                "y": 113.06747882364138
+                "x": 194.15627676786906,
+                "y": 111.69696392880937
             }
         },
         "testmap2.tmj": {
@@ -29,8 +29,8 @@
             "scale": 2.1889583333333333,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 164.91862567811933,
-                "y": 112.15380222708669
+                "x": 159.89340439706862,
+                "y": 96.16446178737984
             }
         },
         "tile-collision.tsj": {
@@ -48,8 +48,8 @@
             "scale": 2.1889583333333333,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -449.9857238031788,
-                "y": 169.25858951175405
+                "x": 239.84010659560295,
+                "y": 96.16446178737984
             }
         }
     },

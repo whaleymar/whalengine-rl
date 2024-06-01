@@ -46,8 +46,6 @@
 ## Bugs
 - isNearZero not working
 - cppcheck issues
-- actors sometimes fall through one way solids if the solid is moving fast enough, probably because solids don't move one pixel at a time, so if the actor isn't already riding the solid, it misses the solid's boundary
-    - it almost never happens though
 
 ---------------------------------------------------------------------------------------------------------------------------
 
@@ -62,6 +60,10 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
     - max 1 callback per frame 
     - some callbacks may have a wait time
 
+## Map:
+- bake tile data into a mesh & use that for lighting
+- should also give these tiles a Tile component that I can use for something like updating last safe point player was standing on
+
 ## Physics:
 - a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this?
 - jumping: instead of applying contant upward velocity, could try reducing gravity while jump button held instead 
@@ -75,3 +77,9 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 
 ## Other:
 - map: support tile rotations / flips? (leaning towards no)
+- rocket jumping state : updates rigidbody friction components (which may not exist) to have less friction or something
+    - would work like this:
+        - RocketJumping component added 
+        - onAdd: update rigidbody vars, store old ones 
+        - update: check if still rocket jumping & remove if done 
+        - onRemove: restore old rigidbody data

@@ -414,17 +414,19 @@ void SolidCollider::move(f32 x, f32 y, bool isManualMove) {
 
 void SolidCollider::moveActors(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
                                std::vector<ActorCollider*>& riding, bool isManualMove) {
-    f32 dt = System::dt();
-    Vector2i moveNormal;
+    const f32 dt = System::dt();
+    Vector2i moveVec;
     if (isXDirection) {
-        moveNormal = {sign(toMoveRounded), 0};
+        moveVec = {toMoveRounded, 0};
     } else {
-        moveNormal = {0, sign(toMoveRounded)};
+        moveVec = {0, toMoveRounded};
     }
+    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
+
     for (auto& actor : ActorsManager::instance()->getAllActors()) {
         // push takes priority over carry
         if (mCollider.isOverlapping(actor->getCollider()) &&
-            checkDirectionalCollision(actor->getCollider(), getCollider(), moveNormal, getCollisionDir())) {
+            checkDirectionalCollision(actor->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (actor->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;
             if (isXDirection) {
@@ -458,19 +460,20 @@ void SolidCollider::moveActors(s32 toMoveRounded, f32 toMoveUnrounded, bool isXD
 
 void SolidCollider::moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32 solidEdge, EdgeGetter edgeFunc, std::vector<SemiSolidCollider*>& riding,
                                    bool isManualMove) {
-    Vector2i moveNormal;
+    Vector2i moveVec;
     if (isXDirection) {
-        moveNormal = {sign(toMoveRounded), 0};
+        moveVec = {toMoveRounded, 0};
     } else {
-        moveNormal = {0, sign(toMoveRounded)};
+        moveVec = {0, toMoveRounded};
     }
+    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
     for (auto& semiSolid : SemiSolidsManager::instance()->getAllSemiSolids()) {
         if (!semiSolid->isCollidable()) {
             continue;
         }
         // push takes priority over carry
         if (mCollider.isOverlapping(semiSolid->getCollider()) &&
-            checkDirectionalCollision(semiSolid->getCollider(), getCollider(), moveNormal, getCollisionDir())) {
+            checkDirectionalCollision(semiSolid->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (semiSolid->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;
             auto ridingActors = semiSolid->getRidingActors();
@@ -759,19 +762,21 @@ void SemiSolidCollider::setCollisionCallback(CollisionCallback callback) {
 
 void SemiSolidCollider::moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32 solidEdge, EdgeGetter edgeFunc,
                                        std::vector<SemiSolidCollider*>& riding, bool isManualMove) {
-    Vector2i moveNormal;
+    Vector2i moveVec;
     if (isXDirection) {
-        moveNormal = {sign(toMoveRounded), 0};
+        moveVec = {toMoveRounded, 0};
     } else {
-        moveNormal = {0, sign(toMoveRounded)};
+        moveVec = {0, toMoveRounded};
     }
+    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
+
     for (auto& semiSolid : SemiSolidsManager::instance()->getAllSemiSolids()) {
         if (!semiSolid->isCollidable()) {
             continue;
         }
         // push takes priority over carry
         if (mCollider.isOverlapping(semiSolid->getCollider()) &&
-            checkDirectionalCollision(semiSolid->getCollider(), getCollider(), moveNormal, getCollisionDir())) {
+            checkDirectionalCollision(semiSolid->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (semiSolid->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;
             auto ridingActors = semiSolid->getRidingActors();

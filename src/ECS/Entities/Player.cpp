@@ -111,7 +111,8 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     auto player = expected.value();
     auto _ = ecs::DeferActivate(player);
 
-    Transform2D transform = Transform2D::tiles(15, 10);  // TODO get the last level the player was in and spawn in the start point
+    Transform2D transform = Transform2D::tiles(15, 10);  // TODO get the last level the player was in and spawn in the start point -- or maybe have
+                                                         // some SafeLocatoinCheckpoint triggers in the map data
     player.add(transform);
     player.add(Name("Player"));
     player.add<Player>();
