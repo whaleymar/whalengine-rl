@@ -20,6 +20,7 @@ struct Frame {
 };
 
 static const char* TEXNAME_SPRITE = "sprite";
+static const char* TEXNAME_PALETTE = "palette";
 
 // static does not have parallax
 enum class BGTexture { STATIC, FAR, MID, NEAR };

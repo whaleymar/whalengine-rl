@@ -72,6 +72,12 @@ bool Game::startup() {
         return true;
     }
 
+    err = TextureManager::instance().loadAndRegister(PALETTE_TEXTURE_PATH, TEXNAME_PALETTE);
+    if (err) {
+        print(*err);
+        return true;
+    }
+
     SetTargetFPS(FPS_TARGET);
 
     if (!System::audio.isValid()) {
@@ -126,11 +132,15 @@ void Game::mainloop() {
     semiSolidsMgr->update();
 
     RenderTexture2D targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);  // where we'll draw objects to
+    RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
     // Color clearColor = {51, 76, 76, 255};
     Color clearColor = {5, 5, 5, 255};
+    Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
+    auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
+    bool isQuantizeOn = true;
 
-    // flip y axis bc openGL
-    Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), -1 * static_cast<f32>(targetTexture.texture.height)};
+    // without the post processing step, would need to flip the y axis here by multiplying by -1
+    Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), 1 * static_cast<f32>(targetTexture.texture.height)};
     Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
     while (!WindowShouldClose() && !System::isQuit()) {
@@ -171,13 +181,6 @@ void Game::mainloop() {
         animationSystem->update();
 
 #ifndef NDEBUG
-        // if (IsKeyPressed(KEY_P)) {
-        //     if (System::audio.isMusicPaused()) {
-        //         System::audio.pauseAll(false);
-        //     } else {
-        //         System::audio.pauseAll(true);
-        //     }
-        // }
         if (IsKeyPressed(KEY_K)) {
             for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
                 entity.kill();
@@ -196,7 +199,7 @@ void Game::mainloop() {
         mScreenSpaceCamera->target.y -= mWorldSpaceCamera->target.y;
         mScreenSpaceCamera->target.y *= VIRTUAL_SCREEN_RATIO;
 
-        // TEXTURE START
+        // ECS DRAW START
         // -----------------------------------------------------------------------
         BeginTextureMode(targetTexture);
 
@@ -219,7 +222,30 @@ void Game::mainloop() {
         EndMode2D();
         EndTextureMode();
         // -----------------------------------------------------------------------
-        // TEXTURE END
+        // ECS DRAW END
+
+        // POST PROCESSING EFFECTS START
+        // -----------------------------------------------------------------------
+
+        BeginTextureMode(postProcessTexture);
+        ClearBackground(clearColor);
+
+        if (IsKeyPressed(KEY_Q)) {
+            isQuantizeOn = !isQuantizeOn;
+        }
+        if (isQuantizeOn) {
+            BeginShaderMode(shaderQuantize);
+
+            SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+        }
+        DrawTexture(targetTexture.texture, 0, 0, WHITE);  // this unflips the y axis for some reason
+
+        if (isQuantizeOn)
+            EndShaderMode();
+        EndTextureMode();
+
+        // -----------------------------------------------------------------------
+        // POST PROCESSING EFFECTS END
 
         // DRAW START
         // -----------------------------------------------------------------------
@@ -230,19 +256,11 @@ void Game::mainloop() {
         BeginMode2D(*mScreenSpaceCamera);
 
         Color color = PauseMenu::instance().isPaused() ? Color(25, 50, 75, 255) : WHITE;
-        DrawTexturePro(targetTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
+        DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
         EndMode2D();
 
         // TEXT STUFF
-        // DrawTextEx(*mFont, std::format("Camera position: {}", getCameraPosition().toString()).c_str(), Vector2(20, 20), 18, 2, WHITE);
-        // int i = 1;
-        // for (const auto& lvl : mActiveScene.allLevels) {
-        //     auto str = std::format("Level: {}. Origin: {}. Size: {}.", i, (lvl.worldPosOriginTexels * FTEXELS_PER_PIXEL).toString(),
-        //                            (lvl.sizeTexels * FTEXELS_PER_PIXEL).toString());
-        //     DrawTextEx(*mFont, str.c_str(), Vector2(20, 20 + i * 20), 18, 2, WHITE);
-        //     i++;
-        // }
         PauseMenu::instance().draw(mFont);
 
         DrawFPS(10, 10);

@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "Settings.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Game.h"
@@ -28,6 +29,7 @@ void createTestTrigger();
 void createTestSemiSolid();
 void createDepthTest();
 void createTestMouseTracker();
+void createPaletteTest();
 
 using namespace whal;
 
@@ -50,6 +52,7 @@ std::optional<Error> loadTestMap() {
     // createTestTrigger();
     // createTestSemiSolid();
     // createDepthTest();
+    createPaletteTest();
     return err;
 }
 
@@ -243,4 +246,19 @@ void createTestMouseTracker() {
     //
     // auto setPositionToCamera = [](ecs::Entity entity) { entity.set(Transform(screenToWorldCoords(System::input.MousePosition))); };
     // newEntity.add(OnFrameEnd(setPositionToCamera, false));
+}
+
+void createPaletteTest() {
+    auto newEntity = System::ecs->entity().value();
+    // newEntity.add(Draw(Color(56, 56, 255, 255), {16, 4}, Depth::Level));
+    auto frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("actor/palette");
+    if (frame) {
+        auto sprite = Sprite(Depth::Level, *frame);
+        sprite.scale = {3, 3};
+        newEntity.add(sprite);
+        newEntity.add(Transform2D::tiles(7, -8));
+
+    } else {
+        print("couldn't find frame");
+    }
 }

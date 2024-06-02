@@ -15,11 +15,11 @@
 
 namespace whal {
 
-enum Tag {
-    Player = 1,
-    Camera = 1 << 1,
-    Tile = 1 << 2,  // SafeGround?
-};
+// enum Tag {
+//     Player = 1,
+//     Camera = 1 << 1,
+//     Tile = 1 << 2,  // SafeGround?
+// };
 
 struct Player {};
 

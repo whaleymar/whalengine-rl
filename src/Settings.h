@@ -51,5 +51,6 @@ inline constexpr s32 WINDOW_HEIGHT_TEXELS = WINDOW_HEIGHT_PIXELS / PIXELS_PER_TE
 
 inline const char* FONT_PATH = "data/other-font.ttf";
 inline const char* SPRITE_TEXTURE_PATH = "data/sprite/atlas0.png";
+inline const char* PALETTE_TEXTURE_PATH = "data/texture/palette.png";
 inline const char* ATLAS_METADATA_PATH = "data/sprite/atlas.xml";
 inline const char* TILED_PROJECT_FILE = "project.tiled-project";
