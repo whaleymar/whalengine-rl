@@ -8,7 +8,7 @@ namespace whal {
 namespace ecs {
 class Entity;
 }
-enum class InputType;
+enum class InputType : u64;
 
 class DeathEvent : public IEvent<ecs::Entity> {};
 class CollisionEvent : public IEvent<ecs::Entity, ecs::Entity> {};

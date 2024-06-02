@@ -5,6 +5,7 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
+#include "Systems/InputHandler.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 
@@ -53,10 +54,10 @@ void ControllerSystemRB::update() {
         // #endif
 
         f32 impulseX = 0;
-        if (input.isLeft()) {
+        if (input.isOn(InputType::LEFT)) {
             impulseX -= 1;
         }
-        if (input.isRight()) {
+        if (input.isOn(InputType::RIGHT)) {
             impulseX += 1;
         }
 
@@ -86,7 +87,8 @@ void ControllerSystemRB::update() {
         }
 
         RigidBody& rb = entity.get<RigidBody>();
-        if (input.isJump()) {
+        // if (input.isJump()) {
+        if (input.isOn(InputType::JUMP)) {
             if ((rb.isGrounded || rb.coyoteSecondsRemaining > 0) && control.canJump()) {
                 control.jumpBuffer.consume();
                 rb.isJumping = true;
@@ -133,16 +135,16 @@ void ControllerSystemFree::update() {
     auto& input = System::input;
     for (auto& [entityid, entity] : getEntitiesRef()) {
         Vector2f delta;
-        if (input.isLeft()) {
+        if (input.isOn(InputType::LEFT)) {
             delta += Vector2f::unitLeft;
         }
-        if (input.isRight()) {
+        if (input.isOn(InputType::RIGHT)) {
             delta += Vector2f::unitRight;
         }
-        if (input.isUp()) {
+        if (input.isOn(InputType::UP)) {
             delta += Vector2f::unitUp;
         }
-        if (input.isDown()) {
+        if (input.isOn(InputType::DOWN)) {
             delta += Vector2f::unitDown;
         }
 

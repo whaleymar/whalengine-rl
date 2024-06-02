@@ -22,6 +22,7 @@
 #include "Map/Level.h"
 #include "Map/Tiled.h"
 #include "Settings.h"
+#include "Systems/InputHandler.h"
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/Print.h"
@@ -213,7 +214,7 @@ void Game::mainloop() {
         drawSystem->drawEntities();
 
 #ifndef NDEBUG
-        if (System::input.isDebug()) {
+        if (System::input.isOn(InputType::DEBUG)) {
             drawDebugSystem->drawEntities();
             drawColliders();
         }

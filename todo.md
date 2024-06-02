@@ -35,7 +35,6 @@
 
 ## Graphics
 - outline shader
-- color quantization shader
 
 ## Misc
 - ECS lib tasks

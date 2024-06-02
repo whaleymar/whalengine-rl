@@ -5,7 +5,6 @@
 #include "Game/Events.h"
 #include "Gfx/Coordinates.h"
 #include "System.h"
-#include "Util/Print.h"
 
 namespace whal {
 
@@ -32,142 +31,47 @@ void InputHandler::update() {
 }
 
 void InputHandler::set(InputType input) {
-    System::eventMgr.triggerEvent(Event::BUTTON_EVENT, input);
     switch (input) {
-    case InputType::LEFT:
-        mIsLeft = true;
-        break;
-
-    case InputType::RIGHT:
-        mIsRight = true;
-        break;
-
-    case InputType::UP:
-        mIsUp = true;
-        break;
-
-    case InputType::DOWN:
-        mIsDown = true;
-        break;
-
-    case InputType::JUMP:
-        mIsJump = true;
-        mIsJumpPressed = true;
-        break;
-
-    case InputType::PAUSE:
-        mIsPause = mIsPause != true;
-        break;
-
-    case InputType::QUIT:
-        mIsQuit = true;
-        break;
-
-    case InputType::SHOOT: {
-        System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
-        break;
-    }
-
-    case InputType::OK:
-        break;
-
 #ifndef NDEBUG
     case InputType::DEBUG:
-        mIsDebug = mIsDebug != true;
-        break;
-
-    case InputType::SHRINKX:
-        mIsShrinkX = true;
-        break;
-
-    case InputType::SHRINKY:
-        mIsShrinkY = true;
-        break;
-
-    case InputType::GROWX:
-        mIsGrowX = true;
-        break;
-
-    case InputType::GROWY:
-        mIsGrowY = true;
-        break;
-
-    case InputType::MUSICTEST:
-        mIsMusicTest = true;
-        break;
-
-    case InputType::RELOADSCENE:
-        mIsReloadScene = true;
-        break;
-
-    case InputType::TIMETEST:
-        mIsTimeTest = true;
-        break;
-    case InputType::KILLPLAYER:
-        mIsKillPlayer = true;
+        if (isOn(input)) {
+            mFlags &= ~static_cast<u64>(input);
+        } else {
+            mFlags |= static_cast<u64>(input);
+        }
         break;
 #endif
+
+    case InputType::SHOOT: {
+        // TODO whoever listens for this event should listen for MOUSE event
+        System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
+        mFlags |= static_cast<u64>(input);
+        break;
     }
+
+    case InputType::JUMP:
+        mIsJumpPressed = true;
+        mFlags |= static_cast<u64>(input);
+        break;
+    default: {
+        mFlags |= static_cast<u64>(input);
+    }
+    }
+    System::eventMgr.triggerEvent(Event::BUTTON_EVENT, input);
 }
 
 void InputHandler::reset(InputType input) {
     switch (input) {
-    case InputType::LEFT:
-        mIsLeft = false;
-        break;
-
-    case InputType::RIGHT:
-        mIsRight = false;
-        break;
-
-    case InputType::UP:
-        mIsUp = false;
-        break;
-
-    case InputType::DOWN:
-        mIsDown = false;
-        break;
-
     case InputType::JUMP:
-        mIsJump = false;
         mIsJumpPressed = false;
+        mFlags &= ~static_cast<u64>(input);
         break;
 
-#ifndef NDEBUG
-    case InputType::SHRINKX:
-        mIsShrinkX = false;
+    case InputType::DEBUG:
         break;
-
-    case InputType::SHRINKY:
-        mIsShrinkY = false;
-        break;
-
-    case InputType::GROWX:
-        mIsGrowX = false;
-        break;
-
-    case InputType::GROWY:
-        mIsGrowY = false;
-        break;
-
-    case InputType::MUSICTEST:
-        mIsMusicTest = false;
-        break;
-
-    case InputType::RELOADSCENE:
-        mIsReloadScene = false;
-        break;
-
-    case InputType::TIMETEST:
-        mIsTimeTest = false;
-        break;
-    case InputType::KILLPLAYER:
-        mIsKillPlayer = false;
-        break;
-#endif
 
     default:
-        break;
+        mFlags &= ~static_cast<u64>(input);
     }
 }
 
@@ -207,6 +111,11 @@ void InputHandler::loadMappings() const {
 
 void InputHandler::useJump() {
     mIsJumpPressed = false;
+}
+
+bool InputHandler::isOn(InputType input) {
+    auto mask = static_cast<u64>(input);
+    return (mFlags & mask) == mask;
 }
 
 }  // namespace whal

@@ -7,7 +7,7 @@ typedef struct Font Font;
 
 namespace whal {
 
-enum class InputType;
+enum class InputType : u64;
 
 class PauseMenu {
     enum Button { Resume, Exit };

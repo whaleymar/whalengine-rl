@@ -7,28 +7,27 @@ namespace whal {
 
 struct System;
 
-enum class InputType {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-    JUMP,
-    PAUSE,
-    QUIT,
-    SHOOT,
-    OK,
-    DEBUG,
-    GROWX,
-    GROWY,
-    SHRINKX,
-    SHRINKY,
-    MUSICTEST,
-    RELOADSCENE,
-    TIMETEST,
-    KILLPLAYER
+enum class InputType : u64 {
+    LEFT = 1,
+    RIGHT = 1 << 1,
+    UP = 1 << 2,
+    DOWN = 1 << 3,
+    JUMP = 1 << 4,
+    PAUSE = 1 << 5,
+    QUIT = 1 << 6,
+    SHOOT = 1 << 7,
+    OK = 1 << 8,
+    DEBUG = 1 << 9,
+    GROWX = 1 << 10,
+    GROWY = 1 << 11,
+    SHRINKX = 1 << 12,
+    SHRINKY = 1 << 13,
+    MUSICTEST = 1 << 14,
+    RELOADSCENE = 1 << 15,
+    TIMETEST = 1 << 16,
+    KILLPLAYER = 1 << 17
 };
 
-// TODO refactor so instead of a bunch of methods, i just have a isOn(InputType) method
 class InputHandler {
 public:
     friend System;
@@ -38,28 +37,9 @@ public:
     void reset(InputType input);
     void loadMappings() const;
     void useJump();
-
-    bool isLeft() const { return mIsLeft; }
-    bool isRight() const { return mIsRight; }
-    bool isUp() const { return mIsUp; }
-    bool isDown() const { return mIsDown; }
-    bool isJump() const { return mIsJump; }
-    bool isPause() const { return mIsPause; }
-    bool isQuit() const { return mIsQuit; }
+    bool isOn(InputType input);
 
     bool isJumpAvailable() const { return mIsJumpPressed; }
-
-#ifndef NDEBUG
-    bool isDebug() const { return mIsDebug; }
-    bool isShrinkX() const { return mIsShrinkX; }
-    bool isShrinkY() const { return mIsShrinkY; }
-    bool isGrowX() const { return mIsGrowX; }
-    bool isGrowY() const { return mIsGrowY; }
-    bool isMusicDebug() const { return mIsMusicTest; }
-    bool isReloadScene() const { return mIsReloadScene; }
-    bool isTimeDebug() const { return mIsTimeTest; }
-    bool isKillPlayer() const { return mIsKillPlayer; }
-#endif
 
     inline static std::unordered_map<int, InputType> KeyMap;
     inline static std::unordered_map<int, InputType> MouseMap;
@@ -70,27 +50,8 @@ private:
     InputHandler(const InputHandler&) = delete;
     void operator=(const InputHandler&) = delete;
 
-    bool mIsLeft = false;
-    bool mIsRight = false;
-    bool mIsUp = false;
-    bool mIsDown = false;
-    bool mIsJump = false;
-    bool mIsPause = false;
-    bool mIsQuit = false;
-
+    u64 mFlags = 0;
     bool mIsJumpPressed = false;
-
-#ifndef NDEBUG
-    bool mIsDebug = false;
-    bool mIsMusicTest = false;
-    bool mIsReloadScene = false;
-    bool mIsShrinkX = false;
-    bool mIsShrinkY = false;
-    bool mIsGrowX = false;
-    bool mIsGrowY = false;
-    bool mIsTimeTest = false;
-    bool mIsKillPlayer = false;
-#endif
 };
 
 }  // namespace whal
