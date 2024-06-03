@@ -416,50 +416,37 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
     return follow;
 }
 
-// Tiled doesn't support array properties so I have to do some BS
-// TODO maybe I can just iterate the polyline points and assume they're in order?
 void loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
-    std::string checkpointType = checkpointData["type"];
-    if (checkpointType == "CheckpointsN2") {
-        loadCheckpointN2(checkpointData, dstCheckpoints, level);
-    } else {
-        print("ERROR -- unrecognized checkpoint type: ", checkpointType);
-    }
-}
-
-void loadCheckpointN2(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
-    RailsControl::CheckPoint point1;
-    RailsControl::CheckPoint point2;
-
+    // generic rewrite:
     s32 parentX = checkpointData["x"];
     s32 parentY = checkpointData["y"];
+    auto& properties = checkpointData["properties"];
+    std::vector<RailsControl::Movement> moveProps;
+    for (const auto& moveProperty : properties) {
+        const s32 moveIx = moveProperty[KEY_VALUE];
+        moveProps.push_back(static_cast<RailsControl::Movement>(moveIx));
+    }
 
-    s32 i = 0;
+    size_t ix = 0;
     for (auto& point : checkpointData["polyline"]) {
-        s32 x = point["x"];
-        s32 y = point["y"];
-        Vector2i mapPos = {x + parentX, parentY + y};
-        if (i == 0) {
-            point1.position = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
+        const s32 x = point["x"];
+        const s32 y = point["y"];
+        const Vector2i mapPos = {x + parentX, parentY + y};
+        const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
+
+        RailsControl::Movement moveType;
+        if (ix >= moveProps.size()) {
+            std::string name = checkpointData[KEY_NAME];
+            print(name, " has ", moveProps.size(), " move type params but it has more points");
+            moveType = RailsControl::Movement::LINEAR;
         } else {
-            point2.position = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
+            moveType = moveProps[ix];
         }
-        i++;
-    }
+        RailsControl::CheckPoint chkPoint(trans, moveType);
+        dstCheckpoints.push_back(chkPoint);
 
-    for (auto& moveProperty : checkpointData["properties"]) {
-        std::string name = moveProperty[KEY_NAME];
-        if (name == "move1") {
-            s32 moveIx = moveProperty[KEY_VALUE];
-            point1.movement = static_cast<RailsControl::Movement>(moveIx);
-        } else if (name == "move2") {
-            s32 moveIx = moveProperty[KEY_VALUE];
-            point2.movement = static_cast<RailsControl::Movement>(moveIx);
-        }
+        ix++;
     }
-
-    dstCheckpoints.push_back(point1);
-    dstCheckpoints.push_back(point2);
 }
 
 }  // namespace whal

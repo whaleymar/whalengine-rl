@@ -12,14 +12,14 @@
     "fileStates": {
         "testmap.tmj": {
             "expandedObjectLayers": [
-                11,
-                6
+                6,
+                11
             ],
             "scale": 2.1889583333333333,
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 194.15627676786906,
-                "y": 111.69696392880937
+                "y": 111.240125630532
             }
         },
         "testmap2.tmj": {
@@ -71,7 +71,7 @@
         "widemap.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Map_MapInfo",
+    "property.type": "RailsMovement",
     "recentFiles": [
         "widemap.tmj",
         "testmap2.tmj",

@@ -67,6 +67,5 @@ void addComponentFollow(nlohmann::json& values, nlohmann::json& allObjects, std:
 
 Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level);
 void loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level);
-void loadCheckpointN2(nlohmann::json& data, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level);
 
 }  // namespace whal

@@ -43,6 +43,12 @@ void RailsSystem::update() {
         }();
         f32 epsilon = speed * SPEED_DIVISOR + 1;
 
+        print(transform.position);
+        if (entity.has<Velocity>()) {
+            print(entity.get<Velocity>().stable);
+            print("-------");
+        }
+
         if (rails.isWaiting) {
             // waiting at checkpoint
             if (rails.curTarget != 0 || rails.isCycle || rails.isVelocityUpdateNeeded) {
@@ -63,6 +69,12 @@ void RailsSystem::update() {
                         rails.curActionTime = rails.waitTime;
                     } else {
                         Velocity velToAdd = Velocity(toFloatVec(newDelta).norm() * rails.getSpeed(transform.position));
+                        if (velToAdd.stable.x() < -1000) {
+                            print("toAdd:", velToAdd.stable);
+                            print("newDelta:", newDelta);
+                            print("speed:", rails.getSpeed(transform.position));
+                            print("pos:", transform.position);
+                        }
                         entity.add<Velocity>(velToAdd);
                     }
 

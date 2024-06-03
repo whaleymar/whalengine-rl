@@ -1,6 +1,6 @@
 #pragma once
 
-// TODO this is stupid
+// RESEARCH this is stupid
 // Tags should be an enum
 // and there should just be one "Tags" component
 // and all entities should probably have it
@@ -12,6 +12,9 @@
 // I could even use this for PHYSICS stuff
 // actor, solid, semisolid tags
 // and consolidate the messy ass collider components/inheritance mess
+
+// HOWEVER, i do want quick access to things like the player and camera, which won't happen if i have to iterate through all entities and check their
+// tags so those things being their own tag components still makes sense BUT things like collider type could still work as a single component
 
 namespace whal {
 

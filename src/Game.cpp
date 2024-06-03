@@ -138,7 +138,7 @@ void Game::mainloop() {
     Color clearColor = {5, 5, 5, 255};
     Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
-    bool isQuantizeOn = true;
+    bool isQuantizeOn = false;
 
     // without the post processing step, would need to flip the y axis here by multiplying by -1
     Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), 1 * static_cast<f32>(targetTexture.texture.height)};

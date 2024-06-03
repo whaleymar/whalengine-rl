@@ -11,33 +11,6 @@
     ],
     "propertyTypes": [
         {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 4,
-            "members": [
-                {
-                    "name": "move1",
-                    "propertyType": "RailsMovement",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "move2",
-                    "propertyType": "RailsMovement",
-                    "type": "int",
-                    "value": 3
-                }
-            ],
-            "name": "CheckpointsN2",
-            "type": "class",
-            "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
-            ]
-        },
-        {
             "id": 20,
             "name": "CollisionDir",
             "storageType": "int",

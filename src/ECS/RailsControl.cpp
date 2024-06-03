@@ -48,7 +48,7 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
     const f32 segmentDistance = (targetPosf - startPosition).len();
     const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in texels/sec, but pos is in pixels
 
-    f32 t = curActionTime / expectedSegmentTime;
+    f32 t = clamp(curActionTime / expectedSegmentTime, 0.0f, 1.0f);
     f32 progress;
     switch (getTarget().movement) {
     case Movement::LINEAR:

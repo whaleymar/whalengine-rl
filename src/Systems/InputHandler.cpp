@@ -43,7 +43,7 @@ void InputHandler::set(InputType input) {
 #endif
 
     case InputType::SHOOT: {
-        // TODO whoever listens for this event should listen for MOUSE event
+        // RESEARCH whoever listens for this event should listen for MOUSE event
         System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
         mFlags |= static_cast<u64>(input);
         break;
