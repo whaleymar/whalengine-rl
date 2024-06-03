@@ -15,6 +15,12 @@ namespace whal {
 
 constexpr f32 SPEED_DIVISOR = 1.0f / 40.0f;
 
+void RailsSystem::onAdd(const ecs::Entity entity) {
+    auto& trans = entity.get<Transform2D>();
+    auto& rails = entity.get<RailsControl>();
+    rails.prepareForFirstStep(trans);
+}
+
 void RailsSystem::update() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
@@ -43,12 +49,6 @@ void RailsSystem::update() {
         }();
         f32 epsilon = speed * SPEED_DIVISOR + 1;
 
-        print(transform.position);
-        if (entity.has<Velocity>()) {
-            print(entity.get<Velocity>().stable);
-            print("-------");
-        }
-
         if (rails.isWaiting) {
             // waiting at checkpoint
             if (rails.curTarget != 0 || rails.isCycle || rails.isVelocityUpdateNeeded) {
@@ -58,7 +58,6 @@ void RailsSystem::update() {
                     rails.isWaiting = false;
 
                     rails.isVelocityUpdateNeeded = true;
-                    rails.curActionTime = 0;
 
                     Vector2i newDelta = rails.getTarget().position - transform.position;
 
@@ -69,12 +68,6 @@ void RailsSystem::update() {
                         rails.curActionTime = rails.waitTime;
                     } else {
                         Velocity velToAdd = Velocity(toFloatVec(newDelta).norm() * rails.getSpeed(transform.position));
-                        if (velToAdd.stable.x() < -1000) {
-                            print("toAdd:", velToAdd.stable);
-                            print("newDelta:", newDelta);
-                            print("speed:", rails.getSpeed(transform.position));
-                            print("pos:", transform.position);
-                        }
                         entity.add<Velocity>(velToAdd);
                     }
 

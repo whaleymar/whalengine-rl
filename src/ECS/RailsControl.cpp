@@ -1,7 +1,9 @@
 #include "RailsControl.h"
 
+#include "ECS/Transform.h"
 #include "Settings.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 
 namespace whal {
 
@@ -10,8 +12,9 @@ constexpr f32 SPEED_CURVE_EPSILON = 0.01;
 RailsControl::RailsControl(f32 moveSpeed_, std::vector<CheckPoint> checkPoints_, f32 waitTime_, bool isCycle_, ArrivalCallback callback)
     : mCheckpoints(checkPoints_), speed(moveSpeed_), waitTime(waitTime_), arrivalCallback(callback), curActionTime(waitTime_), isCycle(isCycle_) {}
 
-void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints) {
+void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform2D& trans) {
     mCheckpoints = std::move(checkpoints);
+    prepareForFirstStep(trans);
 }
 
 RailsControl::CheckPoint RailsControl::getTarget() const {
@@ -25,10 +28,26 @@ void RailsControl::startManually() {
 
 void RailsControl::step() {
     startPosition = toFloatVec(getTarget().position);
-    curTarget++;
-    if (curTarget == mCheckpoints.size()) {
-        curTarget = 0;
+
+    if (isForward) {
+        curTarget++;
+        if (curTarget == mCheckpoints.size()) {
+            if (endBehavior == EndBehavior::TO_START) {
+                curTarget = 0;
+            } else {
+                curTarget -= 2;
+                isForward = false;
+            }
+        }
+    } else {
+        if (curTarget == 0) {
+            curTarget = 1;
+            isForward = true;
+        } else {
+            curTarget--;
+        }
     }
+    curActionTime = 0;
 }
 
 f32 RailsControl::getSpeed(Vector2i currentPosition) {
@@ -135,6 +154,18 @@ f32 RailsControl::getSpeedNew() {
 
 bool RailsControl::isValid() const {
     return mCheckpoints.size() > 1;
+}
+
+void RailsControl::prepareForFirstStep(Transform2D& trans) {
+    if (isValid()) {
+        // set transform to match starting checkpoint
+        Vector2i target = getTarget().position;
+        startPosition = toFloatVec(target);
+        trans.position = target;
+    } else {
+        // o.w., make sure start position matches transform
+        startPosition = toFloatVec(trans.position);
+    }
 }
 
 }  // namespace whal

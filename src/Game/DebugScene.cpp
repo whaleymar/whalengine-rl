@@ -52,7 +52,7 @@ std::optional<Error> loadTestMap() {
     // createTestTrigger();
     // createTestSemiSolid();
     // createDepthTest();
-    createPaletteTest();
+    // createPaletteTest();
     return err;
 }
 

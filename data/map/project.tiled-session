@@ -12,14 +12,14 @@
     "fileStates": {
         "testmap.tmj": {
             "expandedObjectLayers": [
-                6,
-                11
+                11,
+                6
             ],
             "scale": 2.1889583333333333,
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 194.15627676786906,
-                "y": 111.240125630532
+                "y": 110.32644903397735
             }
         },
         "testmap2.tmj": {

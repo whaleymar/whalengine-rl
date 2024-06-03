@@ -668,7 +668,7 @@
                  "height":0,
                  "id":39,
                  "name":"RailsPath2",
-                 "polyline":[
+                 "polygon":[
                         {
                          "x":0,
                          "y":0
@@ -698,7 +698,7 @@
                          "name":"namedoesntmatter3",
                          "propertytype":"RailsMovement",
                          "type":"int",
-                         "value":6
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",

@@ -10,6 +10,7 @@ struct Transform2D;
 
 class RailsSystem : public ecs::ISystem<RailsControl, Transform2D> {
 public:
+    void onAdd(const ecs::Entity) override;
     void update() override;
 };
 

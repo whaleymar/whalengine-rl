@@ -218,14 +218,18 @@ void addComponentVelocity(nlohmann::json& values, nlohmann::json& allObjects, st
 void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                               ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     std::vector<RailsControl::CheckPoint> checkpoints;
+    std::optional<RailsControl::EndBehavior> endBehavior;
     if (values.contains("Checkpoints")) {
         s32 id = values["Checkpoints"];
         nlohmann::json checkPointObj = allObjects[idToIndex[id]];
-        loadCheckpoints(checkPointObj, checkpoints, level);
+        endBehavior = loadCheckpoints(checkPointObj, checkpoints, level);
     }
 
     RailsControl rails = ComponentFactory::DefaultRailsControl;
-    rails.setCheckpoints(checkpoints);
+    rails.setCheckpoints(checkpoints, entity.get<Transform2D>());
+    if (endBehavior) {
+        rails.endBehavior = endBehavior.value();
+    }
 
     if (values.contains("isCycle")) {
         rails.isCycle = values["isCycle"];
@@ -416,7 +420,7 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
     return follow;
 }
 
-void loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
+RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
     // generic rewrite:
     s32 parentX = checkpointData["x"];
     s32 parentY = checkpointData["y"];
@@ -427,8 +431,15 @@ void loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::C
         moveProps.push_back(static_cast<RailsControl::Movement>(moveIx));
     }
 
+    bool isToStart = checkpointData.contains("polygon");
+    std::string pathKey;
+    if (isToStart) {
+        pathKey = "polygon";
+    } else {
+        pathKey = "polyline";
+    }
     size_t ix = 0;
-    for (auto& point : checkpointData["polyline"]) {
+    for (auto& point : checkpointData[pathKey]) {
         const s32 x = point["x"];
         const s32 y = point["y"];
         const Vector2i mapPos = {x + parentX, parentY + y};
@@ -447,6 +458,8 @@ void loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::C
 
         ix++;
     }
+
+    return isToStart ? RailsControl::EndBehavior::TO_START : RailsControl::EndBehavior::REVERSE;
 }
 
 }  // namespace whal
