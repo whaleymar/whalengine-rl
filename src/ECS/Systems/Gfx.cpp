@@ -39,7 +39,7 @@ void SpriteSystem::drawEntities() {
         Sprite& sprite = entity.get<Sprite>();
 
         auto frameSize = toFloatVec(sprite.getFrameSizeTexels());
-        f32 flipModifier = trans.facing == Facing::Left ? 1 : -1;
+        f32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
         Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
 
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
