@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- rework tags
+- new character sprite
 
 ## Camera / Follow
 - different movement types (easein/out stuff)

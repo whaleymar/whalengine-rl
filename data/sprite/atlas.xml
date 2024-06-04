@@ -28,24 +28,24 @@
 		<img n="actor/witch-run3" x="1598" y="0" w="32" h="33" />
 		<img n="actor/witch-run2" x="1631" y="0" w="32" h="33" />
 		<img n="actor/witch-run1" x="1664" y="0" w="32" h="33" />
-		<img n="actor/witch-idle12" x="1697" y="0" w="32" h="33" />
-		<img n="actor/witch-idle11" x="1730" y="0" w="32" h="33" />
-		<img n="actor/witch-idle10" x="1763" y="0" w="32" h="33" />
-		<img n="actor/witch-idle9" x="1796" y="0" w="32" h="33" />
-		<img n="actor/witch-idle8" x="1829" y="0" w="32" h="33" />
-		<img n="actor/witch-idle7" x="1829" y="0" w="32" h="33" />
-		<img n="actor/witch-idle6" x="1829" y="0" w="32" h="33" />
-		<img n="actor/witch-idle5" x="1796" y="0" w="32" h="33" />
-		<img n="actor/witch-idle4" x="1763" y="0" w="32" h="33" />
-		<img n="actor/witch-idle3" x="1730" y="0" w="32" h="33" />
-		<img n="actor/witch-idle2" x="1697" y="0" w="32" h="33" />
-		<img n="actor/witch-idle1" x="1697" y="0" w="32" h="33" />
-		<img n="effect/explosion6" x="1862" y="0" w="32" h="32" />
-		<img n="effect/explosion5" x="1895" y="0" w="32" h="32" />
-		<img n="effect/explosion4" x="1928" y="0" w="32" h="32" />
-		<img n="effect/explosion3" x="1961" y="0" w="32" h="32" />
-		<img n="effect/explosion2" x="1994" y="0" w="32" h="32" />
-		<img n="effect/explosion1" x="2027" y="0" w="32" h="32" />
+		<img n="effect/explosion6" x="1697" y="0" w="32" h="32" />
+		<img n="effect/explosion5" x="1730" y="0" w="32" h="32" />
+		<img n="effect/explosion4" x="1763" y="0" w="32" h="32" />
+		<img n="effect/explosion3" x="1796" y="0" w="32" h="32" />
+		<img n="effect/explosion2" x="1829" y="0" w="32" h="32" />
+		<img n="effect/explosion1" x="1862" y="0" w="32" h="32" />
+		<img n="actor/witch-idle12" x="1895" y="0" w="32" h="32" />
+		<img n="actor/witch-idle11" x="1928" y="0" w="32" h="32" />
+		<img n="actor/witch-idle10" x="1961" y="0" w="32" h="32" />
+		<img n="actor/witch-idle9" x="1994" y="0" w="32" h="32" />
+		<img n="actor/witch-idle8" x="2027" y="0" w="32" h="32" />
+		<img n="actor/witch-idle7" x="2027" y="0" w="32" h="32" />
+		<img n="actor/witch-idle6" x="2027" y="0" w="32" h="32" />
+		<img n="actor/witch-idle5" x="1994" y="0" w="32" h="32" />
+		<img n="actor/witch-idle4" x="1961" y="0" w="32" h="32" />
+		<img n="actor/witch-idle3" x="1928" y="0" w="32" h="32" />
+		<img n="actor/witch-idle2" x="1895" y="0" w="32" h="32" />
+		<img n="actor/witch-idle1" x="1895" y="0" w="32" h="32" />
 		<img n="effect/bluefire4" x="2060" y="0" w="15" h="20" />
 		<img n="effect/bluefire3" x="2076" y="0" w="15" h="20" />
 		<img n="effect/bluefire2" x="2092" y="0" w="15" h="20" />
