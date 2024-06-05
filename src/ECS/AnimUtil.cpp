@@ -1,5 +1,6 @@
 #include "AnimUtil.h"
 
+#include <cassert>
 #include <format>
 
 #include "ECS/Animator.h"
@@ -17,11 +18,13 @@ void loadAnimations(Animator& animator, const AnimInfo& animInfo) {
             auto animName = std::format("{}{}", animBaseName, i + 1);
 
             auto frame = spriteTexture.getFrame(animName.c_str());
-            if (frame) {
-                frames.push_back(*frame);
-            } else {
-                print("Failed to load animation frame: ", animName);
+#ifndef NDEBUG
+            if (!frame) {
+                print("Failed to load animation frame:", animName);
+                assert(false);
             }
+#endif
+            frames.push_back(*frame);
         }
 
         animator.animations.push_back(Animation(id, frames, secsPerFrame));

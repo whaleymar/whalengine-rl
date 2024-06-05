@@ -19,10 +19,6 @@ Vector2f closestCardinalDirection(Vector2f vecf) {
             closest = other;
             minDegreesAway = degreesAway;
         }
-        // if (otherDP > maxDP) {
-        //     closest = other;
-        //     maxDP = otherDP;
-        // }
     };
 
     if (vecf.x() == 0) {

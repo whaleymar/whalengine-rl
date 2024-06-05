@@ -39,14 +39,20 @@ namespace PlayerAnim {
 enum AnimId : s32 { IDLE, RUN, JUMP, RISE, PEAK, FALL, JUMP_FORWARD, RISE_FORWARD, PEAK_FORWARD, FALL_FORWARD };
 
 static const AnimInfo S_PLAYER_ANIM_INFO = {
-    {"actor/witch-idle", PlayerAnim::IDLE, 12, 0.1},
+    {"actor/witch-idle", PlayerAnim::IDLE, 5, 0.33},
     {"actor/witch-run", PlayerAnim::RUN, 8, 0.1},
-    {"actor/witch_jumpforward", PlayerAnim::JUMP_FORWARD, 3, 0.1},
-    {"actor/witch_jumpforward_rising", PlayerAnim::RISE_FORWARD, 4, 0.1},
-    {"actor/witch-jumpforward_peak", PlayerAnim::PEAK_FORWARD, 4, 0.1},
-    {"actor/witch-fallforward", PlayerAnim::FALL_FORWARD, 3, 0.1},
-    {"actor/player-jump", PlayerAnim::JUMP, 1, 1.0},
-    {"actor/player-fall", PlayerAnim::FALL, 1, 1.0},
+    {"actor/witch-jumpforward", PlayerAnim::JUMP_FORWARD, 2, 0.1},
+    {"actor/witch-jumpforward_rising", PlayerAnim::RISE_FORWARD, 4, 0.1},
+    {"actor/witch-jumpforward_peak", PlayerAnim::PEAK_FORWARD, 2, 0.1},
+    {"actor/witch-fall", PlayerAnim::FALL_FORWARD, 4, 0.1},
+    // {"actor/witch-idle", PlayerAnim::IDLE, 12, 0.1},
+    // {"actor/witch-run", PlayerAnim::RUN, 8, 0.1},
+    // {"actor/witch_jumpforward", PlayerAnim::JUMP_FORWARD, 3, 0.1},
+    // {"actor/witch_jumpforward_rising", PlayerAnim::RISE_FORWARD, 4, 0.1},
+    // {"actor/witch-jumpforward_peak", PlayerAnim::PEAK_FORWARD, 4, 0.1},
+    // {"actor/witch-fallforward", PlayerAnim::FALL_FORWARD, 3, 0.1},
+    {"actor/player-jump", PlayerAnim::JUMP, 1, 1.0},  // TODO
+    {"actor/player-fall", PlayerAnim::FALL, 1, 1.0},  // TODO
 };
 
 bool brain(Animator& animator, ecs::Entity entity) {
