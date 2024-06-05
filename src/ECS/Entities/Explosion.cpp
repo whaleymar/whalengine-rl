@@ -1,5 +1,6 @@
 #include "Explosion.h"
 
+#include "ECS/Blaster.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "whalECS/src/ECS.h"
 
@@ -53,6 +54,12 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
 
         Velocity& vel = other.get<Velocity>();
         vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
+
+        // ----------------------------
+        // ADD ROCKET JUMPING COMPONENT
+        if (!other.has<RocketJumping>()) {
+            other.add<RocketJumping>();
+        }
     };
     auto trigger = TriggerZone(trans, {halflen, halflen}, pushEntityAway);
     entity.add(trigger);

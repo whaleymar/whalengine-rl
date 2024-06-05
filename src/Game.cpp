@@ -118,6 +118,7 @@ void Game::mainloop() {
     auto cameraMgr = CameraSystem::instance();
     auto childMgr = EntityChildSystem::instance();
     System::ecs->registerSystem<ProjectileSystem>();
+    System::ecs->registerSystem<RocketJumpingSystem>();
 
     // load scene // TODO separate function
     auto err = loadTestMap();

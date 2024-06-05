@@ -3,6 +3,7 @@
 #include <cmath>
 #include <functional>
 
+#include "Game/Events.h"
 #include "Settings.h"
 
 #include "ECS/Collision.h"
@@ -118,8 +119,15 @@ void PhysicsSystem::update() {
         } else {
             dt = System::dt();
         }
-        const f32 frictionStepGround = dt * FRICTION_GROUND;
-        const f32 frictionStepAir = dt * FRICTION_AIR;
+
+        std::optional<RigidBody*> rb = entity.tryGet<RigidBody>();
+        Vector2f frictionMultiplier = {1, 1};
+        if (rb) {
+            frictionMultiplier = rb.value()->frictionMultiplier;
+        }
+
+        const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x();
+        const f32 frictionStepAir = dt * FRICTION_AIR * frictionMultiplier.y();
         const f32 gravityStep = dt * GRAVITY * 3;
         Transform2D& trans = entity.get<Transform2D>();
         Velocity& vel = entity.get<Velocity>();
@@ -140,7 +148,6 @@ void PhysicsSystem::update() {
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
-        std::optional<RigidBody*> rb = entity.tryGet<RigidBody>();
         std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>();
         std::optional<SemiSolidCollider*> semisolid = std::nullopt;
         if (!actor) {
@@ -180,7 +187,11 @@ void PhysicsSystem::update() {
             // RIGIDBODY FLAGS, MOMENTUM, AND COYOTE TIME
             bool isMomentumStored = actor.value()->isMomentumStoredX() || actor.value()->isMomentumStoredY();
             if (rb.value()->isGrounded) {
-                rb.value()->isLanding = !wasGrounded;
+                bool isLanding = !wasGrounded;
+                rb.value()->isLanding = isLanding;
+                if (isLanding) {
+                    System::eventMgr.triggerEvent(Event::LANDING_EVENT, entity);
+                }
 
                 if (isMomentumStored) {
                     actor.value()->momentumNotUsed();
@@ -249,7 +260,11 @@ void PhysicsSystem::update() {
             // RESEARCH this makes me think i should separate jumping/coyote stuff into its own platformer component
             // RIGIDBODY FLAGS, AND COYOTE TIME
             if (rb.value()->isGrounded) {
-                rb.value()->isLanding = !wasGrounded;
+                bool isLanding = !wasGrounded;
+                rb.value()->isLanding = isLanding;
+                if (isLanding) {
+                    System::eventMgr.triggerEvent(Event::LANDING_EVENT, entity);
+                }
 
             } else {
                 if (wasGrounded && !rb.value()->isJumping) {

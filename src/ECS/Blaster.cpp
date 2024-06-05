@@ -1,8 +1,11 @@
 #include "ECS/Blaster.h"
 
+#include "ECS/Name.h"
+#include "ECS/RigidBody.h"
 #include "Game/Events.h"
 #include "Systems/Event.h"
 #include "Systems/System.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/Entities/Projectile.h"
@@ -104,4 +107,29 @@ void onBlasterFired(Vector2i target) {
 
 ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)) {
     whal::System::eventMgr.registerListener(whal::Event::SHOOT_EVENT, mBlasterEventListener);
+}
+
+void onRocketJumperLands(whal::ecs::Entity entity) {
+    if (entity.has<RocketJumping>()) {
+        // if (entity.has<whal::Name>()) {
+        //     print("removed RJ component for entity", entity.get<whal::Name>());
+        // } else {
+        //     print("remove RJ component for entity");
+        // }
+        entity.remove<RocketJumping>();
+    }
+}
+
+RocketJumpingSystem::RocketJumpingSystem() : mLandingEventListener(whal::EventListener<whal::ecs::Entity>(&onRocketJumperLands)) {
+    whal::System::eventMgr.registerListener(whal::Event::LANDING_EVENT, mLandingEventListener);
+}
+void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
+    auto& rb = entity.get<whal::RigidBody>();
+    entity.get<RocketJumping>().prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
+    rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
+}
+
+void RocketJumpingSystem::onRemove(const whal::ecs::Entity entity) {
+    auto& rb = entity.get<whal::RigidBody>();
+    rb.frictionMultiplier = entity.get<RocketJumping>().prevFrictionMultiplier;  // restore saved value
 }

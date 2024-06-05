@@ -19,6 +19,7 @@ struct RigidBody {
     f32 jumpInitialVelocity = 124;
     f32 jumpSecondsMax = 1.25;
     f32 coyoteTimeSecondsMax = 0.1;
+    Vector2f frictionMultiplier = {1.0, 1.0};  // x is ground, y is air
     Vector2f momentumDamping = {1.0, 0.5};
 
     // automatically managed:
