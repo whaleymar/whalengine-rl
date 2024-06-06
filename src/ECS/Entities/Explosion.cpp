@@ -2,10 +2,10 @@
 
 #include "ECS/Blaster.h"
 #include "ECS/Systems/TagTrackers.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
-#include "Settings.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 
@@ -14,7 +14,6 @@
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Lifetime.h"
-// #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Transform.h"
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
@@ -36,24 +35,21 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
         const AABB& otherCollider = other.get<ActorCollider>().getCollider();
 
-        TriggerZone& trigger = self.get<TriggerZone>();
+        // TriggerZone& trigger = self.get<TriggerZone>();
+        TriggerCircle& trigger = self.get<TriggerCircle>();
         Vector2i center = trigger.center;
         Vector2f delta = toFloatVec(otherCollider.center - center);
         auto unitDelta = delta.norm();
 
         // slight knockback falloff based on distance
-        Vector2f distanceTexels = (delta * FTEXELS_PER_PIXEL).absolute();
-        Vector2f halflenTexels = toFloatVec(trigger.half) * FTEXELS_PER_PIXEL;
-        f32 multX = std::sqrt(1.0f - clamp(distanceTexels.x() / halflenTexels.x(), 0.0f, 1.0f));
-        f32 multY = std::sqrt(1.0f - clamp(distanceTexels.y() / halflenTexels.y(), 0.0f, 1.0f));
+        // TODO make this onTriggerEnter/Stay instead of just enter
+        f32 pushMult = 1 - std::pow(trigger.distanceFrom(otherCollider) / trigger.radius, 2);
 
-        // print("distance2D:", distanceTexels);
-        // print("halflen:", halflenTexels);
-        // print("mult", multX, multY, "\n");
-        const Vector2f pushStrengthMax = {150, 100};
+        const Vector2f pushStrengthMax = {100, 100};
 
         Velocity& vel = other.get<Velocity>();
-        vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
+        // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
+        vel.stable += unitDelta * pushStrengthMax * pushMult;
 
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT
@@ -61,7 +57,8 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
             other.add<RocketJumping>();
         }
     };
-    auto trigger = TriggerZone(trans, {halflen, halflen}, pushEntityAway);
+    // auto trigger = TriggerZone(trans, {halflen, halflen}, pushEntityAway);
+    auto trigger = TriggerCircle(trans, halflen, pushEntityAway);
     entity.add(trigger);
 
     constexpr f32 lifetime = 0.5;

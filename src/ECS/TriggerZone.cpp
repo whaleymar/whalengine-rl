@@ -3,6 +3,9 @@
 namespace whal {
 
 TriggerZone::TriggerZone(Transform2D transform, Vector2i halflen, TriggerCallback callbackEnter, TriggerCallback callbackExit)
-    : AABB(transform, halflen), onTriggerEnter(callbackEnter), onTriggerExit(callbackExit){};
+    : AABB(transform, halflen), onTriggerEnter(callbackEnter), onTriggerExit(callbackExit) {}
 
-}
+TriggerCircle::TriggerCircle(Transform2D transform, s32 radius, TriggerCallback callbackEnter, TriggerCallback callbackExit)
+    : Circle(transform, radius), onTriggerEnter(callbackEnter), onTriggerExit(callbackExit) {}
+
+}  // namespace whal

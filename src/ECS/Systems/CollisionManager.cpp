@@ -7,6 +7,7 @@
 #include "ECS/Systems/TriggerSystem.h"
 #include "ECS/TriggerZone.h"
 #include "Game/Events.h"
+#include "Util/Vector.h"
 
 namespace whal {
 
@@ -112,13 +113,17 @@ void SemiSolidsManager::onRemove(ecs::Entity entity) {
 #ifndef NDEBUG
 
 void drawCollider(Vector2f cameraPos, const AABB& aabb, const Color color) {
-    // Vector2f position(aabb.left(), aabb.top());
     Vector2f position(aabb.left(), aabb.bottom());
     Vector2f size = Vector2f(aabb.half.x(), aabb.half.y()) * 2;
 
     // subtract size.y() so we draw from bottom left instead of top left
     Vector2f dstPosition = {position.x() - cameraPos.x(), -1 * position.y() + cameraPos.y() - size.y()};
     DrawRectangleLines(dstPosition.x(), dstPosition.y(), size.x(), size.y(), color);
+}
+
+void drawCircleCollider(Vector2f cameraPos, const Circle& circle, const Color color) {
+    Vector2f dstPosition = {circle.center.x() - cameraPos.x(), -1 * circle.center.y() + cameraPos.y()};
+    DrawCircleLines(dstPosition.x(), dstPosition.y(), circle.radius, color);
 }
 
 void drawColliders() {
@@ -134,6 +139,9 @@ void drawColliders() {
     }
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesRef()) {
         drawCollider(cameraPos, entity.get<TriggerZone>(), Colors::Emerald);
+    }
+    for (const auto& [entityid, entity] : TriggerCircleSystem::getEntitiesRef()) {
+        drawCircleCollider(cameraPos, entity.get<TriggerCircle>(), Colors::Emerald);
     }
 }
 #endif

@@ -16,7 +16,7 @@ struct Blaster {
     f32 projectileSpeed = 160;  // same as terminal velocity
     f32 shotKnockback = 50;
     f32 projectileLifetimeSeconds = 3.5;
-    f32 explosionRadius = FPIXELS_PER_TILE * 1.5;
+    f32 explosionRadius = FPIXELS_PER_TILE * 2.5;
 };
 
 struct RocketJumping {

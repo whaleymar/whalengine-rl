@@ -1,11 +1,9 @@
 #include "ECS/Blaster.h"
 
-#include "ECS/Name.h"
 #include "ECS/RigidBody.h"
 #include "Game/Events.h"
 #include "Systems/Event.h"
 #include "Systems/System.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/Entities/Projectile.h"

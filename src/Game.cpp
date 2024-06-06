@@ -104,6 +104,7 @@ void Game::mainloop() {
     auto lifetimeSystem = System::ecs->registerSystem<LifetimeSystem>();
     System::ecs->registerSystem<MovableActorTracker>();  // dependency of TriggerSystem
     auto triggerSystem = System::ecs->registerSystem<TriggerSystem>();
+    auto triggerCircleSystem = System::ecs->registerSystem<TriggerCircleSystem>();
     auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
     auto followSystem = System::ecs->registerSystem<FollowSystem>();
     auto attachSystem = System::ecs->registerSystem<AttachSystem>();
@@ -167,6 +168,7 @@ void Game::mainloop() {
         followSystem->update();
 
         triggerSystem->update();
+        triggerCircleSystem->update();
 
         lifetimeSystem->update();
 
