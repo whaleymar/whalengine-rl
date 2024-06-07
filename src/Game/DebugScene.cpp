@@ -187,13 +187,13 @@ void createTestPlatform() {
 
 void createTestTrigger() {
     // TriggerCallback callback = [](ecs::Entity entity) { System::audio.play(Sfx::ENEMY_CRY); };
-    TriggerCallback callback = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
+    // TriggerCallback callback = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
 
     // TriggerZone trigger = TriggerZone(Transform::tiles(5, -5), {4, 4}, callback);
     // TriggerZone trigger = TriggerZone(Transform::tiles(5, -9), {4, 4}, nullptr);
-    TriggerZone trigger = TriggerZone(Transform2D::tiles(2, -9), {8, 8}, nullptr, callback);
-    auto newEntity = System::ecs->entity().value();
-    newEntity.add(trigger);
+    // TriggerZone trigger = TriggerZone(Transform2D::tiles(2, -9), {8, 8}, nullptr, callback);
+    // auto newEntity = System::ecs->entity().value();
+    // newEntity.add(trigger);
 }
 
 void createTestSemiSolid() {

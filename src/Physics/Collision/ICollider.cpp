@@ -1,5 +1,9 @@
 #include "ICollider.h"
+
+#include <raylib.h>
 #include <vector>
+#include "ECS/Transform.h"
+#include "Physics/Collision/Shapes.h"
 
 namespace whal {
 
@@ -53,5 +57,118 @@ bool LayerMatrix::isOn(Layer layer1, Layer layer2) const {
 }
 
 }  // namespace CollisionLayer
+
+Shape::Shape(AABB aabb, CollisionLayer::Layer layer) : mAABB(aabb), mShape(ColliderShape::AABB), mLayer(layer) {}
+
+Shape::Shape(Circle circle, CollisionLayer::Layer layer) : mCircle(circle), mShape(ColliderShape::Circle), mLayer(layer) {}
+
+Shape::Shape(const Shape& other) {
+    mShape = other.mShape;
+    mLayer = other.mLayer;
+    switch (other.mShape) {
+    case ColliderShape::AABB:
+        mAABB = other.mAABB;
+        break;
+    case ColliderShape::Circle:
+        mCircle = other.mCircle;
+        break;
+    }
+}
+
+Shape& Shape::operator=(const Shape& other) {
+    if (this == &other) {
+        return *this;
+    }
+    mShape = other.mShape;
+    mLayer = other.mLayer;
+    switch (other.mShape) {
+    case ColliderShape::AABB:
+        mAABB = other.mAABB;
+        break;
+    case ColliderShape::Circle:
+        mCircle = other.mCircle;
+        break;
+    }
+    return *this;
+}
+
+Circle Shape::getCircle() const {
+    assert(mShape == ColliderShape::Circle && "trying to run getCircle but ColliderShape is not a circle");
+    return mCircle;
+}
+
+AABB Shape::getAABB() const {
+    assert(mShape == ColliderShape::AABB && "trying to run getAABB but ColliderShape is not an AABB");
+    return mAABB;
+}
+
+void Shape::setPosition(Vector2i center) {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        mAABB.setPosition(center);
+        break;
+    case ColliderShape::Circle:
+        mCircle.setPosition(center);
+        break;
+    }
+}
+
+void Shape::setPosition(Transform2D transform) {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        mAABB.setPosition(transform);
+        break;
+    case ColliderShape::Circle:
+        mCircle.setPosition(transform);
+        break;
+    }
+}
+
+Vector2i Shape::getPosition() const {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        return mAABB.getPosition();
+    case ColliderShape::Circle:
+        return mCircle.getPosition();
+    }
+}
+
+bool Shape::isOverlapping(const Shape& other) const {
+    switch (other.mShape) {
+    case ColliderShape::AABB:
+        return isOverlapping(other.mAABB);
+    case ColliderShape::Circle:
+        return isOverlapping(other.mCircle);
+    }
+}
+
+bool Shape::isOverlapping(const AABB& other) const {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        return isIntersectAABBvsAABB(&mAABB, &other);
+    case ColliderShape::Circle:
+        return isIntersectAABBvsCircle(&other, &mCircle);
+    }
+}
+
+bool Shape::isOverlapping(const Circle& other) const {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        return isIntersectAABBvsCircle(&mAABB, &other);
+    case ColliderShape::Circle:
+        return isIntersectCirclevsCircle(&other, &mCircle);
+    }
+}
+
+void Shape::draw(Vector2f cameraPos, Color color) const {
+    switch (mShape) {
+    case ColliderShape::AABB:
+        mAABB.draw(cameraPos, color);
+        break;
+    case ColliderShape::Circle:
+        mCircle.draw(cameraPos, color);
+        break;
+    }
+}
 
 }  // namespace whal

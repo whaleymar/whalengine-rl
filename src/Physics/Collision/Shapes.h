@@ -1,27 +1,34 @@
 #pragma once
 
+#include <optional>
+
+#include "ECS/Transform.h"
 #include "Physics/Collision/HitInfo.h"
-#include "Physics/Collision/ICollider.h"
+#include "Util/Vector.h"
+
+typedef struct Color Color;
 
 namespace whal {
 
-class AABB2 : public IColliderShape {
+class AABB {
 public:
-    AABB2(Vector2i center = {0, 0}, Vector2i half = {0, 0}, CollisionLayer::Layer layer = CollisionLayer::None);
-    AABB2(Transform2D transform, Vector2i half, CollisionLayer::Layer layer);
+    AABB() = default;
+    AABB(Vector2i center, Vector2i half = {0, 0});
+    AABB(Transform2D transform, Vector2i half);
 
-    using IColliderShape::setPosition;
+    void setPosition(Vector2i center);
     void setPosition(Transform2D transform);
-    bool isOverlapping(const IColliderShape* other) const override;
-    // std::unique_ptr<IColliderShape> clone() const override;
-#ifndef NDEBUG
-    void draw(Vector2f cameraPos, Color color) const override;
-#endif
+    Vector2i getPosition() const { return mCenter; }
 
     Vector2i getHalf() const { return mHalf; }
     void setHalf(Vector2i half) { mHalf = half; }
     Vector2i getPositionEdge(Vector2i unitDir) const;
-    const std::optional<HitInfo> collide(const AABB2& other) const;
+    const std::optional<HitInfo> collide(const AABB& other) const;
+
+    bool isOverlapping(const AABB* other) const;
+#ifndef NDEBUG
+    void draw(Vector2f cameraPos, Color color) const;
+#endif
 
     s32 top() const { return mCenter.y() + mHalf.y(); }
     s32 bottom() const { return mCenter.y() - mHalf.y(); }
@@ -29,35 +36,37 @@ public:
     s32 left() const { return mCenter.x() - mHalf.x(); }
 
 private:
+    Vector2i mCenter;
     Vector2i mHalf;
 };
 
-using EdgeGetter = s32 (AABB2::*)() const;
+using EdgeGetter = s32 (AABB::*)() const;
 
-class Circle2 : public IColliderShape {
+class Circle {
 public:
-    Circle2(Vector2i center = {0, 0}, s32 radius = 0, CollisionLayer::Layer layer = CollisionLayer::None);
-    Circle2(Transform2D transform, s32 radius, CollisionLayer::Layer layer);
+    Circle() = default;
+    Circle(Vector2i center, s32 radius = 0);
+    Circle(Transform2D transform, s32 radius);
 
-    using IColliderShape::setPosition;
+    void setPosition(Vector2i center);
     void setPosition(Transform2D transform);
-
-    bool isOverlapping(const IColliderShape* other) const override;
-    // std::unique_ptr<IColliderShape> clone() const override;
-#ifndef NDEBUG
-    void draw(Vector2f cameraPos, Color color) const override;
-#endif
+    Vector2i getPosition() const { return mCenter; }
 
     s32 getRadius() const { return mRadius; }
-    f32 getDistanceFromCenter(const AABB2* aabb) const;
-    f32 getDistanceFromCenter(const Circle2* other) const;
+    f32 getDistanceFromCenter(const AABB* aabb) const;
+    f32 getDistanceFromCenter(const Circle* other) const;
+
+#ifndef NDEBUG
+    void draw(Vector2f cameraPos, Color color) const;
+#endif
 
 private:
+    Vector2i mCenter;
     s32 mRadius;
 };
 
-bool isIntersectAABBvsAABB(const AABB2*, const AABB2*);
-bool isIntersectCirclevsCircle(const Circle2*, const Circle2*);
-bool isIntersectAABBvsCircle(const AABB2*, const Circle2*);
+bool isIntersectAABBvsAABB(const AABB*, const AABB*);
+bool isIntersectCirclevsCircle(const Circle*, const Circle*);
+bool isIntersectAABBvsCircle(const AABB*, const Circle*);
 
 }  // namespace whal

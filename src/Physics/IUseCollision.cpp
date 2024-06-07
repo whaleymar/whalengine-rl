@@ -3,7 +3,7 @@
 
 namespace whal {
 
-IUseCollision::IUseCollision(AABB2 collider, WorldMaterial material, CollisionCallback callback)
+IUseCollision::IUseCollision(AABB collider, WorldMaterial material, CollisionCallback callback)
     : mCollider(collider), mOnCollisionEnter(callback), mMaterial(material) {}
 
 void IUseCollision::setCollisionCallback(CollisionCallback callback) {
@@ -11,7 +11,7 @@ void IUseCollision::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
 }
 
-bool checkDirectionalCollision(const AABB2& movingCollider, const AABB2& oneWayCollider, Vector2i movement, CollisionDir collisionDir) {
+bool checkDirectionalCollision(const AABB& movingCollider, const AABB& oneWayCollider, Vector2i movement, CollisionDir collisionDir) {
     // check if other's movement will collide with the one way collider
     switch (collisionDir) {
     case CollisionDir::ALL:

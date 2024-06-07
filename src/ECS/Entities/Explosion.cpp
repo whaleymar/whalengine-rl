@@ -3,6 +3,7 @@
 #include "ECS/Blaster.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Physics/Collision/ICollider.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -35,18 +36,15 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
         const auto& otherCollider = other.get<ActorCollider>().getCollider();
 
-        // TriggerZone& trigger = self.get<TriggerZone>();
-        TriggerCircle& trigger = self.get<TriggerCircle>();
-        Vector2i center = trigger.getPosition();
-        // Trigger& trigger = self.get<Trigger>();
-        // Vector2i center = trigger.shape->getPosition();
+        Trigger& trigger = self.get<Trigger>();
+        Vector2i center = trigger.shape.getPosition();
         Vector2f delta = toFloatVec(otherCollider.getPosition() - center);
         auto unitDelta = delta.norm();
 
         // slight knockback falloff based on distance
         // TODO make this onTriggerEnter/Stay instead of just enter
-        // f32 pushMult = 1 - std::pow(trigger.distanceFrom(otherCollider) / trigger.radius, 2);
-        f32 pushMult = 1.0f;  // TODO
+        auto circle = trigger.shape.getCircle();
+        f32 pushMult = 1 - std::pow(circle.getDistanceFromCenter(&otherCollider) / circle.getRadius(), 2);
 
         const Vector2f pushStrengthMax = {100, 100};
 
@@ -60,10 +58,8 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
             other.add<RocketJumping>();
         }
     };
-    // auto trigger = TriggerZone(trans, {halflen, halflen}, pushEntityAway);
-    auto trigger = TriggerCircle(trans, halflen, pushEntityAway);
-    // auto shape = Circle2(trans, halflen, CollisionLayer::Trigger);
-    // auto trigger = Trigger(&shape, pushEntityAway);
+    auto shape = Shape(Circle(trans, halflen), CollisionLayer::Trigger);
+    auto trigger = Trigger(shape, pushEntityAway);
     entity.add(trigger);
 
     constexpr f32 lifetime = 0.5;

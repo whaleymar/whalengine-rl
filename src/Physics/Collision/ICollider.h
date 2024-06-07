@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
 #include <unordered_map>
 
+#include "Physics/Collision/Shapes.h"
 #include "Util/Vector.h"
 
 typedef struct Color Color;
@@ -10,8 +10,6 @@ typedef struct Color Color;
 namespace whal {
 
 struct Transform2D;
-
-enum class ColliderShape : u16 { AABB, Circle };
 
 namespace CollisionLayer {
 enum Layer : u16 {
@@ -42,25 +40,40 @@ private:
 
 static const CollisionLayer::LayerMatrix LAYER_MATRIX;
 
-class IColliderShape {
-public:
-    IColliderShape(Vector2i center, ColliderShape shape, CollisionLayer::Layer layer) : mCenter(center), mShape(shape), mLayer(layer) {}
-    // virtual ~IColliderShape() = default;
+enum class ColliderShape : u16 { AABB, Circle };
 
-    void setPosition(Vector2i center) { mCenter = center; }
-    Vector2i getPosition() const { return mCenter; }
+// tagged union
+class Shape {
+public:
+    Shape() : mAABB(Vector2i(5, 5)), mShape(ColliderShape::AABB), mLayer(CollisionLayer::None) {}
+
+    Shape(AABB aabb, CollisionLayer::Layer layer);
+    Shape(Circle circle, CollisionLayer::Layer layer);
+
+    // apparently these get deleted bc compiler bug
+    Shape(const Shape& other);
+    Shape& operator=(const Shape& other);
+
     ColliderShape getShape() const { return mShape; }
     CollisionLayer::Layer getLayer() const { return mLayer; }
 
-    // virtual void setPosition(Transform2D transform) = 0;
-    virtual bool isOverlapping(const IColliderShape* other) const = 0;
-    // virtual std::unique_ptr<IColliderShape> clone() const = 0;
+    AABB getAABB() const;
+    Circle getCircle() const;
+    void setPosition(Vector2i center);
+    void setPosition(Transform2D transform);
+    Vector2i getPosition() const;
+    bool isOverlapping(const Shape& other) const;
+    bool isOverlapping(const AABB& other) const;
+    bool isOverlapping(const Circle& other) const;
 #ifndef NDEBUG
-    virtual void draw(Vector2f cameraPos, Color color) const = 0;
+    void draw(Vector2f cameraPos, Color color) const;
 #endif
 
-protected:
-    Vector2i mCenter;
+private:
+    union {
+        AABB mAABB;
+        Circle mCircle;
+    };
     ColliderShape mShape;
     CollisionLayer::Layer mLayer;
 };

@@ -124,11 +124,12 @@ void drawColliders() {
         collider->getCollider().draw(cameraPos, Colors::Pink);
     }
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesRef()) {
-        entity.get<TriggerZone>().draw(cameraPos, Colors::Emerald);
+        entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
+        // entity.get<TriggerZone>().draw(cameraPos, Colors::Emerald);
     }
-    for (const auto& [entityid, entity] : TriggerCircleSystem::getEntitiesRef()) {
-        entity.get<TriggerCircle>().draw(cameraPos, Colors::Emerald);
-    }
+    // for (const auto& [entityid, entity] : TriggerCircleSystem::getEntitiesRef()) {
+    //     entity.get<TriggerCircle>().draw(cameraPos, Colors::Emerald);
+    // }
 }
 #endif
 
