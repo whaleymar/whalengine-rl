@@ -16,6 +16,40 @@ namespace ecs {
 class Entity;
 }
 
+// RESEARCH not sure if i will do this YET
+// class Collider {
+// public:
+//     Collider() = default;
+//     Collider(IColliderShape* shape, WorldMaterial material = WorldMaterial::None, CollisionCallback callback = nullptr);
+//
+//     const IColliderShape* getCollider() const { return mShape.get(); }
+//     IColliderShape* getColliderMut() const { return mShape.get(); }
+//     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
+//     void setCollisionCallback(CollisionCallback callback);  // TODO was virtual
+//     WorldMaterial getMaterial() const { return mMaterial; }
+//     void setMaterial(WorldMaterial material) { mMaterial = material; }
+//     ecs::Entity getEntity() const { return mSelf; }
+//     void setEntity(ecs::Entity entity) { mSelf = entity; }
+//     bool isCollidable() const { return mIsCollidable; }
+//     void setIsCollidable(bool isCollidable) { mIsCollidable = isCollidable; }
+//
+//     std::optional<HitInfo> moveX(const Vector2f amount, const CollisionCallback callback);
+//     std::optional<HitInfo> moveY(const Vector2f amount, const CollisionCallback callback);
+//     bool checkIsGrounded(const std::vector<Collider*>& groundColliders, Collider** dstGroundCollider);
+//     bool checkCollision(const std::vector<Collider*>& colliderList, const Vector2i position, const Vector2i moveNormal);
+//
+//     void squish();
+//
+// protected:
+//     std::unique_ptr<IColliderShape> mShape;
+//     CollisionCallback mOnCollisionEnter;
+//     ecs::Entity mSelf;
+//     f32 mXRemainder = 0.0;
+//     f32 mYRemainder = 0.0;
+//     WorldMaterial mMaterial;
+//     bool mIsCollidable = true;
+// };
+
 class ActorCollider : public IUseCollision {
 public:
     ActorCollider() = default;

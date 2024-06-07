@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "ECS/RigidBody.h"
+#include "ECS/Transform.h"
 #include "Settings.h"
 
 #include "ECS/Systems/CollisionManager.h"
@@ -22,9 +23,12 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, IUseCollision*
     callbackEntityCollider->squish();
 }
 
+// Collider::Collider(IColliderShape* shape, WorldMaterial material, CollisionCallback callback)
+//     : mShape(shape->clone()), mOnCollisionEnter(callback), mMaterial(material) {}
+
 ActorCollider::ActorCollider(Transform2D transform, Vector2i half, WorldMaterial material, CollisionCallback onCollisionEnter_,
                              bool canCollideWithActors)
-    : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCanCollideWithActors(canCollideWithActors) {}
+    : IUseCollision(AABB2(transform, half, CollisionLayer::Actor), material, onCollisionEnter_), mCanCollideWithActors(canCollideWithActors) {}
 
 std::optional<HitInfo> ActorCollider::moveX(const Vector2f amount, const CollisionCallback callback) {
     // RESEARCH doesn't handle colliding with other actors
@@ -228,8 +232,8 @@ bool ActorCollider::checkIsGroundedOnActors(const std::vector<ActorCollider*>& a
         if (!actor->isCollidable() || this == actor) {
             continue;
         }
-        auto movedCollider = AABB(mCollider.center + Vector2i::unitDown, mCollider.half);
-        if (movedCollider.isOverlapping(actor->getCollider())) {
+        auto movedCollider = AABB2(mCollider.getPosition() + Vector2i::unitDown, mCollider.getHalf());
+        if (movedCollider.isOverlapping(&actor->getCollider())) {
             *groundCollider = actor;
             return true;
         }
@@ -242,7 +246,7 @@ std::optional<HitInfo> ActorCollider::checkCollisionSolids(const std::vector<Sol
     if (!isCollidable()) {
         return std::nullopt;
     }
-    auto movedCollider = AABB(position, mCollider.half);
+    const auto movedCollider = AABB2(position, mCollider.getHalf());
     for (auto& collider : solids) {
         if (!collider->isCollidable()) {
             continue;
@@ -270,7 +274,7 @@ std::optional<HitInfo> ActorCollider::checkCollisionSemiSolids(const std::vector
     if (!isCollidable()) {
         return std::nullopt;
     }
-    auto movedCollider = AABB(position, mCollider.half);
+    auto movedCollider = AABB2(position, mCollider.getHalf());
     for (auto& collider : semis) {
         if (!collider->isCollidable()) {
             continue;
@@ -293,7 +297,7 @@ std::optional<HitInfo> ActorCollider::checkCollisionActors(const std::vector<Act
         return std::nullopt;
     }
 
-    auto movedCollider = AABB(position, mCollider.half);
+    auto movedCollider = AABB2(position, mCollider.getHalf());
     for (auto& actor : actors) {
         if (!actor->isCollidable() || this == actor) {
             continue;
@@ -314,8 +318,8 @@ std::optional<HitInfo> ActorCollider::checkCollisionActors(const std::vector<Act
 bool ActorCollider::isRiding(const SolidCollider* solid) const {
     // check for collision 1 unit down
     // (making sure to use the unmoved collider for the directional collision check so the edges are properly aligned)
-    auto movedCollider = AABB(mCollider.center + Vector2i::unitDown, mCollider.half);
-    if (movedCollider.isOverlapping(solid->getCollider()) &&
+    auto movedCollider = AABB2(mCollider.getPosition() + Vector2i::unitDown, mCollider.getHalf());
+    if (movedCollider.isOverlapping(&solid->getCollider()) &&
         (solid->getCollisionDir() == CollisionDir::ALL ||
          checkDirectionalCollision(getCollider(), solid->getCollider(), {0, -1}, solid->getCollisionDir()))) {
         return true;
@@ -375,7 +379,7 @@ bool ActorCollider::tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCol
 
 SolidCollider::SolidCollider(Transform2D transform, Vector2i half, WorldMaterial material, CollisionCallback onCollisionEnter_,
                              CollisionDir collisionDir)
-    : IUseCollision(AABB(transform, half), material, onCollisionEnter_), mCollisionDir(collisionDir) {}
+    : IUseCollision(AABB2(transform, half, CollisionLayer::Solid), material, onCollisionEnter_), mCollisionDir(collisionDir) {}
 
 void SolidCollider::move(f32 x, f32 y, bool isManualMove) {
     mXRemainder += x;
@@ -398,24 +402,24 @@ void SolidCollider::move(f32 x, f32 y, bool isManualMove) {
     mIsCollidable = false;
     if (toMoveX > 0) {
         mCollider.setPosition(mCollider.getPosition() + Vector2i(toMoveX, 0));
-        moveActors(toMoveX, x, true, mCollider.right(), &AABB::left, riding, isManualMove);
-        moveSemiSolids(true, toMoveX, mCollider.right(), &AABB::left, ridingSemiSolids, isManualMove);
+        moveActors(toMoveX, x, true, mCollider.right(), &AABB2::left, riding, isManualMove);
+        moveSemiSolids(true, toMoveX, mCollider.right(), &AABB2::left, ridingSemiSolids, isManualMove);
 
     } else if (toMoveX < 0) {
         mCollider.setPosition(mCollider.getPosition() + Vector2i(toMoveX, 0));
-        moveActors(toMoveX, x, true, mCollider.left(), &AABB::right, riding, isManualMove);
-        moveSemiSolids(true, toMoveX, mCollider.left(), &AABB::right, ridingSemiSolids, isManualMove);
+        moveActors(toMoveX, x, true, mCollider.left(), &AABB2::right, riding, isManualMove);
+        moveSemiSolids(true, toMoveX, mCollider.left(), &AABB2::right, ridingSemiSolids, isManualMove);
     }
 
     if (toMoveY > 0) {
         mCollider.setPosition(mCollider.getPosition() + Vector2i(0, toMoveY));
-        moveActors(toMoveY, y, false, mCollider.top(), &AABB::bottom, riding, isManualMove);
-        moveSemiSolids(false, toMoveY, mCollider.top(), &AABB::bottom, ridingSemiSolids, isManualMove);
+        moveActors(toMoveY, y, false, mCollider.top(), &AABB2::bottom, riding, isManualMove);
+        moveSemiSolids(false, toMoveY, mCollider.top(), &AABB2::bottom, ridingSemiSolids, isManualMove);
 
     } else if (toMoveY < 0) {
         mCollider.setPosition(mCollider.getPosition() + Vector2i(0, toMoveY));
-        moveActors(toMoveY, y, false, mCollider.bottom(), &AABB::top, riding, isManualMove);
-        moveSemiSolids(false, toMoveY, mCollider.bottom(), &AABB::top, ridingSemiSolids, isManualMove);
+        moveActors(toMoveY, y, false, mCollider.bottom(), &AABB2::top, riding, isManualMove);
+        moveSemiSolids(false, toMoveY, mCollider.bottom(), &AABB2::top, ridingSemiSolids, isManualMove);
     }
 
     mIsCollidable = wasCollidable;
@@ -430,11 +434,11 @@ void SolidCollider::moveActors(s32 toMoveRounded, f32 toMoveUnrounded, bool isXD
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
+    const auto prevColliderPos = AABB2(mCollider.getPosition() - moveVec, mCollider.getHalf());
 
     for (auto& actor : ActorsManager::instance()->getAllActors()) {
         // push takes priority over carry
-        if (mCollider.isOverlapping(actor->getCollider()) &&
+        if (mCollider.isOverlapping(&actor->getCollider()) &&
             checkDirectionalCollision(actor->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (actor->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;
@@ -475,13 +479,13 @@ void SolidCollider::moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32 sol
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
+    const auto prevColliderPos = AABB2(mCollider.getPosition() - moveVec, mCollider.getHalf());
     for (auto& semiSolid : SemiSolidsManager::instance()->getAllSemiSolids()) {
         if (!semiSolid->isCollidable()) {
             continue;
         }
         // push takes priority over carry
-        if (mCollider.isOverlapping(semiSolid->getCollider()) &&
+        if (mCollider.isOverlapping(&semiSolid->getCollider()) &&
             checkDirectionalCollision(semiSolid->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (semiSolid->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;
@@ -580,11 +584,11 @@ std::optional<HitInfo> SemiSolidCollider::moveX(const f32 amount, const Collisio
     mIsCollidable = false;
 
     if (toMoveOriginal > 0) {
-        moveActors(toMoveOriginal, amount, true, mCollider.right(), &AABB::left, ridingActors, isManualMove);
-        moveSemiSolids(true, toMoveOriginal, mCollider.right(), &AABB::left, ridingSemis, isManualMove);
+        moveActors(toMoveOriginal, amount, true, mCollider.right(), &AABB2::left, ridingActors, isManualMove);
+        moveSemiSolids(true, toMoveOriginal, mCollider.right(), &AABB2::left, ridingSemis, isManualMove);
     } else {
-        moveActors(toMoveOriginal, amount, true, mCollider.left(), &AABB::right, ridingActors, isManualMove);
-        moveSemiSolids(true, toMoveOriginal, mCollider.left(), &AABB::right, ridingSemis, isManualMove);
+        moveActors(toMoveOriginal, amount, true, mCollider.left(), &AABB2::right, ridingActors, isManualMove);
+        moveSemiSolids(true, toMoveOriginal, mCollider.left(), &AABB2::right, ridingSemis, isManualMove);
     }
 
     mIsCollidable = wasCollidable;
@@ -664,11 +668,11 @@ std::optional<HitInfo> SemiSolidCollider::moveY(const f32 amount, const Collisio
     mIsCollidable = false;
 
     if (toMoveOriginal > 0) {
-        moveActors(toMoveOriginal, amount, false, mCollider.top(), &AABB::bottom, ridingActors, isManualMove);
-        moveSemiSolids(false, toMoveOriginal, mCollider.top(), &AABB::bottom, ridingSemis, isManualMove);
+        moveActors(toMoveOriginal, amount, false, mCollider.top(), &AABB2::bottom, ridingActors, isManualMove);
+        moveSemiSolids(false, toMoveOriginal, mCollider.top(), &AABB2::bottom, ridingSemis, isManualMove);
     } else {
-        moveActors(toMoveOriginal, amount, false, mCollider.bottom(), &AABB::top, ridingActors, isManualMove);
-        moveSemiSolids(false, toMoveOriginal, mCollider.bottom(), &AABB::top, ridingSemis, isManualMove);
+        moveActors(toMoveOriginal, amount, false, mCollider.bottom(), &AABB2::top, ridingActors, isManualMove);
+        moveSemiSolids(false, toMoveOriginal, mCollider.bottom(), &AABB2::top, ridingSemis, isManualMove);
     }
 
     mIsCollidable = wasCollidable;
@@ -686,7 +690,7 @@ std::optional<HitInfo> SemiSolidCollider::checkCollisionSolids(const std::vector
     if (!isCollidable()) {
         return std::nullopt;
     }
-    auto movedCollider = AABB(position, mCollider.half);
+    const auto movedCollider = AABB2(position, mCollider.getHalf());
     for (auto& collider : solids) {
         if (!collider->isCollidable()) {
             continue;
@@ -714,7 +718,7 @@ std::optional<HitInfo> SemiSolidCollider::checkCollisionSemiSolids(const std::ve
     if (!isCollidable()) {
         return std::nullopt;
     }
-    auto movedCollider = AABB(position, mCollider.half);
+    const auto movedCollider = AABB2(position, mCollider.getHalf());
     for (auto& semi : semisolids) {
         if (!semi->isCollidable() || this == semi) {
             continue;
@@ -755,8 +759,8 @@ bool SemiSolidCollider::checkIsGroundedOnSemiSolids(const std::vector<SemiSolidC
 bool SemiSolidCollider::isRiding(const SolidCollider* solid) const {
     // check for collision 1 unit down
     // (making sure to use the unmoved collider for the directional collision check so the edges are properly aligned)
-    auto movedCollider = AABB(mCollider.center + Vector2i::unitDown, mCollider.half);
-    if (solid != this && movedCollider.isOverlapping(solid->getCollider()) &&
+    const auto movedCollider = AABB2(mCollider.getPosition() + Vector2i::unitDown, mCollider.getHalf());
+    if (solid != this && movedCollider.isOverlapping(&solid->getCollider()) &&
         (solid->getCollisionDir() == CollisionDir::ALL ||
          checkDirectionalCollision(getCollider(), solid->getCollider(), {0, -1}, solid->getCollisionDir()))) {
         return true;
@@ -777,14 +781,14 @@ void SemiSolidCollider::moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const AABB prevColliderPos = AABB(mCollider.center - moveVec, mCollider.half);
+    const auto prevColliderPos = AABB2(mCollider.getPosition() - moveVec, mCollider.getHalf());
 
     for (auto& semiSolid : SemiSolidsManager::instance()->getAllSemiSolids()) {
         if (!semiSolid->isCollidable()) {
             continue;
         }
         // push takes priority over carry
-        if (mCollider.isOverlapping(semiSolid->getCollider()) &&
+        if (mCollider.isOverlapping(&semiSolid->getCollider()) &&
             checkDirectionalCollision(semiSolid->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (semiSolid->getCollider().*edgeFunc)();
             toMoveRounded = solidEdge - actorEdge;

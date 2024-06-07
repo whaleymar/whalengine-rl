@@ -6,9 +6,15 @@ namespace whal {
 
 struct Transform2D;
 struct Velocity;
+// struct Trigger;
 struct TriggerZone;
 struct TriggerCircle;
 class ActorCollider;
+
+// class TriggerSystem : public ecs::ISystem<Trigger> {
+// public:
+//     void update() override;
+// };
 
 class TriggerSystem : public ecs::ISystem<TriggerZone> {
 public:

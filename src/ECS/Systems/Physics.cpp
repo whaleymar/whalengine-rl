@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "Game/Events.h"
+#include "Physics/Collision/HitInfo.h"
 #include "Settings.h"
 
 #include "ECS/Collision.h"
@@ -70,11 +71,11 @@ void PhysicsSystem::update() {
 
         trans.isManuallyMoved = false;
         if (std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>(); actor) {
-            actor.value()->setPositionFromBottom(trans.position);
+            actor.value()->getColliderMut().setPosition(trans);
         } else if (std::optional<SolidCollider*> solid = entity.tryGet<SolidCollider>(); solid) {
-            solid.value()->setPositionFromBottom(trans.position);
+            solid.value()->getColliderMut().setPosition(trans);
         } else if (std::optional<SemiSolidCollider*> semisolid = entity.tryGet<SemiSolidCollider>(); semisolid) {
-            semisolid.value()->setPositionFromBottom(trans.position);
+            semisolid.value()->getColliderMut().setPosition(trans);
         }
     }
 

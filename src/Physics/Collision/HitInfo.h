@@ -6,8 +6,6 @@
 
 namespace whal {
 
-struct AABB;
-
 // enum CollisionInfo : u8 {
 //     Hit = 0,
 //     Above = 1,
