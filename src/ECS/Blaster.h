@@ -32,7 +32,7 @@ private:
     whal::EventListener<Vector2i> mBlasterEventListener;
 };
 
-class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody> {
+class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>, public whal::ecs::IMonitorSystem {
 public:
     RocketJumpingSystem();
     void onAdd(const whal::ecs::Entity) override;

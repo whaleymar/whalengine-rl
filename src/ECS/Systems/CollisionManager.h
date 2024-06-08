@@ -9,7 +9,7 @@ class ActorCollider;
 class SolidCollider;
 class SemiSolidCollider;
 
-class ActorsManager : public ecs::ISystem<ActorCollider> {
+class ActorsManager : public ecs::ISystem<ActorCollider>, public ecs::IMonitorSystem {
 public:
     static std::shared_ptr<ActorsManager> instance() {
         static std::shared_ptr<ActorsManager> instance_ = System::ecs->registerSystem<ActorsManager>();
@@ -27,7 +27,7 @@ private:
     bool mIsUpdateNeeded = false;
 };
 
-class SolidsManager : public ecs::ISystem<SolidCollider> {
+class SolidsManager : public ecs::ISystem<SolidCollider>, public ecs::IMonitorSystem {
 public:
     static std::shared_ptr<SolidsManager> instance() {
         static std::shared_ptr<SolidsManager> instance_ = System::ecs->registerSystem<SolidsManager>();
@@ -47,7 +47,7 @@ private:
     bool mIsUpdateNeeded = false;
 };
 
-class SemiSolidsManager : public ecs::ISystem<SemiSolidCollider> {
+class SemiSolidsManager : public ecs::ISystem<SemiSolidCollider>, public ecs::IMonitorSystem {
 public:
     static std::shared_ptr<SemiSolidsManager> instance() {
         static std::shared_ptr<SemiSolidsManager> instance_ = System::ecs->registerSystem<SemiSolidsManager>();

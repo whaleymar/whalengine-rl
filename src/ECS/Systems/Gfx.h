@@ -11,7 +11,7 @@ struct Sprite;
 struct Draw;
 struct DrawDebug;
 
-class SpriteSystem : public ecs::ISystem<Transform2D, Sprite> {
+class SpriteSystem : public ecs::ISystem<Transform2D, Sprite>, public ecs::IMonitorSystem {
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
