@@ -17,11 +17,10 @@ public:
     }
 };
 
-// TODO I should add something to this to enforce / warn against multiple entities with this tag
 class CameraSystem : public ecs::ISystem<Camera> {
 public:
     static std::shared_ptr<CameraSystem> instance() {
-        static std::shared_ptr<CameraSystem> instance_ = System::ecs->registerSystem<CameraSystem>();
+        static std::shared_ptr<CameraSystem> instance_ = System::ecs->registerSystem<CameraSystem>(ecs::SystemManager::Attributes::UniqueEntity);
         return instance_;
     }
 };
