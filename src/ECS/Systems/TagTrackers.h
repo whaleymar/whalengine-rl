@@ -8,6 +8,7 @@ namespace whal {
 
 struct Player;
 struct Camera;
+struct Transform2D;
 
 class PlayerSystem : public ecs::ISystem<Player> {
 public:
@@ -17,7 +18,7 @@ public:
     }
 };
 
-class CameraSystem : public ecs::ISystem<Camera> {
+class CameraSystem : public ecs::ISystem<Camera, Transform2D> {
 public:
     static std::shared_ptr<CameraSystem> instance() {
         static std::shared_ptr<CameraSystem> instance_ = System::ecs->registerSystem<CameraSystem>(ecs::SystemManager::Attributes::UniqueEntity);
