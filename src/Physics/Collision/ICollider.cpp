@@ -1,5 +1,6 @@
 #include "ICollider.h"
 
+#include <cstring>
 #include <raylib.h>
 #include <vector>
 #include "ECS/Transform.h"
@@ -63,32 +64,14 @@ Shape::Shape(AABB aabb, CollisionLayer::Layer layer) : mAABB(aabb), mShape(Colli
 Shape::Shape(Circle circle, CollisionLayer::Layer layer) : mCircle(circle), mShape(ColliderShape::Circle), mLayer(layer) {}
 
 Shape::Shape(const Shape& other) {
-    mShape = other.mShape;
-    mLayer = other.mLayer;
-    switch (other.mShape) {
-    case ColliderShape::AABB:
-        mAABB = other.mAABB;
-        break;
-    case ColliderShape::Circle:
-        mCircle = other.mCircle;
-        break;
-    }
+    std::memcpy(this, &other, sizeof(other));
 }
 
 Shape& Shape::operator=(const Shape& other) {
     if (this == &other) {
         return *this;
     }
-    mShape = other.mShape;
-    mLayer = other.mLayer;
-    switch (other.mShape) {
-    case ColliderShape::AABB:
-        mAABB = other.mAABB;
-        break;
-    case ColliderShape::Circle:
-        mCircle = other.mCircle;
-        break;
-    }
+    std::memcpy(this, &other, sizeof(other));
     return *this;
 }
 

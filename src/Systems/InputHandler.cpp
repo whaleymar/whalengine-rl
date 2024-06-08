@@ -86,8 +86,7 @@ void InputHandler::loadMappings() const {
     KeyMap.insert({KEY_W, InputType::UP});
     KeyMap.insert({KEY_S, InputType::DOWN});
     KeyMap.insert({KEY_SPACE, InputType::JUMP});
-    KeyMap.insert({KEY_ESCAPE, InputType::QUIT});
-    KeyMap.insert({KEY_P, InputType::PAUSE});  // TODO should be escape
+    KeyMap.insert({KEY_ESCAPE, InputType::PAUSE});
     KeyMap.insert({KEY_ENTER, InputType::OK});
     KeyMap.insert({KEY_LEFT, InputType::LEFT});
     KeyMap.insert({KEY_RIGHT, InputType::RIGHT});

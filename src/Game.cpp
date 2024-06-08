@@ -54,6 +54,7 @@ Game::~Game() {
 
 bool Game::startup() {
     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
+    SetExitKey(KEY_NULL);  // Escape quits by default
 
     // do this before any font/texture stuff or the settings seem to get fucked
     mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
