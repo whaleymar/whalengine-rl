@@ -7,12 +7,12 @@
 #include "ECS/Animator.h"
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
-#include "ECS/Entities/Explosion.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Name.h"
 #include "ECS/Radius.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
+#include "Explosion.h"
 
 #include "Physics/IUseCollision.h"
 #include "Systems/System.h"

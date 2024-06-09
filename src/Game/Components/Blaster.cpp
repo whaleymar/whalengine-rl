@@ -1,4 +1,4 @@
-#include "ECS/Blaster.h"
+#include "Blaster.h"
 
 #include "ECS/RigidBody.h"
 #include "Game/Events.h"
@@ -6,9 +6,9 @@
 #include "Systems/System.h"
 #include "Util/Vector.h"
 
-#include "ECS/Entities/Projectile.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
+#include "Game/Entities/Projectile.h"
 
 Vector2f closestCardinalDirection(Vector2f vecf) {
     vecf = vecf.norm();

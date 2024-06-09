@@ -2,7 +2,6 @@
 
 #include <raylib.h>
 
-#include "ECS/Blaster.h"
 #include "ECS/Entities/Camera.h"
 #include "ECS/Systems/Animation.h"
 #include "ECS/Systems/CallbackSystem.h"
@@ -15,6 +14,7 @@
 #include "ECS/Systems/RelationshipManager.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Systems/TriggerSystem.h"
+#include "Game/Components/Blaster.h"
 
 #include "Game/DebugScene.h"
 #include "Game/EventListeners.h"

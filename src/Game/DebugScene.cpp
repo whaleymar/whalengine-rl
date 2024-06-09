@@ -24,6 +24,8 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
+#include "Game/Components/Blaster.h"
+
 void createTestPlatform();
 void createTestTrigger();
 void createTestSemiSolid();
@@ -41,10 +43,13 @@ std::optional<Error> loadMap() {
 }
 
 std::optional<Error> loadTestMap() {
-    auto player = whal::createPlayer();
-    if (!player.isExpected()) {
-        return player.error();
+    auto ePlayer = whal::createPlayer();
+    if (!ePlayer.isExpected()) {
+        return ePlayer.error();
     }
+    auto player = ePlayer.value();
+    player.add<Blaster>();
+
     // createTestPlatform();
     auto err = loadMap();
     createTestPlatform();

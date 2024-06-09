@@ -5,11 +5,10 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
-// TODO game specific components/systems should go in another folder
-
 namespace whal {
 struct Transform2D;
 struct RigidBody;
+struct PlayerControl;
 }  // namespace whal
 
 struct Blaster {
@@ -23,8 +22,7 @@ struct RocketJumping {
     Vector2f prevFrictionMultiplier;
 };
 
-// TODO should require a generic PlayerControl component too, and can have a separate system for NPCs -- see note in Blaster.cpp
-class ProjectileSystem : public whal::ecs::ISystem<Blaster, whal::Transform2D> {
+class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D> {
 public:
     ProjectileSystem();
 
