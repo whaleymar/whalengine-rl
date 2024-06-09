@@ -1,7 +1,7 @@
 #include "Audio.h"
 
 #include <fmod.hpp>
-#include "fmod_common.h"
+#include <fmod_errors.h>
 
 #include "System.h"
 #include "Util/Print.h"
@@ -26,7 +26,8 @@ std::optional<Error> AudioClip::load(const char* path) {
         System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL, nullptr, &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
         mSound = nullptr;
-        return Error(std::format("Error loading clip {}", path));
+        auto err = FMOD_ErrorString(result);
+        return Error(sprint("Error loading clip:", path, "\nGot error:", err));
     }
     return std::nullopt;
 }
@@ -35,13 +36,13 @@ AudioPlayer::AudioPlayer() {
     // Init System
     auto result = FMOD::System_Create(&mSystem);
     if (result != FMOD_OK) {
-        print("Got bad result for System_Create");
+        print("Got bad result for System_Create:", FMOD_ErrorString(result));
         return;
     }
     auto outputSettings = FMOD_OUTPUTTYPE_AUTODETECT;
     result = mSystem->init(MAX_CHANNELS, FMOD_INIT_NORMAL, &outputSettings);
     if (result != FMOD_OK) {
-        print("Got bad result for mSystem->init");
+        print("Got bad result for mSystem->init:", FMOD_ErrorString(result));
         return;
     }
     mIsValid = true;
@@ -81,7 +82,7 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
 
     auto result = mSystem->createStream(path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
     if (result != FMOD_OK) {
-        print("couldn't load music stream:", path);
+        print("couldn't load music stream:", path, "\nGot error:", FMOD_ErrorString(result));
         return;
     }
 
@@ -246,17 +247,18 @@ Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance)
     FMOD::DSP* dsp;
     auto result = mSystem->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &dsp);
     if (result != FMOD_OK) {
-        return Error("Got error creating DSP");  // TODO include fmod_errors.h and pass result to FMOD_ErrorString
+        auto err = FMOD_ErrorString(result);
+        return Error(sprint("Got error creating DSP:", err));
     }
 
     result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
     if (result != FMOD_OK) {
-        return Error("Got error assigning lowpass cutoff");
+        return Error(sprint("Got error assigning lowpass cutoff:", FMOD_ErrorString(result)));
     }
 
     result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, resonance);
     if (result != FMOD_OK) {
-        return Error("Got error assigning lowpass resonance");
+        return Error(sprint("Got error assigning lowpass resonance:", FMOD_ErrorString(result)));
     }
 
     return dsp;

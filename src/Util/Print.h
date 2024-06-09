@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 
 template <std::size_t N = 2, std::size_t M = 2>
 struct Format {
@@ -13,6 +14,14 @@ void print(const T& first, const U&... rest) {
     std::cout << first;
     ((std::cout << f.sep << rest), ...);
     std::cout << f.end;
+}
+
+template <class T, class... U>
+std::string sprint(const T& first, const U&... rest) {
+    std::stringstream stream;
+    stream << first;
+    ((stream << " " << rest), ...);
+    return stream.str();
 }
 
 template <typename T>
