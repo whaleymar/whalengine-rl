@@ -123,7 +123,7 @@ void Game::mainloop() {
     System::ecs->registerSystem<ProjectileSystem>();
     System::ecs->registerSystem<RocketJumpingSystem>();
 
-    // load scene // TODO separate function
+    // load scene
     auto err = loadTestMap();
     if (err) {
         print("Error loading debug scene: ", err.value());

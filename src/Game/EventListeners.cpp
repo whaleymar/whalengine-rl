@@ -6,7 +6,6 @@
 #include "ECS/Draw.h"
 #include "ECS/Entities/Player.h"
 #include "ECS/Tags.h"
-// #include "Systems/Audio.h"
 
 namespace whal {
 
@@ -35,10 +34,12 @@ void onEntityDeath(ecs::Entity entity) {
     if (!entity.has<Player>()) {
         return;
     }
+
+    // TODO this would be a good use case for event flow
+    // kill player -> play clip && set music volume -> schedule respawn & await -> reset music volume to normal
     Sprite sprite;  // needs to be created in main thread bc OpenGL
     System::schedule.after(&respawnPlayer, 2, sprite);
 
-    // System::schedule.after(&playGameOverSound, 1.5);
     System::audio.playClip(Sfx::DEATH);
     System::audio.setMusicVolume(0.2);  // RESEARCH should also apply low pass filter here
 }

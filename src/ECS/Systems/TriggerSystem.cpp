@@ -17,6 +17,8 @@ void TriggerSystem::update() {
                 newInsideList.push_back(actor);
                 if (!wasInside && trigger.onTriggerEnter != nullptr) {
                     trigger.onTriggerEnter(entity, actor);
+                } else if (wasInside && trigger.onTriggerStay != nullptr) {
+                    trigger.onTriggerStay(entity, actor);
                 }
             } else if (wasInside && trigger.onTriggerExit != nullptr) {
                 trigger.onTriggerExit(entity, actor);

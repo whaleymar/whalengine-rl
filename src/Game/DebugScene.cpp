@@ -36,14 +36,12 @@ void createPaletteTest();
 using namespace whal;
 
 std::optional<Error> loadMap() {
-    using namespace whal;
-
     const char* scenefile = "testworld.world";
     return Game::instance().loadScene(scenefile);
 }
 
 std::optional<Error> loadTestMap() {
-    auto ePlayer = whal::createPlayer();
+    auto ePlayer = createPlayer();
     if (!ePlayer.isExpected()) {
         return ePlayer.error();
     }
@@ -62,8 +60,6 @@ std::optional<Error> loadTestMap() {
 }
 
 std::optional<Error> loadDebugScene() {
-    using namespace whal;
-
     // auto player = createPlayer().value();
     // player.remove<PlayerControlRB>();
 

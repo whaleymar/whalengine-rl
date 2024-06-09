@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- new character sprite
+- cleanup todos (pushing doesn't do callbacks, finish player anims, dynamic spawn points, consolidate collider components)
 
 ## Camera / Follow
 - different movement types (easein/out stuff)

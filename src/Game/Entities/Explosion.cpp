@@ -41,7 +41,6 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
         auto unitDelta = delta.norm();
 
         // slight knockback falloff based on distance
-        // TODO make this onTriggerEnter/Stay instead of just enter
         auto circle = trigger.shape.getCircle();
         f32 pushMult = 1 - std::pow(circle.getDistanceFromCenter(&otherCollider) / circle.getRadius(), 2);
 

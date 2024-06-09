@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "Physics/Collision/ICollider.h"
-// #include "Physics/Collision/Shapes.h"
 
 namespace whal {
 
@@ -17,11 +16,12 @@ using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 
 struct Trigger {
     Trigger() = default;
-    Trigger(Shape shape_, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr);
+    Trigger(Shape shape_, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr, TriggerCallback callbackStay = nullptr);
 
     Shape shape;
     TriggerCallback onTriggerEnter;
     TriggerCallback onTriggerExit;
+    TriggerCallback onTriggerStay;
     std::vector<ecs::Entity> insideEntities;
 };
 
