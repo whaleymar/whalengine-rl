@@ -19,19 +19,33 @@ struct BufferedInput {
     void notUsed();
 };
 
-struct PlayerControlRB {
-    PlayerControlRB(f32 moveSpeed_ = 80, f32 jumpHeight_ = 200);
-    f32 moveSpeed;   // should be somewhere else... this component should be a tag ?
-    f32 jumpHeight;  // not used currently
-    BufferedInput jumpBuffer;
+struct PlayerControl {
+    PlayerControl(f32 moveSpeed_ = 80);
 
-    bool isJumping() const;
-    bool canJump() const;
+    f32 moveSpeed;
 };
 
-struct PlayerControlFree {
-    PlayerControlFree(f32 moveSpeed_ = 80);
-    f32 moveSpeed;
+// tag that says player can freely move in any direction
+// an entity shouldn't have this component + rigidbody
+struct FreeControl {};
+
+struct Jumper {
+    Jumper() = default;
+    Jumper(f32 jumpInitialVelocity, f32 jumpSecondsMax, f32 coyoteTimeSecondsMax);
+
+    bool isTryingJump() const;
+    bool canJump() const;
+
+    // RESEARCH jumpHeight param instead?
+    f32 jumpInitialVelocity = 124;
+    f32 jumpSecondsMax = 1.25;
+    f32 coyoteTimeSecondsMax = 0.1;
+
+    // state:
+    f32 jumpSecondsRemaining = 0;
+    f32 coyoteSecondsRemaining = 0;
+    BufferedInput buffer;
+    bool isJumping = false;
 };
 
 }  // namespace whal

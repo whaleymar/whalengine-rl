@@ -94,8 +94,9 @@ bool Game::startup() {
 }
 
 void Game::mainloop() {
-    auto controlSystemRB = System::ecs->registerSystem<ControllerSystemRB>();
-    auto controlSystemFree = System::ecs->registerSystem<ControllerSystemFree>();
+    auto controlSystem = System::ecs->registerSystem<ControllerSystem>();
+    auto controlSystemFree = System::ecs->registerSystem<FreeControlSystem>();
+    auto jumpSystem = System::ecs->registerSystem<JumpSystem>();
     auto pathSystem = System::ecs->registerSystem<RailsSystem>();
     auto physicsSystem = System::ecs->registerSystem<PhysicsSystem>();
     auto spriteSystem = System::ecs->registerSystem<SpriteSystem>();
@@ -159,8 +160,9 @@ void Game::mainloop() {
         System::frame.update();
         System::audio.update();
 
-        controlSystemRB->update();
+        controlSystem->update();
         controlSystemFree->update();
+        jumpSystem->update();
         pathSystem->update();
         physicsSystem->update();
 
@@ -268,7 +270,11 @@ void Game::mainloop() {
         // TEXT STUFF
         PauseMenu::instance().draw(mFont);
 
-        DrawFPS(10, 10);
+#ifndef NDEBUG
+        if (System::input.isOn(InputType::DEBUG)) {
+            DrawFPS(10, 10);
+        }
+#endif
 
         EndDrawing();
         // -----------------------------------------------------------------------

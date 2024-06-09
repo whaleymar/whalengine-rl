@@ -23,16 +23,17 @@ void BufferedInput::notUsed() {
     framesLeft--;
 }
 
-PlayerControlRB::PlayerControlRB(f32 moveSpeed_, f32 jumpHeight_) : moveSpeed(moveSpeed_), jumpHeight(jumpHeight_){};
+PlayerControl::PlayerControl(f32 moveSpeed_) : moveSpeed(moveSpeed_) {}
 
-bool PlayerControlRB::isJumping() const {
-    return jumpBuffer.isActive;
+bool Jumper::isTryingJump() const {
+    return buffer.isActive;
 }
 
-bool PlayerControlRB::canJump() const {
-    return jumpBuffer.framesLeft > 0;
+bool Jumper::canJump() const {
+    return buffer.framesLeft > 0;
 }
 
-PlayerControlFree::PlayerControlFree(f32 moveSpeed_) : moveSpeed(moveSpeed_){};
+Jumper::Jumper(f32 jumpInitialVelocity_, f32 jumpSecondsMax_, f32 coyoteTimeSecondsMax_)
+    : jumpInitialVelocity(jumpInitialVelocity_), jumpSecondsMax(jumpSecondsMax_), coyoteTimeSecondsMax(coyoteTimeSecondsMax_) {}
 
 }  // namespace whal

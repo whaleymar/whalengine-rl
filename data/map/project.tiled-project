@@ -137,6 +137,41 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 23,
+            "members": [
+                {
+                    "name": "coyoteTimeSecondsMax",
+                    "type": "float",
+                    "value": 0.1
+                },
+                {
+                    "name": "jumpInitialVelocity",
+                    "type": "float",
+                    "value": 124
+                },
+                {
+                    "name": "jumpSecondsMax",
+                    "type": "float",
+                    "value": 1.25
+                }
+            ],
+            "name": "Component_Jumper",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 1,
             "members": [
                 {
@@ -175,19 +210,24 @@
             "id": 12,
             "members": [
                 {
-                    "name": "coyoteTimeSecondsMax",
+                    "name": "frictionAir",
                     "type": "float",
-                    "value": 0
+                    "value": 1
                 },
                 {
-                    "name": "jumpInitialVelocity",
+                    "name": "frictionGround",
                     "type": "float",
-                    "value": 0
+                    "value": 1
                 },
                 {
-                    "name": "jumpSecondsMax",
+                    "name": "momentumMultiplierX",
                     "type": "float",
-                    "value": 0
+                    "value": 1
+                },
+                {
+                    "name": "momentumMultiplierY",
+                    "type": "float",
+                    "value": 0.5
                 }
             ],
             "name": "Component_RigidBody",

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "ECS/PlayerControl.h"
 #include "json_fwd.hpp"
 
 #include "ECS/Collision.h"
@@ -35,6 +36,7 @@ public:
     inline static SemiSolidCollider DefaultSemiSolidCollider;
     inline static SolidCollider DefaultSolidCollider;
     inline static RigidBody DefaultRigidBody;
+    inline static Jumper DefaultJumper;
     inline static Draw DefaultDraw;
     inline static Sprite DefaultSprite;
     inline static Follow DefaultFollow;
@@ -52,6 +54,8 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
                                ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                            ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData);
 void addComponentDraw(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData);
 void addComponentSprite(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,

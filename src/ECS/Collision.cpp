@@ -149,10 +149,10 @@ void ActorCollider::setMomentum(const f32 momentum, const bool isXDirection) {
         return;
     }
     if (isXDirection) {
-        mStoredMomentum.e[0] = momentum * eRB.value()->momentumDamping.x();
+        mStoredMomentum.e[0] = momentum * eRB.value()->momentumMultiplier.x();
         mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
     } else {
-        mStoredMomentum.e[1] = momentum * eRB.value()->momentumDamping.y();
+        mStoredMomentum.e[1] = momentum * eRB.value()->momentumMultiplier.y();
         mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
     }
 }
@@ -164,10 +164,10 @@ void ActorCollider::addMomentum(const f32 momentum, const bool isXDirection) {
     }
     if (isXDirection) {
         mStoredMomentum.e[0] += momentum;
-        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumDamping.x();
+        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumMultiplier.x();
     } else {
         mStoredMomentum.e[1] += momentum;
-        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumDamping.y();
+        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES * eRB.value()->momentumMultiplier.y();
     }
 }
 

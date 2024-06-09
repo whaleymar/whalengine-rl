@@ -50,7 +50,14 @@ static const AnimInfo S_PLAYER_ANIM_INFO = {
 };
 
 bool brain(Animator& animator, ecs::Entity entity) {
-    auto& rb = entity.get<RigidBody>();
+    auto rbOpt = entity.tryGet<RigidBody>();
+    RigidBody rb;
+    if (rbOpt) {
+        rb = *rbOpt.value();
+    }
+
+    auto jumperOpt = entity.tryGet<Jumper>();
+
     auto& vel = entity.get<Velocity>();
     auto& sprite = entity.get<Sprite>();
 
@@ -73,7 +80,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             }
         }
     } else {
-        if (rb.isJumping) {
+        if (jumperOpt && jumperOpt.value()->isJumping) {
             if ((animator.getAnimation().id == JUMP_FORWARD || animator.getAnimation().id == RISE_FORWARD) && vel.total.y() <= 1 &&
                 animator.setAnimation(PEAK_FORWARD)) {
                 return true;
@@ -171,8 +178,8 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     player.add(Name("Player"));
     player.add<Player>();
     player.add<Velocity>();
-    player.add<PlayerControlRB>();
-    // player.add<PlayerControlFree>();
+    player.add<PlayerControl>();
+    player.add<Jumper>();
 
     player.add<Blaster>();
 
@@ -198,6 +205,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
     player.add(ActorCollider(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();
+    // player.add<FreeControl>();
 
     return player;
 }

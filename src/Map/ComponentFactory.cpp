@@ -39,6 +39,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     // {"Children", addComponentChildren},
     {"Component_Follow", addComponentFollow},
     {"Component_RigidBody", addComponentRigidBody},
+    {"Component_Jumper", addComponentJumper},
     // {"Tags", addComponentTags},
     {"Component_Velocity", addComponentVelocity},
 };
@@ -150,12 +151,27 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
     } else if (componentName == "Component_RigidBody") {
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
+            if (memberName == "momentumMultiplierX") {
+                DefaultRigidBody.momentumMultiplier.e[0] = member[KEY_VALUE];
+            } else if (memberName == "momentumMultiplierY") {
+                DefaultRigidBody.momentumMultiplier.e[1] = member[KEY_VALUE];
+            } else if (memberName == "frictionGround") {
+                DefaultRigidBody.frictionMultiplier.e[0] = member[KEY_VALUE];
+            } else if (memberName == "frictionAir") {
+                DefaultRigidBody.frictionMultiplier.e[1] = member[KEY_VALUE];
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+    } else if (componentName == "Component_Jumper") {
+        for (const auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
             if (memberName == "coyoteTimeSecondsMax") {
-                DefaultRigidBody.coyoteTimeSecondsMax = member[KEY_VALUE];
+                DefaultJumper.coyoteTimeSecondsMax = member[KEY_VALUE];
             } else if (memberName == "jumpInitialVelocity") {
-                DefaultRigidBody.jumpInitialVelocity = member[KEY_VALUE];
+                DefaultJumper.jumpInitialVelocity = member[KEY_VALUE];
             } else if (memberName == "jumpSecondsMax") {
-                DefaultRigidBody.jumpSecondsMax = member[KEY_VALUE];
+                DefaultJumper.jumpSecondsMax = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -367,17 +383,37 @@ void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, s
                            ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     RigidBody rb = ComponentFactory::DefaultRigidBody;
 
-    if (values.contains("jumpInitialVelocity")) {
-        rb.jumpInitialVelocity = values["jumpInitialVelocity"];
+    if (values.contains("momentumMultiplierX")) {
+        rb.momentumMultiplier.e[0] = values["momentumMultiplierX"];
     }
-    if (values.contains("jumpSecondsMax")) {
-        rb.jumpSecondsMax = values["jumpSecondsMax"];
+    if (values.contains("momentumMultiplierY")) {
+        rb.momentumMultiplier.e[1] = values["momentumMultiplierY"];
     }
-    if (values.contains("coyoteTimeSecondsMax")) {
-        rb.coyoteTimeSecondsMax = values["coyoteTimeSecondsMax"];
+    if (values.contains("frictionGround")) {
+        rb.momentumMultiplier.e[0] = values["frictionGround"];
+    }
+    if (values.contains("frictionAir")) {
+        rb.momentumMultiplier.e[1] = values["frictionAir"];
     }
 
     entity.add(rb);
+}
+
+void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData) {
+    Jumper jumper = ComponentFactory::DefaultJumper;
+
+    if (values.contains("jumpInitialVelocity")) {
+        jumper.jumpInitialVelocity = values["jumpInitialVelocity"];
+    }
+    if (values.contains("jumpSecondsMax")) {
+        jumper.jumpSecondsMax = values["jumpSecondsMax"];
+    }
+    if (values.contains("coyoteTimeSecondsMax")) {
+        jumper.coyoteTimeSecondsMax = values["coyoteTimeSecondsMax"];
+    }
+
+    entity.add(jumper);
 }
 
 Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {

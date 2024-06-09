@@ -5,8 +5,8 @@
     },
     "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
-        "templates",
-        "."
+        ".",
+        "templates"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -18,8 +18,8 @@
             "scale": 2.1889583333333333,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 194.15627676786906,
-                "y": 110.32644903397735
+                "x": -7.766251070714761,
+                "y": 102.5601979632626
             }
         },
         "testmap2.tmj": {
@@ -71,7 +71,7 @@
         "widemap.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "RailsMovement",
+    "property.type": "float",
     "recentFiles": [
         "widemap.tmj",
         "testmap2.tmj",

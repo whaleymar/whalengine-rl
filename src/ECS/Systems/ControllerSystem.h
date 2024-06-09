@@ -4,18 +4,24 @@
 
 namespace whal {
 
-struct PlayerControlRB;
-struct PlayerControlFree;
+struct PlayerControl;
+struct FreeControl;
 struct RigidBody;
 struct Transform2D;
 struct Velocity;
+struct Jumper;
 
-class ControllerSystemRB : public ecs::ISystem<PlayerControlRB, Transform2D, Velocity, RigidBody> {
+class ControllerSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, RigidBody> {
 public:
     void update() override;
 };
 
-class ControllerSystemFree : public ecs::ISystem<PlayerControlFree, Transform2D, Velocity> {
+class FreeControlSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, FreeControl> {
+public:
+    void update() override;
+};
+
+class JumpSystem : public ecs::ISystem<Transform2D, Velocity, RigidBody, Jumper> {
 public:
     void update() override;
 };

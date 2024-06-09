@@ -3,6 +3,7 @@
 #include <cmath>
 #include <functional>
 
+#include "ECS/PlayerControl.h"
 #include "Game/Events.h"
 #include "Physics/Collision/HitInfo.h"
 #include "Settings.h"
@@ -151,6 +152,7 @@ void PhysicsSystem::update() {
 
         std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>();
         std::optional<SemiSolidCollider*> semisolid = std::nullopt;
+        std::optional<Jumper*> jumpControl = entity.tryGet<Jumper>();
         if (!actor) {
             semisolid = entity.tryGet<SemiSolidCollider>();
         }
@@ -168,7 +170,9 @@ void PhysicsSystem::update() {
                 } else {
                     rb.value()->setNotGrounded();
                 }
-                rb.value()->isJumping = false;
+                if (jumpControl) {
+                    jumpControl.value()->isJumping = false;
+                }
                 vel.residualImpulse.e[1] = 0;
 
                 checkSelfCallback(collisionCallbacks, *hitinfo, entity, *actor);
@@ -199,10 +203,12 @@ void PhysicsSystem::update() {
                 }
 
             } else {
-                if (wasGrounded && !rb.value()->isJumping) {
-                    rb.value()->coyoteSecondsRemaining = rb.value()->coyoteTimeSecondsMax;
-                } else if (rb.value()->coyoteSecondsRemaining > 0) {
-                    rb.value()->coyoteSecondsRemaining -= dt;
+                if (jumpControl) {
+                    if (wasGrounded && !jumpControl.value()->isJumping) {
+                        jumpControl.value()->coyoteSecondsRemaining = jumpControl.value()->coyoteTimeSecondsMax;
+                    } else if (jumpControl.value()->coyoteSecondsRemaining > 0) {
+                        jumpControl.value()->coyoteSecondsRemaining -= dt;
+                    }
                 }
 
                 // prevent repeated push forces from accumulating huge speed
@@ -241,7 +247,9 @@ void PhysicsSystem::update() {
                 } else {
                     rb.value()->setNotGrounded();
                 }
-                rb.value()->isJumping = false;
+                if (jumpControl) {
+                    jumpControl.value()->isJumping = false;
+                }
                 vel.residualImpulse.e[1] = 0;
 
                 checkSelfCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
@@ -267,11 +275,11 @@ void PhysicsSystem::update() {
                     System::eventMgr.triggerEvent(Event::LANDING_EVENT, entity);
                 }
 
-            } else {
-                if (wasGrounded && !rb.value()->isJumping) {
-                    rb.value()->coyoteSecondsRemaining = rb.value()->coyoteTimeSecondsMax;
-                } else if (rb.value()->coyoteSecondsRemaining > 0) {
-                    rb.value()->coyoteSecondsRemaining -= dt;
+            } else if (jumpControl) {
+                if (wasGrounded && !jumpControl.value()->isJumping) {
+                    jumpControl.value()->coyoteSecondsRemaining = jumpControl.value()->coyoteTimeSecondsMax;
+                } else if (jumpControl.value()->coyoteSecondsRemaining > 0) {
+                    jumpControl.value()->coyoteSecondsRemaining -= dt;
                 }
             }
 
@@ -317,18 +325,25 @@ void PhysicsSystem::update() {
 
             // gravity
             if (!rb.value()->isGrounded) {
-                if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX) {
-                    // falling == not jumping
-                    // a little lower than 0 while applying reduced gravity
-                    rb.value()->isJumping = false;
+                if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX && jumpControl) {
+                    jumpControl.value()->isJumping = false;
                 }
 
-                applyGravity(vel, dt, rb.value()->isJumping);
+                if (jumpControl) {
+                    if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX) {
+                        // falling == not jumping
+                        // a little lower than 0 while applying reduced gravity
+                        jumpControl.value()->isJumping = false;
+                    }
+                    applyGravity(vel, dt, jumpControl.value()->isJumping);
+                } else {
+                    applyGravity(vel, dt, false);
+                }
 
                 rb.value()->isLanding = false;
 
             } else {
-                if (totalVelocity.y() < 0 && !rb.value()->isJumping) {
+                if (totalVelocity.y() < 0 && (!jumpControl || !jumpControl.value()->isJumping)) {
                     // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
                     vel.stable.e[1] = 0;
                 }

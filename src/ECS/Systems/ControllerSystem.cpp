@@ -13,57 +13,26 @@ namespace whal {
 
 constexpr f32 APPROACH_SPEED_X = 7.5;  // 5 frames to max speed
 
-void ControllerSystemRB::update() {
+void ControllerSystem::update() {
     if (System::isPaused()) {
         return;
     }
-    auto& input = System::input;
-    f32 dt = System::dt();
-
-    bool isJumpAvailable = input.isJumpAvailable();
-    input.useJump();
 
     for (auto& [entityid, entity] : getEntitiesRef()) {
         Velocity& vel = entity.get<Velocity>();
-        PlayerControlRB& control = entity.get<PlayerControlRB>();
-
-        // #ifndef NDEBUG
-        //         auto sprite = entity.tryGet<Sprite>();
-        //         if (sprite) {
-        //             bool changed = false;
-        //             if (input.isShrinkX()) {
-        //                 sprite.value()->scale.e[0] -= 0.1;
-        //                 changed = true;
-        //             }
-        //             if (input.isShrinkY()) {
-        //                 sprite.value()->scale.e[1] -= 0.1;
-        //                 changed = true;
-        //             }
-        //             if (input.isGrowX()) {
-        //                 sprite.value()->scale.e[0] += 0.1;
-        //                 changed = true;
-        //             }
-        //             if (input.isGrowY()) {
-        //                 sprite.value()->scale.e[1] += 0.1;
-        //                 changed = true;
-        //             }
-        //             if (changed) {
-        //                 sprite.value()->isVertsUpdateNeeded = true;
-        //             }
-        //         }
-        // #endif
+        PlayerControl& control = entity.get<PlayerControl>();
 
         f32 impulseX = 0;
-        if (input.isOn(InputType::LEFT)) {
+        if (System::input.isOn(InputType::LEFT)) {
             impulseX -= 1;
         }
-        if (input.isOn(InputType::RIGHT)) {
+        if (System::input.isOn(InputType::RIGHT)) {
             impulseX += 1;
         }
 
         // controls can only speed us up, not slow us down (assuming trying to move the same direction as current velocity)
         impulseX *= control.moveSpeed;
-        const f32 approachSpeed = APPROACH_SPEED_X * dt * control.moveSpeed;
+        const f32 approachSpeed = APPROACH_SPEED_X * System::dt() * control.moveSpeed;
         if (impulseX != 0) {
             f32 approachFrom;
             approachFrom = vel.stable.x();
@@ -80,45 +49,6 @@ void ControllerSystemRB::update() {
             }
         }
 
-        // Y axis controls (jumping) works different because this feels better
-        f32 impulseY = 0;
-        if (isJumpAvailable) {
-            control.jumpBuffer.buffer();
-        }
-
-        RigidBody& rb = entity.get<RigidBody>();
-        // if (input.isJump()) {
-        if (input.isOn(InputType::JUMP)) {
-            if ((rb.isGrounded || rb.coyoteSecondsRemaining > 0) && control.canJump()) {
-                control.jumpBuffer.consume();
-                rb.isJumping = true;
-
-                if (vel.stable.y() < 0) {
-                    vel.stable.e[1] = 0;
-                }
-
-                impulseY += rb.jumpInitialVelocity;
-                rb.jumpSecondsRemaining = rb.jumpSecondsMax;
-            } else if (control.isJumping() && rb.isJumping) {
-                f32 damping = rb.jumpSecondsRemaining / rb.jumpSecondsMax;
-                damping *= damping;
-                impulseY += rb.jumpInitialVelocity * damping;
-                rb.jumpSecondsRemaining -= dt;
-                if (rb.jumpSecondsRemaining < 0) {
-                    rb.jumpSecondsRemaining = 0;
-                    control.jumpBuffer.reset();
-                    rb.isJumping = false;
-                }
-            } else if (control.canJump()) {
-                control.jumpBuffer.notUsed();
-            }
-        } else {
-            control.jumpBuffer.reset();
-            rb.isJumping = false;
-        }
-
-        vel.impulse += Vector2f(0.0, impulseY);
-
         auto& trans = entity.get<Transform2D>();
         if (impulseX > 0) {
             trans.facing = Facing::Right;
@@ -128,31 +58,83 @@ void ControllerSystemRB::update() {
     }
 }
 
-void ControllerSystemFree::update() {
+void FreeControlSystem::update() {
     if (System::isPaused()) {
         return;
     }
-    auto& input = System::input;
+
     for (auto& [entityid, entity] : getEntitiesRef()) {
         Vector2f delta;
-        if (input.isOn(InputType::LEFT)) {
+        if (System::input.isOn(InputType::LEFT)) {
             delta += Vector2f::unitLeft;
         }
-        if (input.isOn(InputType::RIGHT)) {
+        if (System::input.isOn(InputType::RIGHT)) {
             delta += Vector2f::unitRight;
         }
-        if (input.isOn(InputType::UP)) {
+        if (System::input.isOn(InputType::UP)) {
             delta += Vector2f::unitUp;
         }
-        if (input.isOn(InputType::DOWN)) {
+        if (System::input.isOn(InputType::DOWN)) {
             delta += Vector2f::unitDown;
         }
 
-        PlayerControlFree& control = entity.get<PlayerControlFree>();
+        auto control = entity.get<PlayerControl>();
         delta *= control.moveSpeed;
 
         Velocity newVel = Velocity(delta);
         entity.set(newVel);
+    }
+}
+
+void JumpSystem::update() {
+    if (System::isPaused()) {  // TODO should use Pausable system attribute for this instead
+        return;
+    }
+
+    bool isJumpPressedThisFrame = System::input.isJumpAvailable();
+    System::input.useJump();
+
+    for (auto& [entityid, entity] : getEntitiesRef()) {
+        Velocity& vel = entity.get<Velocity>();
+        Jumper& jumpControl = entity.get<Jumper>();
+        RigidBody& rb = entity.get<RigidBody>();
+
+        f32 impulseY = 0;
+        if (isJumpPressedThisFrame) {
+            jumpControl.buffer.buffer();
+        }
+
+        // || entity.has<AIControl>() && AIControl.isJumping()
+        if (entity.has<PlayerControl>() && System::input.isOn(InputType::JUMP)) {
+            if ((rb.isGrounded || jumpControl.coyoteSecondsRemaining > 0) && jumpControl.canJump()) {
+                jumpControl.buffer.consume();
+                jumpControl.isJumping = true;
+
+                if (vel.stable.y() < 0) {
+                    vel.stable.e[1] = 0;
+                }
+
+                impulseY += jumpControl.jumpInitialVelocity;
+                jumpControl.jumpSecondsRemaining = jumpControl.jumpSecondsMax;
+            } else if (jumpControl.isTryingJump() && jumpControl.isJumping) {
+                f32 damping = jumpControl.jumpSecondsRemaining / jumpControl.jumpSecondsMax;
+                damping *= damping;
+                impulseY += jumpControl.jumpInitialVelocity * damping;
+                jumpControl.jumpSecondsRemaining -= System::dt();
+                if (jumpControl.jumpSecondsRemaining < 0) {
+                    jumpControl.jumpSecondsRemaining = 0;
+                    jumpControl.buffer.reset();
+                    jumpControl.isJumping = false;
+                }
+            } else if (jumpControl.canJump()) {
+                jumpControl.buffer.notUsed();
+            }
+        } else {
+            jumpControl.buffer.reset();
+            jumpControl.isJumping = false;
+        }
+
+        vel.impulse += Vector2f(0.0, impulseY);
     }
 }
 
