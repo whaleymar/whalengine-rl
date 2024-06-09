@@ -38,10 +38,6 @@ void Explode(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, I
     self.kill();
 }
 
-void enableCollision(ecs::Entity entity) {
-    entity.get<ActorCollider>().setIsCollidable(true);
-}
-
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
     auto expected = System::ecs->entity(false);
     if (!expected.isExpected()) {
@@ -83,7 +79,9 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, WorldMaterial::None, &Explode, true);
     collider.setIsCollidable(false);
     entity.add<ActorCollider>(collider);
-    System::schedule.after(&enableCollision, 0.075, entity);
+
+    auto enableCollision = [](ecs::Entity entity) -> void { entity.get<ActorCollider>().setIsCollidable(true); };
+    System::schedule.after(enableCollision, 0.075, entity);
 
     return entity;
 }

@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <mutex>
+#include <type_traits>
 
 #include "Util/Types.h"
 
@@ -23,7 +24,7 @@ public:
     void end();
 
     template <typename... T>
-    void after(void(func)(T...), f32 delaySeconds, T... args);
+    void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);
 
     void tick(f32 dt);
     void tryExecuteJobs();
@@ -42,7 +43,7 @@ private:
 };
 
 template <typename... T>
-void JobScheduler::after(void(func)(T...), f32 delaySeconds, T... args) {
+void JobScheduler::after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args) {
     auto it = mQueue.begin();
     while (it != mQueue.end() && it->second < delaySeconds) {
         ++it;
