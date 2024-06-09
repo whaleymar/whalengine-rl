@@ -28,6 +28,7 @@ Expected<ecs::Entity> createCamera(ecs::Entity target) {
     camera.add<Velocity>();
     camera.add(Name("Camera"));
     camera.add<Camera>();
+    camera.add<AudioListener>();
 
     return camera;
 }

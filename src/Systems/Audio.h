@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "Util/Types.h"
+#include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
 namespace FMOD {
@@ -46,8 +47,8 @@ public:
     friend System;
     friend AudioClip;
 
-    void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
-    void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
+    void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
+    void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
     void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
     void stopMusic();
     void stopClips();
@@ -58,6 +59,7 @@ public:
     void pauseClips(bool pause);
     void pauseAll(bool pause);
     void setMusicVolume(f32 volume);
+    void setListenerPosition(Vector2i worldPosition);
     bool isValid() const { return mIsValid; }
     void update();
 
@@ -73,7 +75,8 @@ private:
     void operator=(const AudioPlayer&) = delete;
 
     FMOD::System* getSystem() const;
-    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, bool isInGroup = true);
+    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
+                             bool isInGroup = true);
     void setChannelFilter(Filter filter, FMOD::ChannelControl* channel);
 
     FMOD::Sound* mMusic = nullptr;

@@ -1,6 +1,7 @@
 #include "TagTrackers.h"
 
 #include "ECS/Transform.h"
+#include "Systems/System.h"
 
 namespace whal {
 
@@ -25,6 +26,14 @@ void setCameraPosition(Vector2i pos) {
     if (eOpt) {
         eOpt.value().set(Transform2D(pos));
     }
+}
+
+void AudioListenerSystem::update() {
+    if (getEntitiesRef().empty()) {
+        return;
+    }
+    auto listenerEntity = first();
+    System::audio.setListenerPosition(listenerEntity.get<Transform2D>().position);
 }
 
 }  // namespace whal

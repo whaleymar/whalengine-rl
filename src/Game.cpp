@@ -108,6 +108,7 @@ void Game::mainloop() {
     auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
     auto followSystem = System::ecs->registerSystem<FollowSystem>();
     auto attachSystem = System::ecs->registerSystem<AttachSystem>();
+    auto audioListenerSystem = AudioListenerSystem::instance();
 
     // single-component systems for running psuedo-destructors / updating some global var
     auto actorsMgr = ActorsManager::instance();
@@ -180,6 +181,7 @@ void Game::mainloop() {
         actorsMgr->update();
         solidsMgr->update();
         semiSolidsMgr->update();
+        audioListenerSystem->update();
 
         animationSystem->update();
 

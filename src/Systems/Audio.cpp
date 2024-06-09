@@ -3,13 +3,18 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
+#include "Settings.h"
 #include "System.h"
 #include "Util/Print.h"
+#include "fmod_common.h"
 #include "fmod_dsp_effects.h"
 
 namespace whal {
 
 static const char* CHANNEL_GROUP_NAME_CLIPS = "Clips";
+constexpr f32 ATTEN_DIST_MIN = 30;
+constexpr f32 ATTEN_DIST_MAX = 200;
+constexpr f32 DIST_UNITS = FPIXELS_PER_TILE;
 
 AudioClip::AudioClip(const char* path) {
     load(path);
@@ -22,8 +27,8 @@ AudioClip::~AudioClip() {
 }
 
 std::optional<Error> AudioClip::load(const char* path) {
-    auto result =
-        System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL, nullptr, &mSound);  // looping on by default bc documentation recommends it
+    auto result = System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
+                                                         &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
         mSound = nullptr;
         auto err = FMOD_ErrorString(result);
@@ -59,6 +64,13 @@ AudioPlayer::AudioPlayer() {
         mClipChannelPool[i] = nullptr;
     }
 
+    s32 nListeners;
+    mSystem->get3DNumListeners(&nListeners);
+    if (nListeners != 1) {
+        mSystem->set3DNumListeners(1);
+    }
+    mSystem->set3DSettings(0.0f, DIST_UNITS, 1.0f);
+
     // Init Sfx Clips
     if (auto errOpt = Sfx::instance().load(); errOpt) {
         print(errOpt.value());
@@ -75,7 +87,7 @@ AudioPlayer::~AudioPlayer() {
     }
 }
 
-void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool isLooping) {
+void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
     if (!mIsValid) {
         return;
     }
@@ -96,6 +108,20 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
     mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
     mMusicChannel->setVolume(volume);
     setFilterMusic(filter);
+
+    if (position != nullptr) {
+        // 1 = 100% 3D, 0 = 100% 2D
+        mMusicChannel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
+        mMusicChannel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
+        FMOD_VECTOR vec = FMOD_VECTOR(position->x(), position->y(), 0);
+        auto result = mMusicChannel->set3DAttributes(&vec, nullptr);
+        if (result != FMOD_OK) {
+            print("Got error setting channel position: ", FMOD_ErrorString(result));
+        }
+    } else {
+        mMusicChannel->set3DLevel(0.0);
+    }
+
     mIsPlayingMusic = true;
 }
 
@@ -137,7 +163,7 @@ FMOD::System* AudioPlayer::getSystem() const {
 }
 
 // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
-void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
+void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
     if (!clip.isValid()) {
         return;
     }
@@ -155,13 +181,14 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
     }
 
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
-    playClipWithChannel(clip, *pChannel, volume, filter, isLooping);
+    playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
 }
 void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
-    playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, false);
+    playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
 }
 
-void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, bool isInGroup) {
+void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
+                                      bool isInGroup) {
     if (isLooping) {
         // -1 -> loop forever
         // 0 -> don't loop
@@ -180,6 +207,19 @@ void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* chan
     mSystem->playSound(clip.get(), group, false, &channel);
     channel->setVolume(volume);
     setChannelFilter(filter, channel);
+
+    if (position != nullptr) {
+        // 1 = 100% 3D, 0 = 100% 2D
+        channel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
+        channel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
+        FMOD_VECTOR vec = FMOD_VECTOR(position->x(), position->y(), 0);
+        auto result = channel->set3DAttributes(&vec, nullptr);
+        if (result != FMOD_OK) {
+            print("Got error setting channel position: ", FMOD_ErrorString(result));
+        }
+    } else {
+        channel->set3DLevel(0.0);
+    }
 
     mIsPlayingChannels = true;
 }
@@ -214,6 +254,14 @@ void AudioPlayer::stopAll() {
 void AudioPlayer::setMusicVolume(f32 volume) {
     if (mMusicChannel != nullptr && mIsPlayingMusic) {
         mMusicChannel->setVolume(volume);
+    }
+}
+
+void AudioPlayer::setListenerPosition(Vector2i worldPosition) {
+    FMOD_VECTOR position = FMOD_VECTOR(worldPosition.x(), worldPosition.y(), 0);
+    auto result = mSystem->set3DListenerAttributes(0, &position, nullptr, nullptr, nullptr);
+    if (result != FMOD_OK) {
+        print("Error setting AudioListener position: ", FMOD_ErrorString(result));
     }
 }
 

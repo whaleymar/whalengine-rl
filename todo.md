@@ -9,8 +9,6 @@
 
 ## Components
 - Light 
-- AudioListener - give to camera, add some debug assert to make sure there's only ever one 
-    - used as target for 3D/spatial audio
 
 ## Entity Prefabs
 - particle
