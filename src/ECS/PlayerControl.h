@@ -7,7 +7,6 @@ namespace whal {
 // could be interesting:
 // time/function for how fast I arrive at top speed
 // jump trajectory
-// coyote time window
 
 struct BufferedInput {
     s16 framesLeft = 0;
@@ -24,10 +23,6 @@ struct PlayerControl {
 
     f32 moveSpeed;
 };
-
-// tag that says player can freely move in any direction
-// an entity shouldn't have this component + rigidbody
-struct FreeControl {};
 
 struct Jumper {
     Jumper() = default;

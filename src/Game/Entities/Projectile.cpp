@@ -1,5 +1,6 @@
 #include "Projectile.h"
 
+#include "Physics/Collision/Shapes.h"
 #include "Settings.h"
 #include "whalECS/src/ECS.h"
 
@@ -9,7 +10,6 @@
 #include "ECS/Draw.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Name.h"
-#include "ECS/Radius.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 #include "Explosion.h"
@@ -18,11 +18,11 @@
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 
-namespace whal {
+using namespace whal;
 
 void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
-    f32 explosionRadius = self.get<Radius>().r;
+    f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
         Vector2i pos = self.get<Transform2D>().position;
         makeExplosionZone(pos, explosionRadius);
@@ -30,12 +30,7 @@ void makeDefaultExplosion(ecs::Entity self) {
 }
 
 void Explode(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
-    // make 2 knockback zones. One centered at the point of collision, and one with its far edge aligned with the collision edge
-    // makeExplosionZone(selfCollider->getCollider().getPositionEdge(moveNormal) - moveNormal * PROJECTILE_EXPLOSION_RADIUS,
-    //                   PROJECTILE_EXPLOSION_RADIUS);
-
-    // nvm just make one big zone
-    f32 explosionRadius = self.get<Radius>().r;
+    f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
         Vector2i pos = selfCollider->getCollider().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius);
@@ -73,7 +68,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     entity.add(vel);
     entity.add(Name("PROJECTILE"));
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
-    entity.add(Radius(explosionRadius));
+    entity.add(Circle(Vector2i(), explosionRadius));
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;
@@ -92,5 +87,3 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
 
     return entity;
 }
-
-}  // namespace whal
