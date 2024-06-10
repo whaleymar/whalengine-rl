@@ -56,6 +56,9 @@ private:
 
 template <typename... T>
 EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const& func, T... args) {
+    if (!func) {
+        return *this;
+    }
     BoundFunction bf = std::bind(func, args...);  // boyfriend :3
     auto pNode = std::make_unique<Node>(0, bf, nullptr);
     if (mRoot == nullptr) {
