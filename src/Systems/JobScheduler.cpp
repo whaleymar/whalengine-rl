@@ -66,7 +66,9 @@ void JobScheduler::tick(f32 dt) {
         if (it->isDone()) {
             it = mEventFlows.erase(it);
         } else {
-            it->tick(dt);
+            if (!it->isPaused()) {
+                it->tick(dt);
+            }
             ++it;
         }
     }

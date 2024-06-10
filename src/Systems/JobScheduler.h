@@ -46,6 +46,7 @@ public:
 
     void tick(f32 deltaTime);
     bool isDone() const { return mRoot == nullptr; }
+    bool isPaused() const { return mIsPaused; }
 
 private:
     std::unique_ptr<Node> mRoot = nullptr;

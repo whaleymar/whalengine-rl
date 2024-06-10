@@ -1,5 +1,8 @@
+#include "Player.h"
+
 #include <algorithm>
 
+#include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 
 #include "Settings.h"
@@ -204,6 +207,17 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     player.add(ActorCollider(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();
     // player.add<FreeControl>();
+
+    player.add(Respawn{2, &respawnPlayer,
+                       []() {
+                           System::audio.playClip(Sfx::DEATH);
+                           System::audio.setMusicVolume(0.75);
+                           System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
+                       },
+                       []() {
+                           System::audio.setMusicVolume(1);
+                           System::audio.setFilterMusic(AudioPlayer::Filter::None);
+                       }});
 
     return player;
 }

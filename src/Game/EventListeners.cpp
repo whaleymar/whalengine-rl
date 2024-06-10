@@ -1,20 +1,20 @@
 #include "EventListeners.h"
 
+#include "Game/Components/Respawn.h"
 #include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 #include "ECS/Draw.h"
 #include "ECS/Entities/Player.h"
-#include "ECS/Tags.h"
 
-namespace whal {
+using namespace whal;
 
 void startListeners() {
-    System::eventMgr.registerListener(Event::DEATH_EVENT, Listeners::PLAYER_DEATH_LISTENER);
+    System::eventMgr.registerListener(Event::DEATH_EVENT, Listeners::ENTITY_DEATH_LISTENER);
 }
 
 void killListeners() {
-    System::eventMgr.stopListening(Event::DEATH_EVENT, Listeners::PLAYER_DEATH_LISTENER);
+    System::eventMgr.stopListening(Event::DEATH_EVENT, Listeners::ENTITY_DEATH_LISTENER);
 }
 
 // ECS callback
@@ -26,30 +26,23 @@ void playGameOverSound() {
     System::audio.playClip(Sfx::GAMEOVER);
 }
 
-// TODO Respawn component + system + system has this listener
 void onEntityDeath(ecs::Entity entity) {
     // if (entity.has<Name>()) {
     //     print("Killed entity: ", entity.get<Name>());
     // }
-    if (!entity.has<Player>()) {
+    auto respawnOpt = entity.tryGet<Respawn>();
+    if (!respawnOpt) {
         return;
     }
 
+    auto respawn = *respawnOpt.value();
     Sprite sprite;  // needs to be created in main thread bc OpenGL
-    const f32 respawnTime = 2;
 
+    // clang-format off
     System::schedule.eventFlow()
-        .add([]() {
-            System::audio.playClip(Sfx::DEATH);
-            System::audio.setMusicVolume(0.75);
-            System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
-        })
-        .addWait(respawnTime)
-        .add(&respawnPlayer, sprite)
-        .add([]() {
-            System::audio.setMusicVolume(1);
-            System::audio.setFilterMusic(AudioPlayer::Filter::None);
-        });
+        .add(respawn.onDeath)
+        .addWait(respawn.waitTime)
+        .add(respawn.respawnCallback, sprite)
+        .add(respawn.onRespawn);
+    // clang-format on
 }
-
-}  // namespace whal

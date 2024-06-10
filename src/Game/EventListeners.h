@@ -2,22 +2,19 @@
 
 #include "Events.h"
 
-namespace whal {
-
-namespace ecs {
+namespace whal::ecs {
 class Entity;
 }
-void emitEntityDeathEvent(ecs::Entity entity);
 
-void onEntityDeath(ecs::Entity entity);
+void emitEntityDeathEvent(whal::ecs::Entity entity);
+
+void onEntityDeath(whal::ecs::Entity entity);
 
 void startListeners();
 void killListeners();
 
 namespace Listeners {
 
-inline auto PLAYER_DEATH_LISTENER = EventListener<ecs::Entity>(&onEntityDeath);
+inline auto ENTITY_DEATH_LISTENER = whal::EventListener<whal::ecs::Entity>(&onEntityDeath);
 
 }
-
-}  // namespace whal
