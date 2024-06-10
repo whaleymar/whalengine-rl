@@ -314,10 +314,12 @@ Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance)
 
 void AudioPlayer::setFilterMusic(Filter filter) {
     setChannelFilter(filter, mMusicChannel);
+    mMusicFilter = filter;
 }
 
 void AudioPlayer::setFilterClips(Filter filter) {
     setChannelFilter(filter, mClipChannelGroup);
+    mClipsFilter = filter;
 }
 
 void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel) {

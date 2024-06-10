@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Event.h"
+#include "Systems/Audio.h"
 #include "Util/Types.h"
 
 typedef struct Font Font;
@@ -34,6 +35,7 @@ private:
 
     EventListener<InputType> mInputListener;
     Button mCursorOption = Button::Resume;
+    AudioPlayer::Filter mPrevMusicFilter;
     bool mIsPaused = false;
 };
 

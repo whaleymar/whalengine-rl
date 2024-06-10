@@ -66,6 +66,8 @@ public:
     Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
     void setFilterMusic(Filter filter);
     void setFilterClips(Filter filter);
+    Filter getFilterMusic() const { return mMusicFilter; }
+    Filter getFilterClips() const { return mClipsFilter; }
 
 private:
     AudioPlayer();
@@ -89,6 +91,8 @@ private:
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;
+    Filter mMusicFilter = Filter::None;
+    Filter mClipsFilter = Filter::None;
     bool mIsValid = false;
     bool mIsPlayingMusic = false;
     bool mIsPlayingChannels = false;

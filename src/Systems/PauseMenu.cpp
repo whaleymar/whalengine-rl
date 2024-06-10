@@ -86,15 +86,22 @@ void PauseMenu::doCursorAction() {
 }
 
 void PauseMenu::pause() {
+    if (mIsPaused) {
+        return;
+    }
     System::setPaused(true);
+    mPrevMusicFilter = System::audio.getFilterMusic();
     System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
     mIsPaused = true;
     mCursorOption = Button::Resume;
 }
 
 void PauseMenu::unpause() {
+    if (!mIsPaused) {
+        return;
+    }
     System::setPaused(false);
-    System::audio.setFilterMusic(AudioPlayer::Filter::None);
+    System::audio.setFilterMusic(mPrevMusicFilter);
     mIsPaused = false;
 }
 

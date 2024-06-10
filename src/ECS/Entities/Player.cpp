@@ -219,7 +219,6 @@ void respawnPlayer(Sprite sprite) {
     if (!player.isExpected()) {
         print(player.error());
     }
-    System::audio.setMusicVolume(1);  // music was reduced to play death sfx
 }
 
 }  // namespace whal

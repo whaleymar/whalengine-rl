@@ -26,7 +26,7 @@ void playGameOverSound() {
     System::audio.playClip(Sfx::GAMEOVER);
 }
 
-// more like onPlayerDeath
+// TODO Respawn component + system + system has this listener
 void onEntityDeath(ecs::Entity entity) {
     // if (entity.has<Name>()) {
     //     print("Killed entity: ", entity.get<Name>());
@@ -35,13 +35,21 @@ void onEntityDeath(ecs::Entity entity) {
         return;
     }
 
-    // TODO this would be a good use case for event flow
-    // kill player -> play clip && set music volume -> schedule respawn & await -> reset music volume to normal
     Sprite sprite;  // needs to be created in main thread bc OpenGL
-    System::schedule.after(&respawnPlayer, 2, sprite);
+    const f32 respawnTime = 2;
 
-    System::audio.playClip(Sfx::DEATH);
-    System::audio.setMusicVolume(0.2);  // RESEARCH should also apply low pass filter here
+    System::schedule.eventFlow()
+        .add([]() {
+            System::audio.playClip(Sfx::DEATH);
+            System::audio.setMusicVolume(0.75);
+            System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
+        })
+        .addWait(respawnTime)
+        .add(&respawnPlayer, sprite)
+        .add([]() {
+            System::audio.setMusicVolume(1);
+            System::audio.setFilterMusic(AudioPlayer::Filter::None);
+        });
 }
 
 }  // namespace whal

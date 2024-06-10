@@ -53,10 +53,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 ## System:
 - make this an actual framework 
 - hot-reloading code (youtube video is bookmarked)
-- EventFlow
-    - execute a series of callbacks sequentially
-    - max 1 callback per frame 
-    - some callbacks may have a wait time
 
 ## Map:
 - bake tile data into a mesh & use that for lighting
