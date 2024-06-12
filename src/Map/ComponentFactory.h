@@ -32,9 +32,9 @@ public:
 
     inline static Velocity DefaultVelocity;
     inline static RailsControl DefaultRailsControl;
-    inline static ActorCollider DefaultActorCollider;
-    inline static SemiSolidCollider DefaultSemiSolidCollider;
-    inline static SolidCollider DefaultSolidCollider;
+    inline static Collider DefaultActorCollider;
+    inline static Collider DefaultSolidCollider;
+    inline static Collider DefaultSemiSolidCollider;
     inline static RigidBody DefaultRigidBody;
     inline static Jumper DefaultJumper;
     inline static Draw DefaultDraw;

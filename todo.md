@@ -1,6 +1,12 @@
 # To Do 
 
 ## Current Goal: 
+- collider consolidation:
+    - pushing/carrying doesn't work 
+        - needs to do callback events too
+    - callback prioritization
+    - momentum 
+    - misc TODOs
 - cleanup todos (pushing doesn't do callbacks, finish player anims, dynamic spawn points, consolidate collider components)
 
 ## Camera / Follow

@@ -7,13 +7,14 @@ namespace whal {
 struct Transform2D;
 struct Velocity;
 struct Trigger;
-class ActorCollider;
+class Collider;
 
 class TriggerSystem : public ecs::ISystem<Trigger> {
 public:
     void update() override;
 };
 
-class MovableActorTracker : public ecs::ISystem<Transform2D, Velocity, ActorCollider> {};
+// TODO remove this
+class MovableActorTracker : public ecs::ISystem<Transform2D, Velocity, Collider> {};
 
 }  // namespace whal

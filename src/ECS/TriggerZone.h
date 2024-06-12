@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Physics/Collision/ICollider.h"
+#include "Physics/Shapes.h"
 
 namespace whal {
 

@@ -2,151 +2,97 @@
 
 #include <vector>
 
+#include "Physics/CollisionLayer.h"
 #include "Physics/IUseCollision.h"
 #include "Physics/Material.h"
+#include "Physics/Shapes.h"
 #include "Util/Vector.h"
 
 namespace whal {
 
-class ActorCollider;
-class SolidCollider;
-class SemiSolidCollider;
+class Collider;
 struct HitInfo;
 namespace ecs {
 class Entity;
 }
 
-// RESEARCH not sure if i will do this YET
-// class Collider {
-// public:
-//     Collider() = default;
-//     Collider(IColliderShape* shape, WorldMaterial material = WorldMaterial::None, CollisionCallback callback = nullptr);
-//
-//     const IColliderShape* getCollider() const { return mShape.get(); }
-//     IColliderShape* getColliderMut() const { return mShape.get(); }
-//     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
-//     void setCollisionCallback(CollisionCallback callback);  // TODO was virtual
-//     WorldMaterial getMaterial() const { return mMaterial; }
-//     void setMaterial(WorldMaterial material) { mMaterial = material; }
-//     ecs::Entity getEntity() const { return mSelf; }
-//     void setEntity(ecs::Entity entity) { mSelf = entity; }
-//     bool isCollidable() const { return mIsCollidable; }
-//     void setIsCollidable(bool isCollidable) { mIsCollidable = isCollidable; }
-//
-//     std::optional<HitInfo> moveX(const Vector2f amount, const CollisionCallback callback);
-//     std::optional<HitInfo> moveY(const Vector2f amount, const CollisionCallback callback);
-//     bool checkIsGrounded(const std::vector<Collider*>& groundColliders, Collider** dstGroundCollider);
-//     bool checkCollision(const std::vector<Collider*>& colliderList, const Vector2i position, const Vector2i moveNormal);
-//
-//     void squish();
-//
-// protected:
-//     std::unique_ptr<IColliderShape> mShape;
-//     CollisionCallback mOnCollisionEnter;
-//     ecs::Entity mSelf;
-//     f32 mXRemainder = 0.0;
-//     f32 mYRemainder = 0.0;
-//     WorldMaterial mMaterial;
-//     bool mIsCollidable = true;
-// };
+using CollisionCallbackNew = void (*)(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
+                                      Vector2i hitNormal);
 
-class ActorCollider : public IUseCollision {
+// TODO
+// - momentum component
+class Collider {
 public:
-    ActorCollider() = default;
-    ActorCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                  bool collidesWithActors = false);
+    Collider() = default;
+    Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+             CollisionDir collisionDir = CollisionDir::ALL);
+    Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None,
+             CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
 
-    std::optional<HitInfo> moveX(const Vector2f amount, const CollisionCallback callback);
-    std::optional<HitInfo> moveY(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded = false);
-    void setMomentum(const f32 momentum, const bool isXDirection);
-    void addMomentum(const f32 momentum, const bool isXDirection);
-    void maintainMomentum(const bool isXDirection);
-    void resetMomentumX();
-    void resetMomentumY();
-    void resetMomentum();
-    Vector2f getMomentum() const { return mStoredMomentum; }
-    bool isMomentumStoredX() const { return mMomentumFramesLeft.x() > 0; }
-    bool isMomentumStoredY() const { return mMomentumFramesLeft.y() > 0; }
-    void momentumNotUsed();
-    bool checkIsGrounded(const std::vector<SolidCollider*>& solids, IUseCollision** groundCollider);
-    bool checkIsGroundedOnSemiSolids(const std::vector<SemiSolidCollider*>& semis, IUseCollision** groundCollider);
-    bool checkIsGroundedOnActors(const std::vector<ActorCollider*>& actors, IUseCollision** groundCollider);
+    // static creator functions
+    static Collider Actor(AABB shape);
+    static Collider Actor(Transform2D transform, Vector2i halflen);
+    static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+                          CollisionDir collisionDir = CollisionDir::ALL);
+    static Collider Solid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
+                          CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+    static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+                              CollisionDir collisionDir = CollisionDir::ALL);
+    static Collider SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
+                              CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
 
-    std::optional<HitInfo> checkCollisionSolids(const std::vector<SolidCollider*>& solids, const Vector2i position, const Vector2i moveNormal) const;
-    std::optional<HitInfo> checkCollisionSemiSolids(const std::vector<SemiSolidCollider*>& solids, const Vector2i position) const;
-    std::optional<HitInfo> checkCollisionActors(const std::vector<ActorCollider*>& actors, const Vector2i position) const;
-
-    // RESEARCH do i want virtual functions w/ ECS?
-    virtual bool isRiding(const SolidCollider* solid) const;
-
-private:
-    bool tryCornerCorrection(const std::vector<SolidCollider*>& solids, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
-    bool tryCornerCorrectionSemiSolids(const std::vector<SemiSolidCollider*>& semis, Vector2i nextPos, s32 moveSignX);
-
-    Vector2f mStoredMomentum = {0, 0};
-    Vector2i mMomentumFramesLeft = {0, 0};
-    bool mCanCollideWithActors;
-    // f32 mMass = 1; // could give solids a mass and use mass ratio to calculate force
-};
-
-class SolidCollider : public IUseCollision {
-public:
-    SolidCollider() = default;
-    SolidCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                  CollisionDir collisionDir = CollisionDir::ALL);
-
-    void move(f32 x, f32 y, bool isManualMove = false);
-    std::vector<ActorCollider*> getRidingActors() const;
-    std::vector<SemiSolidCollider*> getRidingSemiSolids() const;
-    void setCollisionCallback(CollisionCallback callback) override;
-    bool isGround() const;
+    const AABB& getCollider() const { return mShape; }  // TODO rename to getShape()
+    AABB& getColliderMut() { return mShape; }           // TODO rename ^
+    CollisionCallbackNew getOnCollisionEnter() const { return mOnCollisionEnter; }
+    void setCollisionCallback(CollisionCallbackNew callback) { mOnCollisionEnter = callback; }  // was virtual
+    WorldMaterial getMaterial() const { return mMaterial; }
+    void setMaterial(WorldMaterial material) { mMaterial = material; }
+    ecs::Entity getEntity() const { return mSelf; }
+    void setEntity(ecs::Entity entity) { mSelf = entity; }
+    bool isCollidable() const { return mIsCollidable; }
+    void setIsCollidable(bool isCollidable) { mIsCollidable = isCollidable; }
     CollisionDir getCollisionDir() const { return mCollisionDir; }
     void setCollisionDir(CollisionDir dir) { mCollisionDir = dir; }
+    CollisionLayer::Layer getCollisionLayer() const { return mCollisionLayer; }
+
+    bool isActor() const { return mCollisionLayer & CollisionLayer::Actor; }
+    bool isSolid() const { return mCollisionLayer & CollisionLayer::Solid; }
+    bool isSemiSolid() const { return mCollisionLayer & CollisionLayer::SemiSolid; }
+    bool isSolidAny() const { return LAYER_MATRIX.isSolidAny(mCollisionLayer); }
+
+    void move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false, bool isManualMove = false);
+    HitInfo moveX(const Vector2f amount, const CollisionCallbackNew callback);
+    HitInfo moveY(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false);
+
+    // move as Solid (nothing can stop the collider)
+    void moveNoCollisionCheck(f32 x, f32 y);
+    void pushAndCarry(f32 x, f32 y, const std::vector<Collider*>& ridingColliders, bool isManualMove = false);
+
+    bool checkIsGrounded(const std::vector<Collider*>& otherColliders, Collider** dstGroundCollider);
+    bool isGround() const;
+    bool isRiding(const Collider* other) const;
+    std::vector<Collider*> getRidingColliders() const;
+    u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
+
+    HitInfo checkCollision(const std::vector<Collider*>& colliders, const Vector2i position, const Vector2i moveNormal,
+                           const u16 layerMask = CollisionLayer::ALL) const;
+    void squish();
 
 protected:
-    void moveActors(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
-                    std::vector<ActorCollider*>& riding, bool isManualMove);
+    bool tryCornerCorrection(const std::vector<Collider*>& others, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
+    void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
+                       const std::vector<Collider*>& riding, bool isManualMove) const;
 
-    virtual void moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32 solidEdge, EdgeGetter edgeFunc, std::vector<SemiSolidCollider*>& riding,
-                                bool isManualMove);
-
-private:
+    // Shape mShape; // Maybe one day. Too much is hard coded to AABBs for me to bother rn
+    AABB mShape;
+    ecs::Entity mSelf;
+    CollisionLayer::Layer mCollisionLayer;
+    CollisionCallbackNew mOnCollisionEnter;
+    f32 mXRemainder = 0.0;
+    f32 mYRemainder = 0.0;
+    WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
+    bool mIsCollidable = true;
 };
-
-// A collider which acts like a Solid when interacting with Actors, but acts like an Actor when interacting with solids
-// More specifically, it
-//     - carries/pushes actors when moving, and stops actors that move into it
-//     - stops when moving into a solid, and is carried/pushed by moving solids
-//     - carries/pushes other semisolids -- RESEARCH maybe this should be configurable, so some just stop instead of pushing each other
-//
-// Other stuff: can be grounded, does not have corner correction, does not have momentum(?), can be destroyed, no one-way collision variants
-class SemiSolidCollider : public SolidCollider {
-public:
-    SemiSolidCollider() = default;
-    SemiSolidCollider(Transform2D transform, Vector2i half, WorldMaterial material = WorldMaterial::None,
-                      CollisionCallback onCollisionEnter_ = nullptr);
-
-    std::optional<HitInfo> moveX(const f32 amount, const CollisionCallback callback, std::vector<ActorCollider*>& riding,
-                                 std::vector<SemiSolidCollider*>& ridingSemis, bool isManualMove = false);
-    std::optional<HitInfo> moveY(const f32 amount, const CollisionCallback callback, std::vector<ActorCollider*>& riding,
-                                 std::vector<SemiSolidCollider*>& ridingSemis, bool isManualMove = false, bool isGroundedCheckNeeded = false);
-
-    std::optional<HitInfo> checkCollisionSolids(const std::vector<SolidCollider*>& solids, const Vector2i position, const Vector2i moveNormal) const;
-    std::optional<HitInfo> checkCollisionSemiSolids(const std::vector<SemiSolidCollider*>& solids, const Vector2i position) const;
-
-    bool checkIsGrounded(const std::vector<SolidCollider*>& solids, IUseCollision** groundCollider);
-    bool checkIsGroundedOnSemiSolids(const std::vector<SemiSolidCollider*>& solids, IUseCollision** groundCollider);
-
-    // still not sure if/how/should i use component inheritance with my ECS, but I'll stay consistent for now
-    virtual bool isRiding(const SolidCollider* solid) const;
-    void setCollisionCallback(CollisionCallback callback) override;
-
-protected:
-    void moveSemiSolids(bool isXDirection, s32 toMoveRounded, s32 solidEdge, EdgeGetter edgeFunc, std::vector<SemiSolidCollider*>& riding,
-                        bool isManualMove) override;
-};
-
-void defaultSquish(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollision, Vector2i moveNormal);
 
 }  // namespace whal

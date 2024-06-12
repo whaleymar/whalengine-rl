@@ -184,7 +184,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     s32 centerY = lvl.worldPosOriginTexels.y() * PIXELS_PER_TEXEL - startPoint.second * PIXELS_PER_TILE - (meshHeightTiles - 2) * PIXELS_PER_TILE / 2;
 
     Vector2i halflen = {meshWidthTiles * PIXELS_PER_TILE / 2, meshHeightTiles * PIXELS_PER_TILE / 2};
-    SolidCollider collider = SolidCollider(Transform2D({centerX, centerY}), halflen);
+    auto collider = Collider::Solid(Transform2D({centerX, centerY}), halflen);
 
     auto eEntity = System::ecs->entity();
     if (!eEntity.isExpected()) {

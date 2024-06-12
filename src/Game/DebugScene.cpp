@@ -106,9 +106,9 @@ std::optional<Error> loadDebugScene() {
             createBlock(Transform2D::tiles(i, 2),
                         Sprite(d, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Emerald))
                 .value();
-        invisBlock.remove<SolidCollider>();
+        invisBlock.remove<Collider>();
         auto invisBlock2 = createBlock(Transform2D::tiles(i - 5, 2), Draw(Colors::Emerald, {8, 8}, d)).value();
-        invisBlock2.remove<SolidCollider>();
+        invisBlock2.remove<Collider>();
     }
 
     auto platform = createBlock(Transform2D::tiles(5, 1)).value();
@@ -143,7 +143,7 @@ std::optional<Error> loadDebugScene() {
     return std::nullopt;
 }
 
-void startRailsMovement(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
+void startRailsMovement(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     auto& rails = self.get<RailsControl>();
     if (rails.isWaiting && rails.curTarget == 0) {
         rails.startManually();
@@ -166,7 +166,7 @@ void createTestPlatform() {
                                         2, false);
         platform.add<RailsControl>(pathControl);
         platform.add(Name("callback platform"));
-        platform.get<SolidCollider>().setCollisionCallback(&startRailsMovement);
+        platform.get<Collider>().setCollisionCallback(&startRailsMovement);
         // platform.get<SolidCollider>().setCollisionCallback(&killEntityCallback);
 
         // platform.remove<SolidCollider>();
@@ -218,7 +218,7 @@ void createTestSemiSolid() {
     // newEntity.add(pathControl);
     newEntity.add<Velocity>();
     newEntity.add<RigidBody>();
-    auto collider = SemiSolidCollider(trans, Vector2i(8, 8), WorldMaterial::None, nullptr);
+    auto collider = Collider::SemiSolid(trans, Vector2i(8, 8), WorldMaterial::None, nullptr);
     newEntity.add(collider);
 
     newEntity = System::ecs->entity().value();

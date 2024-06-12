@@ -24,7 +24,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
 
     const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    block.add(SolidCollider(transform, Vector2i(widthTileHL, heightTileHL)));
+    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
 
     return block;
 }
@@ -42,7 +42,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw) {
 
     const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    block.add(SolidCollider(transform, Vector2i(widthTileHL, heightTileHL)));
+    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
 
     return block;
 }
@@ -60,7 +60,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
 
     const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    block.add(SolidCollider(transform, Vector2i(widthTileHL, heightTileHL), material));
+    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL), material));
 
     return block;
 }

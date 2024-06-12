@@ -83,6 +83,8 @@ struct Vector2T {
         return *this;
     }
 
+    inline bool operator==(const Vector2T<T> other) const { return e[0] == other.e[0] && e[1] == other.e[1]; }
+
     inline T x() const { return e[0]; }
     inline T y() const { return e[1]; }
 

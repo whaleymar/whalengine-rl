@@ -1,9 +1,7 @@
 #pragma once
 
-#include <optional>
-
 #include "ECS/Transform.h"
-#include "Physics/Collision/HitInfo.h"
+#include "Physics/HitInfo.h"
 #include "Util/Vector.h"
 
 typedef struct Color Color;
@@ -23,7 +21,7 @@ public:
     Vector2i getHalf() const { return mHalf; }
     void setHalf(Vector2i half) { mHalf = half; }
     Vector2i getPositionEdge(Vector2i unitDir) const;
-    const std::optional<HitInfo> collide(const AABB& other) const;
+    HitInfo collide(const AABB& other) const;
 
     bool isOverlapping(const AABB* other) const;
 #ifndef NDEBUG
@@ -63,6 +61,42 @@ public:
 private:
     Vector2i mCenter;
     s32 mRadius;
+};
+
+enum class ShapeTag : u16 { AABB, Circle };
+
+// tagged union
+class Shape {
+public:
+    Shape() : mAABB(Vector2i(5, 5)), mShape(ShapeTag::AABB) {}
+
+    Shape(AABB aabb);
+    Shape(Circle circle);
+
+    // apparently these get deleted bc compiler bug
+    Shape(const Shape& other);
+    Shape& operator=(const Shape& other);
+
+    ShapeTag getShape() const { return mShape; }
+
+    AABB getAABB() const;
+    Circle getCircle() const;
+    void setPosition(Vector2i center);
+    void setPosition(Transform2D transform);
+    Vector2i getPosition() const;
+    bool isOverlapping(const Shape& other) const;
+    bool isOverlapping(const AABB& other) const;
+    bool isOverlapping(const Circle& other) const;
+#ifndef NDEBUG
+    void draw(Vector2f cameraPos, Color color) const;
+#endif
+
+private:
+    union {
+        AABB mAABB;
+        Circle mCircle;
+    };
+    ShapeTag mShape;
 };
 
 bool isIntersectAABBvsAABB(const AABB*, const AABB*);

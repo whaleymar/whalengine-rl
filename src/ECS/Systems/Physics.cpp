@@ -5,7 +5,7 @@
 
 #include "ECS/PlayerControl.h"
 #include "Game/Events.h"
-#include "Physics/Collision/HitInfo.h"
+#include "Physics/HitInfo.h"
 #include "Settings.h"
 
 #include "ECS/Collision.h"
@@ -25,15 +25,20 @@ constexpr f32 GRAVITY = 280;
 
 constexpr f32 FRICTION_GROUND = 240;
 constexpr f32 FRICTION_AIR = 200;
-// constexpr f32 FRICTION_AIR = 80.0;
 constexpr f32 MOVE_EPSILON = 0.1;
 
 constexpr f32 JUMP_PEAK_GRAVITY_MULT = 0.5;
 constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no longer considered "jumping"
 
-constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
+// constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 
 using BoundCollisionCallback = std::function<void()>;
+
+void onCollision(ecs::Entity entity, HitInfo hitinfo);
+
+PhysicsSystem::PhysicsSystem() : mCollisionListener(EventListener<ecs::Entity, HitInfo>(&onCollision)) {
+    System::eventMgr.registerListener(Event::COLLISION_EVENT, mCollisionListener);
+}
 
 void applyGravity(Velocity& velocity, f32 dt, bool isJumping) {
     bool isInJumpPeak = isJumping && isBetween(velocity.total.y(), JUMP_PEAK_SPEED_MAX, 0.0f);
@@ -45,23 +50,38 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
     velocity.e[0] = approach(velocity.x(), 0, frictionMultiplier);
 }
 
-void addIfUnique(std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>& entityList, ecs::Entity callbackOwner, ecs::Entity other,
-                 IUseCollision* callbackOwnerCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
-    for (auto [entity, _] : entityList) {
-        if (entity == other) {
-            return;
-        }
-    }
+// Any type of collision (regular, push, carry) is emitted as an event and received here.
+// If the moving entity or the other entity have callbacks, they're added to a queue and called once everything has moved.
+// If both entities are moving, this might get called twice for the same pair of entities.
+// So I have a helper function that makes sure they're unique
+void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
+    auto& queue = PhysicsSystem::getCollisionCallbackQueue();
+    auto movingCollider = movingEntity.get<Collider>();
+    auto otherCollider = hitinfo.other.get<Collider>();
 
-    BoundCollisionCallback boundFunc =
-        std::bind(callbackOwnerCollider->getOnCollisionEnter(), callbackOwner, other, callbackOwnerCollider, otherCollider, moveNormal);
-    entityList.push_back({other, boundFunc});
+    auto addIfUnique = [](std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>& entityList, ecs::Entity callbackOwner, ecs::Entity other,
+                          Collider* callbackOwnerCollider, Collider* otherCollider, Vector2i moveNormal) {
+        for (auto [entity, _] : entityList) {
+            if (entity == other) {
+                return;
+            }
+        }
+        // TODO it's weird i'm not passing hitinfo here. The callback should take hitinfo instead of moveNormal
+        BoundCollisionCallback boundFunc =
+            std::bind(callbackOwnerCollider->getOnCollisionEnter(), callbackOwner, other, callbackOwnerCollider, otherCollider, moveNormal);
+        entityList.push_back({other, boundFunc});
+    };
+
+    if (movingCollider.getOnCollisionEnter() != nullptr) {
+        addIfUnique(queue[movingEntity], movingEntity, hitinfo.other, &movingCollider, &otherCollider, hitinfo.toVec());
+    }
+    if (otherCollider.getOnCollisionEnter() != nullptr) {
+        addIfUnique(queue[hitinfo.other], hitinfo.other, movingEntity, &otherCollider, &movingCollider,
+                    hitinfo.toVec());  // TODO feels like i should be reversing hit normal here...
+    }
 }
 
 void PhysicsSystem::update() {
-    std::vector<ecs::Entity> allActors;
-    std::vector<ecs::Entity> allSemiSolids;
-
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesRef()) {
@@ -71,52 +91,16 @@ void PhysicsSystem::update() {
         }
 
         trans.isManuallyMoved = false;
-        if (std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>(); actor) {
-            actor.value()->getColliderMut().setPosition(trans);
-        } else if (std::optional<SolidCollider*> solid = entity.tryGet<SolidCollider>(); solid) {
-            solid.value()->getColliderMut().setPosition(trans);
-        } else if (std::optional<SemiSolidCollider*> semisolid = entity.tryGet<SemiSolidCollider>(); semisolid) {
-            semisolid.value()->getColliderMut().setPosition(trans);
+        if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
+            colliderOpt.value()->getColliderMut().setPosition(trans);
         }
     }
 
-    using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>, ecs::EntityHash>;
-    CallbackMap collisionCallbacks;
-
-    auto checkOthersCallback = [](CallbackMap& collisionCallbacks, HitInfo hitinfo, ecs::Entity entity, IUseCollision* selfCollider) {
-        IUseCollision* callbackOwnerCollider = nullptr;
-        if (hitinfo.isOtherSolid) {
-            callbackOwnerCollider = &hitinfo.other.get<SolidCollider>();
-        } else if (hitinfo.isOtherSemiSolid) {
-            callbackOwnerCollider = &hitinfo.other.get<SemiSolidCollider>();
-        } else if (hitinfo.isOtherActor) {
-            callbackOwnerCollider = &hitinfo.other.get<ActorCollider>();
-        } else {
-            return;
-        }
-        if (callbackOwnerCollider->getOnCollisionEnter() != nullptr) {
-            addIfUnique(collisionCallbacks[hitinfo.other], hitinfo.other, entity, callbackOwnerCollider, selfCollider, hitinfo.normal);
-        }
-    };
-
-    auto checkSelfCallback = [](CallbackMap& collisionCallbacks, HitInfo hitinfo, ecs::Entity entity, IUseCollision* selfCollider) {
-        if (selfCollider->getOnCollisionEnter() != nullptr) {
-            IUseCollision* otherCollider = nullptr;
-            if (hitinfo.isOtherSolid) {
-                otherCollider = &hitinfo.other.get<SolidCollider>();
-            } else if (hitinfo.isOtherSemiSolid) {
-                otherCollider = &hitinfo.other.get<SemiSolidCollider>();
-            } else if (hitinfo.isOtherActor) {
-                otherCollider = &hitinfo.other.get<ActorCollider>();
-            }
-            addIfUnique(collisionCallbacks[entity], entity, hitinfo.other, selfCollider, otherCollider, hitinfo.normal);
-        }
-    };
-
+    std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
+        // camera move normally unless paused
         if (entity.has<Camera>() && !PauseMenu::instance().isPaused()) {
-            // move if fake paused
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();
@@ -150,168 +134,22 @@ void PhysicsSystem::update() {
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
-        std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>();
-        std::optional<SemiSolidCollider*> semisolid = std::nullopt;
         std::optional<Jumper*> jumpControl = entity.tryGet<Jumper>();
-        if (!actor) {
-            semisolid = entity.tryGet<SemiSolidCollider>();
-        }
+        std::optional<Collider*> colliderOpt = entity.tryGet<Collider>();
 
-        // only actors and semisolds can be grounded (because they're the only ones that interact with the ground)
-        if (rb && actor) {
-            // MOVEMENT + GROUNDED CHECKS
-            //// no callback needed when actor moves into solid
-
-            // Y movement
-            const bool wasGrounded = rb.value()->isGrounded;
-            if (auto hitinfo = actor.value()->moveY(move, nullptr, true); hitinfo) {
-                if (move.y() <= 0) {
-                    rb.value()->setGrounded(hitinfo.value().otherMaterial);
-                } else {
-                    rb.value()->setNotGrounded();
-                }
-                if (jumpControl) {
-                    jumpControl.value()->isJumping = false;
-                }
-                vel.residualImpulse.e[1] = 0;
-
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *actor);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *actor);
-            } else {
-                rb.value()->setNotGrounded();
-            }
-
-            // X movement
-            if (auto hitinfo = actor.value()->moveX(move, nullptr); hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *actor);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *actor);
-            }
-
-            allActors.push_back(entity);
-
-            // RIGIDBODY FLAGS, MOMENTUM, AND COYOTE TIME
-            bool isMomentumStored = actor.value()->isMomentumStoredX() || actor.value()->isMomentumStoredY();
-            if (rb.value()->isGrounded) {
-                bool isLanding = !wasGrounded;
-                rb.value()->isLanding = isLanding;
-                if (isLanding) {
-                    System::eventMgr.triggerEvent(Event::LANDING_EVENT, entity);
-                }
-
-                if (isMomentumStored) {
-                    actor.value()->momentumNotUsed();
-                }
-
-            } else {
-                if (jumpControl) {
-                    if (wasGrounded && !jumpControl.value()->isJumping) {
-                        jumpControl.value()->coyoteSecondsRemaining = jumpControl.value()->coyoteTimeSecondsMax;
-                    } else if (jumpControl.value()->coyoteSecondsRemaining > 0) {
-                        jumpControl.value()->coyoteSecondsRemaining -= dt;
-                    }
-                }
-
-                // prevent repeated push forces from accumulating huge speed
-                if (isMomentumStored && rb.value()->momentumCooldownFrames <= 0) {
-                    // convert to texels/sec
-                    vel.stable += actor.value()->getMomentum() * FTEXELS_PER_PIXEL;
-                    actor.value()->resetMomentum();
-                    rb.value()->momentumCooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
-                } else if (rb.value()->momentumCooldownFrames > 0) {
-                    rb.value()->momentumCooldownFrames--;
-                }
-            }
-
-        } else if (actor) {
-            if (auto hitinfo = actor.value()->moveX(move, nullptr); hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *actor);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *actor);
-            }
-            if (auto hitinfo = actor.value()->moveY(move, nullptr); hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *actor);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *actor);
-            }
-            allActors.push_back(entity);
-
-        } else if (semisolid && rb) {
-            // MOVEMENT + GROUNDED CHECKS
-            //// no callback needed when semisolid moves into solid
-
-            // Y movement
-            const bool wasGrounded = rb.value()->isGrounded;
-            auto ridingActors = semisolid.value()->getRidingActors();
-            auto ridingSemis = semisolid.value()->getRidingSemiSolids();
-            if (auto hitinfo = semisolid.value()->moveY(move.y(), nullptr, ridingActors, ridingSemis, false, true); hitinfo) {
-                if (move.y() <= 0) {
-                    rb.value()->setGrounded(hitinfo.value().otherMaterial);
-                } else {
-                    rb.value()->setNotGrounded();
-                }
-                if (jumpControl) {
-                    jumpControl.value()->isJumping = false;
-                }
-                vel.residualImpulse.e[1] = 0;
-
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-            } else {
-                rb.value()->setNotGrounded();
-            }
-
-            // X movement
-            if (auto hitinfo = semisolid.value()->moveX(move.x(), nullptr, ridingActors, ridingSemis); hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-            }
-
-            allSemiSolids.push_back(entity);
-
-            // RESEARCH this makes me think i should separate jumping/coyote stuff into its own platformer component
-            // RIGIDBODY FLAGS, AND COYOTE TIME
-            if (rb.value()->isGrounded) {
-                bool isLanding = !wasGrounded;
-                rb.value()->isLanding = isLanding;
-                if (isLanding) {
-                    System::eventMgr.triggerEvent(Event::LANDING_EVENT, entity);
-                }
-
-            } else if (jumpControl) {
-                if (wasGrounded && !jumpControl.value()->isJumping) {
-                    jumpControl.value()->coyoteSecondsRemaining = jumpControl.value()->coyoteTimeSecondsMax;
-                } else if (jumpControl.value()->coyoteSecondsRemaining > 0) {
-                    jumpControl.value()->coyoteSecondsRemaining -= dt;
-                }
-            }
-
-        } else if (semisolid) {
-            auto ridingActors = semisolid.value()->getRidingActors();
-            auto ridingSemis = semisolid.value()->getRidingSemiSolids();
-
-            // X movement
-            auto hitinfo = semisolid.value()->moveX(move.x(), nullptr, ridingActors, ridingSemis);
-            if (hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-            }
-
-            // Y movement
-            hitinfo = semisolid.value()->moveY(move.y(), nullptr, ridingActors, ridingSemis);
-            if (hitinfo) {
-                checkSelfCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-                checkOthersCallback(collisionCallbacks, *hitinfo, entity, *semisolid);
-            }
-            allSemiSolids.push_back(entity);
-
-        } else if (std::optional<SolidCollider*> solid = entity.tryGet<SolidCollider>(); solid) {
-            // TODO collision callback when we push/carry something -- i guess
-            solid.value()->move(move.x(), move.y());
-            trans.position = solid.value()->getCollider().getPositionEdge(Vector2i::unitDown);
-
+        // ----------------------------------------------------------------
+        // UPDATE POSITION
+        if (colliderOpt) {
+            colliderOpt.value()->move(move, nullptr, rb.has_value());
+            allColliderEntities.push_back(entity);
         } else {
+            // TODO should store remainder like i do with colliders
             trans.position += Vector2i(std::round(move.x()), std::round(move.y()));
         }
+        // ----------------------------------------------------------------
 
-        // This could be made a lot faster if I have separate functions for actors/non-actors
+        // ----------------------------------------------------------------
+        // UPDATE VELOCITY
         if (rb) {
             // friction
             if (vel.stable.x()) {
@@ -349,30 +187,25 @@ void PhysicsSystem::update() {
                 }
             }
         }
+
+        // ----------------------------------------------------------------
     }
 
-    // actors/semisolids can be moved by other colliders, so wait until all collisions are processed to update position
-    for (auto& entity : allActors) {
+    // sync collider positions to transform components.
+    // done after all movement in case things get pushed by others
+    for (auto entity : allColliderEntities) {
         Transform2D& trans = entity.get<Transform2D>();
-        ActorCollider& actor = entity.get<ActorCollider>();
-
         // position is bottom-middle of collider
-        trans.position = actor.getCollider().getPositionEdge(Vector2i::unitDown);
-    }
-    for (auto& entity : allSemiSolids) {
-        Transform2D& trans = entity.get<Transform2D>();
-        SemiSolidCollider& semi = entity.get<SemiSolidCollider>();
-
-        // position is bottom-middle of collider
-        trans.position = semi.getCollider().getPositionEdge(Vector2i::unitDown);
+        trans.position = entity.get<Collider>().getCollider().getPositionEdge(Vector2i::unitDown);
     }
 
     // do collision callbacks
-    for (auto& [callbackEntity, hitList] : collisionCallbacks) {
+    for (auto& [callbackEntity, hitList] : mCollisionCallbackQueue) {
         for (auto& [otherEntity, callback] : hitList) {
             callback();
         }
     }
+    mCollisionCallbackQueue.clear();
 }
 
 }  // namespace whal

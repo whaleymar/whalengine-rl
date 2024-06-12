@@ -112,9 +112,7 @@ void Game::mainloop() {
     auto audioListenerSystem = AudioListenerSystem::instance();
 
     // single-component systems for running psuedo-destructors / updating some global var
-    auto actorsMgr = ActorsManager::instance();
-    auto solidsMgr = SolidsManager::instance();
-    auto semiSolidsMgr = SemiSolidsManager::instance();
+    auto collisionMgr = CollisionManager::instance();
 
     // these don't have update methods:
     auto playerMgr = PlayerSystem::instance();
@@ -132,9 +130,7 @@ void Game::mainloop() {
 
     System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
-    actorsMgr->update();
-    solidsMgr->update();
-    semiSolidsMgr->update();
+    collisionMgr->update();
 
     RenderTexture2D targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);  // where we'll draw objects to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
@@ -180,9 +176,7 @@ void Game::mainloop() {
         // Only rendering remains, so we can do "end of frame" stuff now
         frameEndSystem->update();
         System::ecs->killEntities();
-        actorsMgr->update();
-        solidsMgr->update();
-        semiSolidsMgr->update();
+        collisionMgr->update();
         audioListenerSystem->update();
 
         animationSystem->update();
@@ -373,7 +367,7 @@ void Game::updateLevelCamera(bool overrideCache) {
     ecs::Entity player = PlayerSystem::instance()->first();
     ecs::Entity camera = CameraSystem::instance()->first();
     Vector2f playerPosTexels = toFloatVec(player.get<Transform2D>().position) * FTEXELS_PER_PIXEL +
-                               Vector2f(player.get<ActorCollider>().getCollider().getHalf().x() / 2,
+                               Vector2f(player.get<Collider>().getCollider().getHalf().x() / 2,
                                         0);  // add halfX so visually the middle of the player has to enter the new level for it to change
     // idk why i have to take half of the half
     auto levelOpt = mActiveScene.getLevelAt(playerPosTexels);

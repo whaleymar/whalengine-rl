@@ -1,6 +1,8 @@
 #include "Projectile.h"
 
-#include "Physics/Collision/Shapes.h"
+#include "Physics/CollisionLayer.h"
+#include "Physics/Material.h"
+#include "Physics/Shapes.h"
 #include "Settings.h"
 #include "whalECS/src/ECS.h"
 
@@ -14,7 +16,6 @@
 #include "ECS/Velocity.h"
 #include "Explosion.h"
 
-#include "Physics/IUseCollision.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 
@@ -29,7 +30,7 @@ void makeDefaultExplosion(ecs::Entity self) {
     }
 }
 
-void Explode(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
+void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
         Vector2i pos = selfCollider->getCollider().getPositionEdge(moveNormal);
@@ -75,12 +76,12 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     entity.add(sprite);
 
     // add collider slightly after creation so it doesn't collide with shooter
-    // TODO this still sucks, should use a layer mask or something so it can't collide with shooter
-    auto collider = ActorCollider(trans, {halflenPixels, halflenPixels}, WorldMaterial::None, &Explode, true);
+    // TODO make this a trigger
+    Collider collider = Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None, &Explode);
     collider.setIsCollidable(false);
-    entity.add<ActorCollider>(collider);
+    entity.add(collider);
 
-    auto enableCollision = [](ecs::Entity entity) -> void { entity.get<ActorCollider>().setIsCollidable(true); };
+    auto enableCollision = [](ecs::Entity entity) -> void { entity.get<Collider>().setIsCollidable(true); };
     System::schedule.after(enableCollision, 0.075, entity);
 
     return entity;

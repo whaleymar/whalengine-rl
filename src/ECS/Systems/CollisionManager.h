@@ -5,65 +5,26 @@
 
 namespace whal {
 
-class ActorCollider;
-class SolidCollider;
-class SemiSolidCollider;
+class Collider;
 
-class ActorsManager : public ecs::ISystem<ActorCollider>, public ecs::IMonitorSystem {
+// RESEARCH may be better to store actor/semisolid/solid pointers in separate lists?
+class CollisionManager : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
-    static std::shared_ptr<ActorsManager> instance() {
-        static std::shared_ptr<ActorsManager> instance_ = System::ecs->registerSystem<ActorsManager>();
+    static std::shared_ptr<CollisionManager> instance() {
+        static std::shared_ptr<CollisionManager> instance_ = System::ecs->registerSystem<CollisionManager>();
         return instance_;
     }
 
     void update() override;
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
+    // void setUpdateNeeded() { mIsUpdateNeeded = true; }
 
-    const std::vector<ActorCollider*>& getAllActors() const { return mActors; }
-
-private:
-    std::vector<ActorCollider*> mActors;
-    bool mIsUpdateNeeded = false;
-};
-
-class SolidsManager : public ecs::ISystem<SolidCollider>, public ecs::IMonitorSystem {
-public:
-    static std::shared_ptr<SolidsManager> instance() {
-        static std::shared_ptr<SolidsManager> instance_ = System::ecs->registerSystem<SolidsManager>();
-        return instance_;
-    }
-
-    void update() override;
-    void onAdd(ecs::Entity entity) override;
-    void onRemove(ecs::Entity entity) override;
-    void setUpdateNeeded() { mIsUpdateNeeded = true; }
-
-    const std::vector<SolidCollider*>& getAllSolids() const { return mSolids; }
+    const std::vector<Collider*> getPhysicsColliders() const { return mPhysicsColliders; }
 
 private:
-    std::vector<SolidCollider*> mSolids;
-    size_t mNumCallbackColliders = 0;
-    bool mIsUpdateNeeded = false;
-};
-
-class SemiSolidsManager : public ecs::ISystem<SemiSolidCollider>, public ecs::IMonitorSystem {
-public:
-    static std::shared_ptr<SemiSolidsManager> instance() {
-        static std::shared_ptr<SemiSolidsManager> instance_ = System::ecs->registerSystem<SemiSolidsManager>();
-        return instance_;
-    }
-
-    void update() override;
-    void onAdd(ecs::Entity entity) override;
-    void onRemove(ecs::Entity entity) override;
-    void setUpdateNeeded() { mIsUpdateNeeded = true; }
-
-    const std::vector<SemiSolidCollider*> getAllSemiSolids() const { return mSemiSolids; }
-
-private:
-    std::vector<SemiSolidCollider*> mSemiSolids;
-    size_t mNumCallbackColliders = 0;
+    std::vector<Collider*> mPhysicsColliders;
+    // size_t mNumCallbackColliders = 0;
     bool mIsUpdateNeeded = false;
 };
 

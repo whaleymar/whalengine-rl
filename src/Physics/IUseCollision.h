@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Physics/Collision/Shapes.h"
 #include "Physics/Material.h"
+#include "Physics/Shapes.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

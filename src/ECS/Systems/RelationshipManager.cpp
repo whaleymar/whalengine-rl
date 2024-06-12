@@ -77,8 +77,8 @@ void FollowSystem::update() {
 
         // if the target is not moving, we shouldn't move away from it
         if (follow.isMovingX && !isTargetMovingX &&
-            ((targetTrans.position.x() <= trans.position.x() <= follow.currentTarget.x()) ||
-             (targetTrans.position.x() >= trans.position.x() >= follow.currentTarget.x()))) {
+            ((targetTrans.position.x() <= trans.position.x() && trans.position.x() <= follow.currentTarget.x()) ||
+             (targetTrans.position.x() >= trans.position.x() && trans.position.x() >= follow.currentTarget.x()))) {
             follow.currentTarget.e[0] = trans.position.x();
             follow.isMovingX = false;
         } else if (distanceFromTarget > follow.deadZoneTexels.x()) {

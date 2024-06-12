@@ -80,20 +80,9 @@ void RailsSystem::update() {
             // got to checkpoint, clamp to exact position
 
             // if entity has collider, use its move function
-            if (std::optional<SolidCollider*> sb = entity.tryGet<SolidCollider>(); sb) {
-                sb.value()->move(delta.x(), delta.y(), true);
-                entity.set(Transform2D(sb.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
-            } else if (std::optional<ActorCollider*> actor = entity.tryGet<ActorCollider>(); actor) {
-                actor.value()->moveX(delta, nullptr);
-                actor.value()->moveY(delta, nullptr);
-                entity.set(Transform2D(actor.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
-            } else if (std::optional<SemiSolidCollider*> semi = entity.tryGet<SemiSolidCollider>(); semi) {
-                auto ridingActors = semi.value()->getRidingActors();
-                auto ridingSemis = semi.value()->getRidingSemiSolids();
-
-                semi.value()->moveX(delta.x(), nullptr, ridingActors, ridingSemis, true);
-                semi.value()->moveY(delta.y(), nullptr, ridingActors, ridingSemis, true);
-                entity.set(Transform2D(semi.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
+            if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
+                colliderOpt.value()->move(delta, nullptr, false, true);
+                entity.set(Transform2D(colliderOpt.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
             } else {
                 entity.set(Transform2D(rails.getTarget().position));
             }

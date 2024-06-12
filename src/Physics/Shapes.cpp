@@ -1,5 +1,6 @@
 #include "Shapes.h"
 
+#include <cstring>
 #include <raylib.h>
 
 #include "ECS/Transform.h"
@@ -33,18 +34,18 @@ void AABB::draw(Vector2f cameraPos, Color color) const {
 }
 #endif
 
-const std::optional<HitInfo> AABB::collide(const AABB& other) const {
+HitInfo AABB::collide(const AABB& other) const {
     const auto delta = other.mCenter - mCenter;
     const auto overlap = mHalf + other.mHalf;
 
     const s32 px = overlap.x() - abs(delta.x());
     if (px <= 0) {
-        return std::nullopt;
+        return HitInfo();
     }
 
     const s32 py = overlap.y() - abs(delta.y());
     if (py <= 0) {
-        return std::nullopt;
+        return HitInfo();
     }
 
     if (px == py) {
@@ -86,15 +87,6 @@ void Circle::setPosition(Transform2D transform) {
     mCenter = Vector2i(transform.position.x(), transform.position.y() + mRadius);
 }
 
-// bool Circle2::isOverlapping(const Shape* other) const {
-//     switch (other->getShape()) {
-//     case ColliderShape::AABB:
-//         return isIntersectAABBvsCircle(static_cast<const AABB2*>(other), this);
-//     case ColliderShape::Circle:
-//         return isIntersectCirclevsCircle(this, static_cast<const Circle2*>(other));
-//     }
-// }
-
 #ifndef NDEBUG
 void Circle::draw(Vector2f cameraPos, Color color) const {
     Vector2f dstPosition = {mCenter.x() - cameraPos.x(), -1 * mCenter.y() + cameraPos.y()};
@@ -127,6 +119,101 @@ bool isIntersectCirclevsCircle(const Circle* first, const Circle* other) {
 
 bool isIntersectAABBvsCircle(const AABB* aabb, const Circle* circle) {
     return circle->getDistanceFromCenter(aabb) <= circle->getRadius();
+}
+
+Shape::Shape(AABB aabb) : mAABB(aabb), mShape(ShapeTag::AABB) {}
+
+Shape::Shape(Circle circle) : mCircle(circle), mShape(ShapeTag::Circle) {}
+
+Shape::Shape(const Shape& other) {
+    std::memcpy(this, &other, sizeof(other));
+}
+
+Shape& Shape::operator=(const Shape& other) {
+    if (this == &other) {
+        return *this;
+    }
+    std::memcpy(this, &other, sizeof(other));
+    return *this;
+}
+
+Circle Shape::getCircle() const {
+    assert(mShape == ShapeTag::Circle && "trying to run getCircle but ColliderShape is not a circle");
+    return mCircle;
+}
+
+AABB Shape::getAABB() const {
+    assert(mShape == ShapeTag::AABB && "trying to run getAABB but ColliderShape is not an AABB");
+    return mAABB;
+}
+
+void Shape::setPosition(Vector2i center) {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        mAABB.setPosition(center);
+        break;
+    case ShapeTag::Circle:
+        mCircle.setPosition(center);
+        break;
+    }
+}
+
+void Shape::setPosition(Transform2D transform) {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        mAABB.setPosition(transform);
+        break;
+    case ShapeTag::Circle:
+        mCircle.setPosition(transform);
+        break;
+    }
+}
+
+Vector2i Shape::getPosition() const {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        return mAABB.getPosition();
+    case ShapeTag::Circle:
+        return mCircle.getPosition();
+    }
+}
+
+bool Shape::isOverlapping(const Shape& other) const {
+    switch (other.mShape) {
+    case ShapeTag::AABB:
+        return isOverlapping(other.mAABB);
+    case ShapeTag::Circle:
+        return isOverlapping(other.mCircle);
+    }
+}
+
+bool Shape::isOverlapping(const AABB& other) const {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        return isIntersectAABBvsAABB(&mAABB, &other);
+    case ShapeTag::Circle:
+        return isIntersectAABBvsCircle(&other, &mCircle);
+    }
+}
+
+bool Shape::isOverlapping(const Circle& other) const {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        return isIntersectAABBvsCircle(&mAABB, &other);
+    case ShapeTag::Circle:
+        return isIntersectCirclevsCircle(&other, &mCircle);
+    }
+}
+
+void Shape::draw(Vector2f cameraPos, Color color) const {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        mAABB.draw(cameraPos, color);
+        break;
+    case ShapeTag::Circle:
+        mCircle.draw(cameraPos, color);
+        break;
+    }
 }
 
 }  // namespace whal

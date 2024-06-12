@@ -1,4 +1,4 @@
-#include "Physics/Collision/Segment.h"
+#include "Physics/Segment.h"
 
 namespace whal {
 

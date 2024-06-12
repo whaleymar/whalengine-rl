@@ -2,7 +2,7 @@
 
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
-#include "Physics/Collision/ICollider.h"
+#include "Physics/Shapes.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -33,7 +33,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     entity.add(trans);
 
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
-        const auto& otherCollider = other.get<ActorCollider>().getCollider();
+        const auto& otherCollider = other.get<Collider>().getCollider();
 
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();
@@ -56,7 +56,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
             other.add<RocketJumping>();
         }
     };
-    auto shape = Shape(Circle(trans, halflen), CollisionLayer::Trigger);
+    auto shape = Shape(Circle(trans, halflen));
     auto trigger = Trigger(shape, pushEntityAway);
     entity.add(trigger);
 

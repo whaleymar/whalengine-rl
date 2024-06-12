@@ -8,7 +8,6 @@
 
 namespace whal {
 
-class SolidCollider;
 struct TileMap;
 
 struct Level {

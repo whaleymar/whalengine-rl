@@ -9,9 +9,10 @@ namespace ecs {
 class Entity;
 }
 enum class InputType : u64;
+struct HitInfo;
 
 class DeathEvent : public IEvent<ecs::Entity> {};
-class CollisionEvent : public IEvent<ecs::Entity, ecs::Entity> {};
+class CollisionEvent : public IEvent<ecs::Entity, HitInfo> {};
 class ShootEvent : public IEvent<Vector2i> {};
 class ButtonEvent : public IEvent<InputType> {};
 class LandingEvent : public IEvent<ecs::Entity> {};
