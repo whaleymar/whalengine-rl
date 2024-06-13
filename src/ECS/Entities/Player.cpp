@@ -204,9 +204,10 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     // constexpr s32 height = 16;
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
     constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
-    player.add(Collider::Actor(transform, Vector2i(halfLenX, halfLenY)));
-    player.add<RigidBody>();
-    // player.add<FreeControl>();
+    // player.add(Collider::Actor(transform, Vector2i(halfLenX, halfLenY)));
+    player.add(Collider::SemiSolid(transform, Vector2i(halfLenX, halfLenY)));
+    // player.add<RigidBody>();
+    player.add<FreeControl>();
 
     player.add(Respawn{2, &respawnPlayer,
                        []() {

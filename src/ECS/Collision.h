@@ -21,6 +21,7 @@ using CollisionCallbackNew = void (*)(ecs::Entity callbackEntity, ecs::Entity ot
 
 // TODO
 // - momentum component
+// - semisolids should push each other, not destroy
 class Collider {
 public:
     Collider() = default;
@@ -60,19 +61,22 @@ public:
     bool isSemiSolid() const { return mCollisionLayer & CollisionLayer::SemiSolid; }
     bool isSolidAny() const { return LAYER_MATRIX.isSolidAny(mCollisionLayer); }
 
-    void move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false, bool isManualMove = false);
+    bool move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
+              bool isPushedBySolid = false);
     HitInfo moveX(const Vector2f amount, const CollisionCallbackNew callback);
     HitInfo moveY(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false);
 
     // move as Solid (nothing can stop the collider)
-    void moveNoCollisionCheck(f32 x, f32 y);
-    void pushAndCarry(f32 x, f32 y, const std::vector<Collider*>& ridingColliders, bool isManualMove = false);
+    Vector2i moveNoCollisionCheck(Vector2f toMove);
+    void pushAndCarry(Vector2f moveOriginal, Vector2i moveActual, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
+                      bool isPushedBySolid = false);
 
     bool checkIsGrounded(const std::vector<Collider*>& otherColliders, Collider** dstGroundCollider);
     bool isGround() const;
     bool isRiding(const Collider* other) const;
     std::vector<Collider*> getRidingColliders() const;
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
+    u16 getCollisionLayersThatCanRideMe() const;
 
     HitInfo checkCollision(const std::vector<Collider*>& colliders, const Vector2i position, const Vector2i moveNormal,
                            const u16 layerMask = CollisionLayer::ALL) const;
@@ -81,7 +85,7 @@ public:
 protected:
     bool tryCornerCorrection(const std::vector<Collider*>& others, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
-                       const std::vector<Collider*>& riding, bool isManualMove) const;
+                       const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid);
 
     // Shape mShape; // Maybe one day. Too much is hard coded to AABBs for me to bother rn
     AABB mShape;
@@ -93,6 +97,7 @@ protected:
     WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
     bool mIsCollidable = true;
+    bool mIsAlive = true;
 };
 
 }  // namespace whal
