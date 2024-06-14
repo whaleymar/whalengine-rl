@@ -8,9 +8,15 @@
 #include "ECS/TriggerZone.h"
 #include "Game/Events.h"
 #include "Physics/CollisionLayer.h"
+#include "Systems/System.h"
 #include "Util/Vector.h"
 
 namespace whal {
+
+std::shared_ptr<CollisionManager> CollisionManager::instance() {
+    static std::shared_ptr<CollisionManager> instance_ = System::ecs->registerSystem<CollisionManager>();
+    return instance_;
+}
 
 void CollisionManager::update() {
     if (!mIsUpdateNeeded) {

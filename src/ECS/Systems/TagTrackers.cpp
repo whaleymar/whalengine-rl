@@ -5,6 +5,21 @@
 
 namespace whal {
 
+std::shared_ptr<PlayerSystem> PlayerSystem::instance() {
+    static std::shared_ptr<PlayerSystem> instance_ = System::ecs->registerSystem<PlayerSystem>();
+    return instance_;
+}
+
+std::shared_ptr<CameraSystem> CameraSystem::instance() {
+    static std::shared_ptr<CameraSystem> instance_ = System::ecs->registerSystem<CameraSystem>(ecs::SystemManager::UniqueEntity);
+    return instance_;
+}
+
+std::shared_ptr<AudioListenerSystem> AudioListenerSystem::instance() {
+    static std::shared_ptr<AudioListenerSystem> instance_ = System::ecs->registerSystem<AudioListenerSystem>(ecs::SystemManager::UniqueEntity);
+    return instance_;
+}
+
 std::optional<ecs::Entity> getCamera() {
     if (CameraSystem::instance()->getEntitiesRef().empty()) {
         return std::nullopt;

@@ -12,6 +12,11 @@
 
 namespace whal {
 
+std::shared_ptr<EntityChildSystem> EntityChildSystem::instance() {
+    static std::shared_ptr<EntityChildSystem> instance_ = System::ecs->registerSystem<EntityChildSystem>();
+    return instance_;
+}
+
 EntityChildSystem::EntityChildSystem() : mEntityDeathListener(&removeEntityFromChildList) {
     System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
 }

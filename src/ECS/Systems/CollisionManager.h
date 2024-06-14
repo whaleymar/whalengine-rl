@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -10,10 +9,7 @@ class Collider;
 // RESEARCH may be better to store actor/semisolid/solid pointers in separate lists?
 class CollisionManager : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
-    static std::shared_ptr<CollisionManager> instance() {
-        static std::shared_ptr<CollisionManager> instance_ = System::ecs->registerSystem<CollisionManager>();
-        return instance_;
-    }
+    static std::shared_ptr<CollisionManager> instance();
 
     void update() override;
     void onAdd(ecs::Entity entity) override;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Systems/Event.h"
-#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -15,10 +14,7 @@ struct Transform2D;
 class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem {
 public:
     EntityChildSystem();
-    static std::shared_ptr<EntityChildSystem> instance() {
-        static std::shared_ptr<EntityChildSystem> instance_ = System::ecs->registerSystem<EntityChildSystem>();
-        return instance_;
-    }
+    static std::shared_ptr<EntityChildSystem> instance();
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
 
