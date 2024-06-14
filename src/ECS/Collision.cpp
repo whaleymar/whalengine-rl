@@ -82,6 +82,7 @@ Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMater
     - bool isManualMove: should be true if this is called outside of the physics system. Only affects momentum of pushed/carried entities
 */
 bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded, bool isManualMove, bool isPushedBySolid) {
+    // TODO this should be a class method
     const auto emitCollisionInfo = [=, this](HitInfo hitinfo, bool isX) -> bool {
         if (!isX && mSelf.has<RigidBody>()) {
             auto rigidbody = mSelf.get<RigidBody>();
@@ -148,11 +149,22 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
         return false;
     };
 
+    // round to nearest pixel
+    mXRemainder += amount.x();
+    mYRemainder += amount.y();
+
+    Vector2i toMoveRounded = Vector2i(std::round(mXRemainder), std::round(mYRemainder));
+    if (toMoveRounded.x() == 0 && toMoveRounded.y() == 0) {
+        return false;
+    }
+    mXRemainder -= toMoveRounded.x();
+    mYRemainder -= toMoveRounded.y();
+
     bool isHit = false;
     switch (mCollisionLayer) {
     case CollisionLayer::Actor: {
-        isHit = emitCollisionInfo(moveX(amount, callback), true);
-        isHit = emitCollisionInfo(moveY(amount, callback, isGroundedCheckNeeded), false) || isHit;
+        isHit = emitCollisionInfo(moveX(amount, toMoveRounded, callback), true);
+        isHit = emitCollisionInfo(moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false) || isHit;
         break;
     }
     case CollisionLayer::Solid: {
@@ -160,35 +172,37 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
         const auto riding = getRidingColliders();
 
         // nothing can stop solids, so do full movement immediately and emit nothing
-        Vector2i moveAmount = moveNoCollisionCheck(amount);
-        pushAndCarry(amount, moveAmount, riding, isManualMove);  // TODO this still needs to trigger collision event
+        moveNoCollisionCheck(amount, toMoveRounded);
+        pushAndCarry(amount, toMoveRounded, riding, isManualMove);  // TODO this still needs to trigger collision event
         break;
     }
     case CollisionLayer::SemiSolid: {
         // check riding status *before* moving
         const auto riding = getRidingColliders();
-        const auto originalPosition = getCollider().getPosition();
-        isHit = emitCollisionInfo(moveX(amount, callback), true);
-        isHit = emitCollisionInfo(moveY(amount, callback, isGroundedCheckNeeded), false) || isHit;
 
-        // skip pushing if we never moved
-        if (originalPosition != getCollider().getPosition()) {
-            Vector2i moveAmount = getCollider().getPosition() - originalPosition;
-            pushAndCarry(amount, moveAmount, riding, isManualMove, isPushedBySolid);
-        }
+        // moveX, then push/carry in that direction only
+        auto originalPosition = getCollider().getPosition();
+        isHit = emitCollisionInfo(moveX(amount, toMoveRounded, callback), true);
+        Vector2i moveAmount = getCollider().getPosition() - originalPosition;
+        pushAndCarry({amount.x(), 0}, moveAmount, riding, isManualMove, isPushedBySolid);
+
+        // moveY, then push/carry in that direction only
+        originalPosition = getCollider().getPosition();
+        isHit = emitCollisionInfo(moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false) || isHit;
+        moveAmount = getCollider().getPosition() - originalPosition;
+        pushAndCarry({0, amount.y()}, moveAmount, riding, isManualMove, isPushedBySolid);
+
         break;
     }
     default:
-        moveNoCollisionCheck(amount);
+        moveNoCollisionCheck(amount, toMoveRounded);
     }
 
     return isHit;
 }
 
-HitInfo Collider::moveX(const Vector2f amount, const CollisionCallbackNew callback) {
-    // include fractional movement from previous calls
-    mXRemainder += amount.x();
-    s32 toMove = std::round(mXRemainder);
+HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallbackNew callback) {
+    s32 toMove = amountRounded.x();
 
     if (toMove == 0) {
         return HitInfo();
@@ -197,7 +211,6 @@ HitInfo Collider::moveX(const Vector2f amount, const CollisionCallbackNew callba
     auto const& others = CollisionManager::instance()->getPhysicsColliders();
     auto const canStopMe = getCollisionLayersThatCanStopMe();
 
-    mXRemainder -= toMove;
     const s32 moveSign = sign(toMove);
     const auto moveNormal = Vector2i(moveSign, 0);
     while (toMove != 0) {
@@ -217,10 +230,9 @@ HitInfo Collider::moveX(const Vector2f amount, const CollisionCallbackNew callba
     return HitInfo();
 }
 
-HitInfo Collider::moveY(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded) {
+HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallbackNew callback, bool isGroundedCheckNeeded) {
     // include fractional movement from previous calls
-    mYRemainder += amount.y();
-    s32 toMove = std::round(mYRemainder);
+    s32 toMove = amountRounded.y();
     auto const& others = CollisionManager::instance()->getPhysicsColliders();
 
     auto groundedCheck = [this, others](f32 amountY) -> HitInfo {
@@ -249,7 +261,6 @@ HitInfo Collider::moveY(const Vector2f amount, const CollisionCallbackNew callba
 
     auto const canStopMe = getCollisionLayersThatCanStopMe();
 
-    mYRemainder -= toMove;
     const s32 moveSign = sign(toMove);
     const auto moveNormal = Vector2i(0, moveSign);
     while (toMove != 0) {
@@ -285,20 +296,8 @@ HitInfo Collider::moveY(const Vector2f amount, const CollisionCallbackNew callba
 }
 
 // returns integer move amount
-Vector2i Collider::moveNoCollisionCheck(Vector2f toMove) {
-    mXRemainder += toMove.x();
-    mYRemainder += toMove.y();
-
-    s32 toMoveX = std::round(mXRemainder);
-    s32 toMoveY = std::round(mYRemainder);
-    if (toMoveX == 0 && toMoveY == 0) {
-        return {0, 0};
-    }
-    mXRemainder -= toMoveX;
-    mYRemainder -= toMoveY;
-
-    mShape.setPosition(mShape.getPosition() + Vector2i(toMoveX, toMoveY));
-    return {toMoveX, toMoveY};
+void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
+    mShape.setPosition(mShape.getPosition() + toMoveRounded);
 }
 
 void Collider::pushAndCarry(Vector2f moveOriginal, Vector2i moveActual, const std::vector<Collider*>& ridingColliders, bool isManualMove,

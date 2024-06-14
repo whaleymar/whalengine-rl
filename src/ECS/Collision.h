@@ -63,11 +63,12 @@ public:
 
     bool move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
               bool isPushedBySolid = false);
-    HitInfo moveX(const Vector2f amount, const CollisionCallbackNew callback);
-    HitInfo moveY(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false);
+    HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallbackNew callback);
+    HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallbackNew callback,
+                  bool isGroundedCheckNeeded = false);
 
     // move as Solid (nothing can stop the collider)
-    Vector2i moveNoCollisionCheck(Vector2f toMove);
+    void moveNoCollisionCheck(Vector2f toMoveOriginal, Vector2i toMoveRounded);
     void pushAndCarry(Vector2f moveOriginal, Vector2i moveActual, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
                       bool isPushedBySolid = false);
 
