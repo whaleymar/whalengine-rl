@@ -17,6 +17,7 @@
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -95,6 +96,9 @@ void PhysicsSystem::update() {
             colliderOpt.value()->getColliderMut().setPosition(trans);
         }
     }
+
+    if (!PauseMenu::instance().isPaused())
+        print("--------------------------------------------------------------------------");
 
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntitiesRef()) {

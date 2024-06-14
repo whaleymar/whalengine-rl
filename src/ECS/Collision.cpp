@@ -3,9 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ECS/Name.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Systems/CollisionManager.h"
+#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
@@ -17,6 +19,7 @@
 #include "Physics/IUseCollision.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 
 namespace whal {
 
@@ -153,10 +156,8 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
     mXRemainder += amount.x();
     mYRemainder += amount.y();
 
+    // do NOT early return even if this is zero. Need to check isGrounded in moveY
     Vector2i toMoveRounded = Vector2i(std::round(mXRemainder), std::round(mYRemainder));
-    if (toMoveRounded.x() == 0 && toMoveRounded.y() == 0) {
-        return false;
-    }
     mXRemainder -= toMoveRounded.x();
     mYRemainder -= toMoveRounded.y();
 
@@ -179,18 +180,31 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
     case CollisionLayer::SemiSolid: {
         // check riding status *before* moving
         const auto riding = getRidingColliders();
+        std::string name = "entity";
+        if (mSelf.has<Name>()) {
+            name = mSelf.get<Name>().name;
+        }
 
+        print("");
         // moveX, then push/carry in that direction only
         auto originalPosition = getCollider().getPosition();
+        // print("doing", name, "'s moveX. amount is ", toMoveRounded, "and position is ", mShape.getPosition());
         isHit = emitCollisionInfo(moveX(amount, toMoveRounded, callback), true);
+        // print("after moveX, position is ", mShape.getPosition());
         Vector2i moveAmount = getCollider().getPosition() - originalPosition;
         pushAndCarry({amount.x(), 0}, moveAmount, riding, isManualMove, isPushedBySolid);
+        // print("after pushAndCarryX, position is", mShape.getPosition());
 
         // moveY, then push/carry in that direction only
         originalPosition = getCollider().getPosition();
+        print("doing", name, "'s moveY. amount is ", toMoveRounded, "and position is ", mShape.getPosition());
         isHit = emitCollisionInfo(moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false) || isHit;
+        print("after moveY, position is ", mShape.getPosition());
         moveAmount = getCollider().getPosition() - originalPosition;
+        print("starting pushAndCarry for ", name, "amount is ", moveAmount);
         pushAndCarry({0, amount.y()}, moveAmount, riding, isManualMove, isPushedBySolid);
+        print("after pushAndCarryY,", name, "'s position is", mShape.getPosition());
+        print("");
 
         break;
     }
@@ -405,50 +419,61 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         if (mShape.isOverlapping(&other->getCollider()) &&
             checkDirectionalCollision(other->getCollider(), prevColliderPos, moveVec * -1, getCollisionDir())) {
             s32 actorEdge = (other->getCollider().*edgeFunc)();
-            toMoveRounded = solidEdge - actorEdge;
+            s32 toMoveOverlap = solidEdge - actorEdge;
+            Vector2i otherMoveVec = isXDirection ? Vector2i(toMoveOverlap, 0) : Vector2i(0, toMoveOverlap);
 
             // If we are a semisolid pushing another semisolid, and a solid is not pushing us, then `other` may "push back" on us.
             // If a solid is pushing us though, then `other` is effectively being pushed by a solid.
             if (!isPushedBySolid && isSemiSolid()) {
                 Vector2i originalPosition = other->getCollider().getPosition();
                 bool hitSolid = false;
-                if (isXDirection) {
-                    hitSolid = other->move(Vector2f(toMoveRounded, 0), &squishPushedBySemiSolid);
-                } else {
-                    hitSolid = other->move(Vector2f(0, toMoveRounded), &squishPushedBySemiSolid);
+                std::string otherName = "other";
+                if (other->mSelf.has<Name>()) {
+                    otherName = other->mSelf.get<Name>().name;
                 }
+                print("pushing", otherName, "by", otherMoveVec);
+                hitSolid = other->move(toFloatVec(otherMoveVec), &squishPushedBySemiSolid);
+
                 Vector2i newPosition = other->getCollider().getPosition();
-                if (other->mIsAlive && other->isSemiSolid() && hitSolid) {
+                // Calculate difference between newPosition and expected position.
+                // If we didn't hit something, but delta is nonzero, then something that `other` pushed hit a solid.
+                auto delta = ((originalPosition + otherMoveVec) - newPosition) * -1;
+                if (other->mIsAlive && other->isSemiSolid() && (hitSolid || delta.x() != 0 || delta.y() != 0)) {
                     // if other didn't move the full amount, it must have hit a solid, so push *this* back by the difference
                     // using &squishCollider as the callback because we're effectively being pushed by the solid that `other` hit
-                    auto delta = ((originalPosition + moveVec) - newPosition) * -1;
                     mIsCollidable = true;
                     other->mIsCollidable = false;
+                    std::string name = "entity";
+                    if (mSelf.has<Name>()) {
+                        name = mSelf.get<Name>().name;
+                    }
+                    print(name, "being pushed back by", otherName, ". Its position is", mShape.getPosition(), "and it's being pushed back by", delta);
                     move(toFloatVec(delta), &squishCollider, false, false, true);
+                    print("After being pushed back,", name, "'s position is ", mShape.getPosition());
                     mIsCollidable = false;
                     other->mIsCollidable = true;
 
                     if (!mIsAlive) {
+                        print("push back killed", name);
                         break;
                     }
 
                     // update move vars so the rest of the colliders get pushed by the new amount
                     // for the colliders that were already pushed/carried, it is what it is :)
+                    // update move amounts so we don't push the next colliders by too much
                     moveVec += delta;
                     if (isXDirection) {
+                        solidEdge = toMoveRounded > 0 ? mShape.right() : mShape.left();
                         toMoveRounded = moveVec.x();
                         toMoveUnrounded += delta.x();
                     } else {
+                        solidEdge = toMoveRounded > 0 ? mShape.top() : mShape.bottom();
                         toMoveRounded = moveVec.y();
                         toMoveUnrounded += delta.y();
                     }
                 }
             } else {
-                if (isXDirection) {
-                    other->move(Vector2f(toMoveRounded, 0), &squishCollider);
-                } else {
-                    other->move(Vector2f(0, toMoveRounded), &squishCollider);
-                }
+                other->move(toFloatVec(otherMoveVec), &squishCollider, false, false, true);
             }
             // TODO
             // if (isManualMove) {
