@@ -1,11 +1,8 @@
 #include "Relationships.h"
 
-// #include "ECS/Draw.h"
-// #include "ECS/Name.h"
 #include "ECS/Draw.h"
 #include "ECS/Name.h"
 #include "ECS/Transform.h"
-// #include "Gfx/Color.h"
 
 namespace whal {
 
@@ -52,7 +49,7 @@ void Follow::initTarget(ecs::Entity self) {
 }
 
 void Children::add(ecs::Entity entity) {
-    if (std::find(entities.begin(), entities.end(), entity) != entities.end()) {
+    if (whal_find(entities.begin(), entities.end(), entity) != entities.end()) {
         // print("skipping duplicate add");
         // if (entity.has<Name>()) {
         //     print("\tduplicate was", entity.get<Name>());

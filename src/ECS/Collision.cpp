@@ -1,6 +1,5 @@
 #include "Collision.h"
 
-#include <algorithm>
 #include <cmath>
 
 #include "ECS/PlayerControl.h"
@@ -503,7 +502,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                 f32 momentum = static_cast<f32>(toMoveRounded) / dt;
                 other->setMomentum(momentum, isXDirection);
             }
-        } else if (std::find(riding.begin(), riding.end(), other) != riding.end()) {
+        } else if (ecs::whal_find(riding.begin(), riding.end(), other) != riding.end()) {
             // I might change this for solids moving down faster than gravity RESEARCH
             if (isXDirection) {
                 other->move(Vector2f(toMoveRounded, 0), nullptr);

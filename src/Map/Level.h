@@ -4,7 +4,6 @@
 
 #include "ECS/Relationships.h"
 #include "Util/Vector.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 

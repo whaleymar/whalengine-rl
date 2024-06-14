@@ -168,7 +168,7 @@ void unfollowEntity(ecs::Entity killedEntity) {
 void removeEntityFromChildList(ecs::Entity entity) {
     for (auto [entityid, parent] : EntityChildSystem::instance()->getEntitiesRef()) {
         auto& children = parent.get<Children>();
-        auto it = std::find(children.entities.begin(), children.entities.end(), entity);
+        auto it = whal_find(children.entities.begin(), children.entities.end(), entity);
         if (it != children.entities.end()) {
             children.entities.erase(it);
         }

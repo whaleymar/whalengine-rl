@@ -1,7 +1,5 @@
 #include "Player.h"
 
-#include <algorithm>
-
 #include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 

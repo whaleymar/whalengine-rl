@@ -343,7 +343,7 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
     for (auto lvl : mActiveScene.allLevels) {
         Vector2f lvlCenterPos = lvl.worldPosOriginTexels - lvl.sizeTexels * Vector2f(-0.5, 0.5);
         const bool shouldLoad = (lvlCenterPos - cameraWorldPosTexels).len() <= MAX_LOAD_DISTANCE_TEXELS;
-        auto it = std::find(mActiveScene.loadedLevels.begin(), mActiveScene.loadedLevels.end(), lvl);
+        auto it = whal::ecs::whal_find(mActiveScene.loadedLevels.begin(), mActiveScene.loadedLevels.end(), lvl);
         const bool isLevelLoaded = it != mActiveScene.loadedLevels.end();
 
         if (shouldLoad && !isLevelLoaded) {

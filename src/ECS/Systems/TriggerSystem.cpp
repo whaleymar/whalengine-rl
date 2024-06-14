@@ -13,7 +13,7 @@ void TriggerSystem::update() {
         // TODO instead of tracking movable actors, use Layer Matrix
         // can add multiple types of triggers depending on what I want them to interact with (e.g. just Actors vs Everything)
         for (auto [actorid, actor] : MovableActorTracker::getEntitiesRef()) {
-            bool wasInside = std::find(trigger.insideEntities.begin(), trigger.insideEntities.end(), actor) != trigger.insideEntities.end();
+            bool wasInside = whal_find(trigger.insideEntities.begin(), trigger.insideEntities.end(), actor) != trigger.insideEntities.end();
 
             if (trigger.shape.isOverlapping(actor.get<Collider>().getShape())) {
                 newInsideList.push_back(actor);

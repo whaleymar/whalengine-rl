@@ -45,8 +45,13 @@
 - can maybe get <unordered_map> out of InputHandler.h and make it a static var in the source file
 - `CorradeOptional.h`
 - instead of including Vector everywhere, can do `extern template struct Vector2T<s32>` ??? (idk how to do the typedef part)
-- in ECS.h I'm including <algorithm> *only* for std::find (linear search i believe), but it's a huge header so mb write that myself?
 - static functions / anonymous namespaces for functions that are only defined/used in source files
+- remove <memory> include in Tiled.h
+- would like to remove ECS include in Relationships.h
+    - also HitInfo
+    - same for System.h, where I can grab the ECS ptr using a function that's defined in System's source file?
+
+    - making me think i need an ECS_fwd file or something, cause these things just need to know the size of an entity, but I could also just store an entity id? And then give ECS a getEntityByID func or something
 
 
 ## Misc
