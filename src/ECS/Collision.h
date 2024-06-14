@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "Physics/CollisionLayer.h"
-#include "Physics/IUseCollision.h"
+#include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
@@ -16,35 +15,30 @@ namespace ecs {
 class Entity;
 }
 
-using CollisionCallbackNew = void (*)(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
-                                      Vector2i hitNormal);
-
-// TODO
-// - move stuff from IUseCollision into here
 class Collider {
 public:
     Collider() = default;
-    Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+    Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
              CollisionDir collisionDir = CollisionDir::ALL);
     Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None,
-             CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
 
     // static creator functions
     static Collider Actor(AABB shape);
     static Collider Actor(Transform2D transform, Vector2i halflen);
-    static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+    static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                           CollisionDir collisionDir = CollisionDir::ALL);
     static Collider Solid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                          CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
-    static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallbackNew onCollisionEnter_ = nullptr,
+                          CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+    static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                               CollisionDir collisionDir = CollisionDir::ALL);
     static Collider SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                              CollisionCallbackNew onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+                              CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
 
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
-    CollisionCallbackNew getOnCollisionEnter() const { return mOnCollisionEnter; }
-    void setCollisionCallback(CollisionCallbackNew callback) { mOnCollisionEnter = callback; }  // was virtual
+    CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
+    void setCollisionCallback(CollisionCallback callback) { mOnCollisionEnter = callback; }  // was virtual
     WorldMaterial getMaterial() const { return mMaterial; }
     void setMaterial(WorldMaterial material) { mMaterial = material; }
     ecs::Entity getEntity() const { return mSelf; }
@@ -60,11 +54,10 @@ public:
     bool isSemiSolid() const { return mCollisionLayer & CollisionLayer::SemiSolid; }
     bool isSolidAny() const { return LAYER_MATRIX.isSolidAny(mCollisionLayer); }
 
-    bool move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
+    bool move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
               bool isPushedBySolid = false, bool updateRigidBodyFlags = false);
-    HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallbackNew callback);
-    HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallbackNew callback,
-                  bool isGroundedCheckNeeded = false);
+    HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback);
+    HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback, bool isGroundedCheckNeeded = false);
 
     void moveNoCollisionCheck(Vector2f toMoveOriginal, Vector2i toMoveRounded);
     void pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
@@ -99,7 +92,7 @@ protected:
     AABB mShape;
     ecs::Entity mSelf;
     CollisionLayer::Layer mCollisionLayer;
-    CollisionCallbackNew mOnCollisionEnter;
+    CollisionCallback mOnCollisionEnter;
     f32 mXRemainder = 0.0;
     f32 mYRemainder = 0.0;
     Vector2f mStoredMomentum = {0, 0};

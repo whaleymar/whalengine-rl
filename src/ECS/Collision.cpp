@@ -14,7 +14,6 @@
 #include "Settings.h"
 
 #include "Physics/HitInfo.h"
-#include "Physics/IUseCollision.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 
@@ -41,11 +40,11 @@ void squishCollider(ecs::Entity callbackEntity, ecs::Entity other, Collider* cal
     callbackEntityCollider->squish();
 }
 
-Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallbackNew onCollisionEnter_, CollisionDir collisionDir)
+Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir)
     : mShape(shape), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mMaterial(material), mCollisionDir(collisionDir) {}
 
-Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material,
-                   CollisionCallbackNew onCollisionEnter_, CollisionDir collisionDir)
+Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
+                   CollisionDir collisionDir)
     : mShape(AABB(transform, halflen)), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mMaterial(material),
       mCollisionDir(collisionDir) {}
 
@@ -57,20 +56,20 @@ Collider Collider::Actor(Transform2D transform, Vector2i halflen) {
     return Collider(transform, halflen, CollisionLayer::Actor);
 }
 
-Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallbackNew onCollisionEnter_, CollisionDir collisionDir) {
+Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir) {
     return Collider(shape, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir);
 }
 
-Collider Collider::Solid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallbackNew onCollisionEnter_,
+Collider Collider::Solid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
                          CollisionDir collisionDir) {
     return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir);
 }
 
-Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallbackNew onCollisionEnter_, CollisionDir collisionDir) {
+Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir) {
     return Collider(shape, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir);
 }
 
-Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallbackNew onCollisionEnter_,
+Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
                              CollisionDir collisionDir) {
     return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir);
 }
@@ -147,7 +146,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     - bool isGroundedCheckNeeded: skips grounded check if false
     - bool isManualMove: should be true if this is called outside of the physics system. Only affects momentum of pushed/carried entities
 */
-bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, bool isGroundedCheckNeeded, bool isManualMove, bool isPushedBySolid,
+bool Collider::move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded, bool isManualMove, bool isPushedBySolid,
                     bool updateRigidBodyFlags) {
     // round to nearest pixel
     mXRemainder += amount.x();
@@ -227,7 +226,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
     return isHit;
 }
 
-HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallbackNew callback) {
+HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback) {
     s32 toMove = amountRounded.x();
 
     if (toMove == 0) {
@@ -256,7 +255,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
     return HitInfo();
 }
 
-HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallbackNew callback, bool isGroundedCheckNeeded) {
+HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback, bool isGroundedCheckNeeded) {
     // include fractional movement from previous calls
     s32 toMove = amountRounded.y();
     auto const& others = CollisionManager::instance()->getPhysicsColliders();

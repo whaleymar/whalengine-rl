@@ -150,7 +150,7 @@ void startRailsMovement(ecs::Entity self, ecs::Entity other, Collider* selfColli
     }
 }
 
-void killEntityCallback(ecs::Entity self, ecs::Entity other, IUseCollision* selfCollider, IUseCollision* otherCollider, Vector2i moveNormal) {
+void killEntityCallback(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     other.kill();
 }
 

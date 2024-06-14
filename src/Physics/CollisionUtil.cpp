@@ -1,15 +1,8 @@
-#include "IUseCollision.h"
-#include "Util/Print.h"
+#include "CollisionUtil.h"
+
+#include "Shapes.h"
 
 namespace whal {
-
-IUseCollision::IUseCollision(AABB collider, WorldMaterial material, CollisionCallback callback)
-    : mCollider(collider), mOnCollisionEnter(callback), mMaterial(material) {}
-
-void IUseCollision::setCollisionCallback(CollisionCallback callback) {
-    print("this shouldn't get called");
-    mOnCollisionEnter = callback;
-}
 
 bool checkDirectionalCollision(const AABB& movingCollider, const AABB& oneWayCollider, Vector2i movement, CollisionDir collisionDir) {
     // check if other's movement will collide with the one way collider

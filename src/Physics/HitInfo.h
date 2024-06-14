@@ -15,7 +15,6 @@ enum Flags : u8 {
     Below = 1 << 2,
     Left = 1 << 3,
     Right = 1 << 4,
-    // when would Push and carry ever get used? Maybe can store hitinfo for every collider pushed/carried in a list? TODO
     Collision = 1 << 5,
     Push = 1 << 6,
     Carry = 1 << 7,
