@@ -44,7 +44,6 @@
 - can maybe get <optional> out of Audio.h 
 - can maybe get <unordered_map> out of InputHandler.h and make it a static var in the source file
 - `CorradeOptional.h`
-- instead of including Vector everywhere, can do `extern template struct Vector2T<s32>` ??? (idk how to do the typedef part)
 - static functions / anonymous namespaces for functions that are only defined/used in source files
 - remove <memory> include in Tiled.h
 - would like to remove ECS include in Relationships.h

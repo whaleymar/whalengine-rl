@@ -1,23 +1,11 @@
 #pragma once
 
-// #include <cmath>
-#include <ostream>
-#include <sstream>
-#include "MathUtil.h"
+#include <iosfwd>
 
+#include "MathUtil.h"
 #include "Types.h"
 
 typedef struct Vector2 Vector2;
-
-// template <class T>
-// concept SignedNumber = std::signed_integral<T> || std::floating_point<T>;
-//
-// template <class T>
-// concept Number = std::integral<T> || std::floating_point<T>;
-//
-// inline SignedNumber auto abs(SignedNumber auto const number) {
-//     return number < 0 ? -number : number;
-// }
 
 template <Number T>
 struct Vector2T {
@@ -97,18 +85,11 @@ struct Vector2T {
     }
 
     inline Vector2T<T> absolute() const { return Vector2T<T>(abs(e[0]), abs(e[1])); }
-
-    inline std::string toString() const {
-        std::ostringstream ss;
-        ss << *this;
-        return ss.str();
-    }
+    inline bool isZero() const { return e[0] == 0 && e[1] == 0; }
 };
 
 template <typename T>
-std::ostream& operator<<(std::ostream& out, Vector2T<T> const& self) {
-    return out << "(" << self.e[0] << ", " << self.e[1] << ")";
-}
+std::ostream& operator<<(std::ostream& out, Vector2T<T> const& self);
 
 typedef Vector2T<f32> Vector2f;
 typedef Vector2T<s32> Vector2i;
