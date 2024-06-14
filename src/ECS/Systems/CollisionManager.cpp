@@ -93,7 +93,7 @@ void drawColliders() {
         } else {
             color = BLUE;
         }
-        collider->getCollider().draw(cameraPos, color);
+        collider->getShape().draw(cameraPos, color);
     }
 
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesRef()) {

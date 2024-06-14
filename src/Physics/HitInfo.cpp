@@ -5,8 +5,15 @@ namespace whal {
 
 HitInfo::HitInfo() {}
 
-HitInfo::HitInfo(Vector2i normal) {
+HitInfo::HitInfo(Vector2i normal, bool isCollision, bool isPush, bool isCarry) {
     flags |= CollisionInfo::Hit;
+    if (isCollision) {
+        flags |= CollisionInfo::Collision;
+    } else if (isPush) {
+        flags |= CollisionInfo::Push;
+    } else if (isCarry) {
+        flags |= CollisionInfo::Carry;
+    }
 
     if (normal.x() > 0) {
         flags |= CollisionInfo::Right;

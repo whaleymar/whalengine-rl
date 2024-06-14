@@ -15,7 +15,7 @@ void TriggerSystem::update() {
         for (auto [actorid, actor] : MovableActorTracker::getEntitiesRef()) {
             bool wasInside = std::find(trigger.insideEntities.begin(), trigger.insideEntities.end(), actor) != trigger.insideEntities.end();
 
-            if (trigger.shape.isOverlapping(actor.get<Collider>().getCollider())) {
+            if (trigger.shape.isOverlapping(actor.get<Collider>().getShape())) {
                 newInsideList.push_back(actor);
                 if (!wasInside && trigger.onTriggerEnter != nullptr) {
                     trigger.onTriggerEnter(entity, actor);

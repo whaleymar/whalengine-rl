@@ -54,20 +54,20 @@ HitInfo AABB::collide(const AABB& other) const {
         // Vector2i hitPos(center.x() + half.x() * signX, center.y() + half.y() * signY);
         // Vector2i hitDelta(px * signX, py * signY);
         Vector2i hitNormal(signX, signY);
-        return HitInfo(hitNormal);
+        return HitInfo(hitNormal, true);
     }
     if (px < py) {
         const s32 signX = sign(delta.x());
         // Vector2i hitPos(center.x() + half.x() * signX, other.center.y());
         // Vector2i hitDelta(px * signX, 0);
         Vector2i hitNormal(signX, 0);
-        return HitInfo(hitNormal);
+        return HitInfo(hitNormal, true);
     } else {
         const s32 signY = sign(delta.y());
         // Vector2i hitPos(other.center.x(), center.y() + half.y() * signY);
         // Vector2i hitDelta(0, py * signY);
         Vector2i hitNormal(0, signY);
-        return HitInfo(hitNormal);
+        return HitInfo(hitNormal, true);
     }
 }
 

@@ -33,7 +33,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     entity.add(trans);
 
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
-        const auto& otherCollider = other.get<Collider>().getCollider();
+        const auto& otherCollider = other.get<Collider>().getShape();
 
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();

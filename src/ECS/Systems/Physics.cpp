@@ -17,7 +17,6 @@
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -30,8 +29,6 @@ constexpr f32 MOVE_EPSILON = 0.1;
 
 constexpr f32 JUMP_PEAK_GRAVITY_MULT = 0.5;
 constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no longer considered "jumping"
-
-// constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 
 using BoundCollisionCallback = std::function<void()>;
 
@@ -93,12 +90,9 @@ void PhysicsSystem::update() {
 
         trans.isManuallyMoved = false;
         if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-            colliderOpt.value()->getColliderMut().setPosition(trans);
+            colliderOpt.value()->getShapeMutable().setPosition(trans);
         }
     }
-
-    if (!PauseMenu::instance().isPaused())
-        print("--------------------------------------------------------------------------");
 
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntitiesRef()) {
@@ -144,7 +138,7 @@ void PhysicsSystem::update() {
         // ----------------------------------------------------------------
         // UPDATE POSITION
         if (colliderOpt) {
-            colliderOpt.value()->move(move, nullptr, rb.has_value());
+            colliderOpt.value()->move(move, nullptr, rb.has_value(), false, false, rb.has_value());
             allColliderEntities.push_back(entity);
         } else {
             // TODO should store remainder like i do with colliders
@@ -200,7 +194,7 @@ void PhysicsSystem::update() {
     for (auto entity : allColliderEntities) {
         Transform2D& trans = entity.get<Transform2D>();
         // position is bottom-middle of collider
-        trans.position = entity.get<Collider>().getCollider().getPositionEdge(Vector2i::unitDown);
+        trans.position = entity.get<Collider>().getShape().getPositionEdge(Vector2i::unitDown);
     }
 
     // do collision callbacks

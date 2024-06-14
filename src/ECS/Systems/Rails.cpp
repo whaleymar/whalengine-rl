@@ -82,7 +82,7 @@ void RailsSystem::update() {
             // if entity has collider, use its move function
             if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
                 colliderOpt.value()->move(delta, nullptr, false, true);
-                entity.set(Transform2D(colliderOpt.value()->getCollider().getPositionEdge(Vector2i::unitDown)));
+                entity.set(Transform2D(colliderOpt.value()->getShape().getPositionEdge(Vector2i::unitDown)));
             } else {
                 entity.set(Transform2D(rails.getTarget().position));
             }

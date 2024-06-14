@@ -33,7 +33,7 @@ struct HitInfo {
     CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
 
     HitInfo();
-    HitInfo(Vector2i normal);
+    HitInfo(Vector2i normal, bool isCollision = false, bool isPush = false, bool isCarry = false);
 
     operator bool() const { return flags & CollisionInfo::Hit; }
     Vector2i toVec() const;

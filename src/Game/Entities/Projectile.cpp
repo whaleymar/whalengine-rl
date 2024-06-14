@@ -33,7 +33,7 @@ void makeDefaultExplosion(ecs::Entity self) {
 void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
-        Vector2i pos = selfCollider->getCollider().getPositionEdge(moveNormal);
+        Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius);
     }
     self.kill();

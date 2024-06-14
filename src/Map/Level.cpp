@@ -192,7 +192,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     } else {
         auto entity = eEntity.value();
         entity.add(collider);
-        entity.add(Transform2D(collider.getCollider().getPositionEdge(Vector2i::unitDown)));
+        entity.add(Transform2D(collider.getShape().getPositionEdge(Vector2i::unitDown)));
         lvl.childEntities.insert(entity);
     }
 }
