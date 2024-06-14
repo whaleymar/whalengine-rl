@@ -1,8 +1,6 @@
 #pragma once
 
-#include <random>
-
-#include "Util/Types.h"
+typedef float f32;
 
 namespace whal {
 
@@ -15,13 +13,10 @@ public:
     f32 uniform();
 
 private:
-    RNG();
+    RNG() = default;
 
     RNG(const RNG&) = delete;
     void operator=(const RNG&) = delete;
-
-    std::mt19937 mGenerator;
-    std::uniform_real_distribution<f32> mDistribution;
 };
 
 }  // namespace whal

@@ -23,10 +23,3 @@ std::string sprint(const T& first, const U&... rest) {
     ((stream << " " << rest), ...);
     return stream.str();
 }
-
-template <typename T>
-void printArray(T* array, int len) {
-    for (int i = 0; i < len; i++) {
-        std::cout << array[i] << std::endl;
-    }
-}
