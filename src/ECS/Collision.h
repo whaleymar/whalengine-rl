@@ -69,8 +69,8 @@ public:
 
     // move as Solid (nothing can stop the collider)
     void moveNoCollisionCheck(Vector2f toMoveOriginal, Vector2i toMoveRounded);
-    void pushAndCarry(Vector2f moveOriginal, Vector2i moveActual, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
-                      bool isPushedBySolid = false);
+    void pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
+                        bool isPushedBySolid = false);
 
     bool checkIsGrounded(const std::vector<Collider*>& otherColliders, Collider** dstGroundCollider);
     bool isGround() const;

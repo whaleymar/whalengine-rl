@@ -7,7 +7,6 @@
 #include "ECS/PlayerControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Systems/CollisionManager.h"
-#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
@@ -156,8 +155,11 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
     mXRemainder += amount.x();
     mYRemainder += amount.y();
 
-    // do NOT early return even if this is zero. Need to check isGrounded in moveY
     Vector2i toMoveRounded = Vector2i(std::round(mXRemainder), std::round(mYRemainder));
+    // only return early if we don't need a grounded check
+    if (toMoveRounded.x() == 0 && toMoveRounded.y() == 0 && (!isGroundedCheckNeeded || isSolid())) {
+        return false;
+    }
     mXRemainder -= toMoveRounded.x();
     mYRemainder -= toMoveRounded.y();
 
@@ -173,8 +175,14 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
         const auto riding = getRidingColliders();
 
         // nothing can stop solids, so do full movement immediately and emit nothing
-        moveNoCollisionCheck(amount, toMoveRounded);
-        pushAndCarry(amount, toMoveRounded, riding, isManualMove);  // TODO this still needs to trigger collision event
+        // need to move+push on one axis before moving on the other
+        auto moveVec = Vector2i(toMoveRounded.x(), 0);
+        moveNoCollisionCheck(amount, moveVec);
+        pushAndCarry1D(amount, moveVec, riding, isManualMove);  // TODO this still needs to trigger collision event
+
+        moveVec = Vector2i(0, toMoveRounded.y());
+        moveNoCollisionCheck(amount, moveVec);
+        pushAndCarry1D(amount, moveVec, riding, isManualMove);  // TODO this still needs to trigger collision event
         break;
     }
     case CollisionLayer::SemiSolid: {
@@ -192,19 +200,25 @@ bool Collider::move(const Vector2f amount, const CollisionCallbackNew callback, 
         isHit = emitCollisionInfo(moveX(amount, toMoveRounded, callback), true);
         // print("after moveX, position is ", mShape.getPosition());
         Vector2i moveAmount = getCollider().getPosition() - originalPosition;
-        pushAndCarry({amount.x(), 0}, moveAmount, riding, isManualMove, isPushedBySolid);
+        pushAndCarry1D({amount.x(), 0}, moveAmount, riding, isManualMove, isPushedBySolid);
         // print("after pushAndCarryX, position is", mShape.getPosition());
 
+        bool shouldPrint = toMoveRounded.x() != 0 || toMoveRounded.y() != 0;
         // moveY, then push/carry in that direction only
         originalPosition = getCollider().getPosition();
-        print("doing", name, "'s moveY. amount is ", toMoveRounded, "and position is ", mShape.getPosition());
+        if (shouldPrint)
+            print("doing", name, "'s moveY. amount is ", toMoveRounded, "and position is ", mShape.getPosition());
         isHit = emitCollisionInfo(moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false) || isHit;
-        print("after moveY, position is ", mShape.getPosition());
+        if (shouldPrint)
+            print("after moveY, position is ", mShape.getPosition());
         moveAmount = getCollider().getPosition() - originalPosition;
-        print("starting pushAndCarry for ", name, "amount is ", moveAmount);
-        pushAndCarry({0, amount.y()}, moveAmount, riding, isManualMove, isPushedBySolid);
-        print("after pushAndCarryY,", name, "'s position is", mShape.getPosition());
-        print("");
+        if (shouldPrint)
+            print("starting pushAndCarry for ", name, "amount is ", moveAmount);
+        pushAndCarry1D({0, amount.y()}, moveAmount, riding, isManualMove, isPushedBySolid);
+        if (shouldPrint)
+            print("after pushAndCarryY,", name, "'s position is", mShape.getPosition());
+        if (shouldPrint)
+            print("");
 
         break;
     }
@@ -309,26 +323,25 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     return HitInfo();
 }
 
-// returns integer move amount
 void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
     mShape.setPosition(mShape.getPosition() + toMoveRounded);
 }
 
-void Collider::pushAndCarry(Vector2f moveOriginal, Vector2i moveActual, const std::vector<Collider*>& ridingColliders, bool isManualMove,
-                            bool isPushedBySolid) {
+void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove,
+                              bool isPushedBySolid) {
     // turn off collision so colliders moved by us don't get stuck on us
     bool wasCollidable = mIsCollidable;
     mIsCollidable = false;
-    if (moveActual.x() > 0) {
-        _pushAndCarry(moveActual.x(), moveOriginal.x(), true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid);
-    } else if (moveActual.x() < 0) {
-        _pushAndCarry(moveActual.x(), moveOriginal.x(), true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid);
-    }
 
-    if (moveActual.y() > 0) {
-        _pushAndCarry(moveActual.y(), moveOriginal.y(), false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid);
-    } else if (moveActual.y() < 0) {
-        _pushAndCarry(moveActual.y(), moveOriginal.y(), false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid);
+    // Caller should only have moved on one dimension before calling this, so only push/carry on that dimension
+    if (move1D.x() > 0) {
+        _pushAndCarry(move1D.x(), moveOriginal.x(), true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.x() < 0) {
+        _pushAndCarry(move1D.x(), moveOriginal.x(), true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.y() > 0) {
+        _pushAndCarry(move1D.y(), moveOriginal.y(), false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.y() < 0) {
+        _pushAndCarry(move1D.y(), moveOriginal.y(), false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid);
     }
 
     mIsCollidable = wasCollidable;

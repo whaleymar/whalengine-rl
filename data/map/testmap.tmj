@@ -567,7 +567,7 @@
                 {
                  "height":8,
                  "id":34,
-                 "name":"SemiSolidTest",
+                 "name":"BOTTOM",
                  "properties":[
                         {
                          "name":"RigidBody",
@@ -617,7 +617,7 @@
                 {
                  "height":8,
                  "id":36,
-                 "name":"SemiSolidTest",
+                 "name":"TOP",
                  "properties":[
                         {
                          "name":"RigidBody",
