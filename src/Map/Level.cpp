@@ -15,18 +15,20 @@
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
+#define NULLOPT Corrade::Containers::NullOpt;
+
 namespace whal {
 
 bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
 
-std::optional<Error> Scene::setStartLevelIx(s32 ix) {
+Corrade::Containers::Optional<Error> Scene::setStartLevelIx(s32 ix) {
     if (startLevelIx != -1) {
         return Error("Start level has already been set for scene");
     }
     startLevelIx = ix;
-    return std::nullopt;
+    return NULLOPT;
 }
 
 Level Scene::getStartLevel() const {
@@ -44,14 +46,14 @@ Vector2i Scene::getStartPosition() {
     return eStartLvlActive.value()->spawnPoint;
 }
 
-std::optional<Level> Scene::getLevelAt(Vector2f worldPosTexels) const {
+Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2f worldPosTexels) const {
     for (Level lvl : allLevels) {
         if (worldPosTexels.x() >= lvl.worldPosOriginTexels.x() && worldPosTexels.x() < (lvl.worldPosOriginTexels.x() + lvl.sizeTexels.x()) &&
             worldPosTexels.y() < lvl.worldPosOriginTexels.y() && worldPosTexels.y() >= (lvl.worldPosOriginTexels.y() - lvl.sizeTexels.y())) {
             return lvl;
         }
     }
-    return std::nullopt;
+    return NULLOPT;
 }
 
 Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
@@ -64,16 +66,16 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     // load it
     auto errOpt = loadLevel(level);
     if (errOpt) {
-        return errOpt.value();
+        return *errOpt;
     }
     ActiveLevel* result = &loadedLevels[loadedLevels.size() - 1];
     assert(result->filepath == level.filepath && "Last active level doesn't match passed arg");
     return result;
 }
 
-std::optional<Error> loadLevel(const Level level) {
+Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x(), level.worldPosOriginTexels.y() - level.sizeTexels.y()).position;
-    ActiveLevel lvl = {level, "", {}, worldOffsetPixels, std::nullopt, {}, {}};
+    ActiveLevel lvl = {level, "", {}, worldOffsetPixels, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded", map.name);
 
@@ -130,7 +132,7 @@ std::optional<Error> loadLevel(const Level level) {
 
     Game::instance().getScene().loadedLevels.push_back(lvl);
 
-    return std::nullopt;
+    return NULLOPT;
 }
 
 void unloadAndRemoveLevel(ActiveLevel& level) {

@@ -350,7 +350,7 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
         const bool isLevelLoaded = it != mActiveScene.loadedLevels.end();
 
         if (shouldLoad && !isLevelLoaded) {
-            std::optional<Error> errOpt = loadLevel(lvl);
+            auto errOpt = loadLevel(lvl);
             if (errOpt) {
                 print(*errOpt);
                 continue;
@@ -379,18 +379,18 @@ void Game::updateLevelCamera(bool overrideCache) {
     if (!levelOpt) {
         doDefaultCamera = true;
     } else {
-        curLevel = levelOpt.value().filepath;
+        curLevel = levelOpt->filepath;
         if (!overrideCache && curLevel == lastLevel) {
             return;
         }
         lastLevel = curLevel;
-        Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(levelOpt.value());
+        Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(*levelOpt);
         if (!activeOpt.isExpected()) {
             print("Couldn't load level. Got error:", activeOpt.error());
             doDefaultCamera = true;
         } else {
             if (activeOpt.value()->cameraFollow) {
-                Follow follow = activeOpt.value()->cameraFollow.value();
+                Follow follow = (*activeOpt.value()->cameraFollow);
                 follow.targetEntityID = player.id();
                 if (camera.has<Follow>()) {
                     camera.set(follow);

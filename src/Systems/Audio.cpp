@@ -9,6 +9,8 @@
 #include "fmod_common.h"
 #include "fmod_dsp_effects.h"
 
+#define NULLOPT Corrade::Containers::NullOpt;
+
 namespace whal {
 
 static const char* CHANNEL_GROUP_NAME_CLIPS = "Clips";
@@ -26,7 +28,7 @@ AudioClip::~AudioClip() {
     }
 }
 
-std::optional<Error> AudioClip::load(const char* path) {
+Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     auto result = System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
                                                          &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
@@ -34,7 +36,7 @@ std::optional<Error> AudioClip::load(const char* path) {
         auto err = FMOD_ErrorString(result);
         return Error(sprint("Error loading clip:", path, "\nGot error:", err));
     }
-    return std::nullopt;
+    return NULLOPT;
 }
 
 AudioPlayer::AudioPlayer() {
@@ -73,7 +75,7 @@ AudioPlayer::AudioPlayer() {
 
     // Init Sfx Clips
     if (auto errOpt = Sfx::instance().load(); errOpt) {
-        print(errOpt.value());
+        print(*errOpt);
     }
 }
 
@@ -351,13 +353,13 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel)
     }
 }
 
-std::optional<Error> Sfx::load() {
+Corrade::Containers::Optional<Error> Sfx::load() {
     if (mIsLoaded) {
         print("Already loaded sound effects. Skipping reload");
-        return std::nullopt;
+        return NULLOPT;
     }
     mIsLoaded = true;
-    std::optional<Error> errOpt;
+    Corrade::Containers::Optional<Error> errOpt;
 
     errOpt = GAMEOVER.load("data/audio/sfx/zeldaGameOverSound.mp3");
     if (errOpt)
@@ -412,7 +414,7 @@ std::optional<Error> Sfx::load() {
         return errOpt;
     }
 
-    return std::nullopt;
+    return NULLOPT;
 }
 
 }  // namespace whal

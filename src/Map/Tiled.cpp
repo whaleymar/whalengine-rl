@@ -454,7 +454,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
             if (lvl.lvlInfo.isWorldEntryPoint) {
                 auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());
                 if (errOpt) {
-                    return errOpt.value();
+                    return *errOpt;
                 }
             }
 

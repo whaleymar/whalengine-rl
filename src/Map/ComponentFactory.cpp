@@ -1,11 +1,12 @@
 #include "ComponentFactory.h"
 
+#include "CorradeOptional.h"
+#include "json.hpp"
+#include "whalECS/src/ECS.h"
+
 #include "Gfx/Texture.h"
 #include "Physics/CollisionLayer.h"
 #include "Settings.h"
-
-#include "json.hpp"
-#include "whalECS/src/ECS.h"
 
 #include "Map/Level.h"
 #include "Map/Tiled.h"
@@ -235,7 +236,7 @@ void addComponentVelocity(nlohmann::json& values, nlohmann::json& allObjects, st
 void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                               ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     std::vector<RailsControl::CheckPoint> checkpoints;
-    std::optional<RailsControl::EndBehavior> endBehavior;
+    Corrade::Containers::Optional<RailsControl::EndBehavior> endBehavior;
     if (values.contains("Checkpoints")) {
         s32 id = values["Checkpoints"];
         nlohmann::json checkPointObj = allObjects[idToIndex[id]];
@@ -245,7 +246,7 @@ void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects
     RailsControl rails = ComponentFactory::DefaultRailsControl;
     rails.setCheckpoints(checkpoints, entity.get<Transform2D>());
     if (endBehavior) {
-        rails.endBehavior = endBehavior.value();
+        rails.endBehavior = *endBehavior;
     }
 
     if (values.contains("isCycle")) {

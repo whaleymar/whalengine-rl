@@ -1,8 +1,9 @@
 #pragma once
 
-#include <optional>
 #include <set>
 #include <string>
+
+#include "CorradeOptional.h"
 
 #include "whalECS/src/Expected.h"
 
@@ -30,7 +31,7 @@ struct ActiveLevel : public Level {
     std::set<ecs::Entity> childEntities;
     Vector2i worldOffsetPixels;
 
-    std::optional<Follow> cameraFollow;
+    Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     Vector2i spawnPoint;  // TODO i want to support multiple of these in the map data & have them update based on where the player entered the level
                           // from / update them with triggers
@@ -45,14 +46,14 @@ struct Scene {
     s32 startLevelIx = -1;
 
     bool isValid() const;
-    std::optional<Error> setStartLevelIx(s32 ix);
+    Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);
     Level getStartLevel() const;
     Vector2i getStartPosition();
-    std::optional<Level> getLevelAt(Vector2f worldPosTexels) const;
+    Corrade::Containers::Optional<Level> getLevelAt(Vector2f worldPosTexels) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
 };
 
-std::optional<Error> loadLevel(const Level level);
+Corrade::Containers::Optional<Error> loadLevel(const Level level);
 void unloadAndRemoveLevel(ActiveLevel& level);
 void unloadLevel(ActiveLevel& level);
 void removeEntityFromLevel(ecs::Entity entity);

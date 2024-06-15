@@ -1,6 +1,6 @@
 #pragma once
 
-#include <optional>
+#include "CorradeOptional.h"
 
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -32,7 +32,7 @@ public:
     AudioClip(const AudioClip&) = delete;
     void operator=(const AudioClip&) = delete;
 
-    std::optional<Error> load(const char* path);
+    Corrade::Containers::Optional<Error> load(const char* path);
     bool isValid() const { return mSound != nullptr; }
     FMOD::Sound* get() const { return mSound; }
 
@@ -117,7 +117,7 @@ public:
     inline static AudioClip MENU_OPEN;
     inline static AudioClip MENU_CLOSE;
 
-    std::optional<Error> load();
+    Corrade::Containers::Optional<Error> load();
 
 private:
     Sfx() = default;
