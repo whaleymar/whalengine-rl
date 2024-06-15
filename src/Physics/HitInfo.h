@@ -3,7 +3,6 @@
 #include "Physics/CollisionLayer.h"
 #include "Physics/Material.h"
 #include "Util/Vector.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 
@@ -25,8 +24,15 @@ constexpr u8 HORIZONTAL = Right | Left;
 
 }  // namespace CollisionInfo
 
+namespace ecs {
+
+using EntityID = u32;
+class Entity;
+
+}  // namespace ecs
+
 struct HitInfo {
-    ecs::Entity other;
+    ecs::EntityID otherID;
     u8 flags = 0;
     WorldMaterial otherMaterial = WorldMaterial::None;
     CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
@@ -42,6 +48,9 @@ struct HitInfo {
     bool isLeft() const { return flags & CollisionInfo::Left; }
     bool isVertical() const { return flags & (CollisionInfo::VERTICAL); }
     bool isHorizontal() const { return flags & (CollisionInfo::HORIZONTAL); }
+
+    ecs::Entity getOther() const;
+    void setOther(ecs::Entity);
 };
 
 }  // namespace whal

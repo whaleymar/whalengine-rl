@@ -246,7 +246,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             if (callback != nullptr) {
-                callback(getEntity(), hitInfo.other, this, &hitInfo.other.get<Collider>(), moveNormal);
+                callback(getEntity(), hitInfo.getOther(), this, &hitInfo.getOther().get<Collider>(), moveNormal);
             }
             return hitInfo;
         }
@@ -267,7 +267,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
 
         if (checkIsGrounded(others, &groundCollider)) {
             HitInfo hitinfo(Vector2i(0, -1));
-            hitinfo.other = groundCollider->getEntity();
+            hitinfo.setOther(groundCollider->getEntity());
             hitinfo.otherMaterial = groundCollider->getMaterial();
             hitinfo.otherLayer = groundCollider->getCollisionLayer();
             return hitinfo;
@@ -307,7 +307,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
                 }
             }
             if (callback != nullptr) {
-                callback(getEntity(), hitInfo.other, this, &hitInfo.other.get<Collider>(), moveNormal);
+                callback(getEntity(), hitInfo.getOther(), this, &hitInfo.getOther().get<Collider>(), moveNormal);
             }
             return hitInfo;
         }
@@ -489,7 +489,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
             // emit push event
             HitInfo hitinfo(moveVec, false, true);
-            hitinfo.other = other->getEntity();
+            hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
             System::eventMgr.triggerEvent(Event::COLLISION_EVENT, mSelf, hitinfo);
@@ -512,7 +512,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
             // emit carry event
             HitInfo hitinfo(moveVec, false, false, true);
-            hitinfo.other = other->getEntity();
+            hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
             System::eventMgr.triggerEvent(Event::COLLISION_EVENT, mSelf, hitinfo);
@@ -548,7 +548,7 @@ HitInfo Collider::checkCollision(const std::vector<Collider*>& colliders, const 
 
         HitInfo hitInfo = movedCollider.collide(pCollider->getShape());
         if (hitInfo) {
-            hitInfo.other = pCollider->getEntity();
+            hitInfo.setOther(pCollider->getEntity());
             hitInfo.otherLayer = pCollider->getCollisionLayer();
             hitInfo.otherMaterial = pCollider->getMaterial();
             return hitInfo;

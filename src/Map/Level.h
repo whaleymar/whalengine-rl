@@ -1,6 +1,10 @@
 #pragma once
 
+#include <optional>
 #include <set>
+#include <string>
+
+#include "whalECS/src/Expected.h"
 
 #include "ECS/Relationships.h"
 #include "Util/Vector.h"

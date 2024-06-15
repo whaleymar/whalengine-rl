@@ -1,5 +1,7 @@
 #include "Physics/HitInfo.h"
+
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal {
 
@@ -43,6 +45,14 @@ Vector2i HitInfo::toVec() const {
     }
 
     return normal;
+}
+
+ecs::Entity HitInfo::getOther() const {
+    return ecs::Entity(otherID);
+}
+
+void HitInfo::setOther(ecs::Entity e) {
+    otherID = e.id();
 }
 
 }  // namespace whal

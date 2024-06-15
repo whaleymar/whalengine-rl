@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ECS/Transform.h"
-#include "Physics/HitInfo.h"
 #include "Util/Vector.h"
 
 typedef struct Color Color;
 
 namespace whal {
+
+struct HitInfo;
+struct Transform2D;
 
 class AABB {
 public:

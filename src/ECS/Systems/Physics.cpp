@@ -55,7 +55,7 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
     auto& queue = PhysicsSystem::getCollisionCallbackQueue();
     auto movingCollider = movingEntity.get<Collider>();
-    auto otherCollider = hitinfo.other.get<Collider>();
+    auto otherCollider = hitinfo.getOther().get<Collider>();
 
     auto addIfUnique = [](std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>& entityList, ecs::Entity callbackOwner, ecs::Entity other,
                           Collider* callbackOwnerCollider, Collider* otherCollider, Vector2i moveNormal) {
@@ -72,10 +72,10 @@ void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
     };
 
     if (movingCollider.getOnCollisionEnter() != nullptr) {
-        addIfUnique(queue[movingEntity], movingEntity, hitinfo.other, &movingCollider, &otherCollider, hitinfo.toVec());
+        addIfUnique(queue[movingEntity], movingEntity, hitinfo.getOther(), &movingCollider, &otherCollider, hitinfo.toVec());
     }
     if (otherCollider.getOnCollisionEnter() != nullptr) {
-        addIfUnique(queue[hitinfo.other], hitinfo.other, movingEntity, &otherCollider, &movingCollider, hitinfo.toVec() * -1);
+        addIfUnique(queue[hitinfo.getOther()], hitinfo.getOther(), movingEntity, &otherCollider, &movingCollider, hitinfo.toVec() * -1);
     }
 }
 

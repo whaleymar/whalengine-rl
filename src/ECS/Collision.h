@@ -2,18 +2,20 @@
 
 #include <vector>
 
+#include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal {
 
 class Collider;
 struct HitInfo;
-namespace ecs {
-class Entity;
-}
+// namespace ecs {
+// class Entity;
+// }
 
 class Collider {
 public:

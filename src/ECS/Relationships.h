@@ -1,17 +1,26 @@
 #pragma once
 
+#include <vector>
 #include "Util/Vector.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
+
+namespace ecs {
+
+using EntityID = u32;
+class Entity;
+
+}  // namespace ecs
 
 struct Attach {
     Attach() = default;
     Attach(ecs::Entity target, Vector2i offset = {0, 0});
 
     void initTarget(ecs::Entity self);
+    ecs::Entity getTarget() const;
 
-    ecs::Entity targetEntity;
+    // ecs::Entity targetEntity;
+    ecs::EntityID targetEntityID;
     Vector2i offsetTexels;
 };
 
@@ -21,8 +30,10 @@ struct Follow {
     Follow(ecs::Entity target);
 
     void initTarget(ecs::Entity self);
+    ecs::Entity getTarget() const;
 
-    ecs::Entity targetEntity;
+    // ecs::Entity targetEntity;
+    ecs::EntityID targetEntityID;
 
     Vector2i currentTarget;                  // actual position we want to be at
     Vector2i lookAheadTexels = {48, 16};     // offset from targetEntity that we aim for
@@ -35,14 +46,15 @@ struct Follow {
     bool isTargetInitialized = false;
 
 #ifndef NDEBUG
-    ecs::Entity debugTargetTracker;
-    ecs::Entity debugPositionTracker;
+    ecs::EntityID debugTargetTrackerID;
+    ecs::EntityID debugPositionTrackerID;
 #endif  // !NDEBUG
 };
 
 // give system which deletes children in ondelete
 struct Children {
-    std::vector<ecs::Entity> entities;
+    // std::vector<ecs::Entity> entities;
+    std::vector<ecs::EntityID> entityIDs;
 
     void add(ecs::Entity entity);
 };

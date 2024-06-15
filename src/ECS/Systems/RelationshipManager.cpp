@@ -22,8 +22,9 @@ EntityChildSystem::EntityChildSystem() : mEntityDeathListener(&removeEntityFromC
 }
 
 void EntityChildSystem::onRemove(ecs::Entity entity) {
-    std::vector<ecs::Entity> childrencopy = std::move(entity.get<Children>().entities);
-    for (auto childEntity : childrencopy) {
+    std::vector<ecs::EntityID> childrencopy = std::move(entity.get<Children>().entityIDs);
+    for (auto childEntityID : childrencopy) {
+        ecs::Entity childEntity(childEntityID);
         childEntity.kill();
     }
 }
@@ -36,7 +37,8 @@ void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         Transform2D& trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
-        trans.position = attach.targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
+        ecs::Entity targetEntity(attach.targetEntityID);
+        trans.position = targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
     }
 }
 
@@ -51,14 +53,16 @@ void FollowSystem::update() {
         if (!follow.isTargetInitialized) {
             follow.initTarget(entity);
         }
-        Transform2D targetTrans = follow.targetEntity.get<Transform2D>();
+
+        ecs::Entity targetEntity(follow.targetEntityID);
+        Transform2D targetTrans = targetEntity.get<Transform2D>();
         // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
         f32 lookAheadX = follow.lookAheadTexels.x();
         f32 lookAheadY = follow.lookAheadTexels.y();
         bool isTargetMovingX = false;
         bool isTargetMovingY = false;
         bool isMovingUp = false;
-        if (auto velOpt = follow.targetEntity.tryGet<Velocity>(); velOpt) {
+        if (auto velOpt = targetEntity.tryGet<Velocity>(); velOpt) {
             f32 velx = velOpt.value()->total.x();
             f32 vely = velOpt.value()->total.y();
             lookAheadX *= clamp(abs(velx) * 0.1f, 0.0f, 1.0f);
@@ -144,8 +148,11 @@ void FollowSystem::update() {
         }
 
 #ifndef NDEBUG
-        follow.debugTargetTracker.set(Transform2D(follow.currentTarget));
-        follow.debugPositionTracker.set(trans);
+        ecs::Entity debugTargetTracker(follow.debugTargetTrackerID);
+        ecs::Entity debugPositionTracker(follow.debugPositionTrackerID);
+
+        debugTargetTracker.set(Transform2D(follow.currentTarget));
+        debugPositionTracker.set(trans);
 #endif  // !NDEBUG
     }
 }
@@ -160,7 +167,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
 void unfollowEntity(ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
     for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {
-        if (entity.get<Follow>().targetEntity == killedEntity) {
+        if (entity.get<Follow>().targetEntityID == killedEntity.id()) {
             toRemove.push_back(entity);
         }
     }
@@ -173,9 +180,9 @@ void unfollowEntity(ecs::Entity killedEntity) {
 void removeEntityFromChildList(ecs::Entity entity) {
     for (auto [entityid, parent] : EntityChildSystem::instance()->getEntitiesRef()) {
         auto& children = parent.get<Children>();
-        auto it = whal_find(children.entities.begin(), children.entities.end(), entity);
-        if (it != children.entities.end()) {
-            children.entities.erase(it);
+        auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
+        if (it != children.entityIDs.end()) {
+            children.entityIDs.erase(it);
         }
     }
 }

@@ -388,7 +388,7 @@ void Game::updateLevelCamera(bool overrideCache) {
         } else {
             if (activeOpt.value()->cameraFollow) {
                 Follow follow = activeOpt.value()->cameraFollow.value();
-                follow.targetEntity = player;
+                follow.targetEntityID = player.id();
                 if (camera.has<Follow>()) {
                     camera.set(follow);
                 } else {

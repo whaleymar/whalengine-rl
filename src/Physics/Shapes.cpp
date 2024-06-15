@@ -1,9 +1,11 @@
 #include "Shapes.h"
 
+#include <cassert>
 #include <cstring>
 #include <raylib.h>
 
 #include "ECS/Transform.h"
+#include "Physics/HitInfo.h"
 
 namespace whal {
 

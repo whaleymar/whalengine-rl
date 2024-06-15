@@ -46,8 +46,8 @@
 - `CorradeOptional.h`
 - static functions / anonymous namespaces for functions that are only defined/used in source files
 - remove <memory> include in Tiled.h
+- move CallbackMap definition from Physics.h to source file, make it static variable
 - would like to remove ECS include in Relationships.h
-    - also HitInfo
     - same for System.h, where I can grab the ECS ptr using a function that's defined in System's source file?
 
     - making me think i need an ECS_fwd file or something, cause these things just need to know the size of an entity, but I could also just store an entity id? And then give ECS a getEntityByID func or something

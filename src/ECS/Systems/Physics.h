@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "Physics/HitInfo.h"
 #include "Systems/Event.h"
 #include "whalECS/src/ECS.h"
 
@@ -12,6 +11,7 @@ namespace whal {
 
 struct Transform2D;
 struct Velocity;
+struct HitInfo;
 
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
