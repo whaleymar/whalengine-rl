@@ -31,6 +31,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/json"
     PUBLIC "${FMOD_DIR}/api/core/inc"
     PUBLIC "${FMOD_DIR}/api/studio/inc"
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/magnum-singles"
     )
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
