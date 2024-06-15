@@ -12,8 +12,8 @@
 
 namespace whal {
 
-std::shared_ptr<EntityChildSystem> EntityChildSystem::instance() {
-    static std::shared_ptr<EntityChildSystem> instance_ = System::ecs->registerSystem<EntityChildSystem>();
+EntityChildSystem* EntityChildSystem::instance() {
+    static auto instance_ = System::ecs->registerSystem<EntityChildSystem>();
     return instance_;
 }
 

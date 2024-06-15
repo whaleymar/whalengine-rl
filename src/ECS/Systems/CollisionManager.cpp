@@ -13,8 +13,8 @@
 
 namespace whal {
 
-std::shared_ptr<CollisionManager> CollisionManager::instance() {
-    static std::shared_ptr<CollisionManager> instance_ = System::ecs->registerSystem<CollisionManager>();
+CollisionManager* CollisionManager::instance() {
+    static auto instance_ = System::ecs->registerSystem<CollisionManager>();
     return instance_;
 }
 

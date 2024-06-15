@@ -12,12 +12,12 @@ struct Transform2D;
 
 class PlayerSystem : public ecs::ISystem<Player> {
 public:
-    static std::shared_ptr<PlayerSystem> instance();
+    static PlayerSystem* instance();
 };
 
 class CameraSystem : public ecs::ISystem<Camera, Transform2D> {
 public:
-    static std::shared_ptr<CameraSystem> instance();
+    static CameraSystem* instance();
 };
 
 std::optional<ecs::Entity> getCamera();
@@ -26,7 +26,7 @@ void setCameraPosition(Vector2i pos);
 
 class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform2D> {
 public:
-    static std::shared_ptr<AudioListenerSystem> instance();
+    static AudioListenerSystem* instance();
 
     void update() override;
 };

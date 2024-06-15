@@ -9,7 +9,7 @@ class Collider;
 // RESEARCH may be better to store actor/semisolid/solid pointers in separate lists?
 class CollisionManager : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
-    static std::shared_ptr<CollisionManager> instance();
+    static CollisionManager* instance();
 
     void update() override;
     void onAdd(ecs::Entity entity) override;

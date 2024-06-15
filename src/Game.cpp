@@ -114,10 +114,10 @@ void Game::mainloop() {
     // single-component systems for running psuedo-destructors / updating some global var
     auto collisionMgr = CollisionManager::instance();
 
-    // these don't have update methods:
-    auto playerMgr = PlayerSystem::instance();
-    auto cameraMgr = CameraSystem::instance();
-    auto childMgr = EntityChildSystem::instance();
+    // these don't have update methods, just registering them
+    PlayerSystem::instance();
+    CameraSystem::instance();
+    EntityChildSystem::instance();
     System::ecs->registerSystem<ProjectileSystem>();
     System::ecs->registerSystem<RocketJumpingSystem>();
 

@@ -14,7 +14,7 @@ struct Transform2D;
 class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem {
 public:
     EntityChildSystem();
-    static std::shared_ptr<EntityChildSystem> instance();
+    static EntityChildSystem* instance();
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
 
