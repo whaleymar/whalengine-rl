@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 project(engine CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -32,7 +32,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${FMOD_DIR}/api/core/inc"
     PUBLIC "${FMOD_DIR}/api/studio/inc"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/magnum-singles"
-    )
+)
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
@@ -43,6 +43,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
 
 include_directories(lib)
+target_precompile_headers(${PROJECT_NAME}
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS/src/ECS.h"
+)
 
 target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmod.so")
 target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmodL.so")
