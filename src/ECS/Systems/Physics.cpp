@@ -89,8 +89,8 @@ void PhysicsSystem::update() {
         }
 
         trans.isManuallyMoved = false;
-        if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-            colliderOpt.value()->getShapeMutable().setPosition(trans);
+        if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
+            (*colliderOpt)->getShapeMutable().setPosition(trans);
         }
     }
 
@@ -104,10 +104,10 @@ void PhysicsSystem::update() {
             dt = System::dt();
         }
 
-        std::optional<RigidBody*> rb = entity.tryGet<RigidBody>();
+        auto rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
-        if (rb) {
-            frictionMultiplier = rb.value()->frictionMultiplier;
+        if (rbOpt) {
+            frictionMultiplier = (*rbOpt)->frictionMultiplier;
         }
 
         const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x();
@@ -132,13 +132,13 @@ void PhysicsSystem::update() {
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
-        std::optional<Jumper*> jumpControl = entity.tryGet<Jumper>();
-        std::optional<Collider*> colliderOpt = entity.tryGet<Collider>();
+        auto jumpControl = entity.tryGet<Jumper>();
+        auto colliderOpt = entity.tryGet<Collider>();
 
         // ----------------------------------------------------------------
         // UPDATE POSITION
         if (colliderOpt) {
-            colliderOpt.value()->move(move, nullptr, rb.has_value(), false, false, rb.has_value());
+            (*colliderOpt)->move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
             allColliderEntities.push_back(entity);
         } else {
             // TODO should store remainder like i do with colliders
@@ -148,10 +148,10 @@ void PhysicsSystem::update() {
 
         // ----------------------------------------------------------------
         // UPDATE VELOCITY
-        if (rb) {
+        if (rbOpt) {
             // friction
             if (vel.stable.x()) {
-                if (rb.value()->isGrounded) {
+                if ((*rbOpt)->isGrounded) {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
@@ -160,26 +160,26 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!rb.value()->isGrounded) {
+            if (!(*rbOpt)->isGrounded) {
                 if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX && jumpControl) {
-                    jumpControl.value()->isJumping = false;
+                    (*jumpControl)->isJumping = false;
                 }
 
                 if (jumpControl) {
                     if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX) {
                         // falling == not jumping
                         // a little lower than 0 while applying reduced gravity
-                        jumpControl.value()->isJumping = false;
+                        (*jumpControl)->isJumping = false;
                     }
-                    applyGravity(vel, dt, jumpControl.value()->isJumping);
+                    applyGravity(vel, dt, (*jumpControl)->isJumping);
                 } else {
                     applyGravity(vel, dt, false);
                 }
 
-                rb.value()->isLanding = false;
+                (*rbOpt)->isLanding = false;
 
             } else {
-                if (totalVelocity.y() < 0 && (!jumpControl || !jumpControl.value()->isJumping)) {
+                if (totalVelocity.y() < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
                     // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
                     vel.stable.e[1] = 0;
                 }

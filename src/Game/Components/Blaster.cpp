@@ -96,7 +96,7 @@ void onBlasterFired(Vector2i target) {
 
         // push shooter in opposite direction of projectile
         if (auto velOpt = entity.tryGet<Velocity>(); velOpt) {
-            velOpt.value()->stable += moveNormal * -1 * blaster.shotKnockback;
+            (*velOpt)->stable += moveNormal * -1 * blaster.shotKnockback;
         }
 
         System::audio.playClip(Sfx::SHOTFIRED, 0.2);

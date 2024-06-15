@@ -20,9 +20,9 @@ AudioListenerSystem* AudioListenerSystem::instance() {
     return instance_;
 }
 
-std::optional<ecs::Entity> getCamera() {
+Corrade::Containers::Optional<ecs::Entity> getCamera() {
     if (CameraSystem::instance()->getEntitiesRef().empty()) {
-        return std::nullopt;
+        return Corrade::Containers::NullOpt;
     }
     return CameraSystem::instance()->first();
 }
@@ -31,7 +31,7 @@ Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        lastPos = eOpt.value().get<Transform2D>().position;
+        lastPos = eOpt->get<Transform2D>().position;
     }
     return lastPos;
 }
@@ -39,7 +39,7 @@ Vector2i getCameraPosition() {
 void setCameraPosition(Vector2i pos) {
     auto eOpt = getCamera();
     if (eOpt) {
-        eOpt.value().set(Transform2D(pos));
+        eOpt->set(Transform2D(pos));
     }
 }
 

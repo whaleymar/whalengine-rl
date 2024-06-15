@@ -301,7 +301,7 @@ void addComponentSprite(nlohmann::json& values, nlohmann::json& allObjects, std:
     auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
     if (frameOpt) {
         sprite.depth = layerData.depth;
-        sprite.setFrame(frameOpt.value());
+        sprite.setFrame(*frameOpt);
         entity.add(sprite);
     } else {
         print("Coudn't find frame for sprite:", spritePath);

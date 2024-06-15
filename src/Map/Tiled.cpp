@@ -19,6 +19,8 @@
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 
+#define NULLOPT Corrade::Containers::NullOpt;
+
 namespace whal {
 
 inline const char* MAP_DIR = "data/map";
@@ -271,14 +273,14 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
                                                                               isRepeatX, isRepeatY);
         if (errOpt) {
-            print("Got error: ", errOpt.value());
+            print("Got error: ", *errOpt);
         }
 
         return;
     }
 
-    std::optional<Frame> frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
-    if (!frame) {
+    Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
+    if (!frameOpt) {
         return;
     }
 
@@ -287,13 +289,14 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         return;
     }
 
+    Frame frame(*frameOpt);
     ecs::Entity entity = eEntity.value();
     level.childEntities.insert(entity);
 
-    Transform2D trans = getTransformFromMapPosition(position + offset, frame.value().dimensionsTexels, level, false);
+    Transform2D trans = getTransformFromMapPosition(position + offset, frame.dimensionsTexels, level, false);
     entity.add(trans);
 
-    entity.add(Sprite(layerData.depth, frame.value()));
+    entity.add(Sprite(layerData.depth, frame));
 }
 
 Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
@@ -358,7 +361,7 @@ const TileSet* getTileSet(const TileMap& map, s32 blockId) {
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     const TileSet* tset = getTileSet(map, blockId);
     std::string spritePath = std::format("{}/{}", "map", tset->spriteFileName);
-    std::optional<Frame> tsetFrameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
+    Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
         return Error(std::format("Couldn't find {} in sprite table", spritePath));
@@ -371,14 +374,14 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     s32 rowIx = blockIx / tset->heightTiles;
     s32 colIx = blockIx % tset->widthTiles;
 
-    Frame fullFrame = tsetFrameOpt.value();
+    Frame fullFrame = *tsetFrameOpt;
     Frame newFrame = {
         {fullFrame.atlasPositionTexels.x() + colIx * tset->tileWidthTexels, fullFrame.atlasPositionTexels.y() + rowIx * tset->tileHeightTexels},
         {tset->tileWidthTexels, tset->tileHeightTexels}};
     return newFrame;
 }
 
-std::optional<Error> parseMapProject(const char* mapfile) {
+Corrade::Containers::Optional<Error> parseMapProject(const char* mapfile) {
     using json = nlohmann::json;
 
     Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, mapfile).c_str());
@@ -390,7 +393,7 @@ std::optional<Error> parseMapProject(const char* mapfile) {
     for (auto& propType : data["propertyTypes"]) {
         TileMap::componentFactory.makeDefaultComponent(propType);
     }
-    return std::nullopt;
+    return NULLOPT;
 }
 
 Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
@@ -423,7 +426,7 @@ Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
     return Error(std::format("LevelInfo property not found in level: {}", lvlFileName));
 }
 
-std::optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
+Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     using json = nlohmann::json;
 
     Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, mapfile).c_str());
@@ -464,7 +467,7 @@ std::optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
         return Error("Scene is not valid");
     }
 
-    return std::nullopt;
+    return NULLOPT;
 }
 
 // convert top-left coordinate to bottom-middle

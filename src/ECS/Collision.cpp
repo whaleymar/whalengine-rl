@@ -90,7 +90,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             }
 
             if (jumpControlOpt) {
-                jumpControlOpt.value()->isJumping = false;
+                (*jumpControlOpt)->isJumping = false;
             }
             velocity.residualImpulse.e[1] = 0;
         } else if (!hitinfo) {
@@ -110,10 +110,10 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 
         } else {
             if (jumpControlOpt) {
-                if (wasGrounded && !jumpControlOpt.value()->isJumping) {
-                    jumpControlOpt.value()->coyoteSecondsRemaining = jumpControlOpt.value()->coyoteTimeSecondsMax;
-                } else if (jumpControlOpt.value()->coyoteSecondsRemaining > 0) {
-                    jumpControlOpt.value()->coyoteSecondsRemaining -= System::dt();
+                if (wasGrounded && !(*jumpControlOpt)->isJumping) {
+                    (*jumpControlOpt)->coyoteSecondsRemaining = (*jumpControlOpt)->coyoteTimeSecondsMax;
+                } else if ((*jumpControlOpt)->coyoteSecondsRemaining > 0) {
+                    (*jumpControlOpt)->coyoteSecondsRemaining -= System::dt();
                 }
             }
 
@@ -570,10 +570,10 @@ void Collider::setMomentum(const f32 momentum, const bool isXDirection) {
         return;
     }
     if (isXDirection) {
-        mStoredMomentum.e[0] = momentum * eRB.value()->momentumMultiplier.x();
+        mStoredMomentum.e[0] = momentum * (*eRB)->momentumMultiplier.x();
         mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
     } else {
-        mStoredMomentum.e[1] = momentum * eRB.value()->momentumMultiplier.y();
+        mStoredMomentum.e[1] = momentum * (*eRB)->momentumMultiplier.y();
         mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
     }
 }

@@ -25,13 +25,15 @@ void parse_error_handler(const char* what, void* where) {
 
 }  // namespace rapidxml
 
+#define NULLOPT Corrade::Containers::NullOpt;
+
 namespace whal {
 
 Frame::Frame(Rectangle rect) : atlasPositionTexels(rect.x, rect.y), dimensionsTexels(rect.width, rect.height) {}
 
 Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPositionTexels(atlasPosition), dimensionsTexels(dimensions) {}
 
-std::optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
+Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
     mTexture = texture;
     Expected<std::string> content = readFile(atlasDataPath);
     if (!content.isExpected()) {
@@ -77,25 +79,25 @@ std::optional<Error> TextureAtlas::init(const Texture2D& texture, const char* at
 
     mIsValid = true;
 
-    return std::nullopt;
+    return NULLOPT;
 }
 
 Vector2f TextureAtlas::getSize() const {
     return Vector2f(mTexture.width, mTexture.height);
 }
 
-std::optional<Rectangle> TextureAtlas::getFrame(const char* name) const {
+Corrade::Containers::Optional<Rectangle> TextureAtlas::getFrame(const char* name) const {
     auto search = mTable.find(name);
     if (search == mTable.end()) {
-        return std::nullopt;
+        return NULLOPT;
     }
     return search->second;
 }
 
-std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameName) const {
-    std::optional<Rectangle> frameOpt = getFrame(frameName);
+Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameName) const {
+    Corrade::Containers::Optional<Rectangle> frameOpt = getFrame(frameName);
     if (!frameOpt) {
-        return std::nullopt;
+        return NULLOPT;
     }
 
     RenderTexture2D texture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
@@ -107,7 +109,7 @@ std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameNam
 
     ClearBackground(Colors::Clear);
 
-    DrawTexturePro(getTexture(), frameOpt.value(), dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
 
     EndTextureMode();
 
@@ -123,7 +125,10 @@ std::optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameNam
     return texture;
 }
 
-std::optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
+TextureManager::TextureManager()
+    : mBGTextureStatic(RenderTexture2D()), mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
+
+Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
         print(std::format("Texture with name '{}' already registered", name), ". Replacing it.");
@@ -133,10 +138,10 @@ std::optional<Error> TextureManager::registerTexture(const Texture2D texture, co
         mTextures.push_back(std::move(texture));
         mTextureNames.push_back(name);
     }
-    return std::nullopt;
+    return NULLOPT;
 }
 
-std::optional<Error> TextureManager::registerTextureAtlas(const Texture2D texture, const char* atlasDataPath, const char* name) {
+Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const Texture2D texture, const char* atlasDataPath, const char* name) {
     s32 ix = getTextureAtlasIndex(name);
     if (ix >= 0) {
         return Error(std::format("Texture Atlas with name '{}' already registered", name));
@@ -148,10 +153,10 @@ std::optional<Error> TextureManager::registerTextureAtlas(const Texture2D textur
     }
     mTextureAtlases.push_back(atlas);
     mTextureAtlasNames.push_back(name);
-    return std::nullopt;
+    return NULLOPT;
 }
 
-std::optional<Error> TextureManager::loadAndRegister(const char* imagePath, const char* name) {
+Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char* imagePath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
     if (!IsTextureReady(texture)) {
         return Error(std::format("Couldn't load image: %s", imagePath));
@@ -159,7 +164,7 @@ std::optional<Error> TextureManager::loadAndRegister(const char* imagePath, cons
     return registerTexture(texture, name);
 }
 
-std::optional<Error> TextureManager::loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name) {
+Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
     if (!IsTextureReady(texture)) {
         return Error(std::format("Couldn't load image: %s", imagePath));
@@ -195,8 +200,9 @@ const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
     return mTextureAtlases[getTextureAtlasIndex(name)];
 }
 
-std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, Vector2f parallax,
-                                                                  Vector2i offset, bool isRepeatX, bool isRepeatY) {
+Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
+                                                                                  Vector2f parallax, Vector2i offset, bool isRepeatX,
+                                                                                  bool isRepeatY) {
     std::string texname;
     switch (dstBG) {
     case BGTexture::STATIC:
@@ -262,7 +268,7 @@ std::optional<Error> TextureManager::setBackgroundTextureToSprite(const char* at
     // so if my frame is 100px wide then it gets drawn 3x
     // BUT that wouldn't tile neatly. Should only divide texture into powers of 2 (i.e. draw 1/2/4/8 frames evenly spaced)
 
-    return std::nullopt;
+    return NULLOPT;
 }
 
 void TextureManager::drawBackgroundTextures() {
@@ -359,19 +365,19 @@ void TextureManager::drawBackgroundTextures() {
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureFar->texture.width), -1 * static_cast<f32>(mBGTextureFar->texture.height)};
 
     if (mBGTextureFar) {
-        drawBackgrounds(mBGTextureFar.value(), screenSourceRec, mBGDataFar, mScrollFar);
+        drawBackgrounds(*mBGTextureFar, screenSourceRec, mBGDataFar, mScrollFar);
     }
 
     // MID BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureMid->texture.width), -1 * static_cast<f32>(mBGTextureMid->texture.height)};
     if (mBGTextureMid) {
-        drawBackgrounds(mBGTextureMid.value(), screenSourceRec, mBGDataMid, mScrollMid);
+        drawBackgrounds(*mBGTextureMid, screenSourceRec, mBGDataMid, mScrollMid);
     }
 
     // NEAR BG:
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureNear->texture.width), -1 * static_cast<f32>(mBGTextureNear->texture.height)};
     if (mBGTextureNear) {
-        drawBackgrounds(mBGTextureNear.value(), screenSourceRec, mBGDataNear, mScrollNear);
+        drawBackgrounds(*mBGTextureNear, screenSourceRec, mBGDataNear, mScrollNear);
     }
 }
 

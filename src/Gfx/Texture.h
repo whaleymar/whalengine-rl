@@ -2,9 +2,10 @@
 
 #include <raylib.h>
 
-#include <optional>
 #include <unordered_map>
 #include <vector>
+
+#include "CorradeOptional.h"
 
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -29,12 +30,12 @@ static const char* TEXNAME_BGSTATIC = "bgstatic";
 
 class TextureAtlas {
 public:
-    std::optional<Error> init(const Texture2D& texture, const char* atlasDataPath);
+    Corrade::Containers::Optional<Error> init(const Texture2D& texture, const char* atlasDataPath);
     Vector2f getSize() const;
-    std::optional<Rectangle> getFrame(const char* name) const;
+    Corrade::Containers::Optional<Rectangle> getFrame(const char* name) const;
     bool isValid() const { return mIsValid; }
     const Texture2D& getTexture() const { return mTexture; }
-    std::optional<RenderTexture2D> frameToTexture(const char* frameName) const;
+    Corrade::Containers::Optional<RenderTexture2D> frameToTexture(const char* frameName) const;
 
 private:
     Texture2D mTexture;
@@ -58,24 +59,24 @@ public:
         return instance_;
     }
 
-    std::optional<Error> registerTexture(const Texture2D texture, const char* name);
-    std::optional<Error> registerTextureAtlas(const Texture2D texture, const char* altasDataPath, const char* name);
-    std::optional<Error> loadAndRegister(const char* imagePath, const char* name);
-    std::optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
+    Corrade::Containers::Optional<Error> registerTexture(const Texture2D texture, const char* name);
+    Corrade::Containers::Optional<Error> registerTextureAtlas(const Texture2D texture, const char* altasDataPath, const char* name);
+    Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);
+    Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
 
     const Texture2D& getTexture(const char* name);
     const TextureAtlas& getTextureAtlas(const char* name);
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
 
-    std::optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG, Vector2f parallax,
-                                                      Vector2i offset, bool isRepeatX, bool isRepeatY);
+    Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
+                                                                      Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
     void drawBackgroundTextures();
 
     void unloadAll();
 
 private:
-    TextureManager() = default;
+    TextureManager();
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 
@@ -87,11 +88,10 @@ private:
     std::vector<Texture2D> mTextures;
     std::vector<std::string> mTextureNames;
 
-    // RenderTexture2D mBGTextureStatic;
-    std::optional<RenderTexture2D> mBGTextureStatic;
-    std::optional<RenderTexture2D> mBGTextureFar;
-    std::optional<RenderTexture2D> mBGTextureMid;
-    std::optional<RenderTexture2D> mBGTextureNear;
+    Corrade::Containers::Optional<RenderTexture2D> mBGTextureStatic;
+    Corrade::Containers::Optional<RenderTexture2D> mBGTextureFar;
+    Corrade::Containers::Optional<RenderTexture2D> mBGTextureMid;
+    Corrade::Containers::Optional<RenderTexture2D> mBGTextureNear;
     Vector2f mScrollFar;
     Vector2f mScrollMid;
     Vector2f mScrollNear;

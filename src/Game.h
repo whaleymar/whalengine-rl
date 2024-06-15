@@ -1,6 +1,6 @@
 #pragma once
 
-#include <optional>
+#include "CorradeOptional.h"
 
 #include "Map/Level.h"
 #include "Systems/Event.h"
@@ -34,9 +34,9 @@ public:
     void mainloop();
     void end();
 
-    std::optional<Error> loadScene(const char* name);
+    Corrade::Containers::Optional<Error> loadScene(const char* name);
     void unloadScene();
-    std::optional<Error> reloadScene();
+    Corrade::Containers::Optional<Error> reloadScene();
     whal::Scene& getScene();
     void updateLoadedLevels(Vector2f cameraWorldPosPixels);
     void updateLevelCamera(bool overrideCache = false);

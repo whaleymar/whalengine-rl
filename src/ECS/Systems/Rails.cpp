@@ -41,11 +41,11 @@ void RailsSystem::update() {
 
         // scale checkpoint threshold with speed
         f32 speed = [entity]() -> f32 {
-            std::optional<Velocity*> vel = entity.tryGet<Velocity>();
-            if (!vel || (vel.value()->stable.x() == 0 && vel.value()->stable.y() == 0)) {
+            auto velOpt = entity.tryGet<Velocity>();
+            if (!velOpt || ((*velOpt)->stable.x() == 0 && (*velOpt)->stable.y() == 0)) {
                 return 0;
             }
-            return vel.value()->stable.len();
+            return (*velOpt)->stable.len();
         }();
         f32 epsilon = speed * SPEED_DIVISOR + 1;
 
@@ -80,9 +80,9 @@ void RailsSystem::update() {
             // got to checkpoint, clamp to exact position
 
             // if entity has collider, use its move function
-            if (std::optional<Collider*> colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-                colliderOpt.value()->move(delta, nullptr, false, true);
-                entity.set(Transform2D(colliderOpt.value()->getShape().getPositionEdge(Vector2i::unitDown)));
+            if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
+                (*colliderOpt)->move(delta, nullptr, false, true);
+                entity.set(Transform2D((*colliderOpt)->getShape().getPositionEdge(Vector2i::unitDown)));
             } else {
                 entity.set(Transform2D(rails.getTarget().position));
             }

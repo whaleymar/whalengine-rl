@@ -8,7 +8,6 @@
 
 #include "Game.h"
 #include "Gfx/Texture.h"
-#include "Map/Level.h"
 #include "Systems/System.h"
 
 #include "ECS/Callback.h"
@@ -35,12 +34,12 @@ void createPaletteTest();
 
 using namespace whal;
 
-std::optional<Error> loadMap() {
+Corrade::Containers::Optional<Error> loadMap() {
     const char* scenefile = "testworld.world";
     return Game::instance().loadScene(scenefile);
 }
 
-std::optional<Error> loadTestMap() {
+Corrade::Containers::Optional<Error> loadTestMap() {
     auto ePlayer = createPlayer();
     if (!ePlayer.isExpected()) {
         return ePlayer.error();
@@ -59,7 +58,7 @@ std::optional<Error> loadTestMap() {
     return err;
 }
 
-std::optional<Error> loadDebugScene() {
+Corrade::Containers::Optional<Error> loadDebugScene() {
     // auto player = createPlayer().value();
     // player.remove<PlayerControlRB>();
 
@@ -95,16 +94,15 @@ std::optional<Error> loadDebugScene() {
         } else if (i % 7 < 4) {
             continue;
         }
-        createBlock(
-            Transform2D::tiles(i, y),
-            Sprite(Depth::Player, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Magenta));
+        createBlock(Transform2D::tiles(i, y),
+                    Sprite(Depth::Player, *TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock"), Colors::Magenta));
     }
 
     for (s32 i = 10; i < 15; i++) {
         Depth d = i % 2 == 0 ? Depth::Foreground1 : Depth::BackgroundNear;
         auto invisBlock =
             createBlock(Transform2D::tiles(i, 2),
-                        Sprite(d, TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock").value(), Colors::Emerald))
+                        Sprite(d, *TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock"), Colors::Emerald))
                 .value();
         invisBlock.remove<Collider>();
         auto invisBlock2 = createBlock(Transform2D::tiles(i - 5, 2), Draw(Colors::Emerald, {8, 8}, d)).value();
@@ -140,7 +138,7 @@ std::optional<Error> loadDebugScene() {
                                    },
                                    2));
 
-    return std::nullopt;
+    return Corrade::Containers::NullOpt;
 }
 
 void startRailsMovement(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
@@ -176,7 +174,7 @@ void createTestPlatform() {
         // ------------------------
         auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock");
         if (frameOpt) {
-            Sprite sprite = Sprite(Depth::Level, frameOpt.value());
+            Sprite sprite = Sprite(Depth::Level, *frameOpt);
             Expected<ecs::Entity> grassOpt = createDecal(trans, sprite);
             if (grassOpt.isExpected()) {
                 auto grass = grassOpt.value();

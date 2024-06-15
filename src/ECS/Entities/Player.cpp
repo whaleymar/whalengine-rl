@@ -54,7 +54,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     auto rbOpt = entity.tryGet<RigidBody>();
     RigidBody rb;
     if (rbOpt) {
-        rb = *rbOpt.value();
+        rb = **rbOpt;
     }
 
     auto jumperOpt = entity.tryGet<Jumper>();
@@ -81,7 +81,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             }
         }
     } else {
-        if (jumperOpt && jumperOpt.value()->isJumping) {
+        if (jumperOpt && (*jumperOpt)->isJumping) {
             if ((animator.getAnimation().id == JUMP_FORWARD || animator.getAnimation().id == RISE_FORWARD) && vel.total.y() <= 1 &&
                 animator.setAnimation(PEAK_FORWARD)) {
                 return true;

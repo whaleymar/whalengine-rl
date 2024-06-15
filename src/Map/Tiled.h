@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <optional>
 #include <vector>
+
+#include "CorradeOptional.h"
 
 #include "whalECS/src/Expected.h"
 
@@ -20,8 +20,8 @@ struct TileSet;
 struct Scene;
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
-std::optional<Error> parseMapProject(const char* projectfile);
-std::optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
+Corrade::Containers::Optional<Error> parseMapProject(const char* projectfile);
+Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform2D getTransformFromMapPosition(Vector2i mapCenterPositionTexels, Vector2i dimensionsTexels, ActiveLevel& level, bool isPoint);
 const TileSet* getTileSet(const TileMap& map, s32 blockId);
 

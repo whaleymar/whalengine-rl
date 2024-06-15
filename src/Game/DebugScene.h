@@ -1,8 +1,8 @@
 #pragma once
 
-#include <optional>
+#include "CorradeOptional.h"
 
 #include "whalECS/src/Expected.h"
 
-std::optional<Error> loadDebugScene();
-std::optional<Error> loadTestMap();
+Corrade::Containers::Optional<Error> loadDebugScene();
+Corrade::Containers::Optional<Error> loadTestMap();

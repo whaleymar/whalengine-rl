@@ -20,7 +20,7 @@ public:
     static CameraSystem* instance();
 };
 
-std::optional<ecs::Entity> getCamera();
+Corrade::Containers::Optional<ecs::Entity> getCamera();
 Vector2i getCameraPosition();
 void setCameraPosition(Vector2i pos);
 

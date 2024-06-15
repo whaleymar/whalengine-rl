@@ -35,7 +35,7 @@ void onEntityDeath(ecs::Entity entity) {
         return;
     }
 
-    auto respawn = *respawnOpt.value();
+    auto respawn = **respawnOpt;
     Sprite sprite;  // needs to be created in main thread bc OpenGL
 
     // clang-format off

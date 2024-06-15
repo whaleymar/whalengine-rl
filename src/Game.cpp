@@ -29,6 +29,8 @@
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
+#define NULLOPT Corrade::Containers::NullOpt;
+
 // GAME SETTINGS
 
 constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
@@ -68,7 +70,8 @@ bool Game::startup() {
 
     loadFont(FONT_PATH, 18, 0, 0);
 
-    std::optional<Error> err = TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
+    Corrade::Containers::Optional<Error> err =
+        TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
     if (err) {
         print(*err);
         return true;
@@ -124,7 +127,7 @@ void Game::mainloop() {
     // load scene
     auto err = loadTestMap();
     if (err) {
-        print("Error loading debug scene: ", err.value());
+        print("Error loading debug scene: ", *err);
         return;
     }
 
@@ -287,7 +290,7 @@ void Game::end() {
     CloseWindow();
 }
 
-std::optional<Error> Game::loadScene(const char* filename) {
+Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     if (mIsSceneLoaded) {
         unloadScene();
     }
@@ -308,7 +311,7 @@ std::optional<Error> Game::loadScene(const char* filename) {
     }
 
     mIsSceneLoaded = true;
-    return std::nullopt;
+    return NULLOPT;
 }
 
 void Game::unloadScene() {
@@ -326,7 +329,7 @@ void Game::unloadScene() {
     mIsSceneLoaded = false;
 }
 
-std::optional<Error> Game::reloadScene() {
+Corrade::Containers::Optional<Error> Game::reloadScene() {
     auto errOpt = loadScene(mActiveScene.name.c_str());
     if (!errOpt) {
         updateLevelCamera(true);
