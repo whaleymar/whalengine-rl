@@ -107,7 +107,6 @@ void Game::mainloop() {
     auto drawDebugSystem = System::ecs->registerSystem<DrawDebugSystem>();
     auto animationSystem = System::ecs->registerSystem<AnimationSystem>();
     auto lifetimeSystem = System::ecs->registerSystem<LifetimeSystem>();
-    System::ecs->registerSystem<MovableActorTracker>();  // dependency of TriggerSystem
     auto triggerSystem = System::ecs->registerSystem<TriggerSystem>();
     auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
     auto followSystem = System::ecs->registerSystem<FollowSystem>();
@@ -123,6 +122,7 @@ void Game::mainloop() {
     EntityChildSystem::instance();
     System::ecs->registerSystem<ProjectileSystem>();
     System::ecs->registerSystem<RocketJumpingSystem>();
+    System::ecs->registerSystem<MovableColliders>();  // dependency of TriggerSystem
 
     // load scene
     auto err = loadTestMap();

@@ -15,6 +15,7 @@
 #include "Physics/HitInfo.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 
 namespace whal {
 
@@ -83,7 +84,7 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {
     if (updateRigidBodyFlags && !isX) {
-        auto rigidbody = mSelf.get<RigidBody>();
+        auto& rigidbody = mSelf.get<RigidBody>();
         const bool wasGrounded = rigidbody.isGrounded;
         auto jumpControlOpt = mSelf.tryGet<Jumper>();
         const bool hasMomentum = isMomentumStored();
@@ -108,7 +109,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         // UPDATE RIGIDBODY FLAGS, MOMENTUM, AND COYOTE TIME
         if (rigidbody.isGrounded) {
             rigidbody.isLanding = !wasGrounded;
-            if (!wasGrounded) {
+            if (rigidbody.isLanding) {
                 System::eventMgr.triggerEvent(Event::LANDING_EVENT, mSelf);
             }
 
@@ -135,8 +136,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 rigidbody.momentumCooldownFrames--;
             }
         }
-
-        mSelf.set(rigidbody);
     }
 
     if (hitinfo) {
@@ -424,7 +423,11 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         moveVec = {0, toMoveRounded};
     }
     const auto prevColliderPos = AABB(mShape.getPosition() - moveVec, mShape.getHalf());
-    // TODO when debugging, saw toMoveRounded = -3, toMoveUnrounded = -4.11 ???
+
+    // RESEARCH this happens when the game first starts for some reason
+    if (abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) > 1) {
+        print("Rounding anomaly: Unrounded move value is", toMoveUnrounded, "but rounded value is ", toMoveRounded);
+    }
 
     const f32 dt = System::dt();
     auto mask = getCollisionLayersThatCanRideMe();

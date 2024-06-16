@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Physics/CollisionLayer.h"
 #include "Physics/Shapes.h"
 
 namespace whal {
@@ -16,9 +17,11 @@ using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 
 struct Trigger {
     Trigger() = default;
-    Trigger(Shape shape_, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr, TriggerCallback callbackStay = nullptr);
+    Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr,
+            TriggerCallback callbackStay = nullptr);
 
     Shape shape;
+    CollisionLayer::Layer layer;
     TriggerCallback onTriggerEnter;
     TriggerCallback onTriggerExit;
     TriggerCallback onTriggerStay;

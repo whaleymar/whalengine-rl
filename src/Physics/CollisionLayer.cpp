@@ -12,10 +12,11 @@ namespace CollisionLayer {
 // The Actor layer's line includes Solid, meaning they interact with each other.
 static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {None, None},
-    {Layer::Actor, Solid | SemiSolid | Trigger},
-    {Layer::Solid, SemiSolid | Light | Vision},
-    {Layer::SemiSolid, SemiSolid | Light | Vision},
-    {Layer::Trigger, Player | Enemy | Npc},
+    {Layer::Actor, Solid | SemiSolid | TriggerActors | TriggerPhysics},
+    {Layer::Solid, SemiSolid | Light | Vision | TriggerPhysics},
+    {Layer::SemiSolid, SemiSolid | Light | Vision | TriggerPhysics},
+    {Layer::TriggerPhysics, None},
+    {Layer::TriggerActors, None},
     {Layer::Player, Enemy | Npc},  // thinking of using this for player actions? not sure
     {Layer::Enemy, None},
     {Layer::Npc, None},

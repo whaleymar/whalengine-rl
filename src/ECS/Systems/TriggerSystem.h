@@ -14,7 +14,6 @@ public:
     void update() override;
 };
 
-// TODO remove this
-class MovableActorTracker : public ecs::ISystem<Transform2D, Velocity, Collider> {};
+class MovableColliders : public ecs::ISystem<Transform2D, Velocity, Collider> {};
 
 }  // namespace whal

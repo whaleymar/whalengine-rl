@@ -10,7 +10,7 @@
 #include "ECS/Velocity.h"
 #include "Game/Entities/Projectile.h"
 
-Vector2f closestCardinalDirection(Vector2f vecf) {
+Vector2f closestOrdinalDirection(Vector2f vecf) {
     vecf = vecf.norm();
     const f32 invRootTwo = 1.0f / std::sqrt(2.0f);
     auto tryUnitDir = [vecf](Vector2f& closest, f32& minDegreesAway, Vector2f other) {
@@ -84,7 +84,7 @@ void onBlasterFired(Vector2i target) {
         // change where the projectile starts (relative to shooting entity)
         Vector2i offset = {0, PIXELS_PER_TILE};
         Vector2i shotOrigin = trans.position + offset;
-        Vector2f moveNormal = closestCardinalDirection(toFloatVec(target - shotOrigin).norm());
+        Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
 
         Vector2f velocity;
         Blaster& blaster = entity.get<Blaster>();
@@ -109,11 +109,6 @@ ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener
 
 void onRocketJumperLands(whal::ecs::Entity entity) {
     if (entity.has<RocketJumping>()) {
-        // if (entity.has<whal::Name>()) {
-        //     print("removed RJ component for entity", entity.get<whal::Name>());
-        // } else {
-        //     print("remove RJ component for entity");
-        // }
         entity.remove<RocketJumping>();
     }
 }

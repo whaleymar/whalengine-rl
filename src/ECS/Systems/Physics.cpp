@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "ECS/PlayerControl.h"
+#include "Game/Components/Blaster.h"
 #include "Game/Events.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"

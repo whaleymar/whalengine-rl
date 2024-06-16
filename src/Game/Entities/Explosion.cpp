@@ -2,6 +2,7 @@
 
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
+#include "Physics/CollisionLayer.h"
 #include "Physics/Shapes.h"
 #include "Util/Print.h"
 #include "whalECS/src/ECS.h"
@@ -58,7 +59,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
         }
     };
     auto shape = Shape(Circle(trans, halflen));
-    auto trigger = Trigger(shape, pushEntityAway);
+    auto trigger = Trigger(shape, CollisionLayer::TriggerActors, pushEntityAway);
     entity.add(trigger);
 
     constexpr f32 lifetime = 0.5;

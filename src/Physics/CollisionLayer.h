@@ -15,12 +15,13 @@ enum Layer : u16 {
     Actor = 1,
     Solid = 1 << 1,
     SemiSolid = 1 << 2,
-    Trigger = 1 << 3,  // TODO TriggerActors
-    Player = 1 << 4,
-    Enemy = 1 << 5,
-    Npc = 1 << 6,
-    Light = 1 << 7,
-    Vision = 1 << 8,
+    TriggerPhysics = 1 << 3,
+    TriggerActors = 1 << 4,
+    Player = 1 << 5,
+    Enemy = 1 << 6,
+    Npc = 1 << 7,
+    Light = 1 << 8,
+    Vision = 1 << 9,
 };
 
 constexpr u16 ALL = 0xffff;
