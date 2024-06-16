@@ -40,7 +40,7 @@ public:
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
-    void setCollisionCallback(CollisionCallback callback) { mOnCollisionEnter = callback; }  // was virtual
+    void setCollisionCallback(CollisionCallback callback);
     WorldMaterial getMaterial() const { return mMaterial; }
     void setMaterial(WorldMaterial material) { mMaterial = material; }
     ecs::Entity getEntity() const { return mSelf; }

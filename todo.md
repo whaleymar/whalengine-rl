@@ -2,7 +2,6 @@
 
 ## Current Goal: 
 - collider consolidation:
-    - callback prioritization
     - misc TODOs
 - cleanup todos (finish player anims, dynamic spawn points)
 
@@ -38,19 +37,12 @@
 - outline shader
 
 ## Improving compile times:
-- make ECS shared pointers unique pointers which return raw pointers (callers don't need ownership) (DONE)
-    - then switch to `CorradePointer.h` for a drop-in replacement for unique_ptr which apparently makes compile times a lot better
 - would be GREAT to use the <iosfwd> include in Print.h and move the iostream import outside of the header file, but not sure how to do that bc it's templated
 - can maybe get <unordered_map> out of InputHandler.h and make it a static var in the source file
 - `CorradeOptional.h`
 - static functions / anonymous namespaces for functions that are only defined/used in source files
-- remove <memory> include in Tiled.h
 - move CallbackMap definition from Physics.h to source file, make it static variable
-- would like to remove ECS include in Relationships.h
     - Removing ECS include from System.h makes things slower for some reason
-
-    - making me think i need an ECS_fwd file or something, cause these things just need to know the size of an entity, but I could also just store an entity id? And then give ECS a getEntityByID func or something
-
 
 ## Misc
 - ECS lib tasks

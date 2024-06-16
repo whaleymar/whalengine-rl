@@ -22,17 +22,28 @@ void CollisionManager::update() {
     if (!mIsUpdateNeeded) {
         return;
     }
-    std::vector<Collider*> newColliderList;
 
-    // TODO need to put things with callbacks in the front like i do for solids (or do somethign smarter I feel like i had a good idea the other day)
+    // put colliders with callbacks first so they get priority in collision checks
+    // RESEARCH there's definitely a smarter way to do this
+    std::vector<Collider*> newColliderList;
+    std::vector<Collider*> newCallbackColliderList;
     for (auto [entityid, entity] : getEntitiesRef()) {
         auto pCollider = &entity.get<Collider>();
-        if (LAYER_MATRIX.isPhysicsLayer(pCollider->getCollisionLayer())) {
+        if (!LAYER_MATRIX.isPhysicsLayer(pCollider->getCollisionLayer())) {
+            continue;
+        }
+        if (pCollider->getOnCollisionEnter() == nullptr) {
             newColliderList.push_back(pCollider);
+        } else {
+            newCallbackColliderList.push_back(pCollider);
         }
     }
 
-    mPhysicsColliders = std::move(newColliderList);
+    mPhysicsColliders.clear();
+    mPhysicsColliders.reserve(newCallbackColliderList.size() + newColliderList.size());
+    mPhysicsColliders.insert(mPhysicsColliders.end(), newCallbackColliderList.begin(), newCallbackColliderList.end());
+    mPhysicsColliders.insert(mPhysicsColliders.end(), newColliderList.begin(), newColliderList.end());
+
     mIsUpdateNeeded = false;
 }
 
@@ -40,6 +51,9 @@ void CollisionManager::onAdd(ecs::Entity entity) {
     auto pCollider = &entity.get<Collider>();
     if (LAYER_MATRIX.isPhysicsLayer(pCollider->getCollisionLayer())) {
         mPhysicsColliders.push_back(pCollider);
+        if (pCollider->getOnCollisionEnter() != nullptr) {
+            mIsUpdateNeeded = true;
+        }
     }
     pCollider->setEntity(entity);
 }
@@ -47,43 +61,6 @@ void CollisionManager::onAdd(ecs::Entity entity) {
 void CollisionManager::onRemove(ecs::Entity entity) {
     mIsUpdateNeeded = true;
 }
-
-// void SolidsManager::update() {
-//     if (!mIsUpdateNeeded) {
-//         return;
-//     }
-//     // put colliders with callbacks first so they get priority in collision checks
-//     std::vector<SolidCollider*> newSolids;
-//     std::vector<SolidCollider*> newSolidsWithCallbacks;
-//     for (auto& [entityid, entity] : getEntitiesRef()) {
-//         auto pCollider = &entity.get<SolidCollider>();
-//         if (pCollider->getOnCollisionEnter() == nullptr) {
-//             newSolids.push_back(pCollider);
-//         } else {
-//             newSolidsWithCallbacks.push_back(pCollider);
-//         }
-//     }
-//
-//     mSolids.clear();
-//     mSolids.reserve(newSolidsWithCallbacks.size() + newSolids.size());
-//     mSolids.insert(mSolids.end(), newSolidsWithCallbacks.begin(), newSolidsWithCallbacks.end());
-//     mSolids.insert(mSolids.end(), newSolids.begin(), newSolids.end());
-//
-//     mIsUpdateNeeded = false;
-// }
-//
-// void SolidsManager::onAdd(ecs::Entity entity) {
-//     SolidCollider* pCollider = &entity.get<SolidCollider>();
-//     mSolids.push_back(pCollider);
-//     pCollider->setEntity(entity);
-//     if (pCollider->getOnCollisionEnter() != nullptr) {
-//         mIsUpdateNeeded = true;
-//     }
-// }
-//
-// void SolidsManager::onRemove(ecs::Entity entity) {
-//     mIsUpdateNeeded = true;
-// }
 
 #ifndef NDEBUG
 void drawColliders() {

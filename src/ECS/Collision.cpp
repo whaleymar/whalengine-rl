@@ -73,6 +73,14 @@ Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMater
     return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir);
 }
 
+void Collider::setCollisionCallback(CollisionCallback callback) {
+    bool wasNull = mOnCollisionEnter == nullptr;
+    mOnCollisionEnter = callback;
+    if (callback && wasNull) {
+        CollisionManager::instance()->setUpdateNeeded();
+    }
+}
+
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {
     if (updateRigidBodyFlags && !isX) {
         auto rigidbody = mSelf.get<RigidBody>();

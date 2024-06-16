@@ -54,8 +54,8 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 // So I have a helper function that makes sure they're unique
 void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
     auto& queue = PhysicsSystem::getCollisionCallbackQueue();
-    auto movingCollider = movingEntity.get<Collider>();
-    auto otherCollider = hitinfo.getOther().get<Collider>();
+    auto& movingCollider = movingEntity.get<Collider>();
+    auto& otherCollider = hitinfo.getOther().get<Collider>();
 
     auto addIfUnique = [](std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>& entityList, ecs::Entity callbackOwner, ecs::Entity other,
                           Collider* callbackOwnerCollider, Collider* otherCollider, Vector2i moveNormal) {

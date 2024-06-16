@@ -3,6 +3,7 @@
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
 #include "Physics/Shapes.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -78,6 +79,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     f32 maxDistance = 1500.0f;
     f32 volume = easeOutQuad(maxVolume, 0.0f, distance / maxDistance);
     System::audio.playClip(Sfx::EXPLOSION, volume, AudioPlayer::Filter::None, false, &trans.position);
+    // System::audio.playClip(Sfx::EXPLOSION, volume);
 
     return entity;
 }

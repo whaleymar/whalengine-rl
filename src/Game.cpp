@@ -179,7 +179,7 @@ void Game::mainloop() {
         // Only rendering remains, so we can do "end of frame" stuff now
         frameEndSystem->update();
         System::ecs->killEntities();
-        collisionMgr->update();
+        collisionMgr->update();  // this can definitely be done in parallel while rendering
         audioListenerSystem->update();
 
         animationSystem->update();
