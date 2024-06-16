@@ -2,6 +2,7 @@
 
 #include "Settings.h"
 #include "Systems/Event.h"
+#include "Systems/InputHandler.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -28,6 +29,7 @@ public:
 
 private:
     whal::EventListener<Vector2i> mBlasterEventListener;
+    whal::EventListener<whal::InputType, bool> mInputListener;
 };
 
 class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>, public whal::ecs::IMonitorSystem {

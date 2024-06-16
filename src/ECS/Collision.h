@@ -45,6 +45,8 @@ public:
     void setMaterial(WorldMaterial material) { mMaterial = material; }
     ecs::Entity getEntity() const { return mSelf; }
     void setEntity(ecs::Entity entity) { mSelf = entity; }
+    bool isAlive() const { return mIsAlive; }
+    void setIsDead() { mIsAlive = false; }
     bool isCollidable() const { return mIsCollidable; }
     void setIsCollidable(bool isCollidable) { mIsCollidable = isCollidable; }
     CollisionDir getCollisionDir() const { return mCollisionDir; }

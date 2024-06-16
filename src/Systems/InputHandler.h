@@ -25,7 +25,8 @@ enum class InputType : u64 {
     MUSICTEST = 1 << 14,
     RELOADSCENE = 1 << 15,
     TIMETEST = 1 << 16,
-    KILLPLAYER = 1 << 17
+    KILLPLAYER = 1 << 17,
+    AIM = 1 << 18
 };
 
 class InputHandler {
@@ -37,7 +38,19 @@ public:
     void reset(InputType input);
     void loadMappings() const;
     void useJump();
-    bool isOn(InputType input);
+    bool isOn(InputType input) const;
+    Vector2i getMoveNormal() const;
+
+    void disableInputs(u64 mask);
+    void enableInputs(u64 mask);
+    bool isInputEnabled(InputType input) const;
+
+    void disableMovement() { mIsMovementEnabled = false; }
+    void enableMovement() { mIsMovementEnabled = true; }
+    bool isMovementEnabled() const { return mIsMovementEnabled; }
+    void disableJumping() { mIsJumpingEnabled = false; }
+    void enableJumping() { mIsJumpingEnabled = true; }
+    bool isJumpingEnabled() const { return mIsJumpingEnabled; }
 
     bool isJumpAvailable() const { return mIsJumpPressed; }
 
@@ -51,7 +64,10 @@ private:
     void operator=(const InputHandler&) = delete;
 
     u64 mFlags = 0;
+    u64 mDeactivationFlags = 0;  // for inputs which are disabled
     bool mIsJumpPressed = false;
+    bool mIsMovementEnabled = true;
+    bool mIsJumpingEnabled = true;
 };
 
 }  // namespace whal

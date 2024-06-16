@@ -23,20 +23,43 @@ using namespace whal;
 
 void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
+
+    Vector2f pushStrength = {100, 100};
     f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
         Vector2i pos = self.get<Transform2D>().position;
-        makeExplosionZone(pos, explosionRadius);
+        makeExplosionZone(pos, explosionRadius, pushStrength);
     }
 }
 
 void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
+    if (!selfCollider->isAlive()) {
+        return;
+    }
+
+    Vector2f pushStrength = {100, 100};
     f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
         Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
-        makeExplosionZone(pos, explosionRadius);
+        makeExplosionZone(pos, explosionRadius, pushStrength);
     }
     self.kill();
+    selfCollider->setIsDead();
+}
+
+void ExplodeDownwardAngle(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
+    if (!selfCollider->isAlive()) {
+        return;
+    }
+
+    Vector2f pushStrength = {100, 150};
+    f32 explosionRadius = self.get<Circle>().getRadius();
+    if (explosionRadius > 0) {
+        Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
+        makeExplosionZone(pos, explosionRadius, pushStrength);
+    }
+    self.kill();
+    selfCollider->setIsDead();
 }
 
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
@@ -77,7 +100,9 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
 
     // add collider slightly after creation so it doesn't collide with shooter
     // TODO make this a trigger
-    Collider collider = Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None, &Explode);
+    const bool isDownwardAngle = velocity.x() != 0 && velocity.y() < 0;
+    Collider collider = Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None,
+                                 isDownwardAngle ? &ExplodeDownwardAngle : &Explode);
     collider.setIsCollidable(false);
     entity.add(collider);
 

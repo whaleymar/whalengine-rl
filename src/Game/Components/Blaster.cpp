@@ -75,18 +75,24 @@ Vector2f closestOrdinalDirection(Vector2f vecf) {
     }
 }
 
-void onBlasterFired(Vector2i target) {
+// void onBlasterFired(Vector2i target) {
+void onBlasterFired(Vector2i moveNormali) {
     using namespace whal;
     if (System::isPaused()) {
         return;
     }
+
+    Vector2f moveNormal = toFloatVec(moveNormali);
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
 
         // change where the projectile starts (relative to shooting entity)
         Vector2i offset = {0, PIXELS_PER_TILE};
         Vector2i shotOrigin = trans.position + offset;
-        Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
+        // Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
+        if (moveNormali.isZero()) {
+            moveNormal.e[0] = trans.facing == Facing::Left ? -1 : 1;
+        }
 
         Vector2f velocity;
         Blaster& blaster = entity.get<Blaster>();
@@ -105,8 +111,32 @@ void onBlasterFired(Vector2i target) {
     }
 }
 
-ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)) {
+void onKeyPressOrRelease(whal::InputType input, bool isPress) {
+    if (input != whal::InputType::AIM) {
+        return;
+    }
+
+    if (isPress) {
+        // deactivate movement controls; those keys are now for aiming
+        whal::System::input.disableMovement();
+        whal::System::input.disableJumping();
+
+    } else {
+        // slight delay for enabling movement so player can adjust arrow keys
+        whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.1);
+        // but allow jumping immediately
+        whal::System::input.enableJumping();
+        Vector2i moveNormal = whal::System::input.getMoveNormal();
+        whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
+    }
+}
+
+ProjectileSystem::ProjectileSystem()
+    : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)),
+      mInputListener(whal::EventListener<whal::InputType, bool>(&onKeyPressOrRelease)) {
     whal::System::eventMgr.registerListener(GameEvent::SHOOT_EVENT, mBlasterEventListener);
+
+    whal::System::eventMgr.registerListener(whal::Event::BUTTON_EVENT_PRESSRELEASE, mInputListener);
 }
 
 void onRocketJumperLands(whal::ecs::Entity entity) {

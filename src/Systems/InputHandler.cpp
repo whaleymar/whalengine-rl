@@ -3,10 +3,10 @@
 #include <raylib.h>
 
 #include "Events/Events.h"
-#include "Gfx/Coordinates.h"
+// #include "Gfx/Coordinates.h"
 #include "System.h"
 
-#include "Game/Events.h"
+// #include "Game/Events.h"
 
 namespace whal {
 
@@ -16,6 +16,10 @@ InputHandler::InputHandler() {
 
 void InputHandler::update() {
     for (auto [key, inputType] : KeyMap) {
+        if (!isInputEnabled(inputType)) {
+            continue;
+        }
+
         if (IsKeyPressed(key)) {
             set(inputType);
         } else if (IsKeyReleased(key)) {
@@ -46,7 +50,7 @@ void InputHandler::set(InputType input) {
 
     case InputType::SHOOT: {
         // RESEARCH whoever listens for this event should listen for MOUSE event
-        System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, screenToWorldCoords(MousePosition));
+        // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, screenToWorldCoords(MousePosition));
         mFlags |= static_cast<u64>(input);
         break;
     }
@@ -59,7 +63,9 @@ void InputHandler::set(InputType input) {
         mFlags |= static_cast<u64>(input);
     }
     }
-    System::eventMgr.triggerEvent(Event::BUTTON_EVENT, input);
+
+    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESS, input);
+    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESSRELEASE, input, true);
 }
 
 void InputHandler::reset(InputType input) {
@@ -75,6 +81,7 @@ void InputHandler::reset(InputType input) {
     default:
         mFlags &= ~static_cast<u64>(input);
     }
+    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESSRELEASE, input, false);
 }
 
 void InputHandler::loadMappings() const {
@@ -83,19 +90,28 @@ void InputHandler::loadMappings() const {
     KeyMap.clear();
     MouseMap.clear();
 
-    KeyMap.insert({KEY_A, InputType::LEFT});
-    KeyMap.insert({KEY_D, InputType::RIGHT});
-    KeyMap.insert({KEY_W, InputType::UP});
-    KeyMap.insert({KEY_S, InputType::DOWN});
-    KeyMap.insert({KEY_SPACE, InputType::JUMP});
+    // KeyMap.insert({KEY_A, InputType::LEFT});
+    // KeyMap.insert({KEY_D, InputType::RIGHT});
+    // KeyMap.insert({KEY_W, InputType::UP});
+    // KeyMap.insert({KEY_S, InputType::DOWN});
+    // KeyMap.insert({KEY_SPACE, InputType::JUMP});
+    // KeyMap.insert({KEY_ESCAPE, InputType::PAUSE});
+    // KeyMap.insert({KEY_ENTER, InputType::OK});
+    // KeyMap.insert({KEY_LEFT, InputType::LEFT});
+    // KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
+    // KeyMap.insert({KEY_UP, InputType::UP});
+    // KeyMap.insert({KEY_DOWN, InputType::DOWN});
+    //
+    // MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
+
+    KeyMap.insert({KEY_UP, InputType::UP});
+    KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
+    KeyMap.insert({KEY_DOWN, InputType::DOWN});
+    KeyMap.insert({KEY_LEFT, InputType::LEFT});
+    KeyMap.insert({KEY_C, InputType::JUMP});
+    KeyMap.insert({KEY_X, InputType::AIM});
     KeyMap.insert({KEY_ESCAPE, InputType::PAUSE});
     KeyMap.insert({KEY_ENTER, InputType::OK});
-    KeyMap.insert({KEY_LEFT, InputType::LEFT});
-    KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
-    KeyMap.insert({KEY_UP, InputType::UP});
-    KeyMap.insert({KEY_DOWN, InputType::DOWN});
-
-    MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
 
 #ifndef NDEBUG
     KeyMap.insert({KEY_ZERO, InputType::DEBUG});
@@ -114,9 +130,40 @@ void InputHandler::useJump() {
     mIsJumpPressed = false;
 }
 
-bool InputHandler::isOn(InputType input) {
+bool InputHandler::isOn(InputType input) const {
     auto mask = static_cast<u64>(input);
+    // return (mFlags & mask & !mDeactivationFlags) == mask; // BROKEN
     return (mFlags & mask) == mask;
+}
+
+Vector2i InputHandler::getMoveNormal() const {
+    Vector2i moveNormal{};
+    if (isOn(InputType::UP)) {
+        moveNormal.e[1] = 1;
+    } else if (isOn(InputType::DOWN)) {
+        moveNormal.e[1] = -1;
+    }
+
+    if (isOn(InputType::RIGHT)) {
+        moveNormal.e[0] = 1;
+    } else if (isOn(InputType::LEFT)) {
+        moveNormal.e[0] = -1;
+    }
+
+    return moveNormal;
+}
+
+void InputHandler::disableInputs(u64 mask) {
+    mDeactivationFlags |= mask;
+}
+
+void InputHandler::enableInputs(u64 mask) {
+    mDeactivationFlags &= !mask;
+}
+
+bool InputHandler::isInputEnabled(InputType input) const {
+    auto mask = static_cast<u64>(input);
+    return !((mask & mDeactivationFlags) > 0);
 }
 
 }  // namespace whal

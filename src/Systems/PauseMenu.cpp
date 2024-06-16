@@ -19,7 +19,7 @@ s32 pythonMod(s32 a, s32 b) {
 }
 
 PauseMenu::PauseMenu() : mInputListener(&buttonCallback) {
-    System::eventMgr.registerListener(Event::BUTTON_EVENT, mInputListener);
+    System::eventMgr.registerListener(Event::BUTTON_EVENT_PRESS, mInputListener);
 }
 
 void PauseMenu::onButtonPressed(InputType input) {

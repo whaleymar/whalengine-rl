@@ -3,6 +3,7 @@
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
 #include "Physics/CollisionLayer.h"
+#include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
 #include "Util/Print.h"
 #include "whalECS/src/ECS.h"
@@ -20,7 +21,11 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
-Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
+struct PushStrength {
+    Vector2f strength;
+};
+
+Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength) {
     using namespace whal;
 
     auto eEntity = System::ecs->entity(false);
@@ -34,6 +39,8 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
     Transform2D trans = Transform2D(center - Vector2i(0, halflen));
     entity.add(trans);
 
+    entity.add(PushStrength(pushStrength));
+
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
         const auto& otherCollider = other.get<Collider>().getShape();
 
@@ -44,13 +51,13 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen) {
 
         // slight knockback falloff based on distance
         auto circle = trigger.shape.getCircle();
-        f32 pushMult = 1 - std::pow(circle.getDistanceFromCenter(&otherCollider) / circle.getRadius(), 2);
-
-        const Vector2f pushStrengthMax = {100, 100};
+        f32 distanceMultiplier = 1 - std::pow(circle.getDistanceFromCenter(&otherCollider) / circle.getRadius(), 2);
+        PushStrength cPushStrength = self.get<PushStrength>();
 
         Velocity& vel = other.get<Velocity>();
         // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
-        vel.stable += unitDelta * pushStrengthMax * pushMult;
+        auto impulse = unitDelta * distanceMultiplier * cPushStrength.strength;
+        vel.stable += impulse;
 
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT

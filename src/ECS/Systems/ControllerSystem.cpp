@@ -14,7 +14,7 @@ namespace whal {
 constexpr f32 APPROACH_SPEED_X = 7.5;  // 5 frames to max speed
 
 void ControllerSystem::update() {
-    if (System::isPaused()) {
+    if (!System::input.isMovementEnabled() || System::isPaused()) {
         return;
     }
 
@@ -59,7 +59,7 @@ void ControllerSystem::update() {
 }
 
 void FreeControlSystem::update() {
-    if (System::isPaused()) {
+    if (!System::input.isMovementEnabled() || System::isPaused()) {
         return;
     }
 
@@ -87,7 +87,7 @@ void FreeControlSystem::update() {
 }
 
 void JumpSystem::update() {
-    if (System::isPaused()) {  // TODO should use Pausable system attribute for this instead
+    if (!System::input.isJumpingEnabled() || System::isPaused()) {  // TODO should use Pausable system attribute for this instead
         return;
     }
 
