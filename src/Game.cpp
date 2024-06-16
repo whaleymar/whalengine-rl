@@ -14,10 +14,12 @@
 #include "ECS/Systems/RelationshipManager.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Systems/TriggerSystem.h"
-#include "Game/Components/Blaster.h"
 
+#include "Events/Listeners.h"
+
+#include "Game/Components/Blaster.h"
 #include "Game/DebugScene.h"
-#include "Game/EventListeners.h"
+
 #include "Gfx/Texture.h"
 #include "Map/Level.h"
 #include "Map/Tiled.h"
@@ -91,7 +93,6 @@ bool Game::startup() {
     }
     System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
-    startListeners();
 
     return false;
 }
@@ -282,7 +283,6 @@ void Game::mainloop() {
 void Game::end() {
     System::schedule.end();
     System::schedule.await();
-    killListeners();
 
     // raylib stuff:
     TextureManager::instance().unloadAll();

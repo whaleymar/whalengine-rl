@@ -8,7 +8,7 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
-#include "Game/Events.h"  // TODO using event for core logic, should bring those into engine
+#include "Events/Events.h"
 #include "Physics/CollisionLayer.h"
 #include "Settings.h"
 

@@ -1,0 +1,25 @@
+#include "RespawnSystem.h"
+
+#include "ECS/Draw.h"
+#include "Systems/System.h"
+
+static void respawnOnDeath(whal::ecs::Entity entity) {
+    if (!RespawnListener::getEntitiesRef().contains(entity.id())) {
+        return;
+    }
+
+    auto respawn = entity.get<Respawn>();
+    whal::Sprite sprite;  // needs to be created in main thread bc OpenGL
+
+    // clang-format off
+    whal::System::schedule.eventFlow()
+        .add(respawn.onDeath)
+        .addWait(respawn.waitTime)
+        .add(respawn.respawnCallback, sprite)
+        .add(respawn.onRespawn);
+    // clang-format on
+}
+
+RespawnListener::RespawnListener() : mDeathListener(whal::EventListener<whal::ecs::Entity>(&respawnOnDeath)) {
+    whal::System::eventMgr.registerListener(whal::Event::DEATH_EVENT, mDeathListener);
+}

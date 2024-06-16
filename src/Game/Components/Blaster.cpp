@@ -1,14 +1,16 @@
 #include "Blaster.h"
 
-#include "ECS/RigidBody.h"
-#include "Game/Events.h"
+#include "Events/Events.h"
 #include "Systems/Event.h"
 #include "Systems/System.h"
 #include "Util/Vector.h"
 
+#include "ECS/RigidBody.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
+
 #include "Game/Entities/Projectile.h"
+#include "Game/Events.h"
 
 Vector2f closestOrdinalDirection(Vector2f vecf) {
     vecf = vecf.norm();
@@ -104,7 +106,7 @@ void onBlasterFired(Vector2i target) {
 }
 
 ProjectileSystem::ProjectileSystem() : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)) {
-    whal::System::eventMgr.registerListener(whal::Event::SHOOT_EVENT, mBlasterEventListener);
+    whal::System::eventMgr.registerListener(GameEvent::SHOOT_EVENT, mBlasterEventListener);
 }
 
 void onRocketJumperLands(whal::ecs::Entity entity) {

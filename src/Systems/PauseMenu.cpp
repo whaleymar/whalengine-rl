@@ -1,7 +1,7 @@
 #include "PauseMenu.h"
 #include <raylib.h>
 
-#include "Game/Events.h"
+#include "Events/Events.h"
 #include "Settings.h"
 #include "System.h"
 

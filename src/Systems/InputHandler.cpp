@@ -2,9 +2,11 @@
 
 #include <raylib.h>
 
-#include "Game/Events.h"
+#include "Events/Events.h"
 #include "Gfx/Coordinates.h"
 #include "System.h"
+
+#include "Game/Events.h"
 
 namespace whal {
 
@@ -44,7 +46,7 @@ void InputHandler::set(InputType input) {
 
     case InputType::SHOOT: {
         // RESEARCH whoever listens for this event should listen for MOUSE event
-        System::eventMgr.triggerEvent(Event::SHOOT_EVENT, screenToWorldCoords(MousePosition));
+        System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, screenToWorldCoords(MousePosition));
         mFlags |= static_cast<u64>(input);
         break;
     }

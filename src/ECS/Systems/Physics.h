@@ -25,7 +25,7 @@ public:
     static CallbackMap& getCollisionCallbackQueue() { return mCollisionCallbackQueue; }
 
 private:
-    whal::EventListener<ecs::Entity, HitInfo> mCollisionListener;
+    EventListener<ecs::Entity, HitInfo> mCollisionListener;
     inline static CallbackMap mCollisionCallbackQueue;
 };
 

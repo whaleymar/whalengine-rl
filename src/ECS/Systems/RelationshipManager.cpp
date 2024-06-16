@@ -5,7 +5,7 @@
 #include "ECS/Relationships.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
-#include "Game/Events.h"
+#include "Events/Events.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
