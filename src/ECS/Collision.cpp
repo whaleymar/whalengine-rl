@@ -111,6 +111,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             rigidbody.isLanding = !wasGrounded;
             if (rigidbody.isLanding) {
                 System::eventMgr.triggerEvent(Event::LANDING_EVENT, mSelf);
+                rigidbody.framesSinceLanding = 0;
             }
 
             if (hasMomentum) {

@@ -17,6 +17,7 @@
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -107,7 +108,9 @@ void PhysicsSystem::update() {
         auto rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
         if (rbOpt) {
-            frictionMultiplier = (*rbOpt)->frictionMultiplier;
+            f32 justLandedMultiplier = std::max(1.0f, static_cast<f32>((*rbOpt)->framesSinceLanding) / 60.0f);
+            frictionMultiplier = (*rbOpt)->frictionMultiplier * Vector2f(justLandedMultiplier, 1.0);
+            (*rbOpt)->framesSinceLanding++;
         }
 
         const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x();

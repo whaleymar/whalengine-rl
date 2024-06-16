@@ -17,6 +17,7 @@ struct RigidBody {
 
     // automatically managed:
     s32 momentumCooldownFrames = 0;
+    s32 framesSinceLanding = 0;
     WorldMaterial groundMaterial = WorldMaterial::None;
     bool isLanding = false;
     bool isGrounded = false;

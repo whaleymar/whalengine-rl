@@ -6,7 +6,6 @@
 - cleanup todos (finish player anims, dynamic spawn points)
 
 ## Controls 
-- try making controls more like towerfall
 
 ## Camera / Follow
 - different movement types (easein/out stuff)
@@ -46,8 +45,6 @@
 ## Misc
 - ECS lib tasks
 - Logger queue that runs on another thread
-- rework controller system to be manually called by Event
-    - better way to remove player input: an event listener which has higher priority and can stop other listeners for the same event for running. 
 - put camera transform in screen precision coordinates to reduce jiggle ? (saint11 blog about it)
 
 ## Bugs
