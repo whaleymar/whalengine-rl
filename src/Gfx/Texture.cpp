@@ -12,6 +12,8 @@
 #include "Settings.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
+#include "Util/Vector.h"
+#include "raylib/src/raylib.h"
 
 #define RAPIDXML_NO_EXCEPTIONS
 #include "RapidXML/rapidxml.hpp"
@@ -276,9 +278,10 @@ void TextureManager::drawBackgroundTextures() {
     const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
     Rectangle screenSourceRec;
 
-    const Vector2i cameraPos = getCameraPosition();
+    // const Vector2f cameraPos = getCameraPositionPrecise();
+    const Vector2f cameraPos = toFloatVec(getCameraPosition());
 
-    auto checkWrapping = [](const Vector2i cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
+    auto checkWrapping = [](const Vector2f cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
         f32 distance = cameraPos.x() - (bgdata.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
         s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x());
         s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x()));
@@ -410,6 +413,8 @@ void TextureManager::unloadAll() {
     if (mBGTextureNear) {
         UnloadRenderTexture(*mBGTextureNear);
     }
+
+    UnloadRenderTexture(mLightingTexture);
 }
 
 }  // namespace whal

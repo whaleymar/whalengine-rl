@@ -155,7 +155,7 @@ void Game::mainloop() {
     while (!WindowShouldClose() && !System::isQuit()) {
         System::input.update();
         if (System::frame.getFrame() == 0) {
-            Vector2f cameraPos = toFloatVec(getCameraPosition());
+            Vector2f cameraPos = getCameraPositionPrecise();
             updateLoadedLevels(cameraPos);
         }
 
@@ -241,6 +241,10 @@ void Game::mainloop() {
         EndTextureMode();
         // -----------------------------------------------------------------------
         // ECS DRAW END
+        // Vector2f cameraPosf = getCameraPositionPrecise();
+        // auto filename = sprint(cameraPosf, "_.png");
+        // Image img = LoadImageFromTexture(targetTexture.texture);
+        // ExportImage(img, filename.c_str());
 
         // POST PROCESSING EFFECTS START
         // -----------------------------------------------------------------------

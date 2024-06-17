@@ -20,4 +20,10 @@ struct Transform2D {
     static Transform2D tiles(s32 x, s32 y);
 };
 
+struct PrecisePosition {
+    Vector2f position;
+
+    static PrecisePosition fromTrans(Transform2D trans) { return PrecisePosition{toFloatVec(trans.position)}; }
+};
+
 }  // namespace whal

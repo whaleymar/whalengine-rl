@@ -93,6 +93,10 @@ void PhysicsSystem::update() {
         if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
             (*colliderOpt)->getShapeMutable().setPosition(trans);
         }
+
+        if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
+            (*precisePositionOpt)->position = toFloatVec(trans.position);
+        }
     }
 
     std::vector<ecs::Entity> allColliderEntities;
@@ -146,8 +150,17 @@ void PhysicsSystem::update() {
             (*colliderOpt)->move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
             allColliderEntities.push_back(entity);
         } else {
-            // TODO should store remainder like i do with colliders
-            trans.position += Vector2i(std::round(move.x()), std::round(move.y()));
+            if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
+                (*precisePositionOpt)->position += move;
+                trans.position = Vector2i(std::round((*precisePositionOpt)->position.x()), std::round((*precisePositionOpt)->position.y()));
+                if (move.len() < 0.1) {
+                    // clamp precise position to integer coordinates if we're not moving
+                    (*precisePositionOpt)->position = toFloatVec(trans.position);
+                }
+            } else {
+                // TODO should store remainder like i do with colliders
+                trans.position += Vector2i(std::round(move.x()), std::round(move.y()));
+            }
         }
         // ----------------------------------------------------------------
 
@@ -200,6 +213,9 @@ void PhysicsSystem::update() {
         Transform2D& trans = entity.get<Transform2D>();
         // position is bottom-middle of collider
         trans.position = entity.get<Collider>().getShape().getPositionEdge(Vector2i::unitDown);
+        if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
+            (*precisePositionOpt)->position = toFloatVec(trans.position);
+        }
     }
 
     // do collision callbacks

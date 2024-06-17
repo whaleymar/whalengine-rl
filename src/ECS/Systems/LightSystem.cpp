@@ -15,7 +15,8 @@ namespace whal {
 const Color COLOR_AMBIENT = Color(150, 150, 150, 255);  // TODO should be set in level
 
 void PointLightSystem::update() {
-    auto cameraPos = getCameraPosition();
+    // auto cameraPos = getCameraPositionPrecise();
+    auto cameraPos = toFloatVec(getCameraPosition());
     BeginTextureMode(TextureManager::instance().getLightingTexture());
     BeginMode2D(*Game::instance().getWorldCamera());
 
@@ -24,22 +25,23 @@ void PointLightSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
-        Vector2i screenPosition = {worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y()};
+        Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
+        Color color = Color(light.color.red, light.color.blue, light.color.green, 255);
 
-        // for entities with lifetimes, fade out in last second
+        // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
         auto lifetimeOpt = entity.tryGet<Lifetime>();
         if (lifetimeOpt) {
-            if ((*lifetimeOpt)->secondsRemaining < 1) {
-                intensity = (*lifetimeOpt)->secondsRemaining / 1;
+            if ((*lifetimeOpt)->secondsRemaining < 0.25) {
+                intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
+                color.r = std::lerp(COLOR_AMBIENT.r, color.r, intensity);
+                color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
+                color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
+                color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
             }
         }
 
-        s32 alpha = static_cast<s32>(std::lerp(COLOR_AMBIENT.a, 255.0f, intensity));
-        Color color = Color(light.color.red, light.color.blue, light.color.green, alpha);
-        Color ambient = COLOR_AMBIENT;
-        ambient.a = alpha;
-        DrawCircleGradient(screenPosition.x(), screenPosition.y(), light.radius, color, ambient);
+        DrawCircleGradient(screenPosition.x(), screenPosition.y(), light.radius, color, COLOR_AMBIENT);
     }
 
     EndMode2D();

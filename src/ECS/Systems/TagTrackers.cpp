@@ -36,6 +36,15 @@ Vector2i getCameraPosition() {
     return lastPos;
 }
 
+Vector2f getCameraPositionPrecise() {
+    static Vector2f lastPos;
+    auto eOpt = getCamera();
+    if (eOpt) {
+        lastPos = eOpt->get<PrecisePosition>().position;
+    }
+    return lastPos;
+}
+
 void setCameraPosition(Vector2i pos) {
     auto eOpt = getCamera();
     if (eOpt) {

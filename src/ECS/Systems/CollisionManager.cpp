@@ -64,6 +64,7 @@ void CollisionManager::onRemove(ecs::Entity entity) {
 
 #ifndef NDEBUG
 void drawColliders() {
+    // auto cameraPos = getCameraPositionPrecise();
     auto cameraPos = toFloatVec(getCameraPosition());
     for (const auto collider : CollisionManager::instance()->getPhysicsColliders()) {
         Color color;
