@@ -1,5 +1,6 @@
 #include "LightSystem.h"
 
+#include <cmath>
 #include <raylib.h>
 
 #include "ECS/Lifetime.h"
@@ -11,7 +12,7 @@
 
 namespace whal {
 
-const Color COLOR_AMBIENT = Color(50, 50, 50, 255);  // TODO should be set in level
+const Color COLOR_AMBIENT = Color(150, 150, 150, 255);  // TODO should be set in level
 
 void PointLightSystem::update() {
     auto cameraPos = getCameraPosition();
@@ -34,7 +35,7 @@ void PointLightSystem::update() {
             }
         }
 
-        s32 alpha = static_cast<s32>(255.0f * intensity);
+        s32 alpha = static_cast<s32>(std::lerp(COLOR_AMBIENT.a, 255.0f, intensity));
         Color color = Color(light.color.red, light.color.blue, light.color.green, alpha);
         Color ambient = COLOR_AMBIENT;
         ambient.a = alpha;

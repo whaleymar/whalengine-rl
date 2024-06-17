@@ -223,18 +223,20 @@ void Game::mainloop() {
         spriteSystem->drawEntities();
         drawSystem->drawEntities();
 
-#ifndef NDEBUG
-        if (System::input.isOn(InputType::DEBUG)) {
-            drawDebugSystem->drawEntities();
-            drawColliders();
-        }
-#endif
-
         EndMode2D();
 
         BeginBlendMode(BLEND_MULTIPLIED);
         TextureManager::instance().drawLightingTexture();
         EndBlendMode();
+
+#ifndef NDEBUG
+        BeginMode2D(*mWorldSpaceCamera);
+        if (System::input.isOn(InputType::DEBUG)) {
+            drawDebugSystem->drawEntities();
+            drawColliders();
+        }
+        EndMode2D();
+#endif
 
         EndTextureMode();
         // -----------------------------------------------------------------------

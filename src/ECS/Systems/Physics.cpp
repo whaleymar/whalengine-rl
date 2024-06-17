@@ -108,9 +108,11 @@ void PhysicsSystem::update() {
         auto rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
         if (rbOpt) {
-            f32 justLandedMultiplier = std::max(1.0f, static_cast<f32>((*rbOpt)->framesSinceLanding) / 60.0f);
-            frictionMultiplier = (*rbOpt)->frictionMultiplier * Vector2f(justLandedMultiplier, 1.0);
-            (*rbOpt)->framesSinceLanding++;
+            // DOESNT WORK TODO
+            // f32 justLandedMultiplier = std::max(1.0f, static_cast<f32>((*rbOpt)->framesSinceLanding) / 60.0f);
+            // frictionMultiplier = (*rbOpt)->frictionMultiplier * Vector2f(justLandedMultiplier, 1.0);
+            // (*rbOpt)->framesSinceLanding++;
+            frictionMultiplier = (*rbOpt)->frictionMultiplier;
         }
 
         const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x();
