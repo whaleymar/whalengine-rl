@@ -9,6 +9,7 @@
 #include "ECS/Systems/ControllerSystem.h"
 #include "ECS/Systems/Gfx.h"
 #include "ECS/Systems/Lifetime.h"
+#include "ECS/Systems/LightSystem.h"
 #include "ECS/Systems/Physics.h"
 #include "ECS/Systems/Rails.h"
 #include "ECS/Systems/RelationshipManager.h"
@@ -19,6 +20,7 @@
 
 #include "Game/Components/Blaster.h"
 #include "Game/DebugScene.h"
+#include "Game/Systems/RespawnSystem.h"
 
 #include "Gfx/Texture.h"
 #include "Map/Level.h"
@@ -113,6 +115,7 @@ void Game::mainloop() {
     auto followSystem = System::world->registerSystem<FollowSystem>();
     auto attachSystem = System::world->registerSystem<AttachSystem>();
     auto audioListenerSystem = AudioListenerSystem::instance();
+    auto lightSystem = System::world->registerSystem<PointLightSystem>();
 
     // single-component systems for running psuedo-destructors / updating some global var
     auto collisionMgr = CollisionManager::instance();
@@ -124,6 +127,7 @@ void Game::mainloop() {
     System::world->registerSystem<ProjectileSystem>();
     System::world->registerSystem<RocketJumpingSystem>();
     System::world->registerSystem<MovableColliders>();  // dependency of TriggerSystem
+    System::world->registerSystem<RespawnListener>();
 
     // load scene
     auto err = loadTestMap();
@@ -206,6 +210,8 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
+        lightSystem->update();  // this gets drawn to its own texture
+
         BeginTextureMode(targetTexture);
 
         ClearBackground(clearColor);
@@ -225,6 +231,11 @@ void Game::mainloop() {
 #endif
 
         EndMode2D();
+
+        BeginBlendMode(BLEND_MULTIPLIED);
+        TextureManager::instance().drawLightingTexture();
+        EndBlendMode();
+
         EndTextureMode();
         // -----------------------------------------------------------------------
         // ECS DRAW END

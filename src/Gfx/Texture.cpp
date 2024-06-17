@@ -126,7 +126,8 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToTexture(cons
 }
 
 TextureManager::TextureManager()
-    : mBGTextureStatic(RenderTexture2D()), mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
+    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS)), mBGTextureStatic(RenderTexture2D()),
+      mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
@@ -379,6 +380,14 @@ void TextureManager::drawBackgroundTextures() {
     if (mBGTextureNear) {
         drawBackgrounds(*mBGTextureNear, screenSourceRec, mBGDataNear, mScrollNear);
     }
+}
+
+void TextureManager::drawLightingTexture() {
+    Rectangle screenSourceRec =
+        Rectangle(0.0f, 0.0f, static_cast<f32>(mLightingTexture.texture.width), -1 * static_cast<f32>(mLightingTexture.texture.height));
+    Rectangle dstRect(0, 0, mLightingTexture.texture.width, mLightingTexture.texture.height);
+
+    DrawTexturePro(mLightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
 }
 
 void TextureManager::unloadAll() {

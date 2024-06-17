@@ -1,10 +1,12 @@
 #include "Explosion.h"
 
+#include "ECS/Light.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
+#include "Settings.h"
 #include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
@@ -80,6 +82,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
 
     entity.add(Lifetime(lifetime));
+    entity.add(PointLight({PIXELS_PER_TILE * 3, halflen}));
 
     // scale volume with distance from camera
     f32 distance = toFloatVec(getCameraPosition() - trans.position).len();

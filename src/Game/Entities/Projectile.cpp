@@ -1,5 +1,6 @@
 #include "Projectile.h"
 
+#include "ECS/Light.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/Material.h"
 #include "Physics/Shapes.h"
@@ -89,6 +90,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     entity.add(Name("PROJECTILE"));
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
     entity.add(Circle(Vector2i(), explosionRadius));
+    entity.add(PointLight({PIXELS_PER_TILE * 2, halflenPixels}));
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;

@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include "ECS/Light.h"
 #include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 
@@ -207,6 +208,8 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();
     // player.add<FreeControl>();
+
+    player.add(PointLight{PIXELS_PER_TILE * 5, halfLenY});
 
     player.add(Respawn{2, &respawnPlayer,
                        []() {
