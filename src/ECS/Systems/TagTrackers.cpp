@@ -6,17 +6,17 @@
 namespace whal {
 
 PlayerSystem* PlayerSystem::instance() {
-    static auto instance_ = System::ecs->registerSystem<PlayerSystem>();
+    static auto instance_ = System::world->registerSystem<PlayerSystem>();
     return instance_;
 }
 
 CameraSystem* CameraSystem::instance() {
-    static auto instance_ = System::ecs->registerSystem<CameraSystem>(ecs::SystemManager::UniqueEntity);
+    static auto instance_ = System::world->registerSystem<CameraSystem>(ecs::SystemManager::UniqueEntity);
     return instance_;
 }
 
 AudioListenerSystem* AudioListenerSystem::instance() {
-    static auto instance_ = System::ecs->registerSystem<AudioListenerSystem>(ecs::SystemManager::UniqueEntity);
+    static auto instance_ = System::world->registerSystem<AudioListenerSystem>(ecs::SystemManager::UniqueEntity);
     return instance_;
 }
 

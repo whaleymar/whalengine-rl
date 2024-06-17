@@ -15,7 +15,7 @@
 namespace whal {
 
 Expected<ecs::Entity> createCamera(ecs::Entity target) {
-    auto expected = System::ecs->entity(false);
+    auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected;
     }

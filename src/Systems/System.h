@@ -19,7 +19,7 @@ struct System {
     inline static EventManager eventMgr;
     inline static AudioPlayer audio;
     inline static JobScheduler schedule;
-    inline static ecs::ECS* ecs = &ecs::ECS::getInstance();
+    inline static ecs::World* world = &ecs::World::getInstance();
 
     static void setPaused(bool pause) {
         if (pause) {

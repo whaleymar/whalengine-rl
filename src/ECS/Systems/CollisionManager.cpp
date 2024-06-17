@@ -14,7 +14,7 @@
 namespace whal {
 
 CollisionManager* CollisionManager::instance() {
-    static auto instance_ = System::ecs->registerSystem<CollisionManager>();
+    static auto instance_ = System::world->registerSystem<CollisionManager>();
     return instance_;
 }
 

@@ -13,7 +13,7 @@
 namespace whal {
 
 EntityChildSystem* EntityChildSystem::instance() {
-    static auto instance_ = System::ecs->registerSystem<EntityChildSystem>();
+    static auto instance_ = System::world->registerSystem<EntityChildSystem>();
     return instance_;
 }
 

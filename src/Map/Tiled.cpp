@@ -170,7 +170,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
 
-        auto eEntity = System::ecs->entity(false);
+        auto eEntity = System::world->entity(false);
         if (!eEntity.isExpected()) {
             continue;
         }
@@ -284,7 +284,7 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         return;
     }
 
-    auto eEntity = System::ecs->entity();
+    auto eEntity = System::world->entity();
     if (!eEntity.isExpected()) {
         return;
     }

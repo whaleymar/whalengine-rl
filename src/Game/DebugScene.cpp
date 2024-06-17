@@ -196,7 +196,7 @@ void createTestTrigger() {
 }
 
 void createTestSemiSolid() {
-    auto newEntity = System::ecs->entity().value();
+    auto newEntity = System::world->entity().value();
     newEntity.add(Draw(Color(90, 127, 224, 255)));
     Transform2D trans = Transform2D::tiles(18, 10);
     // Transform2D trans = Transform2D::tiles(10, -14);
@@ -219,7 +219,7 @@ void createTestSemiSolid() {
     auto collider = Collider::SemiSolid(trans, Vector2i(8, 8), WorldMaterial::None, nullptr);
     newEntity.add(collider);
 
-    newEntity = System::ecs->entity().value();
+    newEntity = System::world->entity().value();
     newEntity.add(Draw(Color(255, 127, 225, 255)));
     trans = Transform2D::tiles(18, 0);
     newEntity.add(trans);
@@ -229,11 +229,11 @@ void createTestSemiSolid() {
 }
 
 void createDepthTest() {
-    auto newEntity = System::ecs->entity().value();
+    auto newEntity = System::world->entity().value();
     newEntity.add(Draw(Color(56, 56, 255, 255), {8, 8}, Depth::BackgroundNear));
     newEntity.add(Transform2D::tiles(7, -14));
 
-    newEntity = System::ecs->entity().value();
+    newEntity = System::world->entity().value();
     newEntity.add(Draw(Color(56, 56, 200, 255), {8, 8}, Depth::Foreground1));
     newEntity.add(Transform2D::tiles(8, -14));
 }
@@ -248,7 +248,7 @@ void createTestMouseTracker() {
 }
 
 void createPaletteTest() {
-    auto newEntity = System::ecs->entity().value();
+    auto newEntity = System::world->entity().value();
     // newEntity.add(Draw(Color(56, 56, 255, 255), {16, 4}, Depth::Level));
     auto frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("actor/palette");
     if (frame) {

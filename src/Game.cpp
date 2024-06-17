@@ -91,27 +91,27 @@ bool Game::startup() {
         print("Error initializing audio manager");
         return true;
     }
-    System::ecs->setEntityDeathCallback(&emitEntityDeathEvent);
+    System::world->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
 
     return false;
 }
 
 void Game::mainloop() {
-    auto controlSystem = System::ecs->registerSystem<ControllerSystem>();
-    auto controlSystemFree = System::ecs->registerSystem<FreeControlSystem>();
-    auto jumpSystem = System::ecs->registerSystem<JumpSystem>();
-    auto pathSystem = System::ecs->registerSystem<RailsSystem>();
-    auto physicsSystem = System::ecs->registerSystem<PhysicsSystem>();
-    auto spriteSystem = System::ecs->registerSystem<SpriteSystem>();
-    auto drawSystem = System::ecs->registerSystem<DrawSystem>();
-    auto drawDebugSystem = System::ecs->registerSystem<DrawDebugSystem>();
-    auto animationSystem = System::ecs->registerSystem<AnimationSystem>();
-    auto lifetimeSystem = System::ecs->registerSystem<LifetimeSystem>();
-    auto triggerSystem = System::ecs->registerSystem<TriggerSystem>();
-    auto frameEndSystem = System::ecs->registerSystem<OnFrameEndSystem>();
-    auto followSystem = System::ecs->registerSystem<FollowSystem>();
-    auto attachSystem = System::ecs->registerSystem<AttachSystem>();
+    auto controlSystem = System::world->registerSystem<ControllerSystem>();
+    auto controlSystemFree = System::world->registerSystem<FreeControlSystem>();
+    auto jumpSystem = System::world->registerSystem<JumpSystem>();
+    auto pathSystem = System::world->registerSystem<RailsSystem>();
+    auto physicsSystem = System::world->registerSystem<PhysicsSystem>();
+    auto spriteSystem = System::world->registerSystem<SpriteSystem>();
+    auto drawSystem = System::world->registerSystem<DrawSystem>();
+    auto drawDebugSystem = System::world->registerSystem<DrawDebugSystem>();
+    auto animationSystem = System::world->registerSystem<AnimationSystem>();
+    auto lifetimeSystem = System::world->registerSystem<LifetimeSystem>();
+    auto triggerSystem = System::world->registerSystem<TriggerSystem>();
+    auto frameEndSystem = System::world->registerSystem<OnFrameEndSystem>();
+    auto followSystem = System::world->registerSystem<FollowSystem>();
+    auto attachSystem = System::world->registerSystem<AttachSystem>();
     auto audioListenerSystem = AudioListenerSystem::instance();
 
     // single-component systems for running psuedo-destructors / updating some global var
@@ -121,9 +121,9 @@ void Game::mainloop() {
     PlayerSystem::instance();
     CameraSystem::instance();
     EntityChildSystem::instance();
-    System::ecs->registerSystem<ProjectileSystem>();
-    System::ecs->registerSystem<RocketJumpingSystem>();
-    System::ecs->registerSystem<MovableColliders>();  // dependency of TriggerSystem
+    System::world->registerSystem<ProjectileSystem>();
+    System::world->registerSystem<RocketJumpingSystem>();
+    System::world->registerSystem<MovableColliders>();  // dependency of TriggerSystem
 
     // load scene
     auto err = loadTestMap();
@@ -179,7 +179,7 @@ void Game::mainloop() {
 
         // Only rendering remains, so we can do "end of frame" stuff now
         frameEndSystem->update();
-        System::ecs->killEntities();
+        System::world->killEntities();
         collisionMgr->update();  // this can definitely be done in parallel while rendering
         audioListenerSystem->update();
 

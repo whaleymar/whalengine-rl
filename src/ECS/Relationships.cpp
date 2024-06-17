@@ -31,7 +31,7 @@ void Follow::initTarget(ecs::Entity self) {
         self.remove<Children>();
     }
     self.add<Children>();
-    auto eOpt = ecs::ECS::getInstance().entity();
+    auto eOpt = ecs::World::getInstance().entity();
     if (eOpt.isExpected()) {
         auto debugTargetTracker = eOpt.value();
         debugTargetTracker.add<Transform2D>();
@@ -41,7 +41,7 @@ void Follow::initTarget(ecs::Entity self) {
         self.get<Children>().add(debugTargetTracker);
     }
 
-    auto eOpt2 = ecs::ECS::getInstance().entity();
+    auto eOpt2 = ecs::World::getInstance().entity();
     if (eOpt2.isExpected()) {
         auto debugPositionTracker = eOpt2.value();
         debugPositionTracker.add<Transform2D>();

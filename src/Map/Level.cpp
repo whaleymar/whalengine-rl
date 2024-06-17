@@ -188,7 +188,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     Vector2i halflen = {meshWidthTiles * PIXELS_PER_TILE / 2, meshHeightTiles * PIXELS_PER_TILE / 2};
     auto collider = Collider::Solid(Transform2D({centerX, centerY}), halflen);
 
-    auto eEntity = System::ecs->entity();
+    auto eEntity = System::world->entity();
     if (!eEntity.isExpected()) {
         print("Error creating entity for mesh");
     } else {

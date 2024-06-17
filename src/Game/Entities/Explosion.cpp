@@ -28,7 +28,7 @@ struct PushStrength {
 Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength) {
     using namespace whal;
 
-    auto eEntity = System::ecs->entity(false);
+    auto eEntity = System::world->entity(false);
     if (!eEntity.isExpected()) {
         return eEntity;
     }

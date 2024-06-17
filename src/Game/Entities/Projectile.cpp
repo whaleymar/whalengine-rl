@@ -63,7 +63,7 @@ void ExplodeDownwardAngle(ecs::Entity self, ecs::Entity other, Collider* selfCol
 }
 
 Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
-    auto expected = System::ecs->entity(false);
+    auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected.error();
     }
