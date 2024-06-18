@@ -13,7 +13,8 @@
 
 namespace whal {
 
-const Color COLOR_AMBIENT = Color(150, 150, 150, 255);  // TODO should be set in level
+const Color COLOR_AMBIENT =
+    Color(200, 200, 200, 255);  // TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
 
 void PointLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();

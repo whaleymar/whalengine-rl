@@ -34,7 +34,7 @@ struct ActiveLevel : public Level {
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     Vector2i spawnPoint;  // TODO i want to support multiple of these in the map data & have them update based on where the player entered the level
-                          // from / update them with triggers
+                          // from / update them with triggers. I have a LEVEL_ENTER event which I can use once I have multiple spawn points
 };
 
 struct Scene {

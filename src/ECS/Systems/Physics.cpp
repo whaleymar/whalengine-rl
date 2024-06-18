@@ -17,7 +17,6 @@
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -36,7 +35,7 @@ using BoundCollisionCallback = std::function<void()>;
 void onCollision(ecs::Entity entity, HitInfo hitinfo);
 
 PhysicsSystem::PhysicsSystem() : mCollisionListener(EventListener<ecs::Entity, HitInfo>(&onCollision)) {
-    System::eventMgr.registerListener(Event::COLLISION_EVENT, mCollisionListener);
+    System::eventMgr.registerListener(Event::COLLISION, mCollisionListener);
 }
 
 void applyGravity(Velocity& velocity, f32 dt, bool isJumping) {

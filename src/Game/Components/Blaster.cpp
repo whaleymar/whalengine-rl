@@ -136,7 +136,7 @@ ProjectileSystem::ProjectileSystem()
       mInputListener(whal::EventListener<whal::InputType, bool>(&onKeyPressOrRelease)) {
     whal::System::eventMgr.registerListener(GameEvent::SHOOT_EVENT, mBlasterEventListener);
 
-    whal::System::eventMgr.registerListener(whal::Event::BUTTON_EVENT_PRESSRELEASE, mInputListener);
+    whal::System::eventMgr.registerListener(whal::Event::BUTTON_PRESSRELEASE, mInputListener);
 }
 
 void onRocketJumperLands(whal::ecs::Entity entity) {
@@ -146,7 +146,7 @@ void onRocketJumperLands(whal::ecs::Entity entity) {
 }
 
 RocketJumpingSystem::RocketJumpingSystem() : mLandingEventListener(whal::EventListener<whal::ecs::Entity>(&onRocketJumperLands)) {
-    whal::System::eventMgr.registerListener(whal::Event::LANDING_EVENT, mLandingEventListener);
+    whal::System::eventMgr.registerListener(whal::Event::LANDING, mLandingEventListener);
 }
 void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
     auto& rb = entity.get<whal::RigidBody>();

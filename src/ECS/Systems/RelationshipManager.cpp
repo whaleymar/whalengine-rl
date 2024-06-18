@@ -18,7 +18,7 @@ EntityChildSystem* EntityChildSystem::instance() {
 }
 
 EntityChildSystem::EntityChildSystem() : mEntityDeathListener(&removeEntityFromChildList) {
-    System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
+    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
 }
 
 void EntityChildSystem::onRemove(ecs::Entity entity) {
@@ -43,7 +43,7 @@ void AttachSystem::update() {
 }
 
 FollowSystem::FollowSystem() : mEntityDeathListener(&unfollowEntity) {
-    System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
+    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
 }
 
 void FollowSystem::update() {

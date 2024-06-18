@@ -64,8 +64,8 @@ void InputHandler::set(InputType input) {
     }
     }
 
-    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESS, input);
-    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESSRELEASE, input, true);
+    System::eventMgr.triggerEvent(Event::BUTTON_PRESS, input);
+    System::eventMgr.triggerEvent(Event::BUTTON_PRESSRELEASE, input, true);
 }
 
 void InputHandler::reset(InputType input) {
@@ -81,7 +81,7 @@ void InputHandler::reset(InputType input) {
     default:
         mFlags &= ~static_cast<u64>(input);
     }
-    System::eventMgr.triggerEvent(Event::BUTTON_EVENT_PRESSRELEASE, input, false);
+    System::eventMgr.triggerEvent(Event::BUTTON_PRESSRELEASE, input, false);
 }
 
 void InputHandler::loadMappings() const {

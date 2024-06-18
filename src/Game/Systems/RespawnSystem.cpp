@@ -21,5 +21,5 @@ static void respawnOnDeath(whal::ecs::Entity entity) {
 }
 
 RespawnListener::RespawnListener() : mDeathListener(whal::EventListener<whal::ecs::Entity>(&respawnOnDeath)) {
-    whal::System::eventMgr.registerListener(whal::Event::DEATH_EVENT, mDeathListener);
+    whal::System::eventMgr.registerListener(whal::Event::DEATH, mDeathListener);
 }

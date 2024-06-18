@@ -1,12 +1,9 @@
 #include "ECS/Systems/Gfx.h"
 
-#include "ECS/Name.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
-#include "Systems/System.h"
 
 #include "ECS/Systems/TagTrackers.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/Draw.h"

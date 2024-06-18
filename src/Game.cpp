@@ -44,7 +44,7 @@ constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
 using namespace whal;
 
 Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFromLevel)) {
-    System::eventMgr.registerListener(Event::DEATH_EVENT, mEntityDeathListener);
+    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
     mWorldSpaceCamera = new Camera2D();
     mScreenSpaceCamera = new Camera2D();
     mFont = new Font();
@@ -143,9 +143,13 @@ void Game::mainloop() {
     // experimenting with adding some extra pixels on border
     RenderTexture2D targetTexture =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
+    RenderTexture2D targetTextureBackground =
+        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     // Color clearColor = {51, 76, 76, 255};
     Color clearColor = {5, 5, 5, 255};
+    Color clearColorTransparent = {0, 0, 0, 0};
+
     Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
     auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
     lightSystem->setShader(&shaderPointLight);
@@ -219,12 +223,14 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         lightSystem->update();  // this gets drawn to its own texture
 
-        BeginTextureMode(targetTexture);
-
+        // do backgrounds on their own texture so lighting doesn't affect them
+        BeginTextureMode(targetTextureBackground);
         ClearBackground(clearColor);
-
         TextureManager::instance().drawBackgroundTextures();
+        EndTextureMode();
 
+        BeginTextureMode(targetTexture);
+        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
         BeginMode2D(*mWorldSpaceCamera);
 
         spriteSystem->drawEntities();
@@ -267,7 +273,10 @@ void Game::mainloop() {
 
             SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
         }
-        DrawTexture(targetTexture.texture, 0, 0, WHITE);  // this unflips the y axis for some reason
+
+        // this unflips the y axis for some reason
+        DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
+        DrawTexture(targetTexture.texture, 0, 0, WHITE);
 
         if (isQuantizeOn)
             EndShaderMode();
@@ -311,6 +320,10 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         // DRAW END
     }
+
+    UnloadRenderTexture(targetTexture);
+    UnloadRenderTexture(targetTextureBackground);
+    UnloadRenderTexture(postProcessTexture);
 }
 
 void Game::end() {
@@ -394,6 +407,7 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
     }
 }
 
+// should rename to "checkIfInNewLevel" and move most logic to events
 void Game::updateLevelCamera(bool overrideCache) {
     if (PlayerSystem::instance()->getEntitiesRef().empty() || !mIsSceneLoaded || CameraSystem::instance()->getEntitiesRef().empty()) {
         return;
@@ -416,12 +430,15 @@ void Game::updateLevelCamera(bool overrideCache) {
         if (!overrideCache && curLevel == lastLevel) {
             return;
         }
+        // IN NEW LEVEL
         lastLevel = curLevel;
         Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(*levelOpt);
         if (!activeOpt.isExpected()) {
             print("Couldn't load level. Got error:", activeOpt.error());
             doDefaultCamera = true;
         } else {
+            System::eventMgr.triggerEvent(Event::LEVEL_ENTER, player, *activeOpt.value());
+
             if (activeOpt.value()->cameraFollow) {
                 Follow follow = (*activeOpt.value()->cameraFollow);
                 follow.targetEntityID = player.id();
