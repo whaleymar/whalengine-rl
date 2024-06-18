@@ -116,6 +116,7 @@ void Game::mainloop() {
     auto attachSystem = System::world->registerSystem<AttachSystem>();
     auto audioListenerSystem = AudioListenerSystem::instance();
     auto lightSystem = System::world->registerSystem<PointLightSystem>();
+    auto radianceSystem = System::world->registerSystem<RadianceLightSystem>();
 
     // single-component systems for running psuedo-destructors / updating some global var
     auto collisionMgr = CollisionManager::instance();
@@ -145,6 +146,8 @@ void Game::mainloop() {
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
     RenderTexture2D targetTextureBackground =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
+    RenderTexture2D targetTextureRadiance =
+        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     // Color clearColor = {51, 76, 76, 255};
     Color clearColor = {5, 5, 5, 255};
@@ -154,6 +157,11 @@ void Game::mainloop() {
     auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
     lightSystem->setShader(&shaderPointLight);
     lightSystem->setPositionUniform(lightPosUniform);
+
+    Shader shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
+    auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
+    radianceSystem->setShader(&shaderRadiance);
+    radianceSystem->setPositionUniform(radiancePosUniform);
 
     Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
@@ -222,6 +230,10 @@ void Game::mainloop() {
         // ECS DRAW START
         // -----------------------------------------------------------------------
         lightSystem->update();  // this gets drawn to its own texture
+        BeginTextureMode(targetTextureRadiance);
+        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
+        radianceSystem->update();                // draws to current texture
+        EndTextureMode();
 
         // do backgrounds on their own texture so lighting doesn't affect them
         BeginTextureMode(targetTextureBackground);
@@ -235,6 +247,9 @@ void Game::mainloop() {
 
         spriteSystem->drawEntities();
         drawSystem->drawEntities();
+        // BeginBlendMode(BLEND_MULTIPLIED);
+        // radianceSystem->update();  // draws to current texture
+        // EndBlendMode();
 
         EndMode2D();
 
@@ -277,6 +292,10 @@ void Game::mainloop() {
         // this unflips the y axis for some reason
         DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
         DrawTexture(targetTexture.texture, 0, 0, WHITE);
+
+        BeginBlendMode(BLEND_ADDITIVE);
+        DrawTexture(targetTextureRadiance.texture, 0, 0, WHITE);
+        EndBlendMode();
 
         if (isQuantizeOn)
             EndShaderMode();
@@ -323,6 +342,7 @@ void Game::mainloop() {
 
     UnloadRenderTexture(targetTexture);
     UnloadRenderTexture(targetTextureBackground);
+    UnloadRenderTexture(targetTextureRadiance);
     UnloadRenderTexture(postProcessTexture);
 }
 

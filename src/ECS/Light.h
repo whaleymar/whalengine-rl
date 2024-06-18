@@ -19,7 +19,12 @@ struct IEmitLight {
     LightColor color = LIGHTCOLOR_WHITE;
 };
 
+// lights have a multiplicative effect on other objects (determined how visible they are).
+// radiance is additive. its color stays the same but its transparency increases with distance. Plus it affects the background.
+
 struct PointLight : public IEmitLight {};
+
+struct Radiance : public IEmitLight {};
 
 // struct EnvironmentLight : public IEmitLight {
 //     s32 radius;

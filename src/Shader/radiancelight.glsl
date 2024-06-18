@@ -28,5 +28,7 @@ void main() {
     // normalize 
     d = (d - 0.5) * 2;
 
-    finalColor = vec4(fragColor * d);
+    finalColor = vec4(fragColor.xyz, fragColor.a * sqrt(d));
+    // finalColor = vec4(fragColor.xyz, fragColor.a * d);
 }
+

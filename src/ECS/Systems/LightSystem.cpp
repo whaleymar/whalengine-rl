@@ -31,7 +31,7 @@ void PointLightSystem::update() {
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
-        Color color = Color(light.color.red, light.color.blue, light.color.green, 255);
+        Color color = Color(light.color.red, light.color.blue, light.color.green, light.color.alpha);
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
@@ -49,17 +49,40 @@ void PointLightSystem::update() {
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
-        // DrawCircleGradient(screenPosition.x(), screenPosition.y(), light.radius, color, COLOR_AMBIENT);
-
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
         Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
-
-        // DrawCircle(screenPosition.x(), screenPosition.y(), light.radius, color);
     }
 
     EndMode2D();
     EndTextureMode();
+    EndShaderMode();
+}
+
+void RadianceLightSystem::update() {
+    auto cameraPos = getCameraPositionPrecise();
+    // auto cameraPos = toFloatVec(getCameraPosition());
+
+    BeginShaderMode(*mShaderPtr);
+    BeginMode2D(*Game::instance().getWorldCamera());
+
+    const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        Radiance light = entity.get<Radiance>();
+        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
+        Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
+        Color color = Color(light.color.red, light.color.blue, light.color.green, light.color.alpha);
+
+        Vector2 screenPosV(screenPosition.x(), screenPosition.y());
+        SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
+
+        Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
+        Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
+        // DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, WHITE);
+    }
+
+    EndMode2D();
     EndShaderMode();
 }
 
