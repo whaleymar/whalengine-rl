@@ -17,19 +17,32 @@ struct Blaster {
     f32 shotKnockback = 50;
     f32 projectileLifetimeSeconds = 3.5;
     f32 explosionRadius = FPIXELS_PER_TILE * 2.5;
+    Vector2i aimDirection;
+
+    Corrade::Containers::Optional<whal::ecs::Entity> aimReticle = Corrade::Containers::NullOpt;
 };
 
 struct RocketJumping {
     Vector2f prevFrictionMultiplier;
 };
 
-class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D> {
+class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>, public whal::ecs::IMonitorSystem {
 public:
     ProjectileSystem();
+
+    void update() override;
+    void onAdd(whal::ecs::Entity entity) override {}
+    void onRemove(whal::ecs::Entity entity) override;
+
+    static void addAimReticles();
+    static void updateFacingDirections(bool isFacingRight);
+    static void setIsAiming(bool isAiming) { mIsAiming = isAiming; }
+    static bool getIsAiming() { return mIsAiming; }
 
 private:
     whal::EventListener<Vector2i> mBlasterEventListener;
     whal::EventListener<whal::InputType, bool> mInputListener;
+    inline static bool mIsAiming = false;
 };
 
 class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>, public whal::ecs::IMonitorSystem {

@@ -1,7 +1,11 @@
 #include "Blaster.h"
+#include <raylib.h>
 
+#include "ECS/Draw.h"
 #include "Events/Events.h"
+#include "Settings.h"
 #include "Systems/Event.h"
+#include "Systems/InputHandler.h"
 #include "Systems/System.h"
 #include "Util/Vector.h"
 
@@ -11,6 +15,10 @@
 
 #include "Game/Entities/Projectile.h"
 #include "Game/Events.h"
+#include "whalECS/src/ECS.h"
+
+// where a shot originates from, relative to shooter's transform
+const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
 
 Vector2f closestOrdinalDirection(Vector2f vecf) {
     vecf = vecf.norm();
@@ -82,20 +90,16 @@ void onBlasterFired(Vector2i moveNormali) {
         return;
     }
 
-    Vector2f moveNormal = toFloatVec(moveNormali);
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
 
         // change where the projectile starts (relative to shooting entity)
-        Vector2i offset = {0, PIXELS_PER_TILE};
-        Vector2i shotOrigin = trans.position + offset;
+        Vector2i shotOrigin = trans.position + SHOOT_OFFSET;
         // Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
-        if (moveNormali.isZero()) {
-            moveNormal.e[0] = trans.facing == Facing::Left ? -1 : 1;
-        }
 
         Vector2f velocity;
         Blaster& blaster = entity.get<Blaster>();
+        Vector2f moveNormal = toFloatVec(blaster.aimDirection);
         velocity = moveNormal * blaster.projectileSpeed;
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
@@ -108,26 +112,51 @@ void onBlasterFired(Vector2i moveNormali) {
         }
 
         System::audio.playClip(Sfx::SHOTFIRED, 0.2);
+
+        blaster.aimReticle->kill();
+        blaster.aimReticle = Corrade::Containers::NullOpt;
     }
 }
 
 void onKeyPressOrRelease(whal::InputType input, bool isPress) {
-    if (input != whal::InputType::AIM) {
+    if (whal::System::isPaused() && input == whal::InputType::AIM && !isPress && ProjectileSystem::getIsAiming()) {
+        // TODO need some way to schedule something to happen when unpausing, probably a system onUnpause virtual method
+        // so if we let go of a key when paused, can buffer the action
         return;
     }
+    if (whal::System::isPaused()) {
+        return;
+    }
+    if (input == whal::InputType::AIM) {
+        if (isPress && !ProjectileSystem::getIsAiming()) {
+            ProjectileSystem::setIsAiming(true);
+            ProjectileSystem::addAimReticles();
 
-    if (isPress) {
-        // deactivate movement controls; those keys are now for aiming
-        whal::System::input.disableMovement();
-        whal::System::input.disableJumping();
+            // deactivate movement controls; those keys are now for aiming
+            whal::System::input.disableMovement();
+            whal::System::input.disableJumping();
 
-    } else {
-        // slight delay for enabling movement so player can adjust arrow keys
-        whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
-        // but allow jumping immediately
-        whal::System::input.enableJumping();
-        Vector2i moveNormal = whal::System::input.getMoveNormal();
-        whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
+        } else if (!isPress && ProjectileSystem::getIsAiming()) {
+            ProjectileSystem::setIsAiming(false);
+
+            // slight delay for enabling movement so player can adjust arrow keys
+            whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
+            // but allow jumping immediately
+            whal::System::input.enableJumping();
+            Vector2i moveNormal = whal::System::input.getMoveNormal();
+            whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
+        }
+    } else if (isPress) {
+        switch (input) {
+        case whal::InputType::LEFT:
+            ProjectileSystem::updateFacingDirections(false);
+            return;
+        case whal::InputType::RIGHT:
+            ProjectileSystem::updateFacingDirections(true);
+            return;
+        default:
+            return;
+        }
     }
 }
 
@@ -137,6 +166,70 @@ ProjectileSystem::ProjectileSystem()
     whal::System::eventMgr.registerListener(GameEvent::SHOOT_EVENT, mBlasterEventListener);
 
     whal::System::eventMgr.registerListener(whal::Event::BUTTON_PRESSRELEASE, mInputListener);
+}
+
+void ProjectileSystem::addAimReticles() {
+    Vector2i aimDirection = whal::System::input.getMoveNormal();
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        auto childExpected = whal::System::world->entity(false);
+        if (childExpected.isExpected()) {
+            auto child = childExpected.value();
+            Blaster& blaster = entity.get<Blaster>();
+            blaster.aimReticle = child;
+            auto _ = whal::ecs::DeferActivate(child);
+
+            // if not holding any direction, start with facing direction
+            whal::Transform2D parentTrans = entity.get<whal::Transform2D>();
+            if (aimDirection.isZero()) {
+                aimDirection.e[0] = parentTrans.facing == whal::Facing::Left ? -1 : 1;
+            }
+            blaster.aimDirection = aimDirection;
+
+            Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * aimDirection;
+            Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
+            child.add(whal::Transform2D(position));
+            child.add(whal::Draw(BROWN));
+        }
+    }
+}
+
+void ProjectileSystem::update() {
+    if (!mIsAiming || whal::System::isPaused()) {
+        return;
+    }
+    Vector2i aimDirection = whal::System::input.getMoveNormal();
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        Blaster& blaster = entity.get<Blaster>();
+        if (!blaster.aimReticle) {
+            // not initialized
+            continue;
+        }
+        whal::Transform2D parentTrans = entity.get<whal::Transform2D>();
+        if (!aimDirection.isZero()) {
+            blaster.aimDirection = aimDirection;
+        }
+
+        Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * blaster.aimDirection;
+        Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
+        blaster.aimReticle->set(whal::Transform2D(position));
+    }
+}
+
+void ProjectileSystem::onRemove(whal::ecs::Entity entity) {
+    auto blaster = entity.get<Blaster>();
+    if (blaster.aimReticle) {
+        blaster.aimReticle->kill();
+    }
+}
+
+void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
+    if (!mIsAiming || whal::System::isPaused()) {
+        return;
+    }
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        auto& trans = entity.get<whal::Transform2D>();
+        trans.facing = isFacingRight ? whal::Facing::Right : whal::Facing::Left;
+    }
 }
 
 void onRocketJumperLands(whal::ecs::Entity entity) {

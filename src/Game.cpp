@@ -118,6 +118,8 @@ void Game::mainloop() {
     auto lightSystem = System::world->registerSystem<PointLightSystem>();
     auto radianceSystem = System::world->registerSystem<RadianceLightSystem>();
 
+    auto projectileSystem = System::world->registerSystem<ProjectileSystem>();
+
     // single-component systems for running psuedo-destructors / updating some global var
     auto collisionMgr = CollisionManager::instance();
 
@@ -125,7 +127,6 @@ void Game::mainloop() {
     PlayerSystem::instance();
     CameraSystem::instance();
     EntityChildSystem::instance();
-    System::world->registerSystem<ProjectileSystem>();
     System::world->registerSystem<RocketJumpingSystem>();
     System::world->registerSystem<MovableColliders>();  // dependency of TriggerSystem
     System::world->registerSystem<RespawnListener>();
@@ -196,6 +197,9 @@ void Game::mainloop() {
         triggerSystem->update();
 
         lifetimeSystem->update();
+
+        // Game specific systems:
+        projectileSystem->update();
 
         // Update Scene
         updateLevelCamera();
