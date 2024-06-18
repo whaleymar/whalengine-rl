@@ -9,6 +9,7 @@
 #include "ECS/Transform.h"
 #include "Game.h"
 #include "Gfx/Texture.h"
+#include "raylib/src/raylib.h"
 
 namespace whal {
 
@@ -17,11 +18,14 @@ const Color COLOR_AMBIENT = Color(150, 150, 150, 255);  // TODO should be set in
 void PointLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
+
+    BeginShaderMode(*mShaderPtr);
     BeginTextureMode(TextureManager::instance().getLightingTexture());
     BeginMode2D(*Game::instance().getWorldCamera());
 
     ClearBackground(COLOR_AMBIENT);
 
+    const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
@@ -41,11 +45,21 @@ void PointLightSystem::update() {
             }
         }
 
-        DrawCircleGradient(screenPosition.x(), screenPosition.y(), light.radius, color, COLOR_AMBIENT);
+        Vector2 screenPosV(screenPosition.x(), screenPosition.y());
+        SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
+
+        // DrawCircleGradient(screenPosition.x(), screenPosition.y(), light.radius, color, COLOR_AMBIENT);
+
+        Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
+        Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
+
+        // DrawCircle(screenPosition.x(), screenPosition.y(), light.radius, color);
     }
 
     EndMode2D();
     EndTextureMode();
+    EndShaderMode();
 }
 
 }  // namespace whal

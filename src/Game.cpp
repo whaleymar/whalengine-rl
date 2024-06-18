@@ -146,6 +146,11 @@ void Game::mainloop() {
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     // Color clearColor = {51, 76, 76, 255};
     Color clearColor = {5, 5, 5, 255};
+    Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
+    auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
+    lightSystem->setShader(&shaderPointLight);
+    lightSystem->setPositionUniform(lightPosUniform);
+
     Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
     bool isQuantizeOn = false;

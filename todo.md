@@ -5,14 +5,9 @@
     - misc TODOs
 - cleanup todos (finish player anims, dynamic spawn points)
 
-## Controls 
-
 ## Camera / Follow
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
-
-## Components
-- Light 
 
 ## Entity Prefabs
 - particle
@@ -45,7 +40,6 @@
 ## Misc
 - ECS lib tasks
 - Logger queue that runs on another thread
-- put camera transform in screen precision coordinates to reduce jiggle ? (saint11 blog about it)
 
 ## Bugs
 - isNearZero not working
@@ -68,7 +62,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this?
 - jumping: instead of applying contant upward velocity, could try reducing gravity while jump button held instead 
     - can also try the high parameter jump that sakurai suggested in his video
-- low priority: actors always check for a collision with a solid before a semisolid, so semisolid callbacks don't always run. Could be fixed by storing solids and semisolid pointers together for these collision checks, but it's not a huge deal
 
 ## Other:
 - map: support tile rotations / flips? (leaning towards no)

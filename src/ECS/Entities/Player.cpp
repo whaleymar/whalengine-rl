@@ -209,7 +209,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     player.add<RigidBody>();
     // player.add<FreeControl>();
 
-    player.add(PointLight{PIXELS_PER_TILE * 5, halfLenY});
+    player.add(PointLight{PIXELS_PER_TILE * 10, halfLenY, {255, 255, 204, 255}});
 
     player.add(Respawn{2, &respawnPlayer,
                        []() {
