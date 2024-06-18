@@ -153,10 +153,10 @@ void PhysicsSystem::update() {
             if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
                 (*precisePositionOpt)->position += move;
                 trans.position = Vector2i(std::round((*precisePositionOpt)->position.x()), std::round((*precisePositionOpt)->position.y()));
-                if (move.len() < 0.1) {
-                    // clamp precise position to integer coordinates if we're not moving
-                    (*precisePositionOpt)->position = toFloatVec(trans.position);
-                }
+                // if (move.len() < 0.1) {
+                // clamp precise position to integer coordinates if we're not moving
+                // (*precisePositionOpt)->position = toFloatVec(trans.position);
+                // }
             } else {
                 // TODO should store remainder like i do with colliders
                 trans.position += Vector2i(std::round(move.x()), std::round(move.y()));

@@ -15,8 +15,8 @@ namespace whal {
 const Color COLOR_AMBIENT = Color(150, 150, 150, 255);  // TODO should be set in level
 
 void PointLightSystem::update() {
-    // auto cameraPos = getCameraPositionPrecise();
-    auto cameraPos = toFloatVec(getCameraPosition());
+    auto cameraPos = getCameraPositionPrecise();
+    // auto cameraPos = toFloatVec(getCameraPosition());
     BeginTextureMode(TextureManager::instance().getLightingTexture());
     BeginMode2D(*Game::instance().getWorldCamera());
 

@@ -140,8 +140,10 @@ void Game::mainloop() {
 
     collisionMgr->update();
 
-    RenderTexture2D targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);  // where we'll draw objects to
-    RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    // experimenting with adding some extra pixels on border
+    RenderTexture2D targetTexture =
+        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
+    RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     // Color clearColor = {51, 76, 76, 255};
     Color clearColor = {5, 5, 5, 255};
     Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
@@ -278,6 +280,15 @@ void Game::mainloop() {
         BeginMode2D(*mScreenSpaceCamera);
 
         Color color = PauseMenu::instance().isPaused() ? Color(25, 50, 75, 255) : WHITE;
+        // i want camera to move in world space, so offset final texture by the difference between camera's precise and integer coords, then scale by
+        // virtual ratio
+
+        // Vector2f cameraOffset = ((getCameraPositionPrecise() - toFloatVec(getCameraPosition())) - Vector2f(-BLEED_SIZE, BLEED_SIZE) / 2);
+        // const Rectangle screenSourceRecFinal =
+        //     Rectangle(screenSourceRec.x - cameraOffset.x(), screenSourceRec.y - cameraOffset.y(), screenSourceRec.width, screenSourceRec.height);
+        // if (System::frame.getFrame() == 0)
+        //     print("camera offset is ", cameraOffset);
+        // DrawTexturePro(postProcessTexture.texture, screenSourceRecFinal, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
         DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
         EndMode2D();

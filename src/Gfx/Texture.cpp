@@ -128,7 +128,7 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToTexture(cons
 }
 
 TextureManager::TextureManager()
-    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS)), mBGTextureStatic(RenderTexture2D()),
+    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)), mBGTextureStatic(RenderTexture2D()),
       mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {

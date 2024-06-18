@@ -1,7 +1,9 @@
 #include "ECS/Systems/Gfx.h"
 
+#include "ECS/Name.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Systems/System.h"
 
 #include "ECS/Systems/TagTrackers.h"
 #include "Util/Print.h"
@@ -31,36 +33,8 @@ void SpriteSystem::onRemove(const ecs::Entity entity) {
 }
 
 void SpriteSystem::drawEntities() {
-    // auto cameraPosF = getCameraPositionPrecise();
-    auto cameraPosF = toFloatVec(getCameraPosition());
-
-    // getting weird floating point precision errors when camera position is very close to X.5
-    // f32 whole, fractional;
-    // fractional = std::modf(cameraPosF.x(), &whole);
-    // if (abs(fractional - 0.5) < 0.03) {
-    //     fractional += sign(fractional - 0.5) * 0.05;
-    //     print("adjusting cameraPosF from ", cameraPosF);
-    //     cameraPosF.e[0] = (whole + fractional);
-    //     print("to ", cameraPosF);
-    // }
-    //
-    // fractional = std::modf(cameraPosF.y(), &whole);
-    // if (abs(fractional - 0.5) < 0.1) {
-    //     fractional += sign(fractional - 0.5) * 0.1;
-    //     print("adjusting cameraPosF from ", cameraPosF);
-    //     cameraPosF.e[1] = (whole + fractional);
-    //     print("to ", cameraPosF);
-    // } else if (abs(fractional) < 0.1) {
-    //     fractional += sign(fractional) * 0.1;
-    //     print("adjusting cameraPosF from ", cameraPosF);
-    //     cameraPosF.e[1] = (whole + fractional);
-    //     print("to ", cameraPosF);
-    // } else if (abs(fractional - 1) < 0.1) {
-    //     fractional += sign(fractional) * 0.1;
-    //     print("adjusting cameraPosF from ", cameraPosF);
-    //     cameraPosF.e[1] = (whole + fractional);
-    //     print("to ", cameraPosF);
-    // }
+    auto cameraPosF = getCameraPositionPrecise();
+    // auto cameraPosF = toFloatVec(getCameraPosition());
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
@@ -69,9 +43,10 @@ void SpriteSystem::drawEntities() {
         Vector2f posF = toFloatVec(trans.position);
         Sprite& sprite = entity.get<Sprite>();
 
-        Vector2i frameSize = sprite.getFrameSizeTexels();
-        s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
-        Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
+        const Vector2i frameSize = sprite.getFrameSizeTexels();
+        const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
+        const Rectangle srcRect =
+            Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
 
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
 
@@ -97,14 +72,17 @@ void SpriteSystem::drawEntities() {
         }
 
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        // if (entity.has<Name>() && entity.get<Name>().name == "Player" && System::frame.getFrame() == 0) {
+        //     print("dstRect: (", dstRect.x, dstRect.y, dstRect.width, dstRect.height, ")");
+        // }
 
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
     }
 }
 
 void DrawSystem::drawEntities() {
-    // auto cameraPosF = getCameraPositionPrecise();
-    auto cameraPosF = toFloatVec(getCameraPosition());
+    auto cameraPosF = getCameraPositionPrecise();
+    // auto cameraPosF = toFloatVec(getCameraPosition());
 
     // sorting not required since Draw components don't have transparency
     for (auto const& [entityid, entity] : getEntitiesRef()) {
@@ -124,8 +102,8 @@ void DrawSystem::drawEntities() {
 }
 
 void DrawDebugSystem::drawEntities() {
-    // auto cameraPosF = getCameraPositionPrecise();
-    auto cameraPosF = toFloatVec(getCameraPosition());
+    auto cameraPosF = getCameraPositionPrecise();
+    // auto cameraPosF = toFloatVec(getCameraPosition());
 
     // sorting not required since Draw components don't have transparency
     for (auto const& [entityid, entity] : getEntitiesRef()) {

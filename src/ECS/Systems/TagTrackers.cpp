@@ -42,6 +42,28 @@ Vector2f getCameraPositionPrecise() {
     if (eOpt) {
         lastPos = eOpt->get<PrecisePosition>().position;
     }
+
+    // getting weird floating point precision errors when camera position is very close to X.5
+    // y
+    f32 whole, fractional;
+    fractional = std::modf(lastPos.y(), &whole);
+    if (fractional > 0.47 && fractional < 0.53) {
+        fractional = 0.46;
+        lastPos.e[1] = (whole + fractional);
+    } else if (fractional < -0.47 && fractional > -0.53) {
+        fractional = -0.46;
+        lastPos.e[1] = (whole + fractional);
+    }
+
+    // x
+    fractional = std::modf(lastPos.x(), &whole);
+    if (fractional > 0.47 && fractional < 0.53) {
+        fractional = 0.46;
+        lastPos.e[0] = (whole + fractional);
+    } else if (fractional < -0.47 && fractional > -0.53) {
+        fractional = -0.46;
+        lastPos.e[0] = (whole + fractional);
+    }
     return lastPos;
 }
 

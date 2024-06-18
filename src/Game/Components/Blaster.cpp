@@ -123,7 +123,7 @@ void onKeyPressOrRelease(whal::InputType input, bool isPress) {
 
     } else {
         // slight delay for enabling movement so player can adjust arrow keys
-        whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.1);
+        whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
         // but allow jumping immediately
         whal::System::input.enableJumping();
         Vector2i moveNormal = whal::System::input.getMoveNormal();
