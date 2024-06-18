@@ -24,7 +24,8 @@ void RailsSystem::onAdd(const ecs::Entity entity) {
 void RailsSystem::update() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
-        if (entity.has<Camera>() && !PauseMenu::instance().isPaused()) {
+        // camera moves normally unless pause menu is activated
+        if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();

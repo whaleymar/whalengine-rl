@@ -23,9 +23,9 @@ PauseMenu::PauseMenu() : mInputListener(&buttonCallback) {
 }
 
 void PauseMenu::onButtonPressed(InputType input) {
-    if (!isPaused()) {
+    if (!isActive()) {
         if (input == InputType::PAUSE) {
-            pause();
+            activate();
             System::audio.playMenuClip(Sfx::MENU_OPEN, 0.33);
         }
         return;
@@ -41,7 +41,7 @@ void PauseMenu::onButtonPressed(InputType input) {
         System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
         break;
     case InputType::PAUSE:
-        unpause();
+        deactivate();
         System::audio.playMenuClip(Sfx::MENU_CLOSE, 0.33);
         break;
     case InputType::OK:
@@ -54,7 +54,7 @@ void PauseMenu::onButtonPressed(InputType input) {
 }
 
 void PauseMenu::draw(Font* font) const {
-    if (!isPaused()) {
+    if (!isActive()) {
         return;
     }
     constexpr s32 spacing = 24;   // PARAM
@@ -77,7 +77,7 @@ void PauseMenu::draw(Font* font) const {
 void PauseMenu::doCursorAction() {
     switch (mCursorOption) {
     case Button::Resume:
-        unpause();
+        deactivate();
         break;
     case Button::Exit:
         System::quit();
@@ -85,24 +85,24 @@ void PauseMenu::doCursorAction() {
     }
 }
 
-void PauseMenu::pause() {
-    if (mIsPaused) {
+void PauseMenu::activate() {
+    if (mIsActive) {
         return;
     }
     System::setPaused(true);
     mPrevMusicFilter = System::audio.getFilterMusic();
     System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
-    mIsPaused = true;
+    mIsActive = true;
     mCursorOption = Button::Resume;
 }
 
-void PauseMenu::unpause() {
-    if (!mIsPaused) {
+void PauseMenu::deactivate() {
+    if (!mIsActive) {
         return;
     }
     System::setPaused(false);
     System::audio.setFilterMusic(mPrevMusicFilter);
-    mIsPaused = false;
+    mIsActive = false;
 }
 
 }  // namespace whal

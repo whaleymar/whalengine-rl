@@ -118,12 +118,18 @@ void onBlasterFired(Vector2i moveNormali) {
     }
 }
 
+void doShootEvent() {
+    ProjectileSystem::setIsAiming(false);
+
+    // slight delay for enabling movement so player can adjust arrow keys
+    whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
+    // but allow jumping immediately
+    whal::System::input.enableJumping();
+    Vector2i moveNormal = whal::System::input.getMoveNormal();
+    whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
+}
+
 void onKeyPressOrRelease(whal::InputType input, bool isPress) {
-    if (whal::System::isPaused() && input == whal::InputType::AIM && !isPress && ProjectileSystem::getIsAiming()) {
-        // TODO need some way to schedule something to happen when unpausing, probably a system onUnpause virtual method
-        // so if we let go of a key when paused, can buffer the action
-        return;
-    }
     if (whal::System::isPaused()) {
         return;
     }
@@ -137,14 +143,7 @@ void onKeyPressOrRelease(whal::InputType input, bool isPress) {
             whal::System::input.disableJumping();
 
         } else if (!isPress && ProjectileSystem::getIsAiming()) {
-            ProjectileSystem::setIsAiming(false);
-
-            // slight delay for enabling movement so player can adjust arrow keys
-            whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
-            // but allow jumping immediately
-            whal::System::input.enableJumping();
-            Vector2i moveNormal = whal::System::input.getMoveNormal();
-            whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
+            doShootEvent();
         }
     } else if (isPress) {
         switch (input) {
@@ -219,6 +218,12 @@ void ProjectileSystem::onRemove(whal::ecs::Entity entity) {
     auto blaster = entity.get<Blaster>();
     if (blaster.aimReticle) {
         blaster.aimReticle->kill();
+    }
+}
+
+void ProjectileSystem::onUnpause() {
+    if (getIsAiming() && !whal::System::input.isOn(whal::InputType::AIM)) {
+        doShootEvent();
     }
 }
 

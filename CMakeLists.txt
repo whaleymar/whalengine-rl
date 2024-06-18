@@ -10,6 +10,8 @@ set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_DEBUG_POSTFIX d)
@@ -45,6 +47,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
 include_directories(lib)
 target_precompile_headers(${PROJECT_NAME}
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS/src/ECS.h"
+    PUBLIC "${PROJECT_SOURCE_DIR}/src/Systems/System.h"
 )
 
 target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmod.so")

@@ -22,14 +22,16 @@ struct System {
     inline static ecs::World* world = &ecs::World::getInstance();
 
     static void setPaused(bool pause) {
+        IsPaused = pause;
         if (pause) {
             dt.setMultiplier(0.0);
             audio.pauseClips(true);
+            world->pause();
         } else {
             dt.setMultiplier(1.0);
             audio.pauseClips(false);
+            world->unpause();
         }
-        IsPaused = pause;
     }
 
     static void togglePause() { setPaused(!IsPaused); }

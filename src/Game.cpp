@@ -316,7 +316,7 @@ void Game::mainloop() {
 
         BeginMode2D(*mScreenSpaceCamera);
 
-        Color color = PauseMenu::instance().isPaused() ? Color(25, 50, 75, 255) : WHITE;
+        Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
         // i want camera to move in world space, so offset final texture by the difference between camera's precise and integer coords, then scale by
         // virtual ratio
 

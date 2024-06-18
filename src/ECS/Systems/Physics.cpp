@@ -101,8 +101,8 @@ void PhysicsSystem::update() {
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
-        // camera move normally unless paused
-        if (entity.has<Camera>() && !PauseMenu::instance().isPaused()) {
+        // camera move normally unless pause menu is active
+        if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();

@@ -26,13 +26,17 @@ struct RocketJumping {
     Vector2f prevFrictionMultiplier;
 };
 
-class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>, public whal::ecs::IMonitorSystem {
+class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>,
+                         public whal::ecs::IMonitorSystem,
+                         public whal::ecs::IPausableSystem {
 public:
     ProjectileSystem();
 
     void update() override;
     void onAdd(whal::ecs::Entity entity) override {}
     void onRemove(whal::ecs::Entity entity) override;
+    void onPause() override {}
+    void onUnpause() override;
 
     static void addAimReticles();
     static void updateFacingDirections(bool isFacingRight);

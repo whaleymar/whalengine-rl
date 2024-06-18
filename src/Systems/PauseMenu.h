@@ -22,7 +22,7 @@ public:
 
     void onButtonPressed(InputType input);
     void draw(Font* font) const;
-    bool isPaused() const { return mIsPaused; }
+    bool isActive() const { return mIsActive; }
 
 private:
     PauseMenu();
@@ -30,13 +30,13 @@ private:
     void operator=(const PauseMenu&) = delete;
 
     void doCursorAction();
-    void unpause();
-    void pause();
+    void deactivate();
+    void activate();
 
     EventListener<InputType> mInputListener;
     Button mCursorOption = Button::Resume;
     AudioPlayer::Filter mPrevMusicFilter;
-    bool mIsPaused = false;
+    bool mIsActive = false;
 };
 
 }  // namespace whal
