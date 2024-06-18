@@ -5,6 +5,8 @@
 
 namespace whal::ecs {
 class Entity;
-}
+using EntityID = u32;
+}  // namespace whal::ecs
 
-Expected<whal::ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius);
+Expected<whal::ecs::Entity> makeProjectile(whal::ecs::EntityID parentEntityID, Vector2i position, Vector2f velocity, f32 lifetimeSeconds,
+                                           f32 explosionRadius);

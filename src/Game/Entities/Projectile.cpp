@@ -1,6 +1,7 @@
 #include "Projectile.h"
 
 #include "ECS/Light.h"
+#include "Game/Components/ProjectileInfo.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/Material.h"
 #include "Physics/Shapes.h"
@@ -22,6 +23,20 @@
 
 using namespace whal;
 
+// skip explosion if we're colliding with the entity that shot us and the shot just occurred
+bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
+    constexpr f32 selfCollisionEnableTime = 0.5f;
+
+    auto projectileInfo = self.get<ProjectileInfo>();
+    auto lifetime = self.get<Lifetime>();
+
+    f32 timeAlive = projectileInfo.initialLifetime - lifetime.secondsRemaining;
+    if (timeAlive < selfCollisionEnableTime && projectileInfo.shooterEntityID == other.id()) {
+        return true;
+    }
+    return false;
+}
+
 void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
 
@@ -35,6 +50,9 @@ void makeDefaultExplosion(ecs::Entity self) {
 
 void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     if (!selfCollider->isAlive()) {
+        return;
+    }
+    if (skipParentCollision(self, other)) {
         return;
     }
 
@@ -52,6 +70,9 @@ void ExplodeDownwardAngle(ecs::Entity self, ecs::Entity other, Collider* selfCol
     if (!selfCollider->isAlive()) {
         return;
     }
+    if (skipParentCollision(self, other)) {
+        return;
+    }
 
     Vector2f pushStrength = {100, 150};
     f32 explosionRadius = self.get<Circle>().getRadius();
@@ -63,7 +84,7 @@ void ExplodeDownwardAngle(ecs::Entity self, ecs::Entity other, Collider* selfCol
     selfCollider->setIsDead();
 }
 
-Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
+Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius) {
     auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected.error();
@@ -74,7 +95,6 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
 
     // the sprite is pointing down by default. Get angle between for rotation
     Vector2f moveNormal = velocity.norm();
-    // Vector2f moveNormal = Vector2f::unitDown;
     Vector2f referenceAngle = Vector2f::unitDown;
     f32 dot = moveNormal.dot(referenceAngle);
     f32 det = moveNormal.det(referenceAngle);
@@ -91,6 +111,7 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
     entity.add(Circle(Vector2i(), explosionRadius));
     entity.add(PointLight({PIXELS_PER_TILE * 2, halflenPixels}));
+    entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds});
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;
@@ -100,16 +121,9 @@ Expected<ecs::Entity> makeProjectile(Vector2i position, Vector2f velocity, f32 l
     sprite.scale = {0.5, 0.5};
     entity.add(sprite);
 
-    // add collider slightly after creation so it doesn't collide with shooter
-    // TODO make this a trigger
     const bool isDownwardAngle = velocity.x() != 0 && velocity.y() < 0;
-    Collider collider = Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None,
-                                 isDownwardAngle ? &ExplodeDownwardAngle : &Explode);
-    collider.setIsCollidable(false);
-    entity.add(collider);
-
-    auto enableCollision = [](ecs::Entity entity) -> void { entity.get<Collider>().setIsCollidable(true); };
-    System::schedule.after(enableCollision, 0.075, entity);
+    entity.add(Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None,
+                        isDownwardAngle ? &ExplodeDownwardAngle : &Explode));
 
     return entity;
 }

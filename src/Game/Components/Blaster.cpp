@@ -100,7 +100,7 @@ void onBlasterFired(Vector2i moveNormali) {
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
         auto totalVel = velocity;
-        makeProjectile(shotOrigin, totalVel, blaster.projectileLifetimeSeconds, blaster.explosionRadius);
+        makeProjectile(entityid, shotOrigin, totalVel, blaster.projectileLifetimeSeconds, blaster.explosionRadius);
 
         // push shooter in opposite direction of projectile
         if (auto velOpt = entity.tryGet<Velocity>(); velOpt) {
