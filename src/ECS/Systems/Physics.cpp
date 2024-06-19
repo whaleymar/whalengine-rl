@@ -65,7 +65,6 @@ void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
             }
         }
         // TODO it's weird i'm not passing hitinfo here. The callback should take hitinfo instead of moveNormal
-        // TODO separate callbacks for collision vs pushed vs carried?
         BoundCollisionCallback boundFunc =
             std::bind(callbackOwnerCollider->getOnCollisionEnter(), callbackOwner, other, callbackOwnerCollider, otherCollider, moveNormal);
         entityList.push_back({other, boundFunc});

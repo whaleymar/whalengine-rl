@@ -23,55 +23,78 @@ constexpr s32 MOMENTUM_LIFETIME_FRAMES = 10;
 constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 constexpr s32 CORNERCORRECTIONWIGGLE = 3 * PIXELS_PER_TEXEL;
 
-// a semisolid pushing another semisolid shouldn't squish it. If it runs into a [semi]solid, just stop movement
-void squishPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
-                             Vector2i hitNormal) {
-    if (callbackEntityCollider->isSemiSolid() && otherCollider->isSolidAny()) {
-        return;
-    }
-    callbackEntityCollider->squish();
-}
-
-void squishCollider(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-    // TODO make squish method take all these args and move this logic there
+void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
     if (callbackEntityCollider->isSemiSolid() && otherCollider->isSemiSolid()) {
         return;
     }
-    callbackEntityCollider->squish();
+    callbackEntityCollider->getEntity().kill();
+    callbackEntityCollider->setIsDead();
 }
 
-Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir)
-    : mShape(shape), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mMaterial(material), mCollisionDir(collisionDir) {}
+// if actor and other is [semi]solid then try corner correction, try wiggling out of collision.
+bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount, const std::vector<Collider*>& others) {
+    const s32 moveSign = moveNormal.x() != 0 ? sign(moveNormal.x()) : sign(moveNormal.y());
+    auto nextPos = callbackCollider->getShape().getPosition() + moveNormal;
+    if (hitinfo.isUp() && moveSign == 1 && (hitinfo.otherLayer & (CollisionLayer::Solid | CollisionLayer::SemiSolid)) > 0 &&
+        callbackCollider->getCollisionLayer() == CollisionLayer::Actor) {
+        return callbackCollider->tryCornerCorrection(others, nextPos, fullMoveAmount.x(), moveNormal);
+    }
+    return false;
+}
 
-Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                   CollisionDir collisionDir)
-    : mShape(AABB(transform, halflen)), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mMaterial(material),
+void squishEntity(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
+    callbackEntityCollider->squish(other, otherCollider, hitNormal);
+}
+
+// a semisolid pushing another semisolid shouldn't squish it. If it runs into a [semi]solid, just stop movement
+void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
+                                   Vector2i hitNormal) {
+    if (callbackEntityCollider->isSemiSolid() && otherCollider->isSolidAny()) {
+        return;
+    }
+    callbackEntityCollider->squish(other, otherCollider, hitNormal);
+}
+
+Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
+                   CollisionCallback squish_)
+    : mShape(shape), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
       mCollisionDir(collisionDir) {}
 
-Collider Collider::Actor(AABB shape) {
-    return Collider(shape, CollisionLayer::Actor);
+Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
+                   CollisionDir collisionDir, CollisionCallback squish_)
+    : mShape(AABB(transform, halflen)), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
+      mCollisionDir(collisionDir) {}
+
+Collider Collider::Actor(AABB shape, CollisionCallback squish_) {
+    auto collider = Collider(shape, CollisionLayer::Actor);
+    collider.setSquishCallback(squish_);
+    return collider;
 }
 
-Collider Collider::Actor(Transform2D transform, Vector2i halflen) {
-    return Collider(transform, halflen, CollisionLayer::Actor);
+Collider Collider::Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_) {
+    auto collider = Collider(transform, halflen, CollisionLayer::Actor);
+    collider.setSquishCallback(squish_);
+    return collider;
 }
 
-Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir) {
-    return Collider(shape, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir);
+Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
+                         CollisionCallback squish_) {
+    return Collider(shape, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_);
 }
 
 Collider Collider::Solid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                         CollisionDir collisionDir) {
-    return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir);
+                         CollisionDir collisionDir, CollisionCallback squish_) {
+    return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_);
 }
 
-Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir) {
-    return Collider(shape, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir);
+Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
+                             CollisionCallback squish_) {
+    return Collider(shape, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_);
 }
 
 Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                             CollisionDir collisionDir) {
-    return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir);
+                             CollisionDir collisionDir, CollisionCallback squish_) {
+    return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_);
 }
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
@@ -253,6 +276,11 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
+            if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
+                if ((*wiggleOpt)->callback(this, hitInfo, moveNormal, amount, others)) {
+                    continue;
+                }
+            }
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), this, &hitInfo.getOther().get<Collider>(), moveNormal);
             }
@@ -303,15 +331,9 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
-            // if actor and other is [semi]solid then try corner correction
-            // should make this its own method
-            if (moveSign == 1 && (hitInfo.otherLayer & (CollisionLayer::Solid | CollisionLayer::SemiSolid)) > 0 &&
-                mCollisionLayer == CollisionLayer::Actor) {
-                // TODO wiggling out of the way should be done in squish, so it only happens when we want it to. ALso squish should be configurable
-                // and I guess return a bool in case the collision was avoided? Idk maybe it's fine for the corner correction to eat the movement that
-                // would've happened
-                if (tryCornerCorrection(others, nextPos, amount.x(), moveNormal)) {
-                    continue;  // avoided collision
+            if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
+                if ((*wiggleOpt)->callback(this, hitInfo, moveNormal, amount, others)) {
+                    continue;
                 }
             }
             if (callback != nullptr) {
@@ -454,7 +476,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                 // otherName = other->mSelf.get<Name>().name;
                 // }
                 // print("pushing", otherName, "by", otherMoveVec);
-                hitSolid = other->move(toFloatVec(otherMoveVec), &squishPushedBySemiSolid);
+                hitSolid = other->move(toFloatVec(otherMoveVec), &squishEntityPushedBySemiSolid);
 
                 Vector2i newPosition = other->getShape().getPosition();
                 // Calculate difference between newPosition and expected position.
@@ -471,7 +493,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                     // }
                     // print(name, "being pushed back by", otherName, ". Its position is", mShape.getPosition(), "and it's being pushed back by",
                     // delta);
-                    move(toFloatVec(delta), &squishCollider, false, false, true);
+                    move(toFloatVec(delta), &squishEntity, false, false, true);
                     // print("After being pushed back,", name, "'s position is ", mShape.getPosition());
                     mIsCollidable = false;
                     other->mIsCollidable = true;
@@ -496,7 +518,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                     }
                 }
             } else {
-                other->move(toFloatVec(otherMoveVec), &squishCollider, false, false, true);
+                other->move(toFloatVec(otherMoveVec), &squishEntity, false, false, true);
             }
 
             // emit push event
@@ -570,10 +592,8 @@ HitInfo Collider::checkCollision(const std::vector<Collider*>& colliders, const 
     return HitInfo();
 }
 
-// RESEARCH should probably have this call a function pointer class member
-void Collider::squish() {
-    mSelf.kill();
-    mIsAlive = false;
+void Collider::squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal) {
+    mSquishCallback(mSelf, other, this, otherCollider, hitNormal);
 }
 
 void Collider::setMomentum(const f32 momentum, const bool isXDirection) {

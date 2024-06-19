@@ -182,6 +182,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     player.add<Velocity>();
     player.add<PlayerControl>();
     player.add<Jumper>();
+    player.add<Wiggle>();
 
     if (!getCamera()) {
         createCamera(player);

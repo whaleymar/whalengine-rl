@@ -17,30 +17,38 @@ struct HitInfo;
 // class Entity;
 // }
 
+// the default function which is called when a collider is push into a solid (it dies).
+void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal);
+
+// currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
 public:
     Collider() = default;
     Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-             CollisionDir collisionDir = CollisionDir::ALL);
+             CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None,
-             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
+             CollisionCallback squish_ = &defaultSquish);
 
     // static creator functions
-    static Collider Actor(AABB shape);
-    static Collider Actor(Transform2D transform, Vector2i halflen);
+    static Collider Actor(AABB shape, CollisionCallback squish_ = &defaultSquish);
+    static Collider Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_ = &defaultSquish);
     static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                          CollisionDir collisionDir = CollisionDir::ALL);
+                          CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     static Collider Solid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                          CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+                          CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
+                          CollisionCallback squish_ = &defaultSquish);
     static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                              CollisionDir collisionDir = CollisionDir::ALL);
+                              CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     static Collider SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                              CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL);
+                              CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
+                              CollisionCallback squish_ = &defaultSquish);
 
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
-    void setCollisionCallback(CollisionCallback callback);
+    void setCollisionCallback(CollisionCallback callback);  // Sends update signal to CollisionManager if callback was previously null.
+    void setSquishCallback(CollisionCallback callback) { mSquishCallback = callback; }
     WorldMaterial getMaterial() const { return mMaterial; }
     void setMaterial(WorldMaterial material) { mMaterial = material; }
     ecs::Entity getEntity() const { return mSelf; }
@@ -77,7 +85,8 @@ public:
 
     HitInfo checkCollision(const std::vector<Collider*>& colliders, const Vector2i position, const Vector2i moveNormal,
                            const u16 layerMask = CollisionLayer::ALL) const;
-    void squish();
+    void squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal);
+    bool tryCornerCorrection(const std::vector<Collider*>& others, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 
     // momentum:
     void setMomentum(const f32 momentum, const bool isXDirection);
@@ -88,7 +97,6 @@ public:
     Vector2f getMomentum() const { return mStoredMomentum; }
 
 protected:
-    bool tryCornerCorrection(const std::vector<Collider*>& others, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
                        const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid);
 
@@ -97,6 +105,7 @@ protected:
     ecs::Entity mSelf;
     CollisionLayer::Layer mCollisionLayer;
     CollisionCallback mOnCollisionEnter;
+    CollisionCallback mSquishCallback;
     f32 mXRemainder = 0.0;
     f32 mYRemainder = 0.0;
     Vector2f mStoredMomentum = {0, 0};
@@ -105,6 +114,14 @@ protected:
     CollisionDir mCollisionDir;
     bool mIsCollidable = true;
     bool mIsAlive = true;
+};
+
+using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount,
+                                const std::vector<Collider*>& others);
+
+bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount, const std::vector<Collider*>& others);
+struct Wiggle {
+    WiggleCallback callback = &defaultWiggle;
 };
 
 }  // namespace whal

@@ -1,11 +1,10 @@
 # To Do 
 
 ## Current Goal: 
-- collider consolidation:
-    - misc TODOs
-- cleanup todos (finish player anims, dynamic spawn points)
+- cleanup todos (finish player anims, dynamic spawn points, finish IPausable)
 
 ## Camera / Follow
+- pretty awful in general
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
