@@ -87,7 +87,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
             s32 ix = map.widthTiles * y + x;
 
             for (auto& layer : map.layers) {
-                s32 blockID = layer.data.get()[ix];
+                s32 blockID = layer.data[ix];
 
                 if (blockID != 0) {
                     // for now, am assuming everything in the base layer has collision

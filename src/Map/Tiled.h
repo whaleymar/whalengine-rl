@@ -3,12 +3,11 @@
 #include <vector>
 
 #include "CorradeOptional.h"
+#include "CorradePointer.h"
 
 #include "whalECS/src/Expected.h"
 
-#include "ECS/Transform.h"
-#include "Map/ComponentFactory.h"
-#include "Map/Level.h"
+#include "Gfx/Depth.h"
 #include "Physics/Material.h"
 #include "Util/Types.h"
 
@@ -18,6 +17,8 @@ struct Frame;
 struct TileMap;
 struct TileSet;
 struct Scene;
+struct Transform2D;
+struct ActiveLevel;
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
 Corrade::Containers::Optional<Error> parseMapProject(const char* projectfile);
@@ -35,7 +36,8 @@ struct TileLayer {
     s32 width;
     s32 height;
     LayerData metadata;
-    std::unique_ptr<s32[]> data;
+    // std::unique_ptr<s32[]> data;
+    std::vector<s32> data;
 };
 
 struct TileSet {
@@ -54,8 +56,6 @@ struct TileSet {
 
 struct TileMap {
     static TileMap parse(const char* file, ActiveLevel& level);
-
-    static inline ComponentFactory componentFactory;
 
     std::string name;
     s32 widthTiles;

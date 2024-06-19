@@ -1,13 +1,12 @@
 #include "Util/FileUtils.h"
 
-#include <format>
 #include <fstream>
-#include <sstream>
+#include "Util/Print.h"
 
 Expected<std::string> readFile(const char* filePath) {
     std::ifstream file(filePath);
     if (!file.is_open()) {
-        return Expected<std::string>::error(std::format("FileNotFound: {}\n", filePath));
+        return Expected<std::string>::error(whal_format("FileNotFound: {}\n", filePath));
     }
     std::stringstream buffer;
     buffer << file.rdbuf();

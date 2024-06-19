@@ -1,8 +1,5 @@
 #include "Tiled.h"
 
-#include <format>
-#include <memory>
-
 #include "Gfx/Depth.h"
 #include "json.hpp"
 
@@ -26,6 +23,8 @@ namespace whal {
 inline const char* MAP_DIR = "data/map";
 inline const char* TSET_SPRITE_DIR = "data/sprite/map";
 
+static ComponentFactory COMPONENT_FACTORY;
+
 Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
 void parseTileLayer(nlohmann::json layer, TileMap& map);
 void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level);
@@ -38,7 +37,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     TileMap map;
     using json = nlohmann::json;
 
-    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, path).c_str());
+    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, path).c_str());
     if (!jString.isExpected()) {
         print("error parsing json:", jString.error());
         return map;
@@ -126,9 +125,11 @@ void parseTileLayer(nlohmann::json layer, TileMap& map) {
     std::string tname = name;
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
 
-    std::vector<s32> layerData = layer["data"].get<std::vector<s32>>();
-    TileLayer tLayer = {tname, width, height, {layerDepth}, std::unique_ptr<s32[]>(new s32[width * height]())};
-    memcpy(tLayer.data.get(), layerData.data(), layerData.size() * sizeof(s32));
+    // std::vector<s32> layerData = layer["data"].get<std::vector<s32>>();
+    // TileLayer tLayer = {tname, width, height, {layerDepth}, std::unique_ptr<s32[]>(new s32[width * height]())};
+    // memcpy(tLayer.data.get(), layerData.data(), layerData.size() * sizeof(s32));
+
+    TileLayer tLayer = {tname, width, height, {layerDepth}, layer["data"].get<std::vector<s32>>()};
 
     map.layers.push_back(std::move(tLayer));
 }
@@ -193,7 +194,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         for (auto& property : object["properties"]) {
             std::string componentName = property["propertytype"];
             ComponentAdder creatorFunc = nullptr;
-            map.componentFactory.getEntryIndex(componentName.c_str(), &creatorFunc);
+            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
             if (creatorFunc == nullptr) {
                 continue;
             }
@@ -302,7 +303,7 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
 Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
     using json = nlohmann::json;
 
-    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, basename).c_str());
+    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, basename).c_str());
     if (!jString.isExpected()) {
         return jString.error();
     }
@@ -360,11 +361,11 @@ const TileSet* getTileSet(const TileMap& map, s32 blockId) {
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     const TileSet* tset = getTileSet(map, blockId);
-    std::string spritePath = std::format("{}/{}", "map", tset->spriteFileName);
+    std::string spritePath = whal_format("{}/{}", "map", tset->spriteFileName);
     Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
-        return Error(std::format("Couldn't find {} in sprite table", spritePath));
+        return Error(whal_format("Couldn't find {} in sprite table", spritePath));
     }
 
     // ASSUMING 0 MARGIN && SPACING
@@ -384,14 +385,14 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 Corrade::Containers::Optional<Error> parseMapProject(const char* mapfile) {
     using json = nlohmann::json;
 
-    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, mapfile).c_str());
+    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, mapfile).c_str());
     if (!jString.isExpected()) {
         return jString.error();
     }
 
     json data = json::parse(jString.value());
     for (auto& propType : data["propertyTypes"]) {
-        TileMap::componentFactory.makeDefaultComponent(propType);
+        COMPONENT_FACTORY.makeDefaultComponent(propType);
     }
     return NULLOPT;
 }
@@ -402,7 +403,7 @@ Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
 
     using json = nlohmann::json;
 
-    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, lvlFileName).c_str());
+    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, lvlFileName).c_str());
     if (!jString.isExpected()) {
         return jString.error();
     }
@@ -423,13 +424,13 @@ Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
         }
     }
 
-    return Error(std::format("LevelInfo property not found in level: {}", lvlFileName));
+    return Error(whal_format("LevelInfo property not found in level: {}", lvlFileName));
 }
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     using json = nlohmann::json;
 
-    Expected<std::string> jString = readFile(std::format("{}/{}", MAP_DIR, mapfile).c_str());
+    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, mapfile).c_str());
     if (!jString.isExpected()) {
         return jString.error();
     }

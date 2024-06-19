@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <format>
 #include <raylib.h>
 #include <string>
 
@@ -134,7 +133,7 @@ TextureManager::TextureManager()
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
-        print(std::format("Texture with name '{}' already registered", name), ". Replacing it.");
+        print(whal_format("Texture with name '{}' already registered", name), ". Replacing it.");
         UnloadTexture(mTextures[ix]);
         mTextures[ix] = texture;
     } else {
@@ -147,7 +146,7 @@ Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Textu
 Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const Texture2D texture, const char* atlasDataPath, const char* name) {
     s32 ix = getTextureAtlasIndex(name);
     if (ix >= 0) {
-        return Error(std::format("Texture Atlas with name '{}' already registered", name));
+        return Error(whal_format("Texture Atlas with name '{}' already registered", name));
     }
     TextureAtlas atlas;
     auto errOpt = atlas.init(texture, atlasDataPath);
@@ -162,7 +161,7 @@ Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const 
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char* imagePath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
     if (!IsTextureReady(texture)) {
-        return Error(std::format("Couldn't load image: %s", imagePath));
+        return Error(whal_format("Couldn't load image: %s", imagePath));
     }
     return registerTexture(texture, name);
 }
@@ -170,7 +169,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char*
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
     if (!IsTextureReady(texture)) {
-        return Error(std::format("Couldn't load image: %s", imagePath));
+        return Error(whal_format("Couldn't load image: %s", imagePath));
     }
     return registerTextureAtlas(texture, atlasDataPath, name);
 }

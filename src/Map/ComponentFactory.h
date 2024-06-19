@@ -12,7 +12,6 @@
 #include "ECS/RigidBody.h"
 #include "ECS/Velocity.h"
 
-#include "Map/Level.h"
 #include "Util/Factory.h"
 
 namespace whal {
@@ -21,6 +20,7 @@ namespace ecs {
 class Entity;
 }
 struct LayerData;
+struct ActiveLevel;
 
 // there is no base component class, so I'll pass the entity to the creation function instead of returning a component
 using ComponentAdder = void (*)(nlohmann::json&, nlohmann::json&, std::unordered_map<s32, s32>&, s32, ActiveLevel&, ecs::Entity, LayerData layerData);

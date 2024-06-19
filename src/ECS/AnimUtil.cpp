@@ -1,7 +1,6 @@
 #include "AnimUtil.h"
 
 #include <cassert>
-#include <format>
 
 #include "ECS/Animator.h"
 #include "Gfx/Texture.h"
@@ -15,7 +14,7 @@ void loadAnimations(Animator& animator, const AnimInfo& animInfo) {
     for (auto [animBaseName, id, count, secsPerFrame] : animInfo) {
         std::vector<Frame> frames;
         for (s32 i = 0; i < count; i++) {
-            auto animName = std::format("{}{}", animBaseName, i + 1);
+            auto animName = whal_format("{}{}", animBaseName, i + 1);
 
             auto frame = spriteTexture.getFrame(animName.c_str());
 #ifndef NDEBUG

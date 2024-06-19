@@ -2,7 +2,9 @@
 
 #include <raylib.h>
 
+#include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
+#include "ECS/RailsControl.h"
 #include "ECS/Systems/Animation.h"
 #include "ECS/Systems/CallbackSystem.h"
 #include "ECS/Systems/CollisionManager.h"
@@ -15,6 +17,7 @@
 #include "ECS/Systems/RelationshipManager.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Systems/TriggerSystem.h"
+#include "ECS/Transform.h"
 
 #include "Events/Listeners.h"
 
