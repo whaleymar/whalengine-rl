@@ -18,15 +18,4 @@ class ButtonPressOrReleaseEvent : public IEvent<InputType, bool> {};
 class LandingEvent : public IEvent<ecs::Entity> {};
 class EnteredLevelEvent : public IEvent<ecs::Entity, ActiveLevel> {};
 
-namespace Event {
-
-inline const DeathEvent DEATH;
-inline const CollisionEvent COLLISION;
-inline const ButtonPressEvent BUTTON_PRESS;
-inline const ButtonPressOrReleaseEvent BUTTON_PRESSRELEASE;
-inline const LandingEvent LANDING;
-inline const EnteredLevelEvent LEVEL_ENTER;
-
-}  // namespace Event
-
 }  // namespace whal

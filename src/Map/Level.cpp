@@ -160,24 +160,6 @@ void unloadLevel(ActiveLevel& level) {
     print("unloaded level:", level.name);
 }
 
-void removeEntityFromLevel(ecs::Entity entity) {
-    Scene& scene = Game::instance().getScene();
-    if (scene.childEntities.erase(entity)) {
-        if (entity.has<Name>()) {
-            print("erasing entity", entity.get<Name>(), "from child lists");
-        }
-        return;
-    }
-    for (auto& lvl : scene.loadedLevels) {
-        if (lvl.childEntities.erase(entity)) {
-            if (entity.has<Name>()) {
-                print("erasing entity", entity.get<Name>(), "from child lists");
-            }
-            break;
-        }
-    }
-}
-
 void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32, s32> endPoint) {
     s32 meshWidthTiles = endPoint.first - startPoint.first + 1;
     s32 meshHeightTiles = endPoint.second - startPoint.second + 1;

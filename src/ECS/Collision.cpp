@@ -133,7 +133,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         if (rigidbody.isGrounded) {
             rigidbody.isLanding = !wasGrounded;
             if (rigidbody.isLanding) {
-                System::eventMgr.triggerEvent(Event::LANDING, mSelf);
+                System::eventMgr.triggerEvent<LandingEvent>(mSelf);
                 rigidbody.framesSinceLanding = 0;
             }
 
@@ -163,7 +163,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     }
 
     if (hitinfo) {
-        System::eventMgr.triggerEvent(Event::COLLISION, mSelf, hitinfo);
+        System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
         return true;
     }
     return false;
@@ -526,7 +526,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
-            System::eventMgr.triggerEvent(Event::COLLISION, mSelf, hitinfo);
+            System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
 
             // set momentum if this movement was part of the physics system
             if (isManualMove) {
@@ -549,7 +549,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
-            System::eventMgr.triggerEvent(Event::COLLISION, mSelf, hitinfo);
+            System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
 
             // set momentum if this movement was part of the physics system
             if (isManualMove) {

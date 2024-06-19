@@ -32,12 +32,6 @@ constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no l
 
 using BoundCollisionCallback = std::function<void()>;
 
-void onCollision(ecs::Entity entity, HitInfo hitinfo);
-
-PhysicsSystem::PhysicsSystem() : mCollisionListener(EventListener<ecs::Entity, HitInfo>(&onCollision)) {
-    System::eventMgr.registerListener(Event::COLLISION, mCollisionListener);
-}
-
 void applyGravity(Velocity& velocity, f32 dt, bool isJumping) {
     bool isInJumpPeak = isJumping && isBetween(velocity.total.y(), JUMP_PEAK_SPEED_MAX, 0.0f);
     f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - JUMP_PEAK_GRAVITY_MULT);
@@ -52,7 +46,7 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 // If the moving entity or the other entity have callbacks, they're added to a queue and called once everything has moved.
 // If both entities are moving, this might get called twice for the same pair of entities.
 // So I have a helper function that makes sure they're unique
-void onCollision(ecs::Entity movingEntity, HitInfo hitinfo) {
+void PhysicsSystem::onEvent(ecs::Entity movingEntity, HitInfo hitinfo) {
     auto& queue = PhysicsSystem::getCollisionCallbackQueue();
     auto& movingCollider = movingEntity.get<Collider>();
     auto& otherCollider = hitinfo.getOther().get<Collider>();

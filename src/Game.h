@@ -2,8 +2,10 @@
 
 #include "CorradeOptional.h"
 
+#include "Events/Events.h"
 #include "Map/Level.h"
 #include "Systems/Event.h"
+#include "Systems/System.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
@@ -20,7 +22,7 @@ class Entity;
 
 }  // namespace whal
 
-class Game {
+class Game : public whal::IListen<whal::DeathEvent, whal::ecs::Entity> {
 public:
     static Game& instance() {
         static Game instance_;
@@ -34,6 +36,10 @@ public:
     void mainloop();
     void end();
 
+    // calls removeEntityFromLevel on killed entity
+    void onEvent(whal::ecs::Entity) override;
+
+    void removeEntityFromLevel(whal::ecs::Entity entity);
     Corrade::Containers::Optional<Error> loadScene(const char* name);
     void unloadScene();
     Corrade::Containers::Optional<Error> reloadScene();
@@ -49,7 +55,6 @@ private:
     ~Game();
 
     whal::Scene mActiveScene;
-    whal::EventListener<whal::ecs::Entity> mEntityDeathListener;
 
     // I can't figure out to unique_ptr a forward declared type
     Font* mFont;

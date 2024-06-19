@@ -3,13 +3,10 @@
 #include "Events/Events.h"
 #include "Game/Components/Respawn.h"
 
-#include "Systems/Event.h"
+#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
-class RespawnListener : public whal::ecs::ISystem<Respawn> {
+class RespawnListener : public whal::ecs::ISystem<Respawn>, public whal::IListen<whal::DeathEvent, whal::ecs::Entity> {
 public:
-    RespawnListener();
-
-private:
-    whal::EventListener<whal::ecs::Entity> mDeathListener;
+    void onEvent(whal::ecs::Entity) override;
 };

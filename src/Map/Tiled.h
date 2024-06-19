@@ -5,6 +5,7 @@
 #include "CorradeOptional.h"
 #include "CorradePointer.h"
 
+#include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
 #include "Gfx/Depth.h"

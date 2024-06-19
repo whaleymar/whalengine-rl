@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Systems/Event.h"
+#include "Events/Events.h"
+#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -11,15 +12,12 @@ struct Follow;
 struct Velocity;
 struct Transform2D;
 
-class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem {
+class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem, public IListen<DeathEvent, ecs::Entity> {
 public:
-    EntityChildSystem();
     static EntityChildSystem* instance();
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
-
-private:
-    EventListener<ecs::Entity> mEntityDeathListener;
+    void onEvent(ecs::Entity entity) override;
 };
 
 class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IMonitorSystem {
@@ -29,18 +27,12 @@ public:
     void onRemove(ecs::Entity entity) override {}
 };
 
-class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D>, public ecs::IMonitorSystem {
+class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D>, public ecs::IMonitorSystem, public IListen<DeathEvent, ecs::Entity> {
 public:
-    FollowSystem();
     void update() override;
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
-
-private:
-    EventListener<ecs::Entity> mEntityDeathListener;
+    void onEvent(ecs::Entity entity) override;
 };
-
-void unfollowEntity(ecs::Entity killedEntity);
-void removeEntityFromChildList(ecs::Entity entity);
 
 }  // namespace whal

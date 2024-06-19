@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Events/Events.h"
 #include "Settings.h"
-#include "Systems/Event.h"
 #include "Systems/InputHandler.h"
+#include "Systems/System.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -28,15 +29,15 @@ struct RocketJumping {
 
 class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>,
                          public whal::ecs::IMonitorSystem,
-                         public whal::ecs::IPausableSystem {
+                         public whal::ecs::IPausableSystem,
+                         public whal::IListen<whal::ButtonPressOrReleaseEvent, whal::InputType, bool> {
 public:
-    ProjectileSystem();
-
     void update() override;
     void onAdd(whal::ecs::Entity entity) override {}
     void onRemove(whal::ecs::Entity entity) override;
     void onPause() override {}
     void onUnpause() override;
+    void onEvent(whal::InputType, bool) override;
 
     static void addAimReticles();
     static void updateFacingDirections(bool isFacingRight);
@@ -44,17 +45,14 @@ public:
     static bool getIsAiming() { return mIsAiming; }
 
 private:
-    whal::EventListener<Vector2i> mBlasterEventListener;
-    whal::EventListener<whal::InputType, bool> mInputListener;
     inline static bool mIsAiming = false;
 };
 
-class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>, public whal::ecs::IMonitorSystem {
+class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>,
+                            public whal::ecs::IMonitorSystem,
+                            public whal::IListen<whal::LandingEvent, whal::ecs::Entity> {
 public:
-    RocketJumpingSystem();
     void onAdd(const whal::ecs::Entity) override;
     void onRemove(const whal::ecs::Entity) override;
-
-private:
-    whal::EventListener<whal::ecs::Entity> mLandingEventListener;
+    void onEvent(whal::ecs::Entity) override;
 };

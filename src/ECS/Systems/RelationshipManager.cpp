@@ -17,8 +17,15 @@ EntityChildSystem* EntityChildSystem::instance() {
     return instance_;
 }
 
-EntityChildSystem::EntityChildSystem() : mEntityDeathListener(&removeEntityFromChildList) {
-    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
+// removes entity from child list
+void EntityChildSystem::onEvent(ecs::Entity entity) {
+    for (auto [entityid, parent] : EntityChildSystem::instance()->getEntitiesRef()) {
+        auto& children = parent.get<Children>();
+        auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
+        if (it != children.entityIDs.end()) {
+            children.entityIDs.erase(it);
+        }
+    }
 }
 
 void EntityChildSystem::onRemove(ecs::Entity entity) {
@@ -40,10 +47,6 @@ void AttachSystem::update() {
         ecs::Entity targetEntity(attach.targetEntityID);
         trans.position = targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
     }
-}
-
-FollowSystem::FollowSystem() : mEntityDeathListener(&unfollowEntity) {
-    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
 }
 
 void FollowSystem::update() {
@@ -164,7 +167,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-void unfollowEntity(ecs::Entity killedEntity) {
+void FollowSystem::onEvent(ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
     for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {
         if (entity.get<Follow>().targetEntityID == killedEntity.id()) {
@@ -174,16 +177,6 @@ void unfollowEntity(ecs::Entity killedEntity) {
 
     for (auto entity : toRemove) {
         entity.remove<Follow>();
-    }
-}
-
-void removeEntityFromChildList(ecs::Entity entity) {
-    for (auto [entityid, parent] : EntityChildSystem::instance()->getEntitiesRef()) {
-        auto& children = parent.get<Children>();
-        auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
-        if (it != children.entityIDs.end()) {
-            children.entityIDs.erase(it);
-        }
     }
 }
 

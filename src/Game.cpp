@@ -4,6 +4,7 @@
 
 #include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
+#include "ECS/Name.h"
 #include "ECS/RailsControl.h"
 #include "ECS/Systems/Animation.h"
 #include "ECS/Systems/CallbackSystem.h"
@@ -46,8 +47,7 @@ constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
 
 using namespace whal;
 
-Game::Game() : mEntityDeathListener(EventListener<ecs::Entity>(&removeEntityFromLevel)) {
-    System::eventMgr.registerListener(Event::DEATH, mEntityDeathListener);
+Game::Game() {
     mWorldSpaceCamera = new Camera2D();
     mScreenSpaceCamera = new Camera2D();
     mFont = new Font();
@@ -363,6 +363,28 @@ void Game::end() {
     CloseWindow();
 }
 
+void Game::onEvent(ecs::Entity entity) {
+    removeEntityFromLevel(entity);
+}
+
+void Game::removeEntityFromLevel(ecs::Entity entity) {
+    Scene& scene = getScene();
+    if (scene.childEntities.erase(entity)) {
+        if (entity.has<Name>()) {
+            print("erasing entity", entity.get<Name>(), "from child lists");
+        }
+        return;
+    }
+    for (auto& lvl : scene.loadedLevels) {
+        if (lvl.childEntities.erase(entity)) {
+            if (entity.has<Name>()) {
+                print("erasing entity", entity.get<Name>(), "from child lists");
+            }
+            break;
+        }
+    }
+}
+
 Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     if (mIsSceneLoaded) {
         unloadScene();
@@ -464,7 +486,7 @@ void Game::updateLevelCamera(bool overrideCache) {
             print("Couldn't load level. Got error:", activeOpt.error());
             doDefaultCamera = true;
         } else {
-            System::eventMgr.triggerEvent(Event::LEVEL_ENTER, player, *activeOpt.value());
+            System::eventMgr.triggerEvent<EnteredLevelEvent>(player, *activeOpt.value());
 
             if (activeOpt.value()->cameraFollow) {
                 Follow follow = (*activeOpt.value()->cameraFollow);

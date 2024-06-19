@@ -83,12 +83,18 @@ Vector2f closestOrdinalDirection(Vector2f vecf) {
     }
 }
 
-// void onBlasterFired(Vector2i target) {
-void onBlasterFired(Vector2i moveNormali) {
+void shootProjectile() {
     using namespace whal;
-    if (System::isPaused()) {
-        return;
-    }
+
+    ProjectileSystem::setIsAiming(false);
+
+    // slight delay for enabling movement so player can adjust arrow keys
+    System::schedule.after([]() { System::input.enableMovement(); }, 0.2);
+    // but allow jumping immediately
+    System::input.enableJumping();
+
+    // Vector2i moveNormali = System::input.getMoveNormal();
+    // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormali);
 
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
@@ -118,18 +124,7 @@ void onBlasterFired(Vector2i moveNormali) {
     }
 }
 
-void doShootEvent() {
-    ProjectileSystem::setIsAiming(false);
-
-    // slight delay for enabling movement so player can adjust arrow keys
-    whal::System::schedule.after([]() { whal::System::input.enableMovement(); }, 0.2);
-    // but allow jumping immediately
-    whal::System::input.enableJumping();
-    Vector2i moveNormal = whal::System::input.getMoveNormal();
-    whal::System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormal);
-}
-
-void onKeyPressOrRelease(whal::InputType input, bool isPress) {
+void ProjectileSystem::onEvent(whal::InputType input, bool isPress) {
     if (whal::System::isPaused()) {
         return;
     }
@@ -143,7 +138,7 @@ void onKeyPressOrRelease(whal::InputType input, bool isPress) {
             whal::System::input.disableJumping();
 
         } else if (!isPress && ProjectileSystem::getIsAiming()) {
-            doShootEvent();
+            shootProjectile();
         }
     } else if (isPress) {
         switch (input) {
@@ -157,14 +152,6 @@ void onKeyPressOrRelease(whal::InputType input, bool isPress) {
             return;
         }
     }
-}
-
-ProjectileSystem::ProjectileSystem()
-    : mBlasterEventListener(whal::EventListener<Vector2i>(&onBlasterFired)),
-      mInputListener(whal::EventListener<whal::InputType, bool>(&onKeyPressOrRelease)) {
-    whal::System::eventMgr.registerListener(GameEvent::SHOOT_EVENT, mBlasterEventListener);
-
-    whal::System::eventMgr.registerListener(whal::Event::BUTTON_PRESSRELEASE, mInputListener);
 }
 
 void ProjectileSystem::addAimReticles() {
@@ -223,7 +210,7 @@ void ProjectileSystem::onRemove(whal::ecs::Entity entity) {
 
 void ProjectileSystem::onUnpause() {
     if (getIsAiming() && !whal::System::input.isOn(whal::InputType::AIM)) {
-        doShootEvent();
+        shootProjectile();
     }
 }
 
@@ -237,15 +224,12 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
     }
 }
 
-void onRocketJumperLands(whal::ecs::Entity entity) {
+void RocketJumpingSystem::onEvent(whal::ecs::Entity entity) {
     if (entity.has<RocketJumping>()) {
         entity.remove<RocketJumping>();
     }
 }
 
-RocketJumpingSystem::RocketJumpingSystem() : mLandingEventListener(whal::EventListener<whal::ecs::Entity>(&onRocketJumperLands)) {
-    whal::System::eventMgr.registerListener(whal::Event::LANDING, mLandingEventListener);
-}
 void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
     auto& rb = entity.get<whal::RigidBody>();
     entity.get<RocketJumping>().prevFrictionMultiplier = rb.frictionMultiplier;  // save for later

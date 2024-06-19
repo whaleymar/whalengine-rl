@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "Util/Types.h"
@@ -13,34 +14,21 @@ using ListenerId = u32;
 class EventManager;
 struct System;
 
-class EventBase {
-public:
-    EventBase() { mId = S_EVENT_ID++; }
-    EventId id() const { return mId; }
-
-private:
-    inline static EventId S_EVENT_ID = 0;
-    EventId mId;
-};
-
 template <typename... T>
-class IEvent : public EventBase {
-public:
-    IEvent() : EventBase() {}
-};
+class IEvent {};
 
 template <typename... T>
 class EventListener {
 public:
     friend EventManager;
     using callbackFunc = void (*)(T... args);
-    EventListener(callbackFunc func) : mCallback(func) {}
+    EventListener(std::type_identity_t<std::function<void(T...)>> const& func) : mCallback(func) {}
 
     void callback(T... args) { mCallback(args...); }
     ListenerId id() const { return mId; }
 
 private:
-    callbackFunc mCallback;
+    std::type_identity_t<std::function<void(T...)>> mCallback;
     ListenerId mId = 0;
 };
 
@@ -48,26 +36,30 @@ class EventManager {
 public:
     friend System;
 
-    template <typename... T>
-    void registerListener(IEvent<T...> event, EventListener<T...>& listener) {
+    template <typename E, typename... T>
+        requires(std::is_base_of<IEvent<T...>, E>::value)
+    void registerListener(EventListener<T...>& listener) {
+        static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
         listener.mId = S_LISTENER_ID++;
-        mEvents.push_back({event, &listener});
+        mEvents.push_back({getEventId<E>(), &listener});
     }
 
-    template <typename... T>
-    void stopListening(IEvent<T...> event, EventListener<T...>& listener) {
+    template <typename E, typename... T>
+    void stopListening(EventListener<T...>& listener) {
+        const EventId eventId = getEventId<E>();
         for (size_t i = 0; i < mEvents.size(); i++) {
             EventListener<T...>* eventListener = static_cast<EventListener<T...>*>(mEvents[i].second);
-            if (mEvents[i].first.id() == event.id() && eventListener->id() == listener.id()) {
+            if (mEvents[i].first == eventId && eventListener->id() == listener.id()) {
                 removeListenerAt(i);
             }
         }
     }
 
-    template <typename... T>
-    void triggerEvent(IEvent<T...> newEvent, T... args) {
-        for (auto& [event, listener] : mEvents) {
-            if (event.id() != newEvent.id()) {
+    template <typename E, typename... T>
+    void triggerEvent(T... args) {
+        static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
+        for (auto& [eventId, listener] : mEvents) {
+            if (eventId != getEventId<E>()) {
                 continue;
             }
 
@@ -80,14 +72,21 @@ private:
     EventManager() = default;
     EventManager(EventManager& other) = delete;
     void removeListenerAt(int ix) {
-        std::pair<EventBase, void*> last = mEvents.back();
-        mEvents[ix] = last;
+        auto lastPair = mEvents.back();
+        mEvents[ix] = lastPair;
         mEvents.pop_back();
     }
 
+    template <typename T>
+    EventId getEventId() {
+        static EventId id_ = S_EVENT_ID++;
+        return id_;
+    }
+
     // RESEARCH can do a std::unordered_map<EventBase, std::vector<void*>> if this gets too slow
-    std::vector<std::pair<EventBase, void*>> mEvents;
+    std::vector<std::pair<EventId, void*>> mEvents;
     inline static ListenerId S_LISTENER_ID = 1;  // 0 is invalid id;
+    inline static EventId S_EVENT_ID = 1;
 };
 
 }  // namespace whal

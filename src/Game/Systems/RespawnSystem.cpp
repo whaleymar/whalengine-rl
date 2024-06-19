@@ -3,7 +3,7 @@
 #include "ECS/Draw.h"
 #include "Systems/System.h"
 
-static void respawnOnDeath(whal::ecs::Entity entity) {
+void RespawnListener::onEvent(whal::ecs::Entity entity) {
     if (!RespawnListener::getEntitiesRef().contains(entity.id())) {
         return;
     }
@@ -18,8 +18,4 @@ static void respawnOnDeath(whal::ecs::Entity entity) {
         .add(respawn.respawnCallback, sprite)
         .add(respawn.onRespawn);
     // clang-format on
-}
-
-RespawnListener::RespawnListener() : mDeathListener(whal::EventListener<whal::ecs::Entity>(&respawnOnDeath)) {
-    whal::System::eventMgr.registerListener(whal::Event::DEATH, mDeathListener);
 }

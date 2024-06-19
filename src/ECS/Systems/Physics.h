@@ -2,7 +2,9 @@
 
 #include <functional>
 
-#include "Systems/Event.h"
+#include "Events/Events.h"
+#include "Physics/HitInfo.h"
+#include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
 #include "Util/Types.h"
@@ -15,17 +17,16 @@ struct HitInfo;
 
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
-class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity> {
+class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>, public IListen<CollisionEvent, ecs::Entity, HitInfo> {
     using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, std::function<void()>>>, ecs::EntityHash>;
 
 public:
-    PhysicsSystem();
     void update() override;
+    void onEvent(ecs::Entity, HitInfo) override;
 
     static CallbackMap& getCollisionCallbackQueue() { return mCollisionCallbackQueue; }
 
 private:
-    EventListener<ecs::Entity, HitInfo> mCollisionListener;
     inline static CallbackMap mCollisionCallbackQueue;
 };
 

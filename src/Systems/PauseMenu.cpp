@@ -9,20 +9,12 @@ namespace whal {
 
 static const char* S_BUTTON_TO_NAME[] = {"Resume", "Exit"};
 
-void buttonCallback(InputType input) {
-    PauseMenu::instance().onButtonPressed(input);
-}
-
 s32 pythonMod(s32 a, s32 b) {
     // behaves like a % b in python (different from c++ for negative #s)
     return (b + (a % b)) % b;
 }
 
-PauseMenu::PauseMenu() : mInputListener(&buttonCallback) {
-    System::eventMgr.registerListener(Event::BUTTON_PRESS, mInputListener);
-}
-
-void PauseMenu::onButtonPressed(InputType input) {
+void PauseMenu::onEvent(InputType input) {
     if (!isActive()) {
         if (input == InputType::PAUSE) {
             activate();

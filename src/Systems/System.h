@@ -44,4 +44,19 @@ private:
     inline static bool IsQuit = false;
 };
 
+// An interface for ECS Systems, but it's here to avoid circlular imports.
+template <typename E, typename... T>
+    requires(std::is_base_of<IEvent<T...>, E>::value)
+class IListen {
+public:
+    virtual ~IListen() { System::eventMgr.stopListening<E, T...>(mListener); }
+    virtual void onEvent(T...) = 0;
+
+protected:
+    IListen() : mListener([this](T... args) { this->onEvent(args...); }) { System::eventMgr.registerListener<E>(mListener); }
+
+private:
+    EventListener<T...> mListener;
+};
+
 }  // namespace whal
