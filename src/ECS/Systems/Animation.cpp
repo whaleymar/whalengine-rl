@@ -6,7 +6,7 @@
 
 namespace whal {
 
-void AnimationSystem::update() {
+void AnimationSystem::fixedUpdate() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         auto& anim = entity.get<Animator>();
         if (anim.brain == nullptr) {

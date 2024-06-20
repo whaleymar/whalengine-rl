@@ -4,7 +4,6 @@
 
 #include "Events/Events.h"
 #include "Map/Level.h"
-#include "Systems/Event.h"
 #include "Systems/System.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -22,7 +21,7 @@ class Entity;
 
 }  // namespace whal
 
-class Game : public whal::IListen<whal::DeathEvent, whal::ecs::Entity> {
+class Game : public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
 public:
     static Game& instance() {
         static Game instance_;

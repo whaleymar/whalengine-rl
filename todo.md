@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- cleanup todos (finish player anims, dynamic spawn points, finish IPausable)
+- cleanup todos (finish player anims, dynamic spawn points)
 
 ## Camera / Follow
 - pretty awful in general

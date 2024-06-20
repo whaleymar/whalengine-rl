@@ -423,7 +423,7 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
     if (values.contains("FollowTarget")) {
         // TODO compare to entities with Name component and follow first one which matches
         // std::string followTargetName = values["FollowTarget"];
-        follow.targetEntityID = PlayerSystem::instance()->first().id();
+        follow.targetEntityID = System::world->getSystem<PlayerSystem>()->first().id();
     }
     if (values.contains("dampingX")) {
         follow.damping.e[0] = values["dampingX"];

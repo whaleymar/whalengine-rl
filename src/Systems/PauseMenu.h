@@ -11,7 +11,7 @@ namespace whal {
 
 enum class InputType : u64;
 
-class PauseMenu : public IListen<ButtonPressEvent, InputType> {
+class PauseMenu : public IListen<ButtonPressEvent, true, InputType> {
     enum Button { Resume, Exit };
     inline static constexpr s32 N_BUTTONS = 2;
 

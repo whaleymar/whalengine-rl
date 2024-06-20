@@ -21,7 +21,7 @@ void RailsSystem::onAdd(const ecs::Entity entity) {
     rails.prepareForFirstStep(trans);
 }
 
-void RailsSystem::update() {
+void RailsSystem::fixedUpdate() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
         // camera moves normally unless pause menu is activated

@@ -14,7 +14,6 @@
 #include "ECS/Velocity.h"
 
 #include "Game/Entities/Projectile.h"
-#include "Game/Events.h"
 #include "whalECS/src/ECS.h"
 
 // where a shot originates from, relative to shooter's transform
@@ -125,9 +124,6 @@ void shootProjectile() {
 }
 
 void ProjectileSystem::onEvent(whal::InputType input, bool isPress) {
-    if (whal::System::isPaused()) {
-        return;
-    }
     if (input == whal::InputType::AIM) {
         if (isPress && !ProjectileSystem::getIsAiming()) {
             ProjectileSystem::setIsAiming(true);
@@ -179,8 +175,8 @@ void ProjectileSystem::addAimReticles() {
     }
 }
 
-void ProjectileSystem::update() {
-    if (!mIsAiming || whal::System::isPaused()) {
+void ProjectileSystem::fixedUpdate() {
+    if (!mIsAiming) {
         return;
     }
     Vector2i aimDirection = whal::System::input.getMoveNormal();
@@ -215,7 +211,7 @@ void ProjectileSystem::onUnpause() {
 }
 
 void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
-    if (!mIsAiming || whal::System::isPaused()) {
+    if (!mIsAiming) {
         return;
     }
     for (auto [entityid, entity] : getEntitiesRef()) {

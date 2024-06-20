@@ -72,7 +72,7 @@ void PhysicsSystem::onEvent(ecs::Entity movingEntity, HitInfo hitinfo) {
     }
 }
 
-void PhysicsSystem::update() {
+void PhysicsSystem::fixedUpdate() {
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesRef()) {
@@ -95,7 +95,7 @@ void PhysicsSystem::update() {
     for (auto& [entityid, entity] : getEntitiesRef()) {
         f32 dt;
         // camera move normally unless pause menu is active
-        if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
+        if (entity.has<Camera>()) {
             dt = System::dt.getUnmodified();
         } else {
             dt = System::dt();

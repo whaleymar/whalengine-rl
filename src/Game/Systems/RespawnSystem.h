@@ -6,7 +6,7 @@
 #include "Systems/System.h"
 #include "whalECS/src/ECS.h"
 
-class RespawnListener : public whal::ecs::ISystem<Respawn>, public whal::IListen<whal::DeathEvent, whal::ecs::Entity> {
+class RespawnListener : public whal::ecs::ISystem<Respawn>, public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
 public:
     void onEvent(whal::ecs::Entity) override;
 };

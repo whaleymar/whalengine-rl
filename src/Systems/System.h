@@ -45,7 +45,7 @@ private:
 };
 
 // An interface for ECS Systems, but it's here to avoid circlular imports.
-template <typename E, typename... T>
+template <typename E, bool RunOnPause, typename... T>
     requires(std::is_base_of<IEvent<T...>, E>::value)
 class IListen {
 public:
@@ -53,7 +53,17 @@ public:
     virtual void onEvent(T...) = 0;
 
 protected:
-    IListen() : mListener([this](T... args) { this->onEvent(args...); }) { System::eventMgr.registerListener<E>(mListener); }
+    IListen()
+        : mListener([this](T... args) {
+              if constexpr (RunOnPause) {
+                  this->onEvent(args...);
+              } else {
+                  if (!System::isPaused())
+                      this->onEvent(args...);
+              }
+          }) {
+        System::eventMgr.registerListener<E>(mListener);
+    }
 
 private:
     EventListener<T...> mListener;

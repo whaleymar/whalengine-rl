@@ -5,26 +5,11 @@
 
 namespace whal {
 
-PlayerSystem* PlayerSystem::instance() {
-    static auto instance_ = System::world->registerSystem<PlayerSystem>();
-    return instance_;
-}
-
-CameraSystem* CameraSystem::instance() {
-    static auto instance_ = System::world->registerSystem<CameraSystem>(ecs::SystemManager::UniqueEntity);
-    return instance_;
-}
-
-AudioListenerSystem* AudioListenerSystem::instance() {
-    static auto instance_ = System::world->registerSystem<AudioListenerSystem>(ecs::SystemManager::UniqueEntity);
-    return instance_;
-}
-
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (CameraSystem::instance()->getEntitiesRef().empty()) {
+    if (System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {
         return Corrade::Containers::NullOpt;
     }
-    return CameraSystem::instance()->first();
+    return System::world->getSystem<CameraSystem>()->first();
 }
 
 Vector2i getCameraPosition() {
@@ -74,7 +59,7 @@ void setCameraPosition(Vector2i pos) {
     }
 }
 
-void AudioListenerSystem::update() {
+void AudioListenerSystem::fixedUpdate() {
     if (getEntitiesRef().empty()) {
         return;
     }

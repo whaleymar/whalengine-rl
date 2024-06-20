@@ -99,40 +99,33 @@ bool Game::startup() {
     System::world->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
 
+    // note: nothing is actually running in parallel yet
+    System::world->BeginSystemRegistration()
+        .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
+        .sequential<PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
+        .parallel<TriggerSystem, LifetimeSystem>()
+        .sequential<ProjectileSystem>()  // game specific systems
+        .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
+
+    System::world->BeginSystemRegistration()
+        .registerSystems<DrawSystem, SpriteSystem, DrawDebugSystem, PointLightSystem,
+                         RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
+        .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem, MovableColliders>()
+        .registerSystems<RocketJumpingSystem, RespawnListener>();
+
     return false;
 }
 
 void Game::mainloop() {
-    auto controlSystem = System::world->registerSystem<ControllerSystem>();
-    auto controlSystemFree = System::world->registerSystem<FreeControlSystem>();
-    auto jumpSystem = System::world->registerSystem<JumpSystem>();
-    auto pathSystem = System::world->registerSystem<RailsSystem>();
-    auto physicsSystem = System::world->registerSystem<PhysicsSystem>();
-    auto spriteSystem = System::world->registerSystem<SpriteSystem>();
-    auto drawSystem = System::world->registerSystem<DrawSystem>();
-    auto drawDebugSystem = System::world->registerSystem<DrawDebugSystem>();
-    auto animationSystem = System::world->registerSystem<AnimationSystem>();
-    auto lifetimeSystem = System::world->registerSystem<LifetimeSystem>();
-    auto triggerSystem = System::world->registerSystem<TriggerSystem>();
-    auto frameEndSystem = System::world->registerSystem<OnFrameEndSystem>();
-    auto followSystem = System::world->registerSystem<FollowSystem>();
-    auto attachSystem = System::world->registerSystem<AttachSystem>();
-    auto audioListenerSystem = AudioListenerSystem::instance();
-    auto lightSystem = System::world->registerSystem<PointLightSystem>();
-    auto radianceSystem = System::world->registerSystem<RadianceLightSystem>();
+    // these are used for rendering, which still is run in this function but I might move it eventually
+    auto drawSystem = System::world->getSystem<DrawSystem>();
+    auto spriteSystem = System::world->getSystem<SpriteSystem>();
+    auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
+    auto lightSystem = System::world->getSystem<PointLightSystem>();
+    auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
-    auto projectileSystem = System::world->registerSystem<ProjectileSystem>();
-
-    // single-component systems for running psuedo-destructors / updating some global var
-    auto collisionMgr = CollisionManager::instance();
-
-    // these don't have update methods, just registering them
-    PlayerSystem::instance();
-    CameraSystem::instance();
-    EntityChildSystem::instance();
-    System::world->registerSystem<RocketJumpingSystem>();
-    System::world->registerSystem<MovableColliders>();  // dependency of TriggerSystem
-    System::world->registerSystem<RespawnListener>();
+    auto collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering, which
+                                                       // should be its own phase
 
     // load scene
     auto err = loadTestMap();
@@ -187,37 +180,18 @@ void Game::mainloop() {
         System::frame.update();
         System::audio.update();
 
-        controlSystem->update();
-        controlSystemFree->update();
-        jumpSystem->update();
-        pathSystem->update();
-        physicsSystem->update();
-
-        // relationships should run after physics
-        attachSystem->update();
-        followSystem->update();
-
-        triggerSystem->update();
-
-        lifetimeSystem->update();
-
-        // Game specific systems:
-        projectileSystem->update();
+        System::world->update();
 
         // Update Scene
-        updateLevelCamera();
+        updateLevelCamera();  // TODO should be a system
 
         // Only rendering remains, so we can do "end of frame" stuff now
-        frameEndSystem->update();
         System::world->killEntities();
         collisionMgr->update();  // this can definitely be done in parallel while rendering
-        audioListenerSystem->update();
-
-        animationSystem->update();
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {
-            for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
+            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
                 entity.kill();
             }
         }
@@ -254,9 +228,6 @@ void Game::mainloop() {
 
         spriteSystem->drawEntities();
         drawSystem->drawEntities();
-        // BeginBlendMode(BLEND_MULTIPLIED);
-        // radianceSystem->update();  // draws to current texture
-        // EndBlendMode();
 
         EndMode2D();
 
@@ -320,15 +291,6 @@ void Game::mainloop() {
         BeginMode2D(*mScreenSpaceCamera);
 
         Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
-        // i want camera to move in world space, so offset final texture by the difference between camera's precise and integer coords, then scale by
-        // virtual ratio
-
-        // Vector2f cameraOffset = ((getCameraPositionPrecise() - toFloatVec(getCameraPosition())) - Vector2f(-BLEED_SIZE, BLEED_SIZE) / 2);
-        // const Rectangle screenSourceRecFinal =
-        //     Rectangle(screenSourceRec.x - cameraOffset.x(), screenSourceRec.y - cameraOffset.y(), screenSourceRec.width, screenSourceRec.height);
-        // if (System::frame.getFrame() == 0)
-        //     print("camera offset is ", cameraOffset);
-        // DrawTexturePro(postProcessTexture.texture, screenSourceRecFinal, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
         DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
         EndMode2D();
@@ -401,7 +363,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     updateLoadedLevels(toFloatVec(startPos));
 
     // spawn entities with player tag at start pos:
-    for (auto [entityid, entity] : PlayerSystem::instance()->getEntitiesRef()) {
+    for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
         entity.set(Transform2D(startPos));
     }
 
@@ -458,13 +420,14 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
 
 // should rename to "checkIfInNewLevel" and move most logic to events
 void Game::updateLevelCamera(bool overrideCache) {
-    if (PlayerSystem::instance()->getEntitiesRef().empty() || !mIsSceneLoaded || CameraSystem::instance()->getEntitiesRef().empty()) {
+    if (System::world->getSystem<PlayerSystem>()->getEntitiesRef().empty() || !mIsSceneLoaded ||
+        System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {
         return;
     }
     static std::string lastLevel = "default";
     std::string curLevel;
-    ecs::Entity player = PlayerSystem::instance()->first();
-    ecs::Entity camera = CameraSystem::instance()->first();
+    ecs::Entity player = System::world->getSystem<PlayerSystem>()->first();
+    ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
     Vector2f playerPosTexels = toFloatVec(player.get<Transform2D>().position) * FTEXELS_PER_PIXEL +
                                Vector2f(player.get<Collider>().getShape().getHalf().x() / 2,
                                         0);  // add halfX so visually the middle of the player has to enter the new level for it to change
@@ -503,7 +466,7 @@ void Game::updateLevelCamera(bool overrideCache) {
                     camera.remove<Follow>();
                 }
                 camera.add(createCameraMoveController(camera.get<Transform2D>().position, focalPoint));
-                System::setPaused(true);
+                System::dt.setMultiplier(0.0);
                 return;
             }
         }

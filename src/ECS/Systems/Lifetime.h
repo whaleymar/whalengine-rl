@@ -5,9 +5,9 @@ namespace whal {
 
 struct Lifetime;
 
-class LifetimeSystem : public ecs::ISystem<Lifetime> {
+class LifetimeSystem : public ecs::ISystem<Lifetime>, public ecs::IFixedUpdate {
 public:
-    void update() override;
+    void fixedUpdate() override;
 };
 
 }  // namespace whal

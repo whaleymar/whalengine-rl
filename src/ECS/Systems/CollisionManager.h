@@ -11,7 +11,7 @@ class CollisionManager : public ecs::ISystem<Collider>, public ecs::IMonitorSyst
 public:
     static CollisionManager* instance();
 
-    void update() override;
+    void update();
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
     void setUpdateNeeded() { mIsUpdateNeeded = true; }

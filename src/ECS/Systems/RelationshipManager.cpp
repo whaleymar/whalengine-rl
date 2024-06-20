@@ -6,20 +6,14 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 #include "Events/Events.h"
-#include "Systems/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
 
 namespace whal {
 
-EntityChildSystem* EntityChildSystem::instance() {
-    static auto instance_ = System::world->registerSystem<EntityChildSystem>();
-    return instance_;
-}
-
 // removes entity from child list
 void EntityChildSystem::onEvent(ecs::Entity entity) {
-    for (auto [entityid, parent] : EntityChildSystem::instance()->getEntitiesRef()) {
+    for (auto [entityid, parent] : getEntitiesRef()) {
         auto& children = parent.get<Children>();
         auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
         if (it != children.entityIDs.end()) {
@@ -40,7 +34,7 @@ void AttachSystem::onAdd(ecs::Entity entity) {
     entity.get<Attach>().initTarget(entity);
 }
 
-void AttachSystem::update() {
+void AttachSystem::fixedUpdate() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         Transform2D& trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
@@ -49,7 +43,7 @@ void AttachSystem::update() {
     }
 }
 
-void FollowSystem::update() {
+void FollowSystem::fixedUpdate() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
         auto& follow = entity.get<Follow>();
