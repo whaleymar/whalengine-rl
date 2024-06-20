@@ -1,9 +1,34 @@
 #include "TagTrackers.h"
 
+#include "ECS/Entities/Camera.h"
+#include "ECS/RailsControl.h"
 #include "ECS/Transform.h"
+#include "Map/Level.h"
 #include "Systems/System.h"
 
 namespace whal {
+
+void CameraSystem::onEvent(ecs::Entity player, ActiveLevel& activeLevel) {
+    auto camera = first();
+    if (activeLevel.cameraFollow) {
+        Follow follow = *activeLevel.cameraFollow;
+        follow.targetEntityID = player.id();
+        if (camera.has<Follow>()) {
+            camera.set(follow);
+        } else {
+            camera.add(follow);
+        }
+        return;
+    } else {
+        Vector2i focalPoint = activeLevel.cameraFocalPoint;
+        if (camera.has<Follow>()) {
+            camera.remove<Follow>();
+        }
+        camera.add(createCameraMoveController(camera.get<Transform2D>().position, focalPoint));
+        System::dt.setMultiplier(0.0);
+        return;
+    }
+}
 
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
     if (System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {

@@ -165,9 +165,10 @@ void Game::mainloop() {
     bool isQuantizeOn = false;
 
     // without the post processing step, would need to flip the y axis here by multiplying by -1
-    Rectangle screenSourceRec = {0.0f, 0.0f, static_cast<f32>(targetTexture.texture.width), 1 * static_cast<f32>(targetTexture.texture.height)};
-    Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
-                               WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+    const Rectangle screenSourceRec = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
+                                       1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
+    const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
+                                     WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
     while (!WindowShouldClose() && !System::isQuit()) {
         System::input.update();
         if (System::frame.getFrame() == 0) {
@@ -183,7 +184,7 @@ void Game::mainloop() {
         System::world->update();
 
         // Update Scene
-        updateLevelCamera();  // TODO should be a system
+        checkIfInNewLevel();
 
         // Only rendering remains, so we can do "end of frame" stuff now
         System::world->killEntities();
@@ -389,7 +390,7 @@ void Game::unloadScene() {
 Corrade::Containers::Optional<Error> Game::reloadScene() {
     auto errOpt = loadScene(mActiveScene.name.c_str());
     if (!errOpt) {
-        updateLevelCamera(true);
+        checkIfInNewLevel(true);
     }
     return errOpt;
 }
@@ -418,8 +419,7 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
     }
 }
 
-// should rename to "checkIfInNewLevel" and move most logic to events
-void Game::updateLevelCamera(bool overrideCache) {
+void Game::checkIfInNewLevel(bool overrideCache) {
     if (System::world->getSystem<PlayerSystem>()->getEntitiesRef().empty() || !mIsSceneLoaded ||
         System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {
         return;
@@ -450,25 +450,6 @@ void Game::updateLevelCamera(bool overrideCache) {
             doDefaultCamera = true;
         } else {
             System::eventMgr.triggerEvent<EnteredLevelEvent>(player, *activeOpt.value());
-
-            if (activeOpt.value()->cameraFollow) {
-                Follow follow = (*activeOpt.value()->cameraFollow);
-                follow.targetEntityID = player.id();
-                if (camera.has<Follow>()) {
-                    camera.set(follow);
-                } else {
-                    camera.add(follow);
-                }
-                return;
-            } else {
-                Vector2i focalPoint = activeOpt.value()->cameraFocalPoint;
-                if (camera.has<Follow>()) {
-                    camera.remove<Follow>();
-                }
-                camera.add(createCameraMoveController(camera.get<Transform2D>().position, focalPoint));
-                System::dt.setMultiplier(0.0);
-                return;
-            }
         }
     }
     if (doDefaultCamera) {

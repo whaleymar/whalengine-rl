@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Events/Events.h"
+#include "Systems/System.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -12,7 +14,12 @@ struct Transform2D;
 
 class PlayerSystem : public ecs::ISystem<Player> {};
 
-class CameraSystem : public ecs::ISystem<Camera, Transform2D>, public ecs::AttrUniqueEntity {};
+class CameraSystem : public ecs::ISystem<Camera, Transform2D>,
+                     public ecs::AttrUniqueEntity,
+                     public IListen<EnteredLevelEvent, true, ecs::Entity, ActiveLevel&> {
+public:
+    void onEvent(ecs::Entity player, ActiveLevel& activeLevel);
+};
 
 Corrade::Containers::Optional<ecs::Entity> getCamera();
 Vector2i getCameraPosition();

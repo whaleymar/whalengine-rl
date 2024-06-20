@@ -44,7 +44,7 @@ public:
     Corrade::Containers::Optional<Error> reloadScene();
     whal::Scene& getScene();
     void updateLoadedLevels(Vector2f cameraWorldPosPixels);
-    void updateLevelCamera(bool overrideCache = false);
+    void checkIfInNewLevel(bool overrideCache = false);
     void loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount);
     const Font* getFont() const;
     Camera2D* getWorldCamera() const { return mWorldSpaceCamera; }
