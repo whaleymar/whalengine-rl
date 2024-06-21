@@ -161,6 +161,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
     }
 }
 
+// if the target of an entity's Follow component dies, remove the follow component.
 void FollowSystem::onEvent(ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
     for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {

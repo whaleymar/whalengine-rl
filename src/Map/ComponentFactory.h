@@ -52,6 +52,8 @@ void addComponentSemiSolidCollider(nlohmann::json& values, nlohmann::json& allOb
                                    ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                                ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                                ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                            ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,

@@ -321,38 +321,6 @@
                 }, 
                 {
                  "height":8,
-                 "id":27,
-                 "name":"TopLeftRef",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
-                            }
-                        }, 
-                        {
-                         "name":"Sprite",
-                         "propertytype":"Component_Sprite_NoAnim",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ff8c00ff",
-                             "Sprite":"tile\/dirtblock"
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":8,
-                 "x":0,
-                 "y":0
-                }, 
-                {
-                 "height":8,
                  "id":30,
                  "name":"SemiSolidTest",
                  "properties":[
@@ -772,15 +740,48 @@
          "objects":[
                 {
                  "height":0,
-                 "id":37,
-                 "name":"Spawn Point",
+                 "id":41,
+                 "name":"InitialSpawnPoint",
                  "point":true,
                  "rotation":0,
-                 "type":"Map_SpawnPoint",
+                 "type":"Map_InitialSpawnPoint",
                  "visible":true,
                  "width":0,
                  "x":8,
-                 "y":64
+                 "y":72
+                }, 
+                {
+                 "height":48,
+                 "id":42,
+                 "name":"TestCheckpoint",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":26,
+                 "x":206,
+                 "y":40
+                }, 
+                {
+                 "height":0,
+                 "id":43,
+                 "name":"Test Spawn Point",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"RespawnTriggerZone",
+                         "propertytype":"Component_RespawnTrigger",
+                         "type":"class",
+                         "value":
+                            {
+                             "Shape":42
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":0,
+                 "x":220,
+                 "y":40
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -831,7 +832,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":41,
+ "nextobjectid":44,
  "orientation":"orthogonal",
  "properties":[
         {

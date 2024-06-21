@@ -1,6 +1,5 @@
 #include "Camera.h"
 
-// #include "ECS/PlayerControl.h"
 #include "whalECS/src/ECS.h"
 
 #include "ECS/Callback.h"
@@ -26,7 +25,6 @@ Expected<ecs::Entity> createCamera(ecs::Entity target) {
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
     camera.add(Follow(target));
-    // camera.add<PlayerControlFree>();
     camera.add<Velocity>();
     camera.add(Name("Camera"));
     camera.add<Camera>();

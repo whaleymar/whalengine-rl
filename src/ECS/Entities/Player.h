@@ -7,11 +7,11 @@ namespace whal {
 namespace ecs {
 class Entity;
 }
+struct Transform2D;
 struct Sprite;
 
 Expected<ecs::Entity> createPlayer();
 
-// use sprite with pre-constructed vao/vbo created on main thread
-void respawnPlayer(Sprite sprite);
+void respawnPlayer(Transform2D transform, Sprite sprite);
 
 }  // namespace whal

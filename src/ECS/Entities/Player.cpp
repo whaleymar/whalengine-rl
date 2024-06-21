@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include "ECS/Light.h"
+#include "Game.h"
 #include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 
@@ -22,6 +23,8 @@
 #include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
+
+// TODO this should be in game folder
 
 namespace whal {
 
@@ -166,7 +169,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
 
 }  // namespace PlayerAnim
 
-Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
+Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprite) {
     auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected;
@@ -174,8 +177,6 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     auto player = expected.value();
     auto _ = ecs::DeferActivate(player);
 
-    Transform2D transform = Transform2D::tiles(15, 10);  // TODO get the last level the player was in and spawn in the start point -- or maybe have
-                                                         // some SafeLocatoinCheckpoint triggers in the map data
     player.add(transform);
     player.add(Name("Player"));
     player.add<Player>();
@@ -186,6 +187,20 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
 
     if (!getCamera()) {
         createCamera(player);
+    } else {
+        // check what kind of camera the level we're in uses
+        bool followPlayer = true;
+        auto levelOpt = Game::instance().getScene().getLevelAt(transform.position);
+        if (levelOpt) {
+            auto activeLevel = Game::instance().getScene().getLoadedLevel(*levelOpt);
+            if (activeLevel.isExpected() && !activeLevel.value()->cameraFollow) {
+                followPlayer = false;
+            }
+        }
+
+        if (followPlayer) {
+            setCameraTarget(player);
+        }
     }
 
     // graphics
@@ -213,7 +228,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
     // player.add(PointLight{PIXELS_PER_TILE * 10, PIXELS_PER_TILE, {255, 255, 204, 255}});
     player.add(Radiance{PIXELS_PER_TILE * 2, PIXELS_PER_TILE, {255, 255, 255, 175}});
 
-    player.add(Respawn{2, &respawnPlayer,
+    player.add(Respawn{2, &respawnPlayer, transform.position,
                        []() {
                            System::audio.playClip(Sfx::DEATH);
                            System::audio.setMusicVolume(0.75);
@@ -223,18 +238,26 @@ Expected<ecs::Entity> createPlayerWithSprite(Sprite sprite) {
                            System::audio.setMusicVolume(1);
                            System::audio.setFilterMusic(AudioPlayer::Filter::None);
                        }});
+    player.add<IUseCheckpoints>();
 
     return player;
 }
 
+// for debugging
 Expected<ecs::Entity> createPlayer() {
+    Transform2D trans;
+    if (Game::instance().getScene().isValid()) {
+        trans = Transform2D(Game::instance().getScene().initialSpawnPoint);
+    } else {
+        trans = Transform2D::tiles(15, 10);
+    }
     Sprite sprite;
-    return createPlayerWithSprite(sprite);
+    return createPlayerWithSprite(trans, sprite);
 }
 
 // use sprite with pre-constructed vao/vbo created on main thread
-void respawnPlayer(Sprite sprite) {
-    Expected<ecs::Entity> player = createPlayerWithSprite(sprite);
+void respawnPlayer(Transform2D trans, Sprite sprite) {
+    Expected<ecs::Entity> player = createPlayerWithSprite(trans, sprite);
     if (!player.isExpected()) {
         print(player.error());
     }

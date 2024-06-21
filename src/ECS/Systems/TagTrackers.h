@@ -25,6 +25,7 @@ Corrade::Containers::Optional<ecs::Entity> getCamera();
 Vector2i getCameraPosition();
 Vector2f getCameraPositionPrecise();
 void setCameraPosition(Vector2i pos);
+void setCameraTarget(ecs::Entity target);
 
 class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform2D>,
                             public ecs::IFixedUpdate,

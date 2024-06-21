@@ -359,14 +359,9 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
         return errOpt;
     }
 
-    Vector2i startPos = mActiveScene.getStartPosition();  // this also loads the level
+    Vector2i startPos = mActiveScene.loadSceneAndGetStartPosition();
     setCameraPosition(startPos);
     updateLoadedLevels(toFloatVec(startPos));
-
-    // spawn entities with player tag at start pos:
-    for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
-        entity.set(Transform2D(startPos));
-    }
 
     mIsSceneLoaded = true;
     return NULLOPT;
@@ -428,11 +423,10 @@ void Game::checkIfInNewLevel(bool overrideCache) {
     std::string curLevel;
     ecs::Entity player = System::world->getSystem<PlayerSystem>()->first();
     ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
-    Vector2f playerPosTexels = toFloatVec(player.get<Transform2D>().position) * FTEXELS_PER_PIXEL +
-                               Vector2f(player.get<Collider>().getShape().getHalf().x() / 2,
-                                        0);  // add halfX so visually the middle of the player has to enter the new level for it to change
-    // idk why i have to take half of the half
-    auto levelOpt = mActiveScene.getLevelAt(playerPosTexels);
+
+    // add halfX so visually the middle of the player has to enter the new level for it to change
+    Vector2i playerPosition = player.get<Transform2D>().position + Vector2i(player.get<Collider>().getShape().getHalf().x(), 0);
+    auto levelOpt = mActiveScene.getLevelAt(playerPosition);
 
     bool doDefaultCamera = false;
     if (!levelOpt) {

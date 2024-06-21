@@ -40,13 +40,6 @@ Corrade::Containers::Optional<Error> loadMap() {
 }
 
 Corrade::Containers::Optional<Error> loadTestMap() {
-    auto ePlayer = createPlayer();
-    if (!ePlayer.isExpected()) {
-        return ePlayer.error();
-    }
-    auto player = ePlayer.value();
-    player.add<Blaster>();
-
     // createTestPlatform();
     auto err = loadMap();
     createTestPlatform();
@@ -55,6 +48,14 @@ Corrade::Containers::Optional<Error> loadTestMap() {
     // createTestSemiSolid();
     // createDepthTest();
     // createPaletteTest();
+
+    auto ePlayer = createPlayer();
+    if (!ePlayer.isExpected()) {
+        return ePlayer.error();
+    }
+    auto player = ePlayer.value();
+    player.add<Blaster>();
+
     return err;
 }
 

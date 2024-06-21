@@ -37,7 +37,7 @@ def sanitize(palette: np.ndarray) -> np.ndarray:
 def findCol(col:np.ndarray, palette:np.ndarray) -> np.ndarray: # col should be np.array in form [R,G,B], palette should be array of cols
     # finds the color in "palette" that's closest to "col"
 
-    # TODO use OKLab
+    # RESEARCH use OKLab
     distances = np.sum(((palette-col)*np.array([.299, .587, .114]))**2, axis=1)
     return palette[np.argmin(distances)]
 

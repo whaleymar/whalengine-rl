@@ -5,7 +5,6 @@
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Entities/Block.h"
-#include "ECS/Name.h"
 #include "ECS/Transform.h"
 
 #include "Game.h"
@@ -36,17 +35,42 @@ Level Scene::getStartLevel() const {
     return allLevels[startLevelIx];
 }
 
-Vector2i Scene::getStartPosition() {
+Vector2i Scene::loadSceneAndGetStartPosition() {
     auto eStartLvlActive = getLoadedLevel(getStartLevel());
     if (!eStartLvlActive.isExpected()) {
         print("Got error in getStartPosition: ", eStartLvlActive.error());
         return {};
+    } else if (eStartLvlActive.value()->spawnPoints.size() == 0) {
+        print(eStartLvlActive.value()->name, "has no spawn points, but one was requested");
+        return {};
     }
 
-    return eStartLvlActive.value()->spawnPoint;
+    initialSpawnPoint = eStartLvlActive.value()->initialSpawnPoint;
+    return initialSpawnPoint;
 }
 
-Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2f worldPosTexels) const {
+Vector2i Scene::getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i referencePoint) {
+    if (activeLevel.spawnPoints.size() == 0) {
+        return toIntVec(activeLevel.worldPosOriginTexels);
+    }
+
+    Vector2i closestPoint = activeLevel.spawnPoints[0];
+    f32 bestDistance = toFloatVec(closestPoint - referencePoint).len();
+
+    for (size_t i = 1; i < activeLevel.spawnPoints.size(); i++) {
+        Vector2i point = activeLevel.spawnPoints[i];
+        f32 distance = toFloatVec(point - referencePoint).len();
+        if (distance < bestDistance) {
+            closestPoint = point;
+            bestDistance = distance;
+        }
+    }
+
+    return closestPoint;
+}
+
+Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
+    Vector2f worldPosTexels = toFloatVec(worldPos) * FTEXELS_PER_PIXEL;
     for (Level lvl : allLevels) {
         if (worldPosTexels.x() >= lvl.worldPosOriginTexels.x() && worldPosTexels.x() < (lvl.worldPosOriginTexels.x() + lvl.sizeTexels.x()) &&
             worldPosTexels.y() < lvl.worldPosOriginTexels.y() && worldPosTexels.y() >= (lvl.worldPosOriginTexels.y() - lvl.sizeTexels.y())) {
@@ -75,7 +99,7 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x(), level.worldPosOriginTexels.y() - level.sizeTexels.y()).position;
-    ActiveLevel lvl = {level, "", {}, worldOffsetPixels, {}, {}, {}};
+    ActiveLevel lvl = {level, "", {}, worldOffsetPixels, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded", map.name);
 

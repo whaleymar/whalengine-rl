@@ -33,8 +33,8 @@ struct ActiveLevel : public Level {
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
-    Vector2i spawnPoint;  // TODO i want to support multiple of these in the map data & have them update based on where the player entered the level
-                          // from / update them with triggers. I have a LEVEL_ENTER event which I can use once I have multiple spawn points
+    Vector2i initialSpawnPoint;
+    std::vector<Vector2i> spawnPoints;
 };
 
 struct Scene {
@@ -44,12 +44,14 @@ struct Scene {
     Vector2f startPos;
     std::set<ecs::Entity> childEntities;
     s32 startLevelIx = -1;
+    Vector2i initialSpawnPoint;
 
     bool isValid() const;
     Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);
     Level getStartLevel() const;
-    Vector2i getStartPosition();
-    Corrade::Containers::Optional<Level> getLevelAt(Vector2f worldPosTexels) const;
+    Vector2i loadSceneAndGetStartPosition();
+    Vector2i getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i position);
+    Corrade::Containers::Optional<Level> getLevelAt(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
 };
 

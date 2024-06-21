@@ -207,6 +207,31 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 25,
+            "members": [
+                {
+                    "name": "Shape",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_RespawnTrigger",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 12,
             "members": [
                 {
@@ -426,6 +451,26 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 24,
+            "members": [
+            ],
+            "name": "Map_InitialSpawnPoint",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 22,
             "members": [
                 {
@@ -438,30 +483,6 @@
             "type": "class",
             "useAs": [
                 "property"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 13,
-            "members": [
-                {
-                    "name": "x",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "y",
-                    "type": "int",
-                    "value": 0
-                }
-            ],
-            "name": "Map_SpawnPoint",
-            "type": "class",
-            "useAs": [
-                "property",
-                "object",
-                "project"
             ]
         },
         {

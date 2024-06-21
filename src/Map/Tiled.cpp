@@ -1,5 +1,6 @@
 #include "Tiled.h"
 
+#include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"
 #include "json.hpp"
 
@@ -48,9 +49,6 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     map.widthTiles = data["width"];
     map.heightTiles = data["height"];
     map.tileSize = data["tilewidth"];
-
-    // set default spawn point in cause there isn't one
-    level.spawnPoint = getTransformFromMapPosition({0, 0}, {0, 0}, level, true).position;
 
     for (auto& layer : data["layers"]) {
         bool isVisible = layer["visible"];
@@ -159,12 +157,14 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
                 cameraPoint.e[1] = object["y"];
                 level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).position;
                 // print("loaded camerapoint with pos", cameraPoint, "-->", level.cameraFocalPoint);
-            } else if (objType == "Map_SpawnPoint") {
+
+            } else if (objType == "Map_InitialSpawnPoint") {
                 Vector2i spawnPoint;
                 spawnPoint.e[0] = object["x"];
                 spawnPoint.e[1] = object["y"];
-                level.spawnPoint = getTransformFromMapPosition(spawnPoint, {0, 0}, level, true).position;
-                // print("loaded spawnpoint with pos", spawnPoint, "-->", level.spawnPoint);
+                const Vector2i spawnPointWorldCoords = getTransformFromMapPosition(spawnPoint, {0, 0}, level, true).position;
+                level.spawnPoints.push_back(spawnPointWorldCoords);
+                level.initialSpawnPoint = spawnPointWorldCoords;
             } else {
                 // print("Unrecognized object type: ", objType);
             }

@@ -18,6 +18,39 @@
                  "width":0,
                  "x":160,
                  "y":96
+                }, 
+                {
+                 "height":0,
+                 "id":3,
+                 "name":"SpawnPoint",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"CheckpointZone",
+                         "propertytype":"Component_RespawnTrigger",
+                         "type":"class",
+                         "value":
+                            {
+                             "Shape":5
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":0,
+                 "x":8,
+                 "y":92
+                }, 
+                {
+                 "height":104,
+                 "id":5,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":0
                 }],
          "opacity":1,
          "properties":[
@@ -75,7 +108,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":3,
+ "nextobjectid":6,
  "orientation":"orthogonal",
  "properties":[
         {

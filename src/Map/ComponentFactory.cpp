@@ -1,6 +1,8 @@
 #include "ComponentFactory.h"
 
 #include "CorradeOptional.h"
+#include "ECS/TriggerZone.h"
+#include "Game/Entities/Checkpoint.h"
 #include "json.hpp"
 #include "whalECS/src/ECS.h"
 
@@ -33,6 +35,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_ActorCollider", addComponentActorCollider},
     {"Component_SemiSolidCollider", addComponentSemiSolidCollider},
     {"Component_SolidCollider", addComponentSolidCollider},
+    {"Component_RespawnTrigger", addComponentRespawnTrigger},
     {"Component_Draw", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
     // {"Lifetime", addComponentLifetime},
@@ -376,6 +379,33 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Solid, material, nullptr, collisionDir));
 }
 
+void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                                ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+    auto object = allObjects[idToIndex[thisId]];
+    auto positionTexels = Vector2i(object["x"], object["y"]);
+    Transform2D transform = getTransformFromMapPosition(positionTexels, {0, 0}, level, true);
+    entity.set(transform);
+
+    level.spawnPoints.push_back(transform.position);
+
+    Vector2i zonePosition;
+    Vector2i zoneDimensions;
+    if (values.contains("Shape")) {
+        s32 id = values["Shape"];
+        nlohmann::json rect = allObjects[idToIndex[id]];
+        zonePosition.e[0] = rect["x"];
+        zonePosition.e[1] = rect["y"];
+        zoneDimensions.e[0] = rect["width"];
+        zoneDimensions.e[1] = rect["height"];
+        zonePosition = getTransformFromMapPosition(zonePosition, zoneDimensions, level, false).position;
+
+        zoneDimensions *= PIXELS_PER_TEXEL;
+    }
+
+    Vector2i zoneCenter = zonePosition + Vector2i(0, zoneDimensions.y() / 2);
+    entity.add(Trigger(AABB(zoneCenter, zoneDimensions / 2), CollisionLayer::TriggerActors, &onCheckpointEnter));
+}
+
 void addComponentFollow(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
     entity.add(loadFollowComponent(values, level));
@@ -423,7 +453,9 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
     if (values.contains("FollowTarget")) {
         // TODO compare to entities with Name component and follow first one which matches
         // std::string followTargetName = values["FollowTarget"];
-        follow.targetEntityID = System::world->getSystem<PlayerSystem>()->first().id();
+        if (auto pPlayerSystem = System::world->getSystem<PlayerSystem>(); !pPlayerSystem->getEntitiesRef().empty()) {
+            follow.targetEntityID = pPlayerSystem->first().id();
+        }
     }
     if (values.contains("dampingX")) {
         follow.damping.e[0] = values["dampingX"];

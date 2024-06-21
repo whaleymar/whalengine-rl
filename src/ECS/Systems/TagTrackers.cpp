@@ -37,6 +37,18 @@ Corrade::Containers::Optional<ecs::Entity> getCamera() {
     return System::world->getSystem<CameraSystem>()->first();
 }
 
+void setCameraTarget(ecs::Entity target) {
+    if (auto cameraOpt = getCamera(); cameraOpt) {
+        auto camera = *cameraOpt;
+        if (camera.has<Follow>()) {
+            auto& follow = camera.get<Follow>();
+            follow.targetEntityID = target.id();
+        } else {
+            camera.add(Follow(target));
+        }
+    }
+}
+
 Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
