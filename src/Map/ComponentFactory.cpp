@@ -46,17 +46,10 @@ static const char* KEY_NAME = "name";
 static const char* KEY_VALUE = "value";
 
 template <typename T>
-T readVal(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return data[key];
-}
+T readVal(const nlohmann::json& data, std::string_view key);
 
 template <typename T>
-void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst) {
-    if (data.contains(key)) {
-        *dst = data[key];
-    }
-}
+void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst);
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
@@ -251,21 +244,21 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
     }
 }
 
-void addComponentVelocity(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
-                          ecs::Entity entity, LayerData layerData) {
+void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                          ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Velocity velocity = ComponentFactory::DefaultVelocity;
     tryReadVector2f(values, "velX", "velY", &velocity.stable);
 
     entity.add(velocity);
 }
 
-void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                              ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                              s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     std::vector<RailsControl::CheckPoint> checkpoints;
     Corrade::Containers::Optional<RailsControl::EndBehavior> endBehavior;
     if (values.contains("Checkpoints")) {
         s32 id = values["Checkpoints"];
-        nlohmann::json checkPointObj = allObjects[idToIndex[id]];
+        const nlohmann::json checkPointObj = allObjects.at(idToIndex.at(id));
         endBehavior = loadCheckpoints(checkPointObj, checkpoints, level);
     }
 
@@ -282,9 +275,9 @@ void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects
     entity.add(rails);
 }
 
-void addComponentDraw(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
-                      ecs::Entity entity, LayerData layerData) {
-    s32 ix = idToIndex[thisId];
+void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                      ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+    s32 ix = idToIndex.at(thisId);
     Vector2i frameSizeTexels = {allObjects[ix]["width"], allObjects[ix]["height"]};
 
     Draw draw = ComponentFactory::DefaultDraw;
@@ -302,8 +295,8 @@ void addComponentDraw(nlohmann::json& values, nlohmann::json& allObjects, std::u
     entity.add(draw);
 }
 
-void addComponentSprite(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
-                        ecs::Entity entity, LayerData layerData) {
+void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Sprite sprite = ComponentFactory::DefaultSprite;
 
     // ARGB
@@ -327,7 +320,7 @@ void addComponentSprite(nlohmann::json& values, nlohmann::json& allObjects, std:
     } else {
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
-        s32 ix = idToIndex[thisId];
+        s32 ix = idToIndex.at(thisId);
         Vector2i frameSizeTexels = {allObjects[ix]["width"], allObjects[ix]["height"]};
         Draw draw = ComponentFactory::DefaultDraw;
         draw.setFrameSize(frameSizeTexels);
@@ -335,8 +328,8 @@ void addComponentSprite(nlohmann::json& values, nlohmann::json& allObjects, std:
     }
 }
 
-void addComponentActorCollider(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                               ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentActorCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                               s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider actor = ComponentFactory::DefaultActorCollider;
     Vector2i halflenTexels = actor.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = actor.getMaterial();
@@ -347,8 +340,8 @@ void addComponentActorCollider(nlohmann::json& values, nlohmann::json& allObject
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Actor, material));
 }
 
-void addComponentSemiSolidCollider(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                                   ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentSemiSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                                   s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider semi = ComponentFactory::DefaultSemiSolidCollider;
     Vector2i halflenTexels = semi.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = semi.getMaterial();
@@ -359,8 +352,8 @@ void addComponentSemiSolidCollider(nlohmann::json& values, nlohmann::json& allOb
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::SemiSolid, material));
 }
 
-void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                               ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                               s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider solid = ComponentFactory::DefaultSolidCollider;
     Vector2i halflenTexels = solid.getShape().getHalf() / PIXELS_PER_TEXEL;
     CollisionDir collisionDir = solid.getCollisionDir();
@@ -373,9 +366,9 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Solid, material, nullptr, collisionDir));
 }
 
-void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                                ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    auto object = allObjects[idToIndex[thisId]];
+void addComponentRespawnTrigger(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                                s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+    auto object = allObjects.at(idToIndex.at(thisId));
     auto positionTexels = readVector2i(object);
     Transform2D transform = getTransformFromMapPosition(positionTexels, {0, 0}, level, true);
     entity.set(transform);
@@ -386,7 +379,7 @@ void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjec
     Vector2i zoneDimensions;
     if (values.contains("Shape")) {
         s32 id = values["Shape"];
-        nlohmann::json rect = allObjects[idToIndex[id]];
+        const nlohmann::json rect = allObjects.at(idToIndex.at(id));
         zonePosition = readVector2i(rect);
         zoneDimensions = readVector2i(rect, "width", "height");
 
@@ -398,12 +391,12 @@ void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjec
     entity.add(Trigger(AABB(zoneCenter, zoneDimensions / 2), CollisionLayer::TriggerActors, &onCheckpointEnter));
 }
 
-void addComponentFollow(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
-                        ecs::Entity entity, LayerData layerData) {
+void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     entity.add(loadFollowComponent(values, level));
 }
 
-void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                            ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     RigidBody rb = ComponentFactory::DefaultRigidBody;
 
@@ -413,8 +406,8 @@ void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, s
     entity.add(rb);
 }
 
-void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
-                        ecs::Entity entity, LayerData layerData) {
+void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
+                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Jumper jumper = ComponentFactory::DefaultJumper;
 
     tryReadFloat(values, "jumpInitialVelocity", &jumper.jumpInitialVelocity);
@@ -424,7 +417,7 @@ void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std:
     entity.add(jumper);
 }
 
-Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
+Follow loadFollowComponent(const nlohmann::json& values, ActiveLevel& level) {
     Follow follow = ComponentFactory::DefaultFollow;
     if (values.contains("FollowTarget")) {
         // TODO compare to entities with Name component and follow first one which matches
@@ -448,7 +441,8 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
     return follow;
 }
 
-RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
+RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints,
+                                          ActiveLevel& level) {
     // generic rewrite:
     const s32 parentX = readInt(checkpointData, "x");
     const s32 parentY = readInt(checkpointData, "y");
@@ -515,6 +509,12 @@ std::string readString(const nlohmann::json& data, std::string_view key) {
     return data[key];
 }
 
+template <typename T>
+T readVal(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
 void tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst) {
     if (data.contains(key)) {
         *dst = data[key];
@@ -546,6 +546,13 @@ void tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::str
 }
 
 void tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+    }
+}
+
+template <typename T>
+void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst) {
     if (data.contains(key)) {
         *dst = data[key];
     }
