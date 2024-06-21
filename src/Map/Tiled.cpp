@@ -46,16 +46,16 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
 
     json data = json::parse(jString.value());
 
-    map.widthTiles = data["width"];
-    map.heightTiles = data["height"];
-    map.tileSize = data["tilewidth"];
+    map.widthTiles = readInt(data, "width");
+    map.heightTiles = readInt(data, "height");
+    map.tileSize = readInt(data, "tilewidth");
 
     for (auto& layer : data["layers"]) {
-        bool isVisible = layer["visible"];
+        bool isVisible = readBool(layer, "visible");
         if (!isVisible) {
             continue;
         }
-        std::string type = layer["type"];
+        std::string type = readString(layer, "type");
 
         if (type == "tilelayer") {
             parseTileLayer(layer, map);
@@ -69,8 +69,8 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     }
 
     for (auto& tileset : data["tilesets"]) {
-        s32 firstgid = tileset["firstgid"];
-        std::string fileName = tileset["source"];
+        s32 firstgid = readInt(tileset, "firstgid");
+        std::string fileName = readString(tileset, "source");
 
         Expected<TileSet> eTset = parseTileset(fileName, firstgid);
         if (!eTset.isExpected()) {
@@ -83,10 +83,10 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
 
     bool isNameFound = false;
     for (auto& property : data["properties"]) {
-        std::string propName = property["name"];
-        std::string propType = property["type"];
+        std::string propName = readString(property, "name");
+        std::string propType = readString(property, "type");
         if (propName == "Name") {
-            std::string mapName = property["value"];
+            std::string mapName = readString(property, "value");
             map.name = mapName;
             isNameFound = true;
         } else if (propName == "CameraFollowParams") {
@@ -106,7 +106,7 @@ Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     Depth layerDepth = defaultDepth;
     if (layer.contains("properties")) {
         for (auto& property : layer["properties"]) {
-            std::string propertytype = property["propertytype"];
+            std::string propertytype = readString(property, "propertytype");
             if (propertytype == "Depth") {
                 layerDepth = property["value"];
                 break;
@@ -117,23 +117,17 @@ Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
 }
 
 void parseTileLayer(nlohmann::json layer, TileMap& map) {
-    s32 width = layer["width"];
-    s32 height = layer["height"];
-    const auto& name = layer["name"];
-    std::string tname = name;
+    s32 width = readInt(layer, "width");
+    s32 height = readInt(layer, "height");
+    const std::string name = readString(layer, "name");
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
 
-    // std::vector<s32> layerData = layer["data"].get<std::vector<s32>>();
-    // TileLayer tLayer = {tname, width, height, {layerDepth}, std::unique_ptr<s32[]>(new s32[width * height]())};
-    // memcpy(tLayer.data.get(), layerData.data(), layerData.size() * sizeof(s32));
-
-    TileLayer tLayer = {tname, width, height, {layerDepth}, layer["data"].get<std::vector<s32>>()};
-
+    TileLayer tLayer = {name, width, height, {layerDepth}, layer["data"].get<std::vector<s32>>()};
     map.layers.push_back(std::move(tLayer));
 }
 
+// this will create entities and immediately add them to the level
 void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
-    // this will create entities and immediately add them to the level
     using json = nlohmann::json;
 
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -142,7 +136,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
     json& objects = layer["objects"];
     std::unordered_map<s32, s32> idToIndex;
     for (size_t ix = 0; ix < objects.size(); ix++) {
-        s32 id = objects[ix]["id"];
+        s32 id = readInt(objects[ix], "id");
         idToIndex.insert({id, ix});
     }
 
@@ -152,16 +146,12 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             // check for metadata
 
             if (objType == "Map_CameraPoint") {
-                Vector2i cameraPoint;
-                cameraPoint.e[0] = object["x"];
-                cameraPoint.e[1] = object["y"];
+                Vector2i cameraPoint = readVector2i(object, "x", "y");
                 level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).position;
                 // print("loaded camerapoint with pos", cameraPoint, "-->", level.cameraFocalPoint);
 
             } else if (objType == "Map_InitialSpawnPoint") {
-                Vector2i spawnPoint;
-                spawnPoint.e[0] = object["x"];
-                spawnPoint.e[1] = object["y"];
+                Vector2i spawnPoint = readVector2i(object, "x", "y");
                 const Vector2i spawnPointWorldCoords = getTransformFromMapPosition(spawnPoint, {0, 0}, level, true).position;
                 level.spawnPoints.push_back(spawnPointWorldCoords);
                 level.initialSpawnPoint = spawnPointWorldCoords;
@@ -176,7 +166,7 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
         ecs::Entity entity = eEntity.value();
-        std::string name = object["name"];
+        std::string name = readString(object, "name");
         if (name.size()) {
             entity.add(Name(name.c_str()));
             // print("Created Entity: ", name);
@@ -184,15 +174,15 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
         level.childEntities.insert(entity);
 
         // top left
-        auto positionTexels = Vector2i(object["x"], object["y"]);
-        auto dimensionsTexels = Vector2i(object["width"], object["height"]);
-        s32 thisId = object["id"];
+        auto positionTexels = readVector2i(object);
+        auto dimensionsTexels = readVector2i(object, "width", "height");
+        s32 thisId = readInt(object, "id");
 
         Transform2D trans = getTransformFromMapPosition(positionTexels, dimensionsTexels, level, false);
         entity.add(trans);
 
         for (auto& property : object["properties"]) {
-            std::string componentName = property["propertytype"];
+            std::string componentName = readString(property, "propertytype");
             ComponentAdder creatorFunc = nullptr;
             COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
             if (creatorFunc == nullptr) {
@@ -209,36 +199,24 @@ void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
-    Vector2i position(layer["x"], layer["y"]);
+    Vector2i position = readVector2i(layer);
 
     Vector2i offset;
-    if (layer.contains("offsetx")) {
-        offset.e[0] = layer["offsetx"];
-    }
-    if (layer.contains("offsety")) {
-        offset.e[1] = layer["offsety"];
-    }
+    tryReadVector2i(layer, "offsetx", "offsety", &offset);
 
     position += offset + toIntVec(level.worldPosOriginTexels);
 
     bool isRepeatX = false;
-    if (layer.contains("repeatx")) {
-        isRepeatX = layer["repeatx"];
-    }
+    tryReadBool(layer, "repeatx", &isRepeatX);
+
     bool isRepeatY = false;
-    if (layer.contains("repeaty")) {
-        isRepeatY = layer["repeaty"];
-    }
+    tryReadBool(layer, "repeaty", &isRepeatY);
 
     Vector2f parallax = {1.0, 1.0};
-    if (layer.contains("parallaxx")) {
-        parallax.e[0] = layer["parallaxx"];
-    }
-    if (layer.contains("parallaxy")) {
-        parallax.e[1] = layer["parallaxy"];
-    }
-    std::string name = layer["name"];
-    std::string imgPath = layer["image"];
+    tryReadVector2f(layer, "parallaxx", "parallaxy", &parallax);
+
+    std::string name = readString(layer, "name");
+    std::string imgPath = readString(layer, "image");
     std::string spriteKey = getSpriteKeyFromPath(imgPath);
 
     if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
@@ -310,21 +288,20 @@ Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
 
     json data = json::parse(jString.value());
 
-    const auto& name = data["image"];
-    std::string sourceFilePath = name;
+    auto sourceFilePath = readString(data, "image");
 
     s32 firstIx = std::max<s32>(sourceFilePath.find_last_of('/'), sourceFilePath.find_last_of('\\')) + 1;
     s32 lastIx = sourceFilePath.find(".", firstIx);
     std::string sourceFileBasenameNoExt = sourceFilePath.substr(firstIx, lastIx - firstIx);
 
-    s32 tileWidth = data["tilewidth"];
-    s32 tileHeight = data["tileheight"];
-    s32 widthTexels = data["imagewidth"];
-    s32 heightTexels = data["imageheight"];
+    s32 tileWidth = readInt(data, "tilewidth");
+    s32 tileHeight = readInt(data, "tileheight");
+    s32 widthTexels = readInt(data, "imagewidth");
+    s32 heightTexels = readInt(data, "imageheight");
 
     s32 widthTiles = widthTexels / tileWidth;
     s32 heightTiles = heightTexels / tileHeight;
-    s32 tilecount = data["tilecount"];
+    s32 tilecount = readInt(data, "tilecount");
 
     std::vector<WorldMaterial> materials;
     for (s32 i = 0; i < tilecount; i++) {
@@ -333,9 +310,9 @@ Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
 
     if (data.contains("tiles")) {
         for (auto& tiledata : data["tiles"]) {
-            s32 id = tiledata["id"];
+            s32 id = readInt(tiledata, "id");
             for (auto& property : tiledata["properties"]) {
-                std::string propname = property["propertytype"];
+                std::string propname = readString(property, "propertytype");
                 if (propname == "Material") {
                     materials[id] = property["value"];
                     break;
@@ -411,14 +388,12 @@ Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
     json data = json::parse(jString.value());
 
     for (auto& property : data["properties"]) {
-        std::string propName = property["name"];
-        std::string propType = property["propertytype"];
+        std::string propName = readString(property, "name");
+        std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
             bool isWorldEntryPoint = false;
-            if (mapInfo.contains("isWorldEntryPoint")) {
-                isWorldEntryPoint = mapInfo["isWorldEntryPoint"];
-            }
+            tryReadBool(mapInfo, "isWorldEntryPoint", &isWorldEntryPoint);
             Level::LevelInfo lvlInfo = {isWorldEntryPoint};
             return lvlInfo;
         }
@@ -437,7 +412,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 
     json data = json::parse(jString.value());
 
-    std::string type = data["type"];
+    std::string type = readString(data, "type");
     if (type != "world") {
         return Error("Not a world file");
     }
@@ -445,10 +420,10 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
     dstScene.name = mapfile;
     for (auto& map : data["maps"]) {
         std::string filename = map["fileName"];
-        s32 x = map["x"];
-        s32 y = map["y"];
-        s32 width = map["width"];
-        s32 height = map["height"];
+        s32 x = readInt(map, "x");
+        s32 y = readInt(map, "y");
+        s32 width = readInt(map, "width");
+        s32 height = readInt(map, "height");
         Expected<Level::LevelInfo> eLvlInfo = parseLevelInfo(filename.c_str());
         if (eLvlInfo.isExpected()) {
             Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo.value()};

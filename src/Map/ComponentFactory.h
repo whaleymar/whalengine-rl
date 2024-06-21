@@ -74,4 +74,18 @@ void addComponentFollow(nlohmann::json& values, nlohmann::json& allObjects, std:
 Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level);
 RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level);
 
+// Utility Functions
+
+s32 readInt(const nlohmann::json& json, std::string_view key);
+s32 readFloat(const nlohmann::json& json, std::string_view key);
+Vector2i readVector2i(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
+bool readBool(const nlohmann::json& data, std::string_view key);
+std::string readString(const nlohmann::json& json, std::string_view key);
+
+void tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst);
+void tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst);
+void tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst);
+void tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst);
+void tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst);
+
 }  // namespace whal

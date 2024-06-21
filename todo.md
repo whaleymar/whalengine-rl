@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- cleanup todos (finish player anims, dynamic spawn points)
+- finish player anims
 
 ## Camera / Follow
 - pretty awful in general
@@ -22,9 +22,8 @@
 - object layers
     - component factory functions (mostly done)
     - special metadata
-        - dynamic spawn points
         - camera strat (might want to rework)
-    - Templates
+    - Templates - use for prefabs?
 
 ## Graphics
 - outline shader

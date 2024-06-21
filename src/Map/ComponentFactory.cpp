@@ -23,11 +23,40 @@
 
 #include "Util/Print.h"
 
+#ifndef NDEBUG
+#define MY_ASSERT(cond, msg)                                                                                                                         \
+    do {                                                                                                                                             \
+        if (!(cond)) {                                                                                                                               \
+            std::ostringstream str;                                                                                                                  \
+            str << msg;                                                                                                                              \
+            std::cerr << str.str() << std::endl;                                                                                                     \
+            std::abort();                                                                                                                            \
+        }                                                                                                                                            \
+    } while (0)
+#else
+#define MY_ASSERT(cond, msg)                                                                                                                         \
+    do {                                                                                                                                             \
+    } while (0)
+#endif
+
 namespace whal {
 
 static const char* KEY_MEMBERS = "members";
 static const char* KEY_NAME = "name";
 static const char* KEY_VALUE = "value";
+
+template <typename T>
+T readVal(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
+template <typename T>
+void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+    }
+}
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
@@ -225,13 +254,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
 void addComponentVelocity(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId, ActiveLevel& level,
                           ecs::Entity entity, LayerData layerData) {
     Velocity velocity = ComponentFactory::DefaultVelocity;
-
-    if (values.contains("velX")) {
-        velocity.stable.e[0] = values["velX"];
-    }
-    if (values.contains("velY")) {
-        velocity.stable.e[1] = values["velY"];
-    }
+    tryReadVector2f(values, "velX", "velY", &velocity.stable);
 
     entity.add(velocity);
 }
@@ -252,15 +275,9 @@ void addComponentRailsControl(nlohmann::json& values, nlohmann::json& allObjects
         rails.endBehavior = *endBehavior;
     }
 
-    if (values.contains("isCycle")) {
-        rails.isCycle = values["isCycle"];
-    }
-    if (values.contains("speed")) {
-        rails.speed = values["speed"];
-    }
-    if (values.contains("waitTime")) {
-        rails.waitTime = values["waitTime"];
-    }
+    tryReadBool(values, "isCycle", &rails.isCycle);
+    tryReadFloat(values, "speed", &rails.speed);
+    tryReadFloat(values, "waitTime", &rails.waitTime);
 
     entity.add(rails);
 }
@@ -324,15 +341,8 @@ void addComponentActorCollider(nlohmann::json& values, nlohmann::json& allObject
     Vector2i halflenTexels = actor.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = actor.getMaterial();
 
-    if (values.contains("halflenTexelsX")) {
-        halflenTexels.e[0] = values["halflenTexelsX"];
-    }
-    if (values.contains("halflenTexelsY")) {
-        halflenTexels.e[1] = values["halflenTexelsY"];
-    }
-    if (values.contains("Material")) {
-        material = values["Material"];
-    }
+    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
+    tryReadVal(values, "Material", &material);
 
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Actor, material));
 }
@@ -343,15 +353,8 @@ void addComponentSemiSolidCollider(nlohmann::json& values, nlohmann::json& allOb
     Vector2i halflenTexels = semi.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = semi.getMaterial();
 
-    if (values.contains("halflenTexelsX")) {
-        halflenTexels.e[0] = values["halflenTexelsX"];
-    }
-    if (values.contains("halflenTexelsY")) {
-        halflenTexels.e[1] = values["halflenTexelsY"];
-    }
-    if (values.contains("Material")) {
-        material = values["Material"];
-    }
+    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
+    tryReadVal(values, "Material", &material);
 
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::SemiSolid, material));
 }
@@ -363,18 +366,9 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
     CollisionDir collisionDir = solid.getCollisionDir();
     WorldMaterial material = solid.getMaterial();
 
-    if (values.contains("halflenTexelsX")) {
-        halflenTexels.e[0] = values["halflenTexelsX"];
-    }
-    if (values.contains("halflenTexelsY")) {
-        halflenTexels.e[1] = values["halflenTexelsY"];
-    }
-    if (values.contains("CollisionDir")) {
-        collisionDir = values["CollisionDir"];
-    }
-    if (values.contains("Material")) {
-        material = values["Material"];
-    }
+    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
+    tryReadVal(values, "CollisionDir", &collisionDir);
+    tryReadVal(values, "Material", &material);
 
     entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Solid, material, nullptr, collisionDir));
 }
@@ -382,7 +376,7 @@ void addComponentSolidCollider(nlohmann::json& values, nlohmann::json& allObject
 void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjects, std::unordered_map<s32, s32>& idToIndex, s32 thisId,
                                 ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     auto object = allObjects[idToIndex[thisId]];
-    auto positionTexels = Vector2i(object["x"], object["y"]);
+    auto positionTexels = readVector2i(object);
     Transform2D transform = getTransformFromMapPosition(positionTexels, {0, 0}, level, true);
     entity.set(transform);
 
@@ -393,13 +387,11 @@ void addComponentRespawnTrigger(nlohmann::json& values, nlohmann::json& allObjec
     if (values.contains("Shape")) {
         s32 id = values["Shape"];
         nlohmann::json rect = allObjects[idToIndex[id]];
-        zonePosition.e[0] = rect["x"];
-        zonePosition.e[1] = rect["y"];
-        zoneDimensions.e[0] = rect["width"];
-        zoneDimensions.e[1] = rect["height"];
-        zonePosition = getTransformFromMapPosition(zonePosition, zoneDimensions, level, false).position;
+        zonePosition = readVector2i(rect);
+        zoneDimensions = readVector2i(rect, "width", "height");
 
-        zoneDimensions *= PIXELS_PER_TEXEL;
+        zonePosition = getTransformFromMapPosition(zonePosition, zoneDimensions, level, false).position;
+        zoneDimensions *= PIXELS_PER_TEXEL;  // do this *after* running that ^
     }
 
     Vector2i zoneCenter = zonePosition + Vector2i(0, zoneDimensions.y() / 2);
@@ -415,18 +407,8 @@ void addComponentRigidBody(nlohmann::json& values, nlohmann::json& allObjects, s
                            ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     RigidBody rb = ComponentFactory::DefaultRigidBody;
 
-    if (values.contains("momentumMultiplierX")) {
-        rb.momentumMultiplier.e[0] = values["momentumMultiplierX"];
-    }
-    if (values.contains("momentumMultiplierY")) {
-        rb.momentumMultiplier.e[1] = values["momentumMultiplierY"];
-    }
-    if (values.contains("frictionGround")) {
-        rb.momentumMultiplier.e[0] = values["frictionGround"];
-    }
-    if (values.contains("frictionAir")) {
-        rb.momentumMultiplier.e[1] = values["frictionAir"];
-    }
+    tryReadVector2f(values, "momentumMultiplierX", "momentumMultiplierY", &rb.momentumMultiplier);
+    tryReadVector2f(values, "frictionGround", "frictionAir", &rb.frictionMultiplier);
 
     entity.add(rb);
 }
@@ -435,15 +417,9 @@ void addComponentJumper(nlohmann::json& values, nlohmann::json& allObjects, std:
                         ecs::Entity entity, LayerData layerData) {
     Jumper jumper = ComponentFactory::DefaultJumper;
 
-    if (values.contains("jumpInitialVelocity")) {
-        jumper.jumpInitialVelocity = values["jumpInitialVelocity"];
-    }
-    if (values.contains("jumpSecondsMax")) {
-        jumper.jumpSecondsMax = values["jumpSecondsMax"];
-    }
-    if (values.contains("coyoteTimeSecondsMax")) {
-        jumper.coyoteTimeSecondsMax = values["coyoteTimeSecondsMax"];
-    }
+    tryReadFloat(values, "jumpInitialVelocity", &jumper.jumpInitialVelocity);
+    tryReadFloat(values, "jumpSecondsMax", &jumper.jumpSecondsMax);
+    tryReadFloat(values, "coyoteTimeSecondsMax", &jumper.coyoteTimeSecondsMax);
 
     entity.add(jumper);
 }
@@ -457,30 +433,12 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
             follow.targetEntityID = pPlayerSystem->first().id();
         }
     }
-    if (values.contains("dampingX")) {
-        follow.damping.e[0] = values["dampingX"];
-    }
-    if (values.contains("dampingY")) {
-        follow.damping.e[1] = values["dampingY"];
-    }
-    if (values.contains("deadZoneX")) {
-        follow.deadZoneTexels.e[0] = values["deadZoneX"];
-    }
-    if (values.contains("deadZoneY")) {
-        follow.deadZoneTexels.e[1] = values["deadZoneY"];
-    }
-    if (values.contains("lookAheadX")) {
-        follow.lookAheadTexels.e[0] = values["lookAheadX"];
-    }
-    if (values.contains("lookAheadY")) {
-        follow.lookAheadTexels.e[1] = values["lookAheadY"];
-    }
-    if (values.contains("boundsHalflenX")) {
-        follow.boundsXTexels = Vector2i(values["boundsHalflenX"], values["boundsHalflenX"]);
-    }
-    if (values.contains("boundsHalflenY")) {
-        follow.boundsYTexels = Vector2i(values["boundsHalflenY"], values["boundsHalflenY"]);
-    }
+
+    tryReadVector2f(values, "dampingX", "dampingY", &follow.damping);
+    tryReadVector2i(values, "deadZoneX", "deadZoneY", &follow.deadZoneTexels);
+    tryReadVector2i(values, "lookAheadX", "lookAheadY", &follow.lookAheadTexels);
+    tryReadVector2i(values, "boundsHalflenX", "boundsHalflenX", &follow.boundsXTexels);
+    tryReadVector2i(values, "boundsHalflenY", "boundsHalflenY", &follow.boundsYTexels);
 
     // convert bounds from local half length to world coords
     Vector2i levelPosTexels = Vector2i(level.worldOffsetPixels.x() / PIXELS_PER_TEXEL, level.worldOffsetPixels.y() / PIXELS_PER_TEXEL) +
@@ -492,9 +450,9 @@ Follow loadFollowComponent(nlohmann::json& values, ActiveLevel& level) {
 
 RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
     // generic rewrite:
-    s32 parentX = checkpointData["x"];
-    s32 parentY = checkpointData["y"];
-    auto& properties = checkpointData["properties"];
+    const s32 parentX = readInt(checkpointData, "x");
+    const s32 parentY = readInt(checkpointData, "y");
+    const auto& properties = checkpointData["properties"];
     std::vector<RailsControl::Movement> moveProps;
     for (const auto& moveProperty : properties) {
         const s32 moveIx = moveProperty[KEY_VALUE];
@@ -510,14 +468,14 @@ RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::v
     }
     size_t ix = 0;
     for (auto& point : checkpointData[pathKey]) {
-        const s32 x = point["x"];
-        const s32 y = point["y"];
+        const s32 x = readInt(point, "x");
+        const s32 y = readInt(point, "y");
         const Vector2i mapPos = {x + parentX, parentY + y};
         const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
 
         RailsControl::Movement moveType;
         if (ix >= moveProps.size()) {
-            std::string name = checkpointData[KEY_NAME];
+            std::string name = readString(checkpointData, KEY_NAME);
             print(name, " has ", moveProps.size(), " move type params but it has more points");
             moveType = RailsControl::Movement::LINEAR;
         } else {
@@ -530,6 +488,67 @@ RailsControl::EndBehavior loadCheckpoints(nlohmann::json& checkpointData, std::v
     }
 
     return isToStart ? RailsControl::EndBehavior::TO_START : RailsControl::EndBehavior::REVERSE;
+}
+
+s32 readInt(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
+s32 readFloat(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
+Vector2i readVector2i(const nlohmann::json& data, const char* xKey, const char* yKey) {
+    MY_ASSERT(data.contains(xKey), data.contains(yKey) && whal_format("Missing keys: {} & {}", xKey, yKey).c_str());
+    return Vector2i(data[xKey], data[yKey]);
+}
+
+bool readBool(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
+std::string readString(const nlohmann::json& data, std::string_view key) {
+    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return data[key];
+}
+
+void tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+    }
+}
+
+void tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+    }
+}
+
+void tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst) {
+    if (data.contains(xKey)) {
+        dst->e[0] = data[xKey];
+    }
+    if (data.contains(yKey)) {
+        dst->e[1] = data[yKey];
+    }
+}
+
+void tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
+    if (data.contains(xKey)) {
+        dst->e[0] = data[xKey];
+    }
+    if (data.contains(yKey)) {
+        dst->e[1] = data[yKey];
+    }
+}
+
+void tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+    }
 }
 
 }  // namespace whal
