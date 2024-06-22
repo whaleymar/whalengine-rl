@@ -1,67 +1,4 @@
-// #include "raylib.h"
-//
-// #include "Settings.h"
-// #include "Types.h"
-//
-// int main(void) {
-//     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, "whalengine");
-//
-//     // do this before any font/texture stuff or the settings seem to get fucked
-//     Camera2D camera;
-//     camera.target = Vector2(0.0f, 0.0f);
-//     camera.offset = Vector2(WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f);
-//     camera.zoom = 1.0f;
-//
-//     Font testFont = LoadFontEx("data/other-font.ttf", 18, 0, 0);
-//
-//     Rectangle testRect = {400, 280, 40, 40};
-//     camera.target = {testRect.x + 20, testRect.y + 20};
-//
-//     Texture2D testSprite = LoadTexture("data/sprite/atlas0.png");
-//     // f32 texWidth = static_cast<f32>(testSprite.width);
-//     // f32 texHeight = static_cast<f32>(testSprite.height);
-//     // source retangle: part of texture to use for drawing
-//     // Rectangle sourceRect = {0.0f, 0.0f, texWidth, texHeight};
-//     Rectangle sourceRect = {675, 0, 16, 16};
-//
-//     // destination rectangle: screen rect we draw to
-//     // Rectangle destRect = {WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f, texWidth, texHeight};
-//     Rectangle destRect = {WINDOW_WIDTH_ACTUAL / 2.0f, WINDOW_HEIGHT_ACTUAL / 2.0f, 64, 64};  // scaling 4x
-//     // origin is the reference point used for rotation and scaling
-//     // relative to the DESTINATION rectangle size
-//     // Vector2 origin = {32, 32};
-//     Vector2 origin = {0, 0};
-//     s32 rotation = 0;
-//
-//     SetTargetFPS(FPS_TARGET);
-//
-//     while (!WindowShouldClose()) {
-//         // rotation++;
-//         BeginDrawing();
-//
-//         ClearBackground(RAYWHITE);
-//         // DrawText("You expressed expressedly", 190, 200, 20, LIGHTGRAY);
-//         DrawTextEx(testFont, "You expressed expressedly", {190, 200}, 20, 0, LIGHTGRAY);
-//
-//         BeginMode2D(camera);
-//
-//         DrawRectangle(-6000, 320, 13000, 8000, DARKGRAY);
-//         DrawRectangleRec(testRect, RED);
-//         // DrawTexturePro(testSprite, sourceRect, destRect, origin, rotation, WHITE);
-//         DrawTexturePro(testSprite, sourceRect, testRect, origin, rotation, WHITE);
-//
-//         EndMode2D();
-//
-//         EndDrawing();
-//     }
-//
-//     CloseWindow();
-//
-//     return 0;
-// }
 
-#include <fmod.hpp>
-#include "fmod_common.h"
 #include "raylib.h"
 
 #include <math.h>  // Required for: sinf(), cosf()
@@ -82,10 +19,10 @@ int main(void) {
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - smooth pixel-perfect camera");
 
-    Camera2D worldSpaceCamera = {0};  // Game world camera
+    Camera2D worldSpaceCamera = {};  // Game world camera
     worldSpaceCamera.zoom = 1.0f;
 
-    Camera2D screenSpaceCamera = {0};  // Smoothing camera
+    Camera2D screenSpaceCamera = {};  // Smoothing camera
     screenSpaceCamera.zoom = 1.0f;
 
     RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);  // This is where we'll draw all our objects.
@@ -97,10 +34,6 @@ int main(void) {
     // Rectangle rec02 = {90.0f, 55.0f, 30.0f, 10.0f};
     // Rectangle rec03 = {80.0f, 65.0f, 15.0f, 25.0f};
 
-    // The target's height is flipped (in the source Rectangle), due to OpenGL reasons
-    Rectangle sourceRec = {0.0f, 0.0f, (float)target.texture.width, -(float)target.texture.height};
-    Rectangle destRec = {-virtualRatio, -virtualRatio, screenWidth + (virtualRatio * 2), screenHeight + (virtualRatio * 2)};
-
     Vector2 origin = {0.0f, 0.0f};
 
     float rotation = 0.0f;
@@ -108,35 +41,12 @@ int main(void) {
     float cameraX = 0.0f;
     float cameraY = 0.0f;
 
-    // AUDIO SHIT
-    // ------------------------------------------
-
-    FMOD::System* system = nullptr;
-    FMOD::System_Create(&system);
-
-    system->init(512, FMOD_INIT_NORMAL, nullptr);
-
-    FMOD::Sound* sound = nullptr;
-    system->createStream("data/audio/music/provingGroundsTheme.mp3", FMOD_DEFAULT, nullptr, &sound);
-
-    FMOD::Channel* channel = nullptr;
-    system->playSound(sound, nullptr, false, &channel);
-    bool isPlayingAudio = true;
-
-    // ------------------------------------------
-
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
     while (!WindowShouldClose())  // Detect window close button or ESC key
     {
-        // AUDIO SHIT JODSHFO{ISAJDFJSDJF:ILJ:DSFL
-        if (isPlayingAudio) {
-            system->update();
-            channel->isPlaying(&isPlayingAudio);
-        }
-
         // Update
         //----------------------------------------------------------------------------------
         // rotation += 60.0f * GetFrameTime();  // Rotate the rectangles, 60 degrees per second
@@ -185,12 +95,6 @@ int main(void) {
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-
-    // AUDIO SHIT
-
-    sound->release();
-    system->close();
-    system->release();
 
     // De-Initialization
     //--------------------------------------------------------------------------------------

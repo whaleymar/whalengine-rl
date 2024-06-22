@@ -7,8 +7,6 @@ set(CMAKE_DEBUG_POSTFIX d)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
-find_package(SDL2 REQUIRED)
-# find_package(SDL2_mixer REQUIRED)
 find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
 set(CMAKE_C_STANDARD 11) # Requires C11 standard
@@ -22,14 +20,8 @@ file(GLOB_RECURSE SOURCES_BASE ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_
 add_executable(${PROJECT_NAME} ${SOURCES_BASE})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
-set(FMOD_DIR "${PROJECT_SOURCE_DIR}/lib/fmod")
-
 target_include_directories(${PROJECT_NAME} 
     PUBLIC src
-    PUBLIC "${PROJECT_SOURCE_DIR}/lib/SDL/include"
-    PUBLIC "${SDL2_INCLUDE_DIRS}"
-    PUBLIC "${FMOD_DIR}/api/core/inc"
-    PUBLIC "${FMOD_DIR}/api/studio/inc"
     )
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
@@ -42,10 +34,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
 
 include_directories(lib)
 
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
-# target_link_libraries(${PROJECT_NAME} ${SDL2_MIXER_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmod.so")
-target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmodL.so")
 target_link_libraries(${PROJECT_NAME} raylib)
 
 # Checks if OSX and links appropriate frameworks (only required on MacOS)
