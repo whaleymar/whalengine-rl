@@ -17,7 +17,7 @@ struct HitInfo;
 // class Entity;
 // }
 
-// the default function which is called when a collider is push into a solid (it dies).
+// the default function which is called when a non-solid collider is squished between two solids (it dies).
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal);
 
 // currently 64 bytes, don't want to make it bigger for cache reasons

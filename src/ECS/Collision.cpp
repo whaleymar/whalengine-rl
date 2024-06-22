@@ -10,6 +10,7 @@
 
 #include "Events/Events.h"
 #include "Physics/CollisionLayer.h"
+#include "Physics/Material.h"
 #include "Settings.h"
 
 #include "Physics/HitInfo.h"
@@ -106,6 +107,8 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
 }
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {
+    bool skipBounceStep = false;
+
     if (updateRigidBodyFlags && !isX) {
         auto& rigidbody = mSelf.get<RigidBody>();
         const bool wasGrounded = rigidbody.isGrounded;
@@ -141,6 +144,12 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 onMomentumNotUsed();
             }
 
+            if (jumpControlOpt && velocity.total.y() < 0 && (*jumpControlOpt)->isJumping) {
+                // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
+                velocity.stable.e[1] = 0;
+                skipBounceStep = true;
+            }
+
         } else {
             if (jumpControlOpt) {
                 if (wasGrounded && !(*jumpControlOpt)->isJumping) {
@@ -163,6 +172,23 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     }
 
     if (hitinfo) {
+        f32 bounciness = WhalMaterial::bounciness(mMaterial);
+        if (!skipBounceStep && bounciness != 0.0) {
+            auto& velocity = mSelf.get<Velocity>();
+            // TODO isnearzero
+            if ((isX && velocity.total.x() != 0) || (!isX && velocity.total.y() != 0)) {
+                // print("velocity was ", velocity.total);
+                // if (!isX && velocity.total.y() > 0) {
+                //     print("WTF");
+                // }
+                velocity.stable = (isX ? Vector2f(-bounciness, 1) : Vector2f(1, -bounciness)) * velocity.total;
+                f32 newVal = isX ? velocity.stable.x() : velocity.stable.y();
+                if (abs(newVal) < 2) {
+                    isX ? velocity.stable.e[0] = 0 : velocity.stable.e[1] = 0;
+                }
+                // print("and is now ", velocity.total, "bounciness = ", bounciness);
+            }
+        }
         System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
         return true;
     }

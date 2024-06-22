@@ -6,6 +6,11 @@ namespace whal {
 
 enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal };
 
+namespace WhalMaterial {
+
 const char* toString(WorldMaterial material);
+f32 bounciness(WorldMaterial material);
+
+}  // namespace WhalMaterial
 
 }  // namespace whal

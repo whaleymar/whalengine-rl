@@ -220,6 +220,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
     constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
     player.add(Collider::Actor(transform, Vector2i(halfLenX, halfLenY)));
+    player.get<Collider>().setMaterial(WorldMaterial::Soft);
     // player.add(Collider::SemiSolid(transform, Vector2i(halfLenX, halfLenY)));
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();

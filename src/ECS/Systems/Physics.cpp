@@ -14,7 +14,6 @@
 #include "ECS/Transform.h"
 #include "ECS/Velocity.h"
 
-#include "Systems/PauseMenu.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
@@ -188,11 +187,11 @@ void PhysicsSystem::fixedUpdate() {
 
                 (*rbOpt)->isLanding = false;
 
-            } else {
-                if (totalVelocity.y() < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
-                    // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
-                    vel.stable.e[1] = 0;
-                }
+                // } else {
+                //     if (totalVelocity.y() < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
+                //         // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off
+                //         platform vel.stable.e[1] = 0;
+                //     }
             }
         }
 
