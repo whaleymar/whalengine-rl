@@ -512,6 +512,7 @@
                          "type":"class",
                          "value":
                             {
+                             "Material":3,
                              "halflenTexelsX":8,
                              "halflenTexelsY":16
                             }

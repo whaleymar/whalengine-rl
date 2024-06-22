@@ -27,6 +27,9 @@ const char* toString(WorldMaterial material) {
 
     case WorldMaterial::Metal:
         return "Metal";
+
+    case WorldMaterial::Rubber:
+        return "Rubber";
     }
 }
 
@@ -55,6 +58,9 @@ f32 bounciness(WorldMaterial material) {
 
     case WorldMaterial::Metal:
         return 0.0;
+
+    case WorldMaterial::Rubber:
+        return 1.0;
     }
 }
 

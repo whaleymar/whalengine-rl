@@ -48,6 +48,8 @@ struct HitInfo {
     bool isLeft() const { return flags & CollisionInfo::Left; }
     bool isVertical() const { return flags & (CollisionInfo::VERTICAL); }
     bool isHorizontal() const { return flags & (CollisionInfo::HORIZONTAL); }
+    void clearVerticalFlags() { flags = flags & ~CollisionInfo::VERTICAL; }
+    void clearHorizontalFlags() { flags = flags & ~CollisionInfo::HORIZONTAL; }
 
     ecs::Entity getOther() const;
     void setOther(ecs::Entity);

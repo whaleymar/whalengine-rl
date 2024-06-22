@@ -37,13 +37,8 @@ inline SignedNumber auto sign(SignedNumber auto const number) {
     return number < 0 ? -1 : 1;
 }
 
-// these are not working
-template <std::floating_point T>
-inline bool isNearZero(const T value, const T epsilon = 0.001) {
-    return abs(value) < epsilon;
-}
-
-inline bool isNearZerof(const f32 value, const f32 epsilon) {
+// not working? i changed it but haven't tested. works on godbolt
+inline bool isNearZero(const f32 value, const f32 epsilon) {
     return abs(value) < epsilon;
 }
 

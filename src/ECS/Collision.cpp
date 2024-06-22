@@ -23,6 +23,7 @@ namespace whal {
 constexpr s32 MOMENTUM_LIFETIME_FRAMES = 10;
 constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 constexpr s32 CORNERCORRECTIONWIGGLE = 3 * PIXELS_PER_TEXEL;
+constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bounce
 
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
     if (callbackEntityCollider->isSemiSolid() && otherCollider->isSemiSolid()) {
@@ -144,8 +145,9 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 onMomentumNotUsed();
             }
 
-            if (jumpControlOpt && velocity.total.y() < 0 && (*jumpControlOpt)->isJumping) {
+            if (velocity.total.y() < 0 && wasGrounded && (!jumpControlOpt || !(*jumpControlOpt)->isJumping)) {
                 // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
+                // do this on second frame on the ground
                 velocity.stable.e[1] = 0;
                 skipBounceStep = true;
             }
@@ -155,7 +157,9 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 if (wasGrounded && !(*jumpControlOpt)->isJumping) {
                     (*jumpControlOpt)->coyoteSecondsRemaining = (*jumpControlOpt)->coyoteTimeSecondsMax;
                 } else if ((*jumpControlOpt)->coyoteSecondsRemaining > 0) {
+                    // is jumping
                     (*jumpControlOpt)->coyoteSecondsRemaining -= System::dt();
+                    skipBounceStep = true;
                 }
             }
 
@@ -172,21 +176,25 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     }
 
     if (hitinfo) {
-        f32 bounciness = WhalMaterial::bounciness(mMaterial);
+        // BOUNCING
+        // RESEARCH - using relative velocity instead of the mover's velocity would also be more accurate
+
+        // average bounciness of both colliders
+        f32 bounciness = (WhalMaterial::bounciness(mMaterial) + WhalMaterial::bounciness(hitinfo.otherMaterial)) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0) {
             auto& velocity = mSelf.get<Velocity>();
-            // TODO isnearzero
-            if ((isX && velocity.total.x() != 0) || (!isX && velocity.total.y() != 0)) {
-                // print("velocity was ", velocity.total);
-                // if (!isX && velocity.total.y() > 0) {
-                //     print("WTF");
-                // }
-                velocity.stable = (isX ? Vector2f(-bounciness, 1) : Vector2f(1, -bounciness)) * velocity.total;
-                f32 newVal = isX ? velocity.stable.x() : velocity.stable.y();
-                if (abs(newVal) < 2) {
-                    isX ? velocity.stable.e[0] = 0 : velocity.stable.e[1] = 0;
+            if ((isX && abs(velocity.total.x()) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y()) >= BOUNCE_THRESHOLD)) {
+                s32 ix = isX ? 0 : 1;
+                // stable can be negative (like for gravity) when impulse makes total velocity positive.
+                // in that case we don't want to do anything
+                if (sign(velocity.stable.e[ix]) == sign(velocity.total.e[ix])) {
+                    velocity.stable.e[ix] = velocity.stable.e[ix] * -bounciness;
                 }
-                // print("and is now ", velocity.total, "bounciness = ", bounciness);
+
+                // do a post check in case an external force like gravity makes the first check always pass
+                if (abs(velocity.stable.e[ix]) < BOUNCE_THRESHOLD) {
+                    velocity.stable.e[ix] = 0;
+                }
             }
         }
         System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
@@ -611,6 +619,13 @@ HitInfo Collider::checkCollision(const std::vector<Collider*>& colliders, const 
             hitInfo.setOther(pCollider->getEntity());
             hitInfo.otherLayer = pCollider->getCollisionLayer();
             hitInfo.otherMaterial = pCollider->getMaterial();
+
+            // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
+            if (moveNormal.x() != 0) {
+                hitInfo.clearVerticalFlags();
+            } else {
+                hitInfo.clearHorizontalFlags();
+            }
             return hitInfo;
         }
     }

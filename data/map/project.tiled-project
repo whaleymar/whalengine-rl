@@ -498,7 +498,8 @@
                 "Wood",
                 "Grass",
                 "Water",
-                "Metal"
+                "Metal",
+                "Rubber"
             ],
             "valuesAsFlags": false
         },

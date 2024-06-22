@@ -4,7 +4,7 @@
 
 namespace whal {
 
-enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal };
+enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal, Rubber };
 
 namespace WhalMaterial {
 
