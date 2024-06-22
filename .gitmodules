@@ -6,4 +6,4 @@
 	url = https://github.com/raysan5/raylib.git
 [submodule "lib/magnum-singles"]
 	path = lib/magnum-singles
-	url = https://github.com/mosra/magnum-singles.git
+	url = https://github.com/whaleymar/magnum-singles.git
