@@ -1,107 +1,66 @@
+#include <raylib.h>
 
-#include "raylib.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
-#include <math.h>  // Required for: sinf(), cosf()
+#define LOG(X) printf("%s: %d", __FILE__, __LINE__, X)
+RenderTexture rt;
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void) {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+#ifdef __EMSCRIPTEN__
+EM_JS(void, idbfs_put, (const char* filename, const char* str), {
+    FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
+    FS.syncfs(
+        false, function(err) { assert(!err); });
+});
+EM_JS(char*, idbfs_get, (const char* filename), {
+    var arr = FS.readFile(UTF8ToString(filename));
+    var jsString = new TextDecoder().decode(arr);
+    var lengthBytes = lengthBytesUTF8(jsString) + 1;
+    // console.log(jsString);
+    var stringOnWasmHeap = _malloc(lengthBytes);
+    stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
+    return stringOnWasmHeap;
+});
+#endif
+const char* someResource = 0;
 
-    const int virtualScreenWidth = 160;
-    const int virtualScreenHeight = 90;
+void gameLoop() {
+    BeginDrawing();
+    BeginTextureMode(rt);
+    ClearBackground(CLITERAL(Color){0, 0, 0, 255});
+    DrawCircle(GetMouseX(), -GetMouseY() + rt.texture.height, 50, CLITERAL(Color){255, 255, 0, 255});
+    EndTextureMode();
+    DrawTexture(rt.texture, 0, 0, CLITERAL(Color){255, 255, 255, 255});
+    DrawFPS(0, 0);
+#ifdef __EMSCRIPTEN__
+    char* text = idbfs_get("file.txt");
+    DrawText(TextFormat("Dynamic file content: %s", text), 0, 30, 20, WHITE);
+#endif
+    DrawText(TextFormat("Static file content: %s", someResource), 0, 60, 20, WHITE);
+    EndDrawing();
+}
+int main() {
+    int screenWidth = 1920;
+    int screenHeight = 1080;
 
-    const float virtualRatio = (float)screenWidth / (float)virtualScreenWidth;
+    InitWindow(screenWidth, screenHeight, "rtextures");
+    SetTargetFPS(144);
+    rt = LoadRenderTexture(screenWidth, screenHeight);
+    someResource = LoadFileText("../resources/dummy.txt");
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - smooth pixel-perfect camera");
-
-    Camera2D worldSpaceCamera = {};  // Game world camera
-    worldSpaceCamera.zoom = 1.0f;
-
-    Camera2D screenSpaceCamera = {};  // Smoothing camera
-    screenSpaceCamera.zoom = 1.0f;
-
-    RenderTexture2D target = LoadRenderTexture(virtualScreenWidth, virtualScreenHeight);  // This is where we'll draw all our objects.
-
-    Rectangle rec01 = {250.0f, 150.0f, 200.0f, 200.0f};
-    // Rectangle rec02 = {90.0f, 55.0f, 30.0f, 10.0f};
-    // Rectangle rec03 = {80.0f, 65.0f, 15.0f, 25.0f};
-    // Rectangle rec01 = {70.0f, 35.0f, 20.0f, 20.0f};
-    // Rectangle rec02 = {90.0f, 55.0f, 30.0f, 10.0f};
-    // Rectangle rec03 = {80.0f, 65.0f, 15.0f, 25.0f};
-
-    Vector2 origin = {0.0f, 0.0f};
-
-    float rotation = 0.0f;
-
-    float cameraX = 0.0f;
-    float cameraY = 0.0f;
-
-    SetTargetFPS(60);
-    //--------------------------------------------------------------------------------------
-
-    // Main game loop
-    while (!WindowShouldClose())  // Detect window close button or ESC key
-    {
-        // Update
-        //----------------------------------------------------------------------------------
-        // rotation += 60.0f * GetFrameTime();  // Rotate the rectangles, 60 degrees per second
-
-        // Make the camera move to demonstrate the effect
-        cameraX = (sinf(GetTime()) * 500.0f) - 90.0f;
-        // cameraY = cosf(GetTime()) * 30.0f;
-
-        // Set the camera's target to the values computed above
-        screenSpaceCamera.target = (Vector2){cameraX, cameraY};
-
-        // Round worldSpace coordinates, keep decimals into screenSpace coordinates
-        worldSpaceCamera.target.x = (int)screenSpaceCamera.target.x;
-        screenSpaceCamera.target.x -= worldSpaceCamera.target.x;
-        screenSpaceCamera.target.x *= virtualRatio;
-
-        worldSpaceCamera.target.y = (int)screenSpaceCamera.target.y;
-        screenSpaceCamera.target.y -= worldSpaceCamera.target.y;
-        screenSpaceCamera.target.y *= virtualRatio;
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();  // NEW
-        // BeginTextureMode(target);
-        ClearBackground(RAYWHITE);
-
-        BeginMode2D(worldSpaceCamera);
-        // BeginMode2D(screenSpaceCamera);
-        DrawRectanglePro(rec01, origin, rotation, BLACK);
-        // DrawRectanglePro(rec02, origin, -rotation, RED);
-        // DrawRectanglePro(rec03, origin, rotation + 45.0f, BLUE);
-        // EndMode2D();
-        // EndTextureMode();
-
-        // BeginDrawing();
-        // ClearBackground(RED);
-
-        // BeginMode2D(screenSpaceCamera);
-        // DrawTexturePro(target.texture, sourceRec, destRec, origin, 0.0f, WHITE);
-        EndMode2D();
-
-        // DrawText(TextFormat("Screen resolution: %ix%i", screenWidth, screenHeight), 10, 10, 20, DARKBLUE);
-        // DrawText(TextFormat("World resolution: %ix%i", virtualScreenWidth, virtualScreenHeight), 10, 40, 20, DARKGREEN);
-        // DrawFPS(GetScreenWidth() - 95, 10);
-        EndDrawing();
-        //----------------------------------------------------------------------------------
+#ifdef __EMSCRIPTEN__
+    EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(
+        true, function(err) { assert(!err); }););
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 100000000};
+    struct timespec ts2 = {.tv_sec = 0, .tv_nsec = 100000000};
+    nanosleep(&ts, &ts2);
+    idbfs_put("file.txt", "Some dynamic file contents...\n");
+    emscripten_set_main_loop(gameLoop, 0, 0);
+#else
+    while (!WindowShouldClose()) {
+        gameLoop();
     }
-
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    UnloadRenderTexture(target);  // Unload render texture
-
-    CloseWindow();  // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
-
+#endif
     return 0;
 }
