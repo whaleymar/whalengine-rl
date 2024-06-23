@@ -14,6 +14,7 @@ public:
     f32 getUnmodified() const { return mDeltatimeUnmodified; }
     void update();
     void setMultiplier(f32);
+    void sleep(int milliseconds);
 
 private:
     Deltatime();

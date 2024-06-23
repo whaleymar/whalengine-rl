@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Events/Events.h"
-#include "Systems/Audio.h"
+// #include "Systems/Audio.h"
 #include "Systems/System.h"
 #include "Util/Types.h"
 
@@ -35,7 +35,7 @@ private:
     void activate();
 
     Button mCursorOption = Button::Resume;
-    AudioPlayer::Filter mPrevMusicFilter = AudioPlayer::Filter::None;
+    // AudioPlayer::Filter mPrevMusicFilter = AudioPlayer::Filter::None;
     bool mIsActive = false;
 };
 

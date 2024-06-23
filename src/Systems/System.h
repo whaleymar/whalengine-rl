@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Systems/Audio.h"
+// #include "Systems/Audio.h"
 #include "Systems/Deltatime.h"
 #include "Systems/Event.h"
 #include "Systems/Frametracker.h"
@@ -17,7 +17,7 @@ struct System {
     inline static RNG rng;
     inline static Frametracker frame;
     inline static EventManager eventMgr;
-    inline static AudioPlayer audio;
+    // inline static AudioPlayer audio;
     inline static JobScheduler schedule;
     inline static ecs::World* world = &ecs::World::getInstance();
 
@@ -25,11 +25,11 @@ struct System {
         IsPaused = pause;
         if (pause) {
             dt.setMultiplier(0.0);
-            audio.pauseClips(true);
+            // audio.pauseClips(true);
             world->pause();
         } else {
             dt.setMultiplier(1.0);
-            audio.pauseClips(false);
+            // audio.pauseClips(false);
             world->unpause();
         }
     }

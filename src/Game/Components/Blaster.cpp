@@ -116,7 +116,7 @@ void shootProjectile() {
             (*velOpt)->stable += moveNormal * -1 * blaster.shotKnockback;
         }
 
-        System::audio.playClip(Sfx::SHOTFIRED, 0.2);
+        // System::audio.playClip(Sfx::SHOTFIRED, 0.2);
 
         blaster.aimReticle->kill();
         blaster.aimReticle = Corrade::Containers::NullOpt;

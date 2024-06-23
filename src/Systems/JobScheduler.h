@@ -98,7 +98,7 @@ private:
     void worker();
 
     std::mutex mMutex;
-    std::thread mJobThread;
+    // std::thread mJobThread;
     std::condition_variable mCondition;
 
     std::list<Job> mQueue;

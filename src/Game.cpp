@@ -2,6 +2,10 @@
 
 #include <raylib.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
 #include "ECS/Name.h"
@@ -36,6 +40,23 @@
 #include "Util/Print.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
+
+#ifdef __EMSCRIPTEN__
+EM_JS(void, idbfs_put, (const char* filename, const char* str), {
+    FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
+    FS.syncfs(
+        false, function(err) { assert(!err); });
+});
+EM_JS(char*, idbfs_get, (const char* filename), {
+    var arr = FS.readFile(UTF8ToString(filename));
+    var jsString = new TextDecoder().decode(arr);
+    var lengthBytes = lengthBytesUTF8(jsString) + 1;
+    // console.log(jsString);
+    var stringOnWasmHeap = _malloc(lengthBytes);
+    stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
+    return stringOnWasmHeap;
+});
+#endif
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
@@ -92,10 +113,10 @@ bool Game::startup() {
 
     SetTargetFPS(FPS_TARGET);
 
-    if (!System::audio.isValid()) {
-        print("Error initializing audio manager");
-        return true;
-    }
+    // if (!System::audio.isValid()) {
+    //     print("Error initializing audio manager");
+    //     return true;
+    // }
     System::world->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
 
@@ -116,17 +137,46 @@ bool Game::startup() {
     return false;
 }
 
+static void _mainloop();
+
+// these are used for rendering, which still is run manually in the main loop but I might move it eventually
+static auto drawSystem = System::world->getSystem<DrawSystem>();
+static auto spriteSystem = System::world->getSystem<SpriteSystem>();
+static auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
+static auto lightSystem = System::world->getSystem<PointLightSystem>();
+static auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
+
+static auto collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering, which
+// should be its own phase
+
+// experimenting with adding some extra pixels on border (for putting camera in screen space)
+static RenderTexture2D targetTexture =
+    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
+static RenderTexture2D targetTextureBackground =
+    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
+static RenderTexture2D targetTextureRadiance =
+    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
+static RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
+// static Color clearColor = {51, 76, 76, 255};
+static Color clearColor = {5, 5, 5, 255};
+static Color clearColorTransparent = {0, 0, 0, 0};
+
+static Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
+static auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
+static Shader shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
+static auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
+
+static Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
+static auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
+static bool isQuantizeOn = false;
+
+// without the post processing step, would need to flip the y axis here by multiplying by -1
+static const Rectangle screenSourceRec = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
+                                          1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
+static const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
+                                        WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+
 void Game::mainloop() {
-    // these are used for rendering, which still is run in this function but I might move it eventually
-    auto drawSystem = System::world->getSystem<DrawSystem>();
-    auto spriteSystem = System::world->getSystem<SpriteSystem>();
-    auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
-    auto lightSystem = System::world->getSystem<PointLightSystem>();
-    auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
-
-    auto collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering, which
-                                                       // should be its own phase
-
     // load scene
     auto err = loadTestMap();
     if (err) {
@@ -134,189 +184,182 @@ void Game::mainloop() {
         return;
     }
 
-    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
+    // System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
 
     collisionMgr->update();
 
-    // experimenting with adding some extra pixels on border
-    RenderTexture2D targetTexture =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
-    RenderTexture2D targetTextureBackground =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-    RenderTexture2D targetTextureRadiance =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-    RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
-    // Color clearColor = {51, 76, 76, 255};
-    Color clearColor = {5, 5, 5, 255};
-    Color clearColorTransparent = {0, 0, 0, 0};
-
-    Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
-    auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
     lightSystem->setShader(&shaderPointLight);
     lightSystem->setPositionUniform(lightPosUniform);
 
-    Shader shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
-    auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
     radianceSystem->setShader(&shaderRadiance);
     radianceSystem->setPositionUniform(radiancePosUniform);
 
-    Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
-    auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
-    bool isQuantizeOn = false;
+#ifdef __EMSCRIPTEN__
 
-    // without the post processing step, would need to flip the y axis here by multiplying by -1
-    const Rectangle screenSourceRec = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
-                                       1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
-    const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
-                                     WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+    EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(
+        true, function(err) { assert(!err); }););
+    System::dt.sleep(1);
+    idbfs_put("file.txt", "Some dynamic file contents...\n");
+    emscripten_set_main_loop(_mainloop, 0, 0);
+
+#else
     while (!WindowShouldClose() && !System::isQuit()) {
-        System::input.update();
-        if (System::frame.getFrame() == 0) {
-            Vector2f cameraPos = getCameraPositionPrecise();
-            updateLoadedLevels(cameraPos);
-        }
-
-        System::dt.update();
-        System::schedule.tick(System::dt());
-        System::frame.update();
-        System::audio.update();
-
-        System::world->update();
-
-        // Update Scene
-        checkIfInNewLevel();
-
-        // Only rendering remains, so we can do "end of frame" stuff now
-        System::world->killEntities();
-        collisionMgr->update();  // this can definitely be done in parallel while rendering
-
-#ifndef NDEBUG
-        if (IsKeyPressed(KEY_K)) {
-            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
-                entity.kill();
-            }
-        }
+        _mainloop();
+    }
 #endif
+}
 
-        // CAMERA
-        // -----------------------------------------------------------------------
-        // round worldspace coords, keep decimals in screen space
-        mWorldSpaceCamera->target.x = static_cast<s32>(mScreenSpaceCamera->target.x);
-        mScreenSpaceCamera->target.x -= mWorldSpaceCamera->target.x;
-        mScreenSpaceCamera->target.x *= VIRTUAL_SCREEN_RATIO;
-
-        mWorldSpaceCamera->target.y = static_cast<s32>(mScreenSpaceCamera->target.y);
-        mScreenSpaceCamera->target.y -= mWorldSpaceCamera->target.y;
-        mScreenSpaceCamera->target.y *= VIRTUAL_SCREEN_RATIO;
-
-        // ECS DRAW START
-        // -----------------------------------------------------------------------
-        lightSystem->update();  // this gets drawn to its own texture
-        BeginTextureMode(targetTextureRadiance);
-        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
-        radianceSystem->update();                // draws to current texture
-        EndTextureMode();
-
-        // do backgrounds on their own texture so lighting doesn't affect them
-        BeginTextureMode(targetTextureBackground);
-        ClearBackground(clearColor);
-        TextureManager::instance().drawBackgroundTextures();
-        EndTextureMode();
-
-        BeginTextureMode(targetTexture);
-        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
-        BeginMode2D(*mWorldSpaceCamera);
-
-        spriteSystem->drawEntities();
-        drawSystem->drawEntities();
-
-        EndMode2D();
-
-        BeginBlendMode(BLEND_MULTIPLIED);
-        TextureManager::instance().drawLightingTexture();
-        EndBlendMode();
-
-#ifndef NDEBUG
-        BeginMode2D(*mWorldSpaceCamera);
-        if (System::input.isOn(InputType::DEBUG)) {
-            drawDebugSystem->drawEntities();
-            drawColliders();
-        }
-        EndMode2D();
-#endif
-
-        EndTextureMode();
-        // -----------------------------------------------------------------------
-        // ECS DRAW END
-        // Vector2f cameraPosf = getCameraPositionPrecise();
-        // auto filename = sprint(cameraPosf, "_.png");
-        // Image img = LoadImageFromTexture(targetTexture.texture);
-        // ExportImage(img, filename.c_str());
-
-        // POST PROCESSING EFFECTS START
-        // -----------------------------------------------------------------------
-
-        BeginTextureMode(postProcessTexture);
-        ClearBackground(clearColor);
-
-        if (IsKeyPressed(KEY_Q)) {
-            isQuantizeOn = !isQuantizeOn;
-        }
-        if (isQuantizeOn) {
-            BeginShaderMode(shaderQuantize);
-
-            SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-        }
-
-        // this unflips the y axis for some reason
-        DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
-        DrawTexture(targetTexture.texture, 0, 0, WHITE);
-
-        BeginBlendMode(BLEND_ADDITIVE);
-        DrawTexture(targetTextureRadiance.texture, 0, 0, WHITE);
-        EndBlendMode();
-
-        if (isQuantizeOn)
-            EndShaderMode();
-        EndTextureMode();
-
-        // -----------------------------------------------------------------------
-        // POST PROCESSING EFFECTS END
-
-        // DRAW START
-        // -----------------------------------------------------------------------
-        BeginDrawing();
-
-        ClearBackground(clearColor);
-
-        BeginMode2D(*mScreenSpaceCamera);
-
-        Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
-        DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
-
-        EndMode2D();
-
-        // TEXT STUFF
-        PauseMenu::instance().draw(mFont);
-
-#ifndef NDEBUG
-        if (System::input.isOn(InputType::DEBUG)) {
-            DrawFPS(10, 10);
-        }
-#endif
-
-        EndDrawing();
-        // -----------------------------------------------------------------------
-        // DRAW END
+// required for web builds
+static void _mainloop() {
+    System::input.update();
+    if (System::frame.getFrame() == 0) {
+        Vector2f cameraPos = getCameraPositionPrecise();
+        Game::instance().updateLoadedLevels(cameraPos);
     }
 
+    System::dt.update();
+    System::schedule.tick(System::dt());
+    System::frame.update();
+    // System::audio.update();
+
+    System::world->update();
+
+    // Update Scene
+    Game::instance().checkIfInNewLevel();
+
+    // Only rendering remains, so we can do "end of frame" stuff now
+    System::world->killEntities();
+    collisionMgr->update();  // this can definitely be done in parallel while rendering
+
+#ifndef NDEBUG
+    if (IsKeyPressed(KEY_K)) {
+        for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
+            entity.kill();
+        }
+    }
+#endif
+
+    // CAMERA
+    // -----------------------------------------------------------------------
+    // round worldspace coords, keep decimals in screen space
+    auto pWorldSpaceCamera = Game::instance().getWorldCamera();
+    auto pScreenSpaceCamera = Game::instance().getScreenCamera();
+
+    pWorldSpaceCamera->target.x = static_cast<s32>(pScreenSpaceCamera->target.x);
+    pScreenSpaceCamera->target.x -= pWorldSpaceCamera->target.x;
+    pScreenSpaceCamera->target.x *= VIRTUAL_SCREEN_RATIO;
+
+    pWorldSpaceCamera->target.y = static_cast<s32>(pScreenSpaceCamera->target.y);
+    pScreenSpaceCamera->target.y -= pWorldSpaceCamera->target.y;
+    pScreenSpaceCamera->target.y *= VIRTUAL_SCREEN_RATIO;
+
+    // ECS DRAW START
+    // -----------------------------------------------------------------------
+    lightSystem->update();  // this gets drawn to its own texture
+    BeginTextureMode(targetTextureRadiance);
+    ClearBackground(clearColorTransparent);  // don't overwrite background stuff
+    radianceSystem->update();                // draws to current texture
+    EndTextureMode();
+
+    // do backgrounds on their own texture so lighting doesn't affect them
+    BeginTextureMode(targetTextureBackground);
+    ClearBackground(clearColor);
+    TextureManager::instance().drawBackgroundTextures();
+    EndTextureMode();
+
+    BeginTextureMode(targetTexture);
+    ClearBackground(clearColorTransparent);  // don't overwrite background stuff
+    BeginMode2D(*pWorldSpaceCamera);
+
+    spriteSystem->drawEntities();
+    drawSystem->drawEntities();
+
+    EndMode2D();
+
+    BeginBlendMode(BLEND_MULTIPLIED);
+    TextureManager::instance().drawLightingTexture();
+    EndBlendMode();
+
+#ifndef NDEBUG
+    BeginMode2D(*pWorldSpaceCamera);
+    if (System::input.isOn(InputType::DEBUG)) {
+        drawDebugSystem->drawEntities();
+        drawColliders();
+    }
+    EndMode2D();
+#endif
+
+    EndTextureMode();
+    // -----------------------------------------------------------------------
+    // ECS DRAW END
+    // Vector2f cameraPosf = getCameraPositionPrecise();
+    // auto filename = sprint(cameraPosf, "_.png");
+    // Image img = LoadImageFromTexture(targetTexture.texture);
+    // ExportImage(img, filename.c_str());
+
+    // POST PROCESSING EFFECTS START
+    // -----------------------------------------------------------------------
+
+    BeginTextureMode(postProcessTexture);
+    ClearBackground(clearColor);
+
+    if (IsKeyPressed(KEY_Q)) {
+        isQuantizeOn = !isQuantizeOn;
+    }
+    if (isQuantizeOn) {
+        BeginShaderMode(shaderQuantize);
+
+        SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+    }
+
+    // this unflips the y axis for some reason
+    DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
+    DrawTexture(targetTexture.texture, 0, 0, WHITE);
+
+    BeginBlendMode(BLEND_ADDITIVE);
+    DrawTexture(targetTextureRadiance.texture, 0, 0, WHITE);
+    EndBlendMode();
+
+    if (isQuantizeOn)
+        EndShaderMode();
+    EndTextureMode();
+
+    // -----------------------------------------------------------------------
+    // POST PROCESSING EFFECTS END
+
+    // DRAW START
+    // -----------------------------------------------------------------------
+    BeginDrawing();
+
+    ClearBackground(clearColor);
+
+    BeginMode2D(*pScreenSpaceCamera);
+
+    Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
+    DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
+
+    EndMode2D();
+
+    // TEXT STUFF
+    PauseMenu::instance().draw(Game::instance().getFont());
+
+#ifndef NDEBUG
+    if (System::input.isOn(InputType::DEBUG)) {
+        DrawFPS(10, 10);
+    }
+#endif
+
+    EndDrawing();
+    // -----------------------------------------------------------------------
+    // DRAW END
+}
+
+void Game::end() {
     UnloadRenderTexture(targetTexture);
     UnloadRenderTexture(targetTextureBackground);
     UnloadRenderTexture(targetTextureRadiance);
     UnloadRenderTexture(postProcessTexture);
-}
 
-void Game::end() {
     System::schedule.end();
     System::schedule.await();
 
@@ -465,6 +508,6 @@ void Game::loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePoi
     *mFont = LoadFontEx(fontPath, size, codePoints, codePointsCount);
 }
 
-const Font* Game::getFont() const {
+Font* Game::getFont() const {
     return mFont;
 }

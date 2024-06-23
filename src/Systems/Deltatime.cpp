@@ -2,6 +2,9 @@
 
 #include <raylib.h>
 
+#include <chrono>
+#include <thread>
+
 namespace whal {
 
 static constexpr f32 MAX_FRAME_TIME = 0.5;  // cap at half a second
@@ -16,6 +19,10 @@ void Deltatime::update() {
 
 void Deltatime::setMultiplier(f32 multiplier) {
     mTimeMultiplier = multiplier;
+}
+
+void Deltatime::sleep(int milliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
 }  // namespace whal

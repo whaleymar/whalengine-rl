@@ -72,11 +72,11 @@ bool brain(Animator& animator, ecs::Entity entity) {
         if (rb.isLanding) {
             f32 squish = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
             sprite.scale = {myLerp(1, 1.25, squish), myLerp(1, 0.8, squish)};
-            System::audio.playClip(Sfx::LAND, 0.0375 * squish);
+            // System::audio.playClip(Sfx::LAND, 0.0375 * squish);
         }
         if (vel.total.x() != 0) {
             if (animator.setAnimation(RUN)) {
-                System::audio.playClip(Sfx::FOOTSTEPTEST, 0.075);
+                // System::audio.playClip(Sfx::FOOTSTEPTEST, 0.075);
                 return true;
             }
         } else {
@@ -113,7 +113,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             // TODO normal jump
             if (!isJumping && animator.setAnimation(JUMP_FORWARD)) {
                 sprite.scale = {0.8, 1.25};
-                System::audio.playClip(Sfx::JUMP, 0.35);
+                // System::audio.playClip(Sfx::JUMP, 0.35);
                 return true;
             }
         } else {
@@ -145,7 +145,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     bool frameChanged = basicAnimation(animator, entity);
     bool animEnded = frameChanged && animator.curFrameIx == 0;
     if (frameChanged && animator.getAnimation().id == RUN && animator.curFrameIx % 2 == 1) {
-        System::audio.playClip(Sfx::FOOTSTEPTEST, 0.05);
+        // System::audio.playClip(Sfx::FOOTSTEPTEST, 0.05);
     }
 
     // do tween transitions
@@ -231,13 +231,13 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
 
     player.add(Respawn{2, &respawnPlayer, transform.position,
                        []() {
-                           System::audio.playClip(Sfx::DEATH);
-                           System::audio.setMusicVolume(0.75);
-                           System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
+                           // System::audio.playClip(Sfx::DEATH);
+                           // System::audio.setMusicVolume(0.75);
+                           // System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
                        },
                        []() {
-                           System::audio.setMusicVolume(1);
-                           System::audio.setFilterMusic(AudioPlayer::Filter::None);
+                           // System::audio.setMusicVolume(1);
+                           // System::audio.setFilterMusic(AudioPlayer::Filter::None);
                        }});
     player.add<IUseCheckpoints>();
 

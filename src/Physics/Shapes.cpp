@@ -207,6 +207,7 @@ bool Shape::isOverlapping(const Circle& other) const {
     }
 }
 
+#ifndef NDEBUG
 void Shape::draw(Vector2f cameraPos, Color color) const {
     switch (mShape) {
     case ShapeTag::AABB:
@@ -217,5 +218,6 @@ void Shape::draw(Vector2f cameraPos, Color color) const {
         break;
     }
 }
+#endif
 
 }  // namespace whal

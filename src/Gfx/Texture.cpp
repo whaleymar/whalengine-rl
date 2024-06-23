@@ -11,6 +11,7 @@
 #include "Settings.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
+#include "Util/Types.h"
 #include "Util/Vector.h"
 #include "raylib/src/raylib.h"
 
@@ -282,7 +283,7 @@ void TextureManager::drawBackgroundTextures() {
 
     auto checkWrapping = [](const Vector2f cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
         f32 distance = cameraPos.x() - (bgdata.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
-        s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x());
+        s32 offset = myLerp(texWidth, texWidth / 2, bgdata.parallax.x());
         s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x()));
         if (bgdata.isRepeatX) {
             scrollVar.e[0] = (texWidth - (effectiveDistance % texWidth) - offset) % texWidth;
@@ -291,7 +292,7 @@ void TextureManager::drawBackgroundTextures() {
         }
 
         distance = cameraPos.y() + texHeight - (bgdata.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
-        offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y());
+        offset = myLerp(texHeight, texHeight / 2, bgdata.parallax.y());
         effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y()));
         if (bgdata.isRepeatY) {
             scrollVar.e[1] = (texHeight - (effectiveDistance % texHeight) - offset) % texHeight;

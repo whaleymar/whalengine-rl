@@ -18,7 +18,7 @@ void PauseMenu::onEvent(InputType input) {
     if (!isActive()) {
         if (input == InputType::PAUSE) {
             activate();
-            System::audio.playMenuClip(Sfx::MENU_OPEN, 0.33);
+            // System::audio.playMenuClip(Sfx::MENU_OPEN, 0.33);
         }
         return;
     }
@@ -26,19 +26,19 @@ void PauseMenu::onEvent(InputType input) {
     switch (input) {
     case InputType::UP:
         mCursorOption = static_cast<Button>(pythonMod(mCursorOption - 1, N_BUTTONS));
-        System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
+        // System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
         break;
     case InputType::DOWN:
         mCursorOption = static_cast<Button>(pythonMod(mCursorOption + 1, N_BUTTONS));
-        System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
+        // System::audio.playMenuClip(Sfx::MENU_MOVE, 0.33);
         break;
     case InputType::PAUSE:
         deactivate();
-        System::audio.playMenuClip(Sfx::MENU_CLOSE, 0.33);
+        // System::audio.playMenuClip(Sfx::MENU_CLOSE, 0.33);
         break;
     case InputType::OK:
         doCursorAction();
-        System::audio.playMenuClip(Sfx::MENU_SELECT, 0.33);
+        // System::audio.playMenuClip(Sfx::MENU_SELECT, 0.33);
         break;
     default:
         break;
@@ -82,8 +82,8 @@ void PauseMenu::activate() {
         return;
     }
     System::setPaused(true);
-    mPrevMusicFilter = System::audio.getFilterMusic();
-    System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
+    // mPrevMusicFilter = System::audio.getFilterMusic();
+    // System::audio.setFilterMusic(AudioPlayer::Filter::LowPass);
     mIsActive = true;
     mCursorOption = Button::Resume;
 }
@@ -93,7 +93,7 @@ void PauseMenu::deactivate() {
         return;
     }
     System::setPaused(false);
-    System::audio.setFilterMusic(mPrevMusicFilter);
+    // System::audio.setFilterMusic(mPrevMusicFilter);
     mIsActive = false;
 }
 

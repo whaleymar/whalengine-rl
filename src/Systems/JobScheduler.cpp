@@ -38,16 +38,16 @@ void EventFlow::tick(f32 deltaTime) {
 }  // namespace evfl
 
 void JobScheduler::start() {
-    mJobThread = std::thread(&JobScheduler::worker, this);
+    // mJobThread = std::thread(&JobScheduler::worker, this);
 }
 
 void JobScheduler::await() {
-    mJobThread.join();
+    // mJobThread.join();
 }
 
 void JobScheduler::end() {
     mIsTerminated = true;
-    mCondition.notify_one();
+    // mCondition.notify_one();
 }
 
 evfl::EventFlow& JobScheduler::eventFlow(bool isPaused) {
@@ -59,7 +59,8 @@ void JobScheduler::tick(f32 dt) {
     for (auto it = mQueue.begin(); it != mQueue.end(); ++it) {
         it->second -= dt;
     }
-    mCondition.notify_one();
+    // mCondition.notify_one();
+    tryExecuteJobs();
 
     auto it = mEventFlows.begin();
     while (it != mEventFlows.end()) {
@@ -90,12 +91,12 @@ void JobScheduler::tryExecuteJobs() {
 }
 
 void JobScheduler::worker() {
-    while (!mIsTerminated) {
-        std::unique_lock<std::mutex> lock(mMutex);
-        mCondition.wait(lock, [this] { return (!mQueue.empty() && mQueue.begin()->second <= 0) || mIsTerminated; });
-
-        tryExecuteJobs();
-    }
+    // while (!mIsTerminated) {
+    //     std::unique_lock<std::mutex> lock(mMutex);
+    //     mCondition.wait(lock, [this] { return (!mQueue.empty() && mQueue.begin()->second <= 0) || mIsTerminated; });
+    //
+    //     tryExecuteJobs();
+    // }
 }
 
 }  // namespace whal
