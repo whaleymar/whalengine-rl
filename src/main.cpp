@@ -1,7 +1,9 @@
 #include <raylib.h>
 
 #ifdef __EMSCRIPTEN__
+#include <chrono>
 #include <emscripten.h>
+#include <thread>
 #endif
 
 #define LOG(X) printf("%s: %d", __FILE__, __LINE__, X)
@@ -52,9 +54,7 @@ int main() {
 #ifdef __EMSCRIPTEN__
     EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(
         true, function(err) { assert(!err); }););
-    struct timespec ts = {.tv_sec = 0, .tv_nsec = 100000000};
-    struct timespec ts2 = {.tv_sec = 0, .tv_nsec = 100000000};
-    nanosleep(&ts, &ts2);
+    std::this_thread::sleep_for(std::chrono::nanoseconds(100000000));
     idbfs_put("file.txt", "Some dynamic file contents...\n");
     emscripten_set_main_loop(gameLoop, 0, 0);
 #else
