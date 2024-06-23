@@ -82,6 +82,34 @@ Game::~Game() {
     delete mFont;
 }
 
+// these are used for rendering, which still is run manually in the main loop but I might move it eventually
+static DrawSystem* drawSystem;
+static SpriteSystem* spriteSystem;
+static DrawDebugSystem* drawDebugSystem;
+static PointLightSystem* lightSystem;
+static RadianceLightSystem* radianceSystem;
+
+static CollisionManager* collisionMgr;
+// should be its own phase
+
+// experimenting with adding some extra pixels on border (for putting camera in screen space)
+static RenderTexture2D targetTexture;
+static RenderTexture2D targetTextureBackground;
+static RenderTexture2D targetTextureRadiance;
+static RenderTexture2D postProcessTexture;
+
+static const Color clearColor = {5, 5, 5, 255};
+static const Color clearColorTransparent = {0, 0, 0, 0};
+
+static Shader shaderPointLight;
+static int lightPosUniform;
+static Shader shaderRadiance;
+static int radiancePosUniform;
+
+static Shader shaderQuantize;
+static int paletteTexUniform;
+static bool isQuantizeOn = false;
+
 bool Game::startup() {
     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
     SetExitKey(KEY_NULL);  // Escape quits by default
@@ -134,41 +162,43 @@ bool Game::startup() {
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem, MovableColliders>()
         .registerSystems<RocketJumpingSystem, RespawnListener>();
 
+    // these are used for rendering, which still is run manually in the main loop but I might move it eventually
+    drawSystem = System::world->getSystem<DrawSystem>();
+    spriteSystem = System::world->getSystem<SpriteSystem>();
+    drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
+    lightSystem = System::world->getSystem<PointLightSystem>();
+    radianceSystem = System::world->getSystem<RadianceLightSystem>();
+
+    collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering,
+    // which should be its own phase
+
+    // experimenting with adding some extra pixels on border (for putting camera in screen space)
+    targetTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
+    targetTextureBackground =
+        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
+    targetTextureRadiance =
+        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
+    postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
+    // static Color clearColor = {51, 76, 76, 255};
+
+#ifdef __EMSCRIPTEN__
+    shaderPointLight = LoadShader(0, "src/Shader/pointlight-web.glsl");
+    shaderRadiance = LoadShader(0, "src/Shader/radiancelight-web.glsl");
+    shaderQuantize = LoadShader(0, "src/Shader/quantize-web.glsl");
+#else
+    shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
+    shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
+    shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
+#endif
+
+    lightPosUniform = GetShaderLocation(shaderPointLight, "position");
+    radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
+    paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
+
     return false;
 }
 
 static void _mainloop();
-
-// these are used for rendering, which still is run manually in the main loop but I might move it eventually
-static auto drawSystem = System::world->getSystem<DrawSystem>();
-static auto spriteSystem = System::world->getSystem<SpriteSystem>();
-static auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
-static auto lightSystem = System::world->getSystem<PointLightSystem>();
-static auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
-
-static auto collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering, which
-// should be its own phase
-
-// experimenting with adding some extra pixels on border (for putting camera in screen space)
-static RenderTexture2D targetTexture =
-    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
-static RenderTexture2D targetTextureBackground =
-    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-static RenderTexture2D targetTextureRadiance =
-    LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-static RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
-// static Color clearColor = {51, 76, 76, 255};
-static Color clearColor = {5, 5, 5, 255};
-static Color clearColorTransparent = {0, 0, 0, 0};
-
-static Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
-static auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
-static Shader shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
-static auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
-
-static Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
-static auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
-static bool isQuantizeOn = false;
 
 // without the post processing step, would need to flip the y axis here by multiplying by -1
 static const Rectangle screenSourceRec = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
@@ -200,6 +230,7 @@ void Game::mainloop() {
         true, function(err) { assert(!err); }););
     System::dt.sleep(1);
     idbfs_put("file.txt", "Some dynamic file contents...\n");
+    EM_ASM({ Module.wasmTable = wasmTable; });
     emscripten_set_main_loop(_mainloop, 0, 0);
 
 #else
