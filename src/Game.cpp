@@ -187,8 +187,8 @@ void Game::mainloop() {
         checkIfInNewLevel();
 
         // Only rendering remains, so we can do "end of frame" stuff now
-        System::world->killEntities();
-        collisionMgr->update();  // this can definitely be done in parallel while rendering
+        System::world->killEntities();  // TODO this can go at the end of update()
+        collisionMgr->update();         // this can definitely be done in parallel while rendering
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {

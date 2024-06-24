@@ -8,6 +8,7 @@ namespace whal {
 
 struct RigidBody {
     RigidBody() = default;
+    RigidBody(Vector2f frictionMult) : frictionMultiplier(frictionMult) {}
 
     void setGrounded(WorldMaterial material);
     void setNotGrounded();

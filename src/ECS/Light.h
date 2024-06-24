@@ -2,21 +2,14 @@
 
 #include "Util/Types.h"
 
+#include <raylib.h>
+
 namespace whal {
 
-struct LightColor {
-    u8 red;
-    u8 green;
-    u8 blue;
-    u8 alpha;
-};
-
-static const LightColor LIGHTCOLOR_WHITE = {255, 255, 255, 255};
-
 struct IEmitLight {
-    s32 radius;
-    s32 height;  // offset from transform
-    LightColor color = LIGHTCOLOR_WHITE;
+    s32 radius = 1;
+    s32 height = 0;  // offset from transform
+    Color color = WHITE;
 };
 
 // lights have a multiplicative effect on other objects (determined how visible they are).

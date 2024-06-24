@@ -8,7 +8,7 @@ void OnFrameEndSystem::fixedUpdate() {
     for (auto [entityid, entity] : getEntitiesCopy()) {
         // not bothering with a null check
 
-        const auto& onFrameEnd = entity.get<OnFrameEnd>();
+        const auto onFrameEnd = entity.get<OnFrameEnd>();
         onFrameEnd.callback(entity);
 
         if (onFrameEnd.removeSelf) {

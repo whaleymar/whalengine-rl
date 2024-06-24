@@ -1,5 +1,6 @@
 #include "Explosion.h"
 
+#include "ECS/Callback.h"
 #include "ECS/Light.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
@@ -7,7 +8,6 @@
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
-#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -49,7 +49,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();
         Vector2f delta = toFloatVec(otherCollider.getPosition() - center);
-        auto unitDelta = delta.norm();
+        auto unitDelta = delta.isZero() ? Vector2f::zero : delta.norm();
 
         // slight knockback falloff based on distance
         auto circle = trigger.shape.getCircle();

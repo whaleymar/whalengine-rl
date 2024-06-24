@@ -13,8 +13,9 @@
 
 namespace whal {
 
-const Color COLOR_AMBIENT =
-    Color(200, 200, 200, 255);  // TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
+// TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
+// const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
+const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 void PointLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();
@@ -31,11 +32,12 @@ void PointLightSystem::update() {
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
-        Color color = Color(light.color.red, light.color.blue, light.color.green, light.color.alpha);
+        Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
         auto lifetimeOpt = entity.tryGet<Lifetime>();
+        s32 radius = light.radius;
         if (lifetimeOpt) {
             if ((*lifetimeOpt)->secondsRemaining < 0.25) {
                 intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
@@ -43,6 +45,7 @@ void PointLightSystem::update() {
                 color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
                 color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
                 color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
+                radius = std::lerp(0, radius, intensity);
             }
         }
 
@@ -50,7 +53,8 @@ void PointLightSystem::update() {
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        // Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
 
@@ -71,15 +75,26 @@ void RadianceLightSystem::update() {
         Radiance light = entity.get<Radiance>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
-        Color color = Color(light.color.red, light.color.blue, light.color.green, light.color.alpha);
+        Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
+
+        // for entities with lifetimes, fade out in last moments
+        f32 intensity = 1.0;
+        auto lifetimeOpt = entity.tryGet<Lifetime>();
+        s32 radius = light.radius;
+        if (lifetimeOpt) {
+            if ((*lifetimeOpt)->secondsRemaining < 0.25) {
+                intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
+                radius = std::lerp(0, radius, intensity);
+            }
+        }
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        // Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
+        Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
-        // DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, WHITE);
     }
 
     EndMode2D();

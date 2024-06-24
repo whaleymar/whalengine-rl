@@ -230,8 +230,8 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
     player.add<RigidBody>();
     // player.add<FreeControl>();
 
-    // player.add(PointLight{PIXELS_PER_TILE * 10, PIXELS_PER_TILE, {255, 255, 204, 255}});
-    player.add(Radiance{PIXELS_PER_TILE * 2, PIXELS_PER_TILE, {255, 255, 255, 175}});
+    player.add(PointLight{PIXELS_PER_TILE * 4, PIXELS_PER_TILE, {255, 255, 204, 255}});
+    player.add(Radiance{PIXELS_PER_TILE * 1, PIXELS_PER_TILE, {255, 255, 255, 175}});
 
     player.add(Respawn{2, &respawnPlayer, transform.position,
                        []() {

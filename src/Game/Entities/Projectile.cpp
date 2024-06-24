@@ -1,6 +1,9 @@
 #include "Projectile.h"
 
+#include "ECS/Callback.h"
+#include "ECS/Entities/Particle.h"
 #include "ECS/Light.h"
+#include "ECS/RigidBody.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/Material.h"
@@ -37,6 +40,47 @@ bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
     return false;
 }
 
+void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
+    if (surfaceNormal.y() > 0) {
+        center.e[1]--;  // so doesn't get stuck
+    }
+    const s32 NPARTICLES = 5;
+    for (s32 i = 0; i < NPARTICLES; i++) {
+        const f32 maxspeed = 80;
+        const f32 baselifetime = 3;
+        f32 velX = System::rng.uniform() * maxspeed - maxspeed / 2;
+        // upward bias
+        f32 velY = System::rng.uniform() * maxspeed - maxspeed / 4;
+        // f32 velY = System::rng.uniform() * maxspeed;
+
+        if (sign(velX) == surfaceNormal.x()) {
+            velX *= -1;
+        }
+
+        if (sign(velY) == surfaceNormal.y()) {
+            velY *= -1;
+        }
+
+        Vector2f particleVel(velX, velY);
+
+        // faster particles last longer
+        const f32 lifetime = baselifetime * particleVel.len() / maxspeed;
+        auto particle = createParticleLight(Transform2D(center), RED, lifetime).value();
+        particle.add(Velocity({velX, velY}));
+
+        // make sure we're not dead when this runs
+        if (lifetime > 0.1) {
+            particle.add(OnFrameEnd([](ecs::Entity e) {
+                e.add(RigidBody({0, 0}));
+
+                auto pos = e.get<Transform2D>().position;
+                e.add(Collider::Actor(AABB(pos, {1, 1})));
+                e.get<Collider>().setMaterial(WorldMaterial::Rubber);
+            }));
+        }
+    }
+}
+
 void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
 
@@ -45,6 +89,7 @@ void makeDefaultExplosion(ecs::Entity self) {
     if (explosionRadius > 0) {
         Vector2i pos = self.get<Transform2D>().position;
         makeExplosionZone(pos, explosionRadius, pushStrength);
+        makeExplosionParticles(pos, {});
     }
 }
 
@@ -61,6 +106,7 @@ void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collid
     if (explosionRadius > 0) {
         Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius, pushStrength);
+        makeExplosionParticles(pos, moveNormal);
     }
     self.kill();
     selfCollider->setIsDead();
@@ -79,6 +125,7 @@ void ExplodeDownwardAngle(ecs::Entity self, ecs::Entity other, Collider* selfCol
     if (explosionRadius > 0) {
         Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius, pushStrength);
+        makeExplosionParticles(pos, moveNormal);
     }
     self.kill();
     selfCollider->setIsDead();

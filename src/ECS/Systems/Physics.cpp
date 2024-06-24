@@ -149,8 +149,11 @@ void PhysicsSystem::fixedUpdate() {
                 // (*precisePositionOpt)->position = toFloatVec(trans.position);
                 // }
             } else {
-                // TODO should store remainder like i do with colliders
-                trans.position += Vector2i(std::round(move.x()), std::round(move.y()));
+                // store remainder for stuff that moves less than 1px per frame. This is done in collider.move for colliders.
+                Vector2i moveRounded = Vector2i(std::round(move.x()), std::round(move.y()));
+                auto remainder = move - toFloatVec(moveRounded);
+                vel.residualImpulse += remainder;
+                trans.position += moveRounded;
             }
         }
         // ----------------------------------------------------------------
