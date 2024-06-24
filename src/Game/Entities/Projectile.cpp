@@ -79,6 +79,15 @@ void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
                 e.add(Collider::Actor(AABB(pos, {1, 1})));
                 e.get<Collider>().setMaterial(WorldMaterial::Rubber);
             }));
+
+            f32 waitBetweenSils = lifetime / 3;
+            f32 silLifetime = 0.25;
+            whal::System::schedule.eventFlow({particle})
+                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt)
+                .addWait(waitBetweenSils)
+                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt)
+                .addWait(waitBetweenSils)
+                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt);
         }
     }
 }

@@ -4,6 +4,10 @@
 
 #include "whalECS/src/ECS.h"
 
+typedef struct Texture Texture;
+typedef Texture Texture2D;
+typedef struct Shader Shader;
+
 namespace whal {
 
 struct Transform2D;
@@ -16,10 +20,15 @@ class SpriteSystem : public ecs::ISystem<Transform2D, Sprite>, public ecs::IMoni
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
+
     void drawEntities();
+    void drawEntity(ecs::Entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
+
+    void setSilhouetteShader(Shader* shader) { mShaderSilhouette = shader; }
 
 private:
     std::forward_list<ecs::Entity> mSorted;
+    Shader* mShaderSilhouette;
 };
 
 class DrawSystem : public ecs::ISystem<Transform2D, Draw> {

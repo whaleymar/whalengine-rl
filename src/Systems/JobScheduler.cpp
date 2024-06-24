@@ -1,10 +1,14 @@
 #include "JobScheduler.h"
 
+#include <initializer_list>
 #include <memory>
+#include "Events/Events.h"
 
 namespace whal {
 
 namespace evfl {
+
+EventFlow::EventFlow(std::initializer_list<ecs::Entity> requiredEntities) : mRequiredEntities(requiredEntities) {}
 
 EventFlow& EventFlow::addWait(f32 waitSeconds) {
     auto pNode = std::make_unique<Node>(waitSeconds, nullptr, nullptr);
@@ -37,6 +41,18 @@ void EventFlow::tick(f32 deltaTime) {
 
 }  // namespace evfl
 
+void checkEventFlows(ecs::Entity entity) {
+    for (auto& evflow : System::schedule.getEventFlows()) {
+        if (evflow.requiresEntity(entity)) {
+            evflow.invalidate();
+        }
+    }
+}
+
+JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
+    System::eventMgr.registerListener<DeathEvent>(mDeathListener);
+}
+
 void JobScheduler::start() {
     mJobThread = std::thread(&JobScheduler::worker, this);
 }
@@ -50,8 +66,8 @@ void JobScheduler::end() {
     mCondition.notify_one();
 }
 
-evfl::EventFlow& JobScheduler::eventFlow(bool isPaused) {
-    mEventFlows.push_back(evfl::EventFlow(isPaused));
+evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
+    mEventFlows.push_back(evfl::EventFlow(requiredEntities));
     return mEventFlows.back();
 }
 
@@ -66,9 +82,7 @@ void JobScheduler::tick(f32 dt) {
         if (it->isDone()) {
             it = mEventFlows.erase(it);
         } else {
-            if (!it->isPaused()) {
-                it->tick(dt);
-            }
+            it->tick(dt);
             ++it;
         }
     }

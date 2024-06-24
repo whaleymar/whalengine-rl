@@ -237,6 +237,18 @@ void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
     auto& rb = entity.get<whal::RigidBody>();
     entity.get<RocketJumping>().prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
     rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
+
+    constexpr f32 waitBetweenSils = 0.1;
+    if (entity.has<whal::Sprite>()) {
+        whal::System::schedule.eventFlow({entity})
+            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+            .addWait(waitBetweenSils)
+            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+            .addWait(waitBetweenSils)
+            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+            .addWait(waitBetweenSils)
+            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED);
+    }
 }
 
 void RocketJumpingSystem::onRemove(const whal::ecs::Entity entity) {

@@ -8,8 +8,6 @@
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
 ## Entity Prefabs
-- particle
-    - draw(?), position, velocity, lifetime
 - death plane
 - read prefab component values from YAML
     - combined w/ hot reloading, would make fine tuning prototypes easier

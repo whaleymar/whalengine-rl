@@ -2,11 +2,15 @@
 
 #include <condition_variable>
 #include <functional>
+#include <initializer_list>
 #include <list>
 #include <mutex>
 #include <type_traits>
 
+#include "Event.h"
+#include "Events/Events.h"
 #include "Util/Types.h"
+#include "whalECS/src/ECS.h"
 
 namespace {
 
@@ -35,9 +39,10 @@ struct Node {
 // `struct BoolNode : public Node` stores a callback which returns a bool
 // and this bool decides which child path is taken
 // (implementation: Nodes get a virtual getNext() method to do this)
+
 class EventFlow {
 public:
-    EventFlow(bool isPaused = false) : mIsPaused(isPaused) {}
+    EventFlow(std::initializer_list<ecs::Entity> requiredEntities = {});
 
     template <typename... T>
     EventFlow& add(std::type_identity_t<std::function<void(T...)>> const& func, T... args);
@@ -46,12 +51,20 @@ public:
 
     void tick(f32 deltaTime);
     bool isDone() const { return mRoot == nullptr; }
-    bool isPaused() const { return mIsPaused; }
+
+    bool requiresEntity(ecs::Entity entity) {
+        if (ecs::whal_find(mRequiredEntities.begin(), mRequiredEntities.end(), entity) != mRequiredEntities.end()) {
+            return true;
+        }
+        return false;
+    }
+
+    void invalidate() { mRoot.release(); }
 
 private:
     std::unique_ptr<Node> mRoot = nullptr;
     Node* mEnd = nullptr;
-    bool mIsPaused;
+    std::vector<ecs::Entity> mRequiredEntities;
 };
 
 template <typename... T>
@@ -76,6 +89,7 @@ EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const&
 
 struct System;
 
+// This can't inherit IListen because circular imports
 class JobScheduler {
 public:
     friend System;
@@ -87,13 +101,14 @@ public:
     template <typename... T>
     void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);
 
-    evfl::EventFlow& eventFlow(bool isPaused = false);
+    evfl::EventFlow& eventFlow(std::initializer_list<ecs::Entity> requiredEntities = {});
 
     void tick(f32 dt);
     void tryExecuteJobs();
+    std::vector<evfl::EventFlow>& getEventFlows() { return mEventFlows; }
 
 private:
-    JobScheduler() = default;
+    JobScheduler();
 
     void worker();
 
@@ -103,6 +118,7 @@ private:
 
     std::list<Job> mQueue;
     std::vector<evfl::EventFlow> mEventFlows;
+    EventListener<ecs::Entity> mDeathListener;
 
     bool mIsTerminated = false;
 };

@@ -150,6 +150,7 @@ void Game::mainloop() {
     Color clearColor = {5, 5, 5, 255};
     Color clearColorTransparent = {0, 0, 0, 0};
 
+    // TODO should put these shaders in system constructors/destructors?
     Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
     auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
     lightSystem->setShader(&shaderPointLight);
@@ -159,6 +160,9 @@ void Game::mainloop() {
     auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
     radianceSystem->setShader(&shaderRadiance);
     radianceSystem->setPositionUniform(radiancePosUniform);
+
+    Shader shaderSilhouette = LoadShader(0, "src/Shader/silhouette.glsl");
+    spriteSystem->setSilhouetteShader(&shaderSilhouette);
 
     Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
@@ -314,6 +318,11 @@ void Game::mainloop() {
     UnloadRenderTexture(targetTextureBackground);
     UnloadRenderTexture(targetTextureRadiance);
     UnloadRenderTexture(postProcessTexture);
+
+    UnloadShader(shaderSilhouette);
+    UnloadShader(shaderQuantize);
+    UnloadShader(shaderRadiance);
+    UnloadShader(shaderPointLight);
 }
 
 void Game::end() {

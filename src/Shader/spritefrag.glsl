@@ -1,0 +1,26 @@
+#version 330
+
+// Input vertex attributes (from vertex shader)
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+// Input uniform values
+// default:
+uniform sampler2D texture0;
+uniform vec4 colDiffuse;
+
+// mine:
+
+// Output fragment color
+out vec4 finalColor;
+
+vec2 norm(vec2 coord) {
+    return vec2(coord.x/2. + 1., coord.y/2. + 1.);
+}
+
+void main() {
+    vec4 texelColor = texture(texture0, fragTexCoord);
+    finalColor = texelColor*colDiffuse;
+}
+
+

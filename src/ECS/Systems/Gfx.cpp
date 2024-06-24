@@ -1,5 +1,7 @@
 #include "ECS/Systems/Gfx.h"
+#include <raylib.h>
 
+#include "ECS/Tags.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 
@@ -35,40 +37,49 @@ void SpriteSystem::drawEntities() {
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
-    for (auto const& entity : mSorted) {
-        Transform2D& trans = entity.get<Transform2D>();
-        Vector2f posF = toFloatVec(trans.position);
-        Sprite& sprite = entity.get<Sprite>();
+    for (auto const entity : mSorted) {
+        drawEntity(entity, spriteTexture, cameraPosF);
+    }
+}
 
-        const Vector2i frameSize = sprite.getFrameSizeTexels();
-        const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
-        const Rectangle srcRect =
-            Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
+void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
+    Transform2D& trans = entity.get<Transform2D>();
+    Vector2f posF = toFloatVec(trans.position);
+    Sprite& sprite = entity.get<Sprite>();
 
-        Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
+    const Vector2i frameSize = sprite.getFrameSizeTexels();
+    const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
+    const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
 
-        // subtract size.y() so we draw from bottom left instead of top left
-        Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y() - dstSize.y()};
+    Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
 
-        Vector2f origin;
-        if (trans.rotationDegrees == 0) {
-            // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
-            // TODO this won't work for scaling from the middle though
-            origin = Vector2f(dstSize.x() * 0.5, 0);
-        } else {
-            // TODO y position not centered for all collider sizes
-            // this is because i place colliders based on transform (bottom), so the projectile's bottom always passes through mouse click location
-            // so I think this code is fine, but i need to change the physics system to draw centered colliders based on some param
+    // subtract size.y() so we draw from bottom left instead of top left
+    Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y() - dstSize.y()};
 
-            // draw centered
-            // dstPosition += dstSize * Vector2f(0, 0.75);
-            dstPosition += dstSize * Vector2f(0, 0.5);
-            // dstPosition += dstSize * Vector2f(0, 0.25);
-            origin = dstSize * 0.5;
-        }
+    Vector2f origin;
+    if (trans.rotationDegrees == 0) {
+        // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
+        // TODO this won't work for scaling from the middle though
+        origin = Vector2f(dstSize.x() * 0.5, 0);
+    } else {
+        // TODO y position not centered for all collider sizes
+        // this is because i place colliders based on transform (bottom), so the projectile's bottom always passes through mouse click location
+        // so I think this code is fine, but i need to change the physics system to draw centered colliders based on some param
 
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        // draw centered
+        // dstPosition += dstSize * Vector2f(0, 0.75);
+        dstPosition += dstSize * Vector2f(0, 0.5);
+        // dstPosition += dstSize * Vector2f(0, 0.25);
+        origin = dstSize * 0.5;
+    }
 
+    Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+
+    if (entity.has<Silhouette>()) {
+        BeginShaderMode(*mShaderSilhouette);
+        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
+        EndShaderMode();
+    } else {
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
     }
 }
@@ -78,7 +89,7 @@ void DrawSystem::drawEntities() {
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     // sorting not required since Draw components don't have transparency
-    for (auto const& [entityid, entity] : getEntitiesRef()) {
+    for (auto const [entityid, entity] : getEntitiesRef()) {
         Transform2D& trans = entity.get<Transform2D>();
         Draw& draw = entity.get<Draw>();
 
@@ -99,7 +110,7 @@ void DrawDebugSystem::drawEntities() {
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     // sorting not required since Draw components don't have transparency
-    for (auto const& [entityid, entity] : getEntitiesRef()) {
+    for (auto const [entityid, entity] : getEntitiesRef()) {
         Transform2D& trans = entity.get<Transform2D>();
         Draw& draw = entity.get<DrawDebug>();
 
@@ -121,14 +132,7 @@ void FadeOutSystem::fixedUpdate() {
         auto& fadeOutComponent = entity.get<FadeOut>();
 
         fadeOutComponent.secondsRemaining -= dt;
-        bool shouldRemove = false;
-        f32 t = fadeOutComponent.secondsRemaining / fadeOutComponent.time;
-        if (fadeOutComponent.secondsRemaining <= 0) {
-            t = 0;
-            shouldRemove = true;
-        }
-
-        u8 alpha = static_cast<u8>(clamp(255.0f * myLerp(fadeOutComponent.startAlpha, fadeOutComponent.endAlpha, 1 - t), 0.0f, 255.0f));
+        u8 alpha = fadeOutComponent.getAlpha();
 
         if (entity.has<Sprite>()) {
             entity.get<Sprite>().setAlpha(alpha);
@@ -136,7 +140,7 @@ void FadeOutSystem::fixedUpdate() {
             entity.get<Draw>().setAlpha(alpha);
         }
 
-        if (shouldRemove) {
+        if (fadeOutComponent.isDone()) {
             entity.remove<FadeOut>();
         }
     }

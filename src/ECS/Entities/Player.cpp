@@ -217,6 +217,12 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
     sprite.depth = Depth::Player;
     sprite.setFrameSize(frame.dimensionsTexels.x(), frame.dimensionsTexels.y());
     sprite.atlasPositionTexels = frame.atlasPositionTexels;
+
+    // testing:
+    // sprite.color = {255, 0, 0, 255};
+    // player.add<Silhouette>();
+    // player.add(FadeOut(5.0));
+
     player.add(sprite);
 
     constexpr s32 width = 16;

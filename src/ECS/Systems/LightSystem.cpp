@@ -3,6 +3,7 @@
 #include <cmath>
 #include <raylib.h>
 
+#include "ECS/Draw.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
 #include "ECS/Systems/TagTrackers.h"
@@ -14,8 +15,8 @@
 namespace whal {
 
 // TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
-// const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
-const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
+const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
+// const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 void PointLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();
@@ -36,18 +37,20 @@ void PointLightSystem::update() {
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
-        auto lifetimeOpt = entity.tryGet<Lifetime>();
         s32 radius = light.radius;
-        if (lifetimeOpt) {
+        if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
+            intensity = (*fadeoutOpt)->getIntensity();
+        } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
             if ((*lifetimeOpt)->secondsRemaining < 0.25) {
                 intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
-                color.r = std::lerp(COLOR_AMBIENT.r, color.r, intensity);
-                color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
-                color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
-                color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
-                radius = std::lerp(0, radius, intensity);
             }
         }
+
+        // color.r = std::lerp(COLOR_AMBIENT.r, color.r, intensity);
+        // color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
+        // color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
+        // color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
+        radius = std::lerp(0, radius, intensity);
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
@@ -80,12 +83,14 @@ void RadianceLightSystem::update() {
         f32 intensity = 1.0;
         auto lifetimeOpt = entity.tryGet<Lifetime>();
         s32 radius = light.radius;
-        if (lifetimeOpt) {
+        if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
+            intensity = (*fadeoutOpt)->getIntensity();
+        } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
             if ((*lifetimeOpt)->secondsRemaining < 0.25) {
                 intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
-                radius = std::lerp(0, radius, intensity);
             }
         }
+        radius = std::lerp(0, radius, intensity);
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
