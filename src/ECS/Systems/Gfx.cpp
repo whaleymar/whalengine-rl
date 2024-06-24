@@ -48,7 +48,6 @@ void SpriteSystem::drawEntities() {
         Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
 
         // subtract size.y() so we draw from bottom left instead of top left
-        // RESEARCH ? offset left by half a tile to fix camera detecting bottom left instead of bottom middle?
         Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y() - dstSize.y()};
 
         Vector2f origin;
@@ -69,9 +68,6 @@ void SpriteSystem::drawEntities() {
         }
 
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
-        // if (entity.has<Name>() && entity.get<Name>().name == "Player" && System::frame.getFrame() == 0) {
-        //     print("dstRect: (", dstRect.x, dstRect.y, dstRect.width, dstRect.height, ")");
-        // }
 
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
     }
@@ -116,6 +112,33 @@ void DrawDebugSystem::drawEntities() {
         dstPosition -= {dstSize.x() * 0.5f, 0};
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
         DrawRectangleRec(dstRect, draw.color);
+    }
+}
+
+void FadeOutSystem::fixedUpdate() {
+    f32 dt = System::dt();
+    for (auto [entityid, entity] : getEntitiesCopy()) {
+        auto& fadeOutComponent = entity.get<FadeOut>();
+
+        fadeOutComponent.secondsRemaining -= dt;
+        bool shouldRemove = false;
+        f32 t = fadeOutComponent.secondsRemaining / fadeOutComponent.time;
+        if (fadeOutComponent.secondsRemaining <= 0) {
+            t = 0;
+            shouldRemove = true;
+        }
+
+        u8 alpha = static_cast<u8>(clamp(255.0f * myLerp(fadeOutComponent.startAlpha, fadeOutComponent.endAlpha, 1 - t), 0.0f, 255.0f));
+
+        if (entity.has<Sprite>()) {
+            entity.get<Sprite>().setAlpha(alpha);
+        } else if (entity.has<Draw>()) {
+            entity.get<Draw>().setAlpha(alpha);
+        }
+
+        if (shouldRemove) {
+            entity.remove<FadeOut>();
+        }
     }
 }
 

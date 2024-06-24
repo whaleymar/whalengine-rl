@@ -30,6 +30,7 @@ struct IDraw {
     Vector2f scale = {1, 1};
 
     Vector2i getFrameSizeTexels() const { return mFrameSizeTexels; }
+    void setAlpha(u8 alpha);
 
 protected:
     Vector2i mFrameSizeTexels;
@@ -56,5 +57,17 @@ struct Draw : public IDraw {
 };
 
 struct DrawDebug : public Draw {};
+
+// component which lerps an entity's draw/sprite component's alpha from one value to another over time.
+struct FadeOut {
+    FadeOut(f32 time_ = 1.0, f32 startAlpha_ = 1.0, f32 endAlpha_ = 0.0)
+        : time(time_), startAlpha(startAlpha_), endAlpha(endAlpha_), secondsRemaining(time_) {}
+    f32 time;
+    f32 startAlpha;
+    f32 endAlpha;
+
+    // managed:
+    f32 secondsRemaining;
+};
 
 }  // namespace whal

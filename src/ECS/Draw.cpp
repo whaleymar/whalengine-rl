@@ -24,6 +24,10 @@ constexpr f32 getPixelSize(const s32 frameSize, const f32 scale) {
 
 IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels) : depth(depth_), color(color_), mFrameSizeTexels(frameSizeTexels){};
 
+void IDraw::setAlpha(u8 alpha) {
+    color.a = alpha;
+}
+
 Sprite::Sprite(Depth depth_, Frame frame, Color color_)
     : IDraw(depth_, color_, frame.dimensionsTexels), atlasPositionTexels(frame.atlasPositionTexels) {}
 

@@ -67,9 +67,11 @@ void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
         const f32 lifetime = baselifetime * particleVel.len() / maxspeed;
         auto particle = createParticleLight(Transform2D(center), RED, lifetime).value();
         particle.add(Velocity({velX, velY}));
+        particle.add(FadeOut(lifetime));
 
-        // make sure we're not dead when this runs
+        // make sure we're not dead when this runs.
         if (lifetime > 0.1) {
+            // give some time to move away from the solid we collided with before adding collider.
             particle.add(OnFrameEnd([](ecs::Entity e) {
                 e.add(RigidBody({0, 0}));
 

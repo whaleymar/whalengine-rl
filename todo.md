@@ -14,6 +14,9 @@
 - read prefab component values from YAML
     - combined w/ hot reloading, would make fine tuning prototypes easier
 
+## Components
+- UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
+
 ## Physics
 - chunk loading/unloading (quad tree?)
 

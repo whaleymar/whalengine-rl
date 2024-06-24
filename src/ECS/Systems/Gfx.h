@@ -10,6 +10,7 @@ struct Transform2D;
 struct Sprite;
 struct Draw;
 struct DrawDebug;
+struct FadeOut;
 
 class SpriteSystem : public ecs::ISystem<Transform2D, Sprite>, public ecs::IMonitorSystem {
 public:
@@ -29,6 +30,11 @@ public:
 class DrawDebugSystem : public ecs::ISystem<Transform2D, DrawDebug> {
 public:
     void drawEntities();
+};
+
+class FadeOutSystem : public ecs::ISystem<Transform2D, FadeOut>, public ecs::IFixedUpdate {
+public:
+    void fixedUpdate() override;
 };
 
 }  // namespace whal

@@ -53,7 +53,6 @@ void PointLightSystem::update() {
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        // Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
         Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
@@ -92,7 +91,6 @@ void RadianceLightSystem::update() {
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        // Rectangle dstRect(screenPosition.x() - light.radius, screenPosition.y() - light.radius, light.radius * 2, light.radius * 2);
         Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
