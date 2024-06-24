@@ -27,4 +27,13 @@ private:
 void drawColliders();
 #endif
 
+class QuadTreeSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
+public:
+    void update();
+    void onAdd(ecs::Entity entity) override;
+    void onRemove(ecs::Entity entity) override;
+
+private:
+};
+
 }  // namespace whal

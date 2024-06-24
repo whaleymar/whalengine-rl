@@ -24,7 +24,9 @@ public:
     Vector2i getPositionEdge(Vector2i unitDir) const;
     HitInfo collide(const AABB& other) const;
 
-    bool isOverlapping(const AABB* other) const;
+    // NOT used by Shape, just by quadtree
+    bool isOverlapping(const AABB& other) const;
+    bool contains(const AABB& other) const;
 #ifndef NDEBUG
     void draw(Vector2f cameraPos, Color color) const;
 #endif

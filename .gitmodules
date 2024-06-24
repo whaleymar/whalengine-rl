@@ -7,3 +7,6 @@
 [submodule "lib/magnum-singles"]
 	path = lib/magnum-singles
 	url = https://github.com/whaleymar/magnum-singles.git
+[submodule "lib/quadtree"]
+	path = lib/quadtree
+	url = https://github.com/pvigier/Quadtree.git
