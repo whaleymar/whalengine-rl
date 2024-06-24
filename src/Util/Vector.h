@@ -64,8 +64,12 @@ struct Vector2T {
         return *this;
     }
 
-    inline Vector2T<T> operator/(const f32 scalar) const { return Vector2T<T>(e[0] / scalar, e[1] / scalar); }
+    inline Vector2T<T> operator/(const f32 scalar) const {
+        assert(scalar != 0 && "Divide By Zero Error");
+        return Vector2T<T>(e[0] / scalar, e[1] / scalar);
+    }
     inline Vector2T<T> operator/=(const f32 scalar) {
+        assert(scalar != 0 && "Divide By Zero Error");
         e[0] /= scalar;
         e[1] /= scalar;
         return *this;
@@ -80,6 +84,7 @@ struct Vector2T {
     inline T det(const Vector2T<T> other) const { return e[0] * other.e[1] - e[1] * other.e[0]; }
     inline T len() const { return std::sqrt(e[0] * e[0] + e[1] * e[1]); }
     inline Vector2T<T> norm() const {
+        assert(!isZero() && "Cannot take norm of zero-length vector");
         T divisor = 1 / len();
         return Vector2T<T>(e[0] * divisor, e[1] * divisor);
     }

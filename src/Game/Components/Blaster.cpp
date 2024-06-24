@@ -125,9 +125,9 @@ void shootProjectile() {
 
 void ProjectileSystem::onEvent(whal::InputType input, bool isPress) {
     if (input == whal::InputType::AIM) {
-        if (isPress && !ProjectileSystem::getIsAiming()) {
-            ProjectileSystem::setIsAiming(true);
-            ProjectileSystem::addAimReticles();
+        if (isPress && !getIsAiming()) {
+            setIsAiming(true);
+            addAimReticles();
 
             // deactivate movement controls; those keys are now for aiming
             whal::System::input.disableMovement();
@@ -138,11 +138,17 @@ void ProjectileSystem::onEvent(whal::InputType input, bool isPress) {
         }
     } else if (isPress) {
         switch (input) {
+        case whal::InputType::UP:
+        case whal::InputType::DOWN:
+            mIsAimUpdateNeeded = true;
+            return;
         case whal::InputType::LEFT:
-            ProjectileSystem::updateFacingDirections(false);
+            updateFacingDirections(false);
+            mIsAimUpdateNeeded = true;
             return;
         case whal::InputType::RIGHT:
-            ProjectileSystem::updateFacingDirections(true);
+            updateFacingDirections(true);
+            mIsAimUpdateNeeded = true;
             return;
         default:
             return;
@@ -187,7 +193,7 @@ void ProjectileSystem::fixedUpdate() {
             continue;
         }
         whal::Transform2D parentTrans = entity.get<whal::Transform2D>();
-        if (!aimDirection.isZero()) {
+        if (!aimDirection.isZero() && mIsAimUpdateNeeded) {
             blaster.aimDirection = aimDirection;
         }
 
@@ -195,6 +201,7 @@ void ProjectileSystem::fixedUpdate() {
         Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
         blaster.aimReticle->set(whal::Transform2D(position));
     }
+    mIsAimUpdateNeeded = false;
 }
 
 void ProjectileSystem::onRemove(whal::ecs::Entity entity) {

@@ -47,6 +47,7 @@ public:
 
 private:
     inline static bool mIsAiming = false;
+    inline static bool mIsAimUpdateNeeded = false;
 };
 
 class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>,
