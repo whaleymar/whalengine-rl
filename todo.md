@@ -1,7 +1,6 @@
 # To Do 
 
 ## Current Goal: 
-- finish player anims
 
 ## Camera / Follow
 - pretty awful in general

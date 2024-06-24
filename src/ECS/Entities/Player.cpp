@@ -50,8 +50,10 @@ static const AnimInfo S_PLAYER_ANIM_INFO = {
     {"actor/witch-jumpforward_rising", PlayerAnim::RISE_FORWARD, 4, 0.1},
     {"actor/witch-jumpforward_peak", PlayerAnim::PEAK_FORWARD, 2, 0.1},
     {"actor/witch-fall", PlayerAnim::FALL_FORWARD, 4, 0.1},
-    {"actor/player-jump", PlayerAnim::JUMP, 1, 1.0},  // TODO
-    {"actor/player-fall", PlayerAnim::FALL, 1, 1.0},  // TODO
+    {"actor/witch-jumpstill", PlayerAnim::JUMP, 3, 0.1},
+    {"actor/witch-jumpstill_rising", PlayerAnim::RISE, 4, 0.1},
+    {"actor/witch-jumpstill_peak", PlayerAnim::PEAK, 3, 0.1},
+    {"actor/witch-fallstill", PlayerAnim::FALL, 4, 0.1},
 };
 
 bool brain(Animator& animator, ecs::Entity entity) {
@@ -90,10 +92,10 @@ bool brain(Animator& animator, ecs::Entity entity) {
                 animator.setAnimation(PEAK_FORWARD)) {
                 return true;
             }
-            // TODO once implemented
-            // if (animator.getAnimation().id == JUMP && vel.total.y() <= 1 && animator.setAnimation(PEAK)) {
-            //     return true;
-            // }
+
+            if (animator.getAnimation().id == JUMP && vel.total.y() <= 1 && animator.setAnimation(PEAK)) {
+                return true;
+            }
 
             bool isJumping = [](s32 animId) -> bool {
                 switch (animId) {
@@ -110,8 +112,8 @@ bool brain(Animator& animator, ecs::Entity entity) {
                 return false;
             }(animator.getAnimation().id);
 
-            // TODO normal jump
-            if (!isJumping && animator.setAnimation(JUMP_FORWARD)) {
+            const auto jumpType = abs(vel.total.x()) < 0.1 ? JUMP : JUMP_FORWARD;
+            if (!isJumping && animator.setAnimation(jumpType)) {
                 sprite.scale = {0.8, 1.25};
                 System::audio.playClip(Sfx::JUMP, 0.35);
                 return true;
@@ -119,8 +121,10 @@ bool brain(Animator& animator, ecs::Entity entity) {
         } else {
             // falling, switch to peak or fall anim depending on current state
             switch (animator.getAnimation().id) {
-            case IDLE:
-                return animator.setAnimation(FALL_FORWARD);  // TODO check xVel
+            case IDLE: {
+                const auto fallType = abs(vel.total.x()) < 0.1 ? FALL : FALL_FORWARD;
+                return animator.setAnimation(fallType);
+            }
             case RUN:
                 return animator.setAnimation(FALL_FORWARD);
             case FALL:
