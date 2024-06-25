@@ -240,6 +240,9 @@ void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
 
     constexpr f32 waitBetweenSils = 0.1;
     if (entity.has<whal::Sprite>()) {
+        // TODO this should be cancelled by onRemove if it's still going.
+        // Can add a .end() evfl method which returns an ID I can store in the rocketjumping component, then use that ID to tell the JobScheduler to
+        // cancel
         whal::System::schedule.eventFlow({entity})
             .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
             .addWait(waitBetweenSils)

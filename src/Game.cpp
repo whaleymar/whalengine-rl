@@ -125,9 +125,6 @@ void Game::mainloop() {
     auto lightSystem = System::world->getSystem<PointLightSystem>();
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
-    auto collisionMgr = CollisionManager::instance();  // not registering this with the others because i want it to update during rendering, which
-                                                       // should be its own phase
-
     // load scene
     auto err = loadTestMap();
     if (err) {
@@ -136,8 +133,6 @@ void Game::mainloop() {
     }
 
     System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
-
-    collisionMgr->update();
 
     // experimenting with adding some extra pixels on border
     RenderTexture2D targetTexture =
@@ -193,7 +188,12 @@ void Game::mainloop() {
 
         // Only rendering remains, so we can do "end of frame" stuff now
         System::world->killEntities();  // TODO this can go at the end of update()
-        collisionMgr->update();         // this can definitely be done in parallel while rendering
+
+        if (System::frame.getFrame() == 0) {
+            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
+                print("player pos:", entity.get<Transform2D>().position);
+            }
+        }
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {

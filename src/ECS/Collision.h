@@ -76,17 +76,15 @@ public:
                         bool isPushedBySolid = false);
     bool emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isXDirection, bool updateRigidBodyFlags);
 
-    bool checkIsGrounded(const std::vector<Collider*>& otherColliders, Collider** dstGroundCollider);
+    bool checkIsGroundedQT(std::vector<Collider*>& dstGroundCollider);
     bool isGround() const;
-    bool isRiding(const Collider* other) const;
-    std::vector<Collider*> getRidingColliders() const;
+    std::vector<Collider*> getRidingCollidersQT() const;
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
     u16 getCollisionLayersThatCanRideMe() const;
 
-    HitInfo checkCollision(const std::vector<Collider*>& colliders, const Vector2i position, const Vector2i moveNormal,
-                           const u16 layerMask = CollisionLayer::ALL) const;
+    HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
     void squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal);
-    bool tryCornerCorrection(const std::vector<Collider*>& others, Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
+    bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 
     // momentum:
     void setMomentum(const f32 momentum, const bool isXDirection);
@@ -116,10 +114,9 @@ protected:
     bool mIsAlive = true;
 };
 
-using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount,
-                                const std::vector<Collider*>& others);
+using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 
-bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount, const std::vector<Collider*>& others);
+bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 struct Wiggle {
     WiggleCallback callback = &defaultWiggle;
 };

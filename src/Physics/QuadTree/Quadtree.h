@@ -8,11 +8,12 @@
 
 #include "ECS/Collision.h"
 #include "Physics/Shapes.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal::qtree {
+
+// TODO should store collisionlayer w/ entity as "Value" for easy filtering?
 
 class QuadTree {
 public:
@@ -119,13 +120,13 @@ private:
 
     void add(Node* node, s32 depth, const AABB& parentBox, const ecs::Entity value) {
         assert(node != nullptr);
-        auto _box = value.get<Collider>().getShape();
-        print("inserting box ", _box.getPosition(), _box.getHalf(), " ---> into parent ", parentBox.getPosition(), parentBox.getHalf());
         assert(parentBox.contains(value.get<Collider>().getShape()));
         if (isLeaf(node)) {
             // Insert the value in this node if possible
-            if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD)
+            if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD) {
+                // print("hit max depth");
                 node->values.push_back(value);
+            }
             // Otherwise, we split and we try again
             else {
                 split(node, parentBox);

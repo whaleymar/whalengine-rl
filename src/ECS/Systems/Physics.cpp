@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "ECS/PlayerControl.h"
+#include "ECS/Systems/CollisionManager.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
@@ -82,7 +83,7 @@ void PhysicsSystem::fixedUpdate() {
 
         trans.isManuallyMoved = false;
         if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-            (*colliderOpt)->getShapeMutable().setPosition(trans);
+            QuadTreeSystem::updatePosition(entity, &(*colliderOpt)->getShapeMutable(), trans);
         }
 
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {

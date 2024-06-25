@@ -1,6 +1,7 @@
 # To Do 
 
 ## Current Goal: 
+- quad tree
 
 ## Camera / Follow
 - pretty awful in general
