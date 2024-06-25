@@ -21,12 +21,16 @@ void AABB::setPosition(Transform2D transform) {
     mCenter = Vector2i(transform.position.x(), transform.position.y() + mHalf.y());
 }
 
+bool AABB::isOverlapping(const AABB* other) const {
+    return isIntersectAABBvsAABB(this, other);
+}
+
 bool AABB::isOverlapping(const AABB& other) const {
     return isIntersectAABBvsAABB(this, &other);
 }
 
 bool AABB::contains(const AABB& other) const {
-    return left() <= other.left() && other.right() <= right() && top() <= other.top() && other.bottom() <= bottom();
+    return left() <= other.left() && other.right() <= right() && other.top() <= top() && bottom() <= other.bottom();
 }
 
 #ifndef NDEBUG

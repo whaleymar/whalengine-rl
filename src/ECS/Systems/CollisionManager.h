@@ -1,5 +1,6 @@
 #pragma once
 
+// #include "Physics/QuadTree/Quadtree.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -29,11 +30,12 @@ void drawColliders();
 
 class QuadTreeSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
-    void update();
+    // void update();
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
 
 private:
+    // qtree::QuadTree mQuadTree = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(5000, 5000)));
 };
 
 }  // namespace whal

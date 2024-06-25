@@ -24,7 +24,8 @@ public:
     Vector2i getPositionEdge(Vector2i unitDir) const;
     HitInfo collide(const AABB& other) const;
 
-    // NOT used by Shape, just by quadtree
+    // NOT used by Shape, but is used by Collider
+    bool isOverlapping(const AABB* other) const;
     bool isOverlapping(const AABB& other) const;
     bool contains(const AABB& other) const;
 #ifndef NDEBUG

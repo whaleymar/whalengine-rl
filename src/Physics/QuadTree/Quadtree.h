@@ -6,39 +6,35 @@
 #include <memory>
 #include <vector>
 
+#include "ECS/Collision.h"
 #include "Physics/Shapes.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal::qtree {
 
-template <typename T, typename GetBox, typename Equal = std::equal_to<T>, typename Float = float>
-class Quadtree {
-    static_assert(std::is_convertible_v<std::invoke_result_t<GetBox, const T&>, AABB>, "GetBox must be a callable of signature AABB(const T&)");
-    static_assert(std::is_convertible_v<std::invoke_result_t<Equal, const T&, const T&>, bool>,
-                  "Equal must be a callable of signature bool(const T&, const T&)");
-    static_assert(std::is_arithmetic_v<Float>);
-
+class QuadTree {
 public:
-    Quadtree(const AABB& box, const GetBox& getBox = GetBox(), const Equal& equal = Equal())
-        : mBox(box), mRoot(std::make_unique<Node>()), mGetBox(getBox), mEqual(equal) {}
+    QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}
 
-    void add(const T& value) { add(mRoot.get(), 0, mBox, value); }
+    void add(const ecs::Entity value) { add(mRoot.get(), 0, mBoundingBox, value); }
 
-    void remove(const T& value) { remove(mRoot.get(), mBox, value); }
+    void remove(const ecs::Entity value) { remove(mRoot.get(), mBoundingBox, value); }
 
-    std::vector<T> query(const AABB& box) const {
-        auto values = std::vector<T>();
-        query(mRoot.get(), mBox, box, values);
+    std::vector<ecs::Entity> query(const AABB& box) const {
+        auto values = std::vector<ecs::Entity>();
+        query(mRoot.get(), mBoundingBox, box, values);
         return values;
     }
 
-    std::vector<std::pair<T, T>> findAllIntersections() const {
-        auto intersections = std::vector<std::pair<T, T>>();
+    std::vector<std::pair<ecs::Entity, ecs::Entity>> findAllIntersections() const {
+        auto intersections = std::vector<std::pair<ecs::Entity, ecs::Entity>>();
         findAllIntersections(mRoot.get(), intersections);
         return intersections;
     }
 
-    AABB getBox() const { return mBox; }
+    AABB getBoundingBox() const { return mBoundingBox; }
 
 private:
     static constexpr s32 THRESHOLD = 16;
@@ -46,13 +42,11 @@ private:
 
     struct Node {
         std::array<std::unique_ptr<Node>, 4> children;
-        std::vector<T> values;
+        std::vector<ecs::Entity> values;
     };
 
-    AABB mBox;
+    AABB mBoundingBox;
     std::unique_ptr<Node> mRoot;
-    GetBox mGetBox;
-    Equal mEqual;
 
     bool isLeaf(const Node* node) const { return !static_cast<bool>(node->children[0]); }
 
@@ -60,20 +54,35 @@ private:
         assert(i >= 0 && i <= 3 && "i not between 0-3");
 
         auto center = box.getPosition();
-        auto childHalfLen = box.getHalf() * 0.5;
+        const Vector2f exactHalf = toFloatVec(box.getHalf()) / 2;
+        const Vector2i biggerHalf(std::round(exactHalf.x()), std::round(exactHalf.y()));
+
+        // if the current quadrant's half is an odd number on either axis, give the extra pixel to the West/South halves.
+        const Vector2i smallerHalf = box.getHalf() - biggerHalf;
+
         switch (i) {
         // North West
-        case 0:
-            return AABB(center + Vector2i(-childHalfLen.x(), childHalfLen.y()), childHalfLen);
-        // Norst East
-        case 1:
-            return AABB(center + Vector2i(childHalfLen.x(), childHalfLen.y()), childHalfLen);
+        case 0: {
+            Vector2i halflen(biggerHalf.x(), smallerHalf.y());
+            return AABB(center + Vector2i(-halflen.x(), halflen.y()), halflen);
+        }
+        // North East
+        case 1: {
+            Vector2i halflen(smallerHalf.x(), smallerHalf.y());
+            return AABB(center + Vector2i(halflen.x(), halflen.y()), halflen);
+        }
         // South West
-        case 2:
-            return AABB(center + Vector2i(-childHalfLen.x(), -childHalfLen.y()), childHalfLen);
+        case 2: {
+            Vector2i halflen(biggerHalf.x(), biggerHalf.y());
+            return AABB(center + Vector2i(-halflen.x(), -halflen.y()), halflen);
+        }
         // South East
-        case 3:
-            return AABB(center + Vector2i(childHalfLen.x(), -childHalfLen.y()), childHalfLen);
+        case 3: {
+            Vector2i halflen(smallerHalf.x(), biggerHalf.y());
+            return AABB(center + Vector2i(halflen.x(), -halflen.y()), halflen);
+        }
+        default:
+            return AABB();  // should never run due to assert
         }
     }
 
@@ -81,24 +90,24 @@ private:
         auto center = nodeBox.getPosition();
         // West
         if (valueBox.right() < center.x()) {
-            // North West
-            if (valueBox.bottom() < center.y())
-                return 0;
             // South West
-            else if (valueBox.top() >= center.y())
+            if (valueBox.top() < center.y())
                 return 2;
+            // North West
+            else if (valueBox.bottom() >= center.y())
+                return 0;
             // Not contained in any quadrant
             else
                 return -1;
         }
         // East
         else if (valueBox.left() >= center.x()) {
-            // North East
-            if (valueBox.bottom() < center.y())
-                return 1;
             // South East
-            else if (valueBox.top() >= center.y())
+            if (valueBox.top() < center.y())
                 return 3;
+            // North East
+            else if (valueBox.bottom() >= center.y())
+                return 1;
             // Not contained in any quadrant
             else
                 return -1;
@@ -108,39 +117,41 @@ private:
             return -1;
     }
 
-    void add(Node* node, s32 depth, const AABB& box, const T& value) {
+    void add(Node* node, s32 depth, const AABB& parentBox, const ecs::Entity value) {
         assert(node != nullptr);
-        assert(box.contains(mGetBox(value)));
+        auto _box = value.get<Collider>().getShape();
+        print("inserting box ", _box.getPosition(), _box.getHalf(), " ---> into parent ", parentBox.getPosition(), parentBox.getHalf());
+        assert(parentBox.contains(value.get<Collider>().getShape()));
         if (isLeaf(node)) {
             // Insert the value in this node if possible
             if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD)
                 node->values.push_back(value);
             // Otherwise, we split and we try again
             else {
-                split(node, box);
-                add(node, depth, box, value);
+                split(node, parentBox);
+                add(node, depth, parentBox, value);
             }
         } else {
-            auto i = getQuadrant(box, mGetBox(value));
+            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
             // Add the value in a child if the value is entirely contained in it
             if (i != -1)
-                add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, computeBox(box, i), value);
+                add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, computeBox(parentBox, i), value);
             // Otherwise, we add the value in the current node
             else
                 node->values.push_back(value);
         }
     }
 
-    void split(Node* node, const AABB& box) {
+    void split(Node* node, const AABB& parentBox) {
         assert(node != nullptr);
         assert(isLeaf(node) && "Only leaves can be split");
         // Create children
         for (auto& child : node->children)
             child = std::make_unique<Node>();
         // Assign values to children
-        auto newValues = std::vector<T>();  // New values for this node
+        auto newValues = std::vector<ecs::Entity>();  // New values for this node
         for (const auto& value : node->values) {
-            auto i = getQuadrant(box, mGetBox(value));
+            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
             if (i != -1)
                 node->children[static_cast<std::size_t>(i)]->values.push_back(value);
             else
@@ -149,18 +160,18 @@ private:
         node->values = std::move(newValues);
     }
 
-    bool remove(Node* node, const AABB& box, const T& value) {
+    bool remove(Node* node, const AABB& parentBox, const ecs::Entity value) {
         assert(node != nullptr);
-        assert(box.contains(mGetBox(value)));
+        assert(parentBox.contains(value.get<Collider>().getShape()));
         if (isLeaf(node)) {
             // Remove the value from node
             removeValue(node, value);
             return true;
         } else {
             // Remove the value in a child if the value is entirely contained in it
-            auto i = getQuadrant(box, mGetBox(value));
+            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
             if (i != -1) {
-                if (remove(node->children[static_cast<std::size_t>(i)].get(), computeBox(box, i), value))
+                if (remove(node->children[static_cast<std::size_t>(i)].get(), computeBox(parentBox, i), value))
                     return tryMerge(node);
             }
             // Otherwise, we remove the value from the current node
@@ -170,9 +181,9 @@ private:
         }
     }
 
-    void removeValue(Node* node, const T& value) {
+    void removeValue(Node* node, const ecs::Entity value) {
         // Find the value in node->values
-        auto it = std::find_if(std::begin(node->values), std::end(node->values), [this, &value](const auto& rhs) { return mEqual(value, rhs); });
+        auto it = std::find_if(std::begin(node->values), std::end(node->values), [value](const ecs::Entity other) { return value == other; });
         assert(it != std::end(node->values) && "Trying to remove a value that is not present in the node");
         // Swap with the last element and pop back
         *it = std::move(node->values.back());
@@ -203,11 +214,11 @@ private:
             return false;
     }
 
-    void query(Node* node, const AABB& box, const AABB& queryBox, std::vector<T>& values) const {
+    void query(Node* node, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const {
         assert(node != nullptr);
         assert(queryBox.isOverlapping(box));
         for (const auto& value : node->values) {
-            if (queryBox.isOverlapping(mGetBox(value)))
+            if (queryBox.isOverlapping(value.get<Collider>().getShape()))
                 values.push_back(value);
         }
         if (!isLeaf(node)) {
@@ -219,12 +230,12 @@ private:
         }
     }
 
-    void findAllIntersections(Node* node, std::vector<std::pair<T, T>>& intersections) const {
+    void findAllIntersections(Node* node, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
         // Find intersections between values stored in this node
         // Make sure to not report the same intersection twice
         for (auto i = std::size_t(0); i < node->values.size(); ++i) {
             for (auto j = std::size_t(0); j < i; ++j) {
-                if (mGetBox(node->values[i]).intersects(mGetBox(node->values[j])))
+                if (node->values[i].get<Collider>().getShape().isOverlapping(node->values[j].get<Collider>().getShape()))
                     intersections.emplace_back(node->values[i], node->values[j]);
             }
         }
@@ -240,10 +251,10 @@ private:
         }
     }
 
-    void findIntersectionsInDescendants(Node* node, const T& value, std::vector<std::pair<T, T>>& intersections) const {
+    void findIntersectionsInDescendants(Node* node, const ecs::Entity value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
         // Test against the values stored in this node
         for (const auto& other : node->values) {
-            if (mGetBox(value).intersects(mGetBox(other)))
+            if (value.get<Collider>().getShape().isOverlapping(other.get<Collider>().getShape()))
                 intersections.emplace_back(value, other);
         }
         // Test against values stored into descendants of this node

@@ -85,4 +85,12 @@ void drawColliders() {
 }
 #endif
 
+void QuadTreeSystem::onAdd(ecs::Entity entity) {
+    // mQuadTree.add(entity);
+}
+
+void QuadTreeSystem::onRemove(ecs::Entity entity) {
+    // mQuadTree.remove(entity);
+}
+
 }  // namespace whal
