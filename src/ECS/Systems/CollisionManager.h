@@ -5,6 +5,7 @@
 
 namespace whal {
 
+// TODO should be set by scene?
 constexpr s32 WORLD_HALFLEN_PIXELS = 10000;
 
 class Collider;

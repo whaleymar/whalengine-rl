@@ -76,13 +76,15 @@ public:
                         bool isPushedBySolid = false);
     bool emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isXDirection, bool updateRigidBodyFlags);
 
-    bool checkIsGroundedQT(std::vector<Collider*>& dstGroundCollider);
-    bool isGround() const;
+    bool isCollisionPossible(const Collider* other) const;
+    HitInfo checkIsGroundedQT(const bool triggerCollisionEvents);
+    bool isOtherGround(const Collider* other) const;
     std::vector<Collider*> getRidingCollidersQT() const;
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
     u16 getCollisionLayersThatCanRideMe() const;
 
-    HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
+    HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,
+                             const bool triggerCollisionEvents = false) const;
     void squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 

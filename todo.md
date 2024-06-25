@@ -2,6 +2,11 @@
 
 ## Current Goal: 
 - quad tree
+    - no moving past border 
+    - world size setter
+    - put collisionlayer checks in QuadTree
+    - quadtree <memory> include
+    - clean up whether collisions can happen
 
 ## Camera / Follow
 - pretty awful in general
