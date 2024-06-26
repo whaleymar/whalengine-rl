@@ -8,7 +8,9 @@ namespace whal {
 
 namespace evfl {
 
-EventFlow::EventFlow(std::initializer_list<ecs::Entity> requiredEntities) : mRequiredEntities(requiredEntities) {}
+static u32 EVFL_ID = 1;  // 0 is invalid ID
+
+EventFlow::EventFlow(u32 id, std::initializer_list<ecs::Entity> requiredEntities) : mRequiredEntities(requiredEntities), mId(id) {}
 
 EventFlow& EventFlow::addWait(f32 waitSeconds) {
     auto pNode = std::make_unique<Node>(waitSeconds, nullptr, nullptr);
@@ -67,8 +69,20 @@ void JobScheduler::end() {
 }
 
 evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
-    mEventFlows.push_back(evfl::EventFlow(requiredEntities));
+    mEventFlows.push_back(evfl::EventFlow(evfl::EVFL_ID++, requiredEntities));
     return mEventFlows.back();
+}
+
+void JobScheduler::cancelEventFlow(u32 id) {
+    if (id == 0) {
+        return;
+    }
+    for (auto it = mEventFlows.begin(); it != mEventFlows.end(); it++) {
+        if (it->getId() == id) {
+            mEventFlows.erase(it);
+            return;
+        }
+    }
 }
 
 void JobScheduler::tick(f32 dt) {

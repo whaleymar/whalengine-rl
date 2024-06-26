@@ -9,6 +9,7 @@
 
 namespace whal {
 struct Transform2D;
+struct Velocity;
 struct RigidBody;
 struct PlayerControl;
 }  // namespace whal
@@ -25,6 +26,7 @@ struct Blaster {
 
 struct RocketJumping {
     Vector2f prevFrictionMultiplier;
+    u32 silhouetteEventId = 0;
 };
 
 class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>,
@@ -50,11 +52,12 @@ private:
     inline static bool mIsAimUpdateNeeded = false;
 };
 
-class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody>,
+// TODO good candidate for updating every few frames
+class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody, whal::Transform2D, whal::Velocity>,
                             public whal::ecs::IMonitorSystem,
-                            public whal::IListen<whal::LandingEvent, false, whal::ecs::Entity> {
+                            public whal::ecs::IFixedUpdate {
 public:
     void onAdd(const whal::ecs::Entity) override;
     void onRemove(const whal::ecs::Entity) override;
-    void onEvent(whal::ecs::Entity) override;
+    void fixedUpdate() override;
 };

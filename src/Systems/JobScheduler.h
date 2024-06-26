@@ -39,18 +39,22 @@ struct Node {
 // `struct BoolNode : public Node` stores a callback which returns a bool
 // and this bool decides which child path is taken
 // (implementation: Nodes get a virtual getNext() method to do this)
-
 class EventFlow {
 public:
-    EventFlow(std::initializer_list<ecs::Entity> requiredEntities = {});
+    EventFlow(u32 id, std::initializer_list<ecs::Entity> requiredEntities = {});
 
     template <typename... T>
     EventFlow& add(std::type_identity_t<std::function<void(T...)>> const& func, T... args);
+
+    // RESEARCh -- requires BoolNode
+    // template <typename... T>
+    // EventFlow& cancelIf(std::type_identity_t<std::function<bool(T...)>> const& func, T... args);
 
     EventFlow& addWait(f32 waitSeconds);
 
     void tick(f32 deltaTime);
     bool isDone() const { return mRoot == nullptr; }
+    u32 getId() const { return mId; }
 
     bool requiresEntity(ecs::Entity entity) {
         if (ecs::whal_find(mRequiredEntities.begin(), mRequiredEntities.end(), entity) != mRequiredEntities.end()) {
@@ -65,6 +69,7 @@ private:
     std::unique_ptr<Node> mRoot = nullptr;
     Node* mEnd = nullptr;
     std::vector<ecs::Entity> mRequiredEntities;
+    u32 mId;
 };
 
 template <typename... T>
@@ -102,6 +107,7 @@ public:
     void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);
 
     evfl::EventFlow& eventFlow(std::initializer_list<ecs::Entity> requiredEntities = {});
+    void cancelEventFlow(u32 id);
 
     void tick(f32 dt);
     void tryExecuteJobs();

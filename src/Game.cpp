@@ -104,7 +104,7 @@ bool Game::startup() {
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
         .sequential<PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem>()
-        .sequential<ProjectileSystem>()  // game specific systems
+        .parallel<ProjectileSystem, RocketJumpingSystem>()  // game specific systems
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()
@@ -112,7 +112,7 @@ bool Game::startup() {
                          RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem, MovableColliders>()
         .registerSystems<QuadTreeSystem>()
-        .registerSystems<RocketJumpingSystem, RespawnListener>();
+        .registerSystems<RespawnListener>();
 
     return false;
 }

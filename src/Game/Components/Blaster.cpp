@@ -227,34 +227,43 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
     }
 }
 
-void RocketJumpingSystem::onEvent(whal::ecs::Entity entity) {
-    if (entity.has<RocketJumping>()) {
-        entity.remove<RocketJumping>();
+void RocketJumpingSystem::fixedUpdate() {
+    using namespace whal;
+
+    for (auto [entityid, entity] : getEntitiesCopy()) {
+        const auto rb = entity.get<RigidBody>();
+        const auto rocketJumpComponent = entity.get<RocketJumping>();
+
+        if (rb.isGrounded || rb.isLanding) {
+            entity.remove<RocketJumping>();
+        }
     }
 }
 
 void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
     auto& rb = entity.get<whal::RigidBody>();
-    entity.get<RocketJumping>().prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
+    auto& rocketJumpComponent = entity.get<RocketJumping>();
+    rocketJumpComponent.prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
     rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
 
     constexpr f32 waitBetweenSils = 0.1;
     if (entity.has<whal::Sprite>()) {
-        // TODO this should be cancelled by onRemove if it's still going.
-        // Can add a .end() evfl method which returns an ID I can store in the rocketjumping component, then use that ID to tell the JobScheduler to
-        // cancel
-        whal::System::schedule.eventFlow({entity})
-            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
-            .addWait(waitBetweenSils)
-            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
-            .addWait(waitBetweenSils)
-            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
-            .addWait(waitBetweenSils)
-            .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED);
+        u32 eventId = whal::System::schedule.eventFlow({entity})
+                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .addWait(waitBetweenSils)
+                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .addWait(waitBetweenSils)
+                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .addWait(waitBetweenSils)
+                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .getId();
+        rocketJumpComponent.silhouetteEventId = eventId;
     }
 }
 
 void RocketJumpingSystem::onRemove(const whal::ecs::Entity entity) {
     auto& rb = entity.get<whal::RigidBody>();
-    rb.frictionMultiplier = entity.get<RocketJumping>().prevFrictionMultiplier;  // restore saved value
+    const auto rocketJumpComponent = entity.get<RocketJumping>();
+    rb.frictionMultiplier = rocketJumpComponent.prevFrictionMultiplier;  // restore saved value
+    whal::System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
 }

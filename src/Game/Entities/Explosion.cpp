@@ -2,6 +2,7 @@
 
 #include "ECS/Callback.h"
 #include "ECS/Light.h"
+#include "ECS/PlayerControl.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
 #include "Physics/CollisionLayer.h"
@@ -63,7 +64,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
 
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT
-        if (!other.has<RocketJumping>()) {
+        if (!other.has<RocketJumping>() && other.has<PlayerControl>()) {
             other.add<RocketJumping>();
         }
     };
