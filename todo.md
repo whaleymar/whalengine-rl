@@ -1,11 +1,6 @@
 # To Do 
 
 ## Current Goal: 
-- quad tree
-    - no moving past border 
-    - world size setter
-    - put collisionlayer checks in QuadTree
-    - quadtree <memory> include
 
 ## Camera / Follow
 - pretty awful in general
@@ -21,7 +16,6 @@
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
 
 ## Physics
-- chunk loading/unloading (quad tree?)
 
 ## Map 
 - object layers

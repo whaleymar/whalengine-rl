@@ -7,9 +7,14 @@
 #include "ECS/Transform.h"
 #include "ECS/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
+#include "Physics/QuadTree/Quadtree.h"
 #include "Util/Vector.h"
 
 namespace whal {
+
+constexpr s32 WORLD_HALFLEN_PIXELS_DEFAULT = 10000;
+
+static qtree::QuadTree QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(WORLD_HALFLEN_PIXELS_DEFAULT, WORLD_HALFLEN_PIXELS_DEFAULT)));
 
 #ifndef NDEBUG
 void drawColliders() {
@@ -37,29 +42,50 @@ void drawColliders() {
 #endif
 
 void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Vector2i nextPosition) {
-    mQuadTree.remove(entity);
+    // if we're at the world border, don't move
+    // idk if there's a point
+    // AABB nextShape(*colliderShape);
+    // nextShape.setPosition(nextPosition);
+    // if (!QUAD_TREE.getBoundingBox().contains(nextShape)) {
+    //     return;
+    // }
+    QUAD_TREE.remove(entity);
     colliderShape->setPosition(nextPosition);
-    mQuadTree.add(entity);
+    QUAD_TREE.add(entity);
 }
 
 void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Transform2D nextPosition) {
-    // TODO if we're at the world border, don't move
-    mQuadTree.remove(entity);
+    // if we're at the world border, don't move
+    // idk if there's a point
+    // AABB nextShape(*colliderShape);
+    // nextShape.setPosition(nextPosition);
+    // if (!QUAD_TREE.getBoundingBox().contains(nextShape)) {
+    //     return;
+    // }
+    QUAD_TREE.remove(entity);
     colliderShape->setPosition(nextPosition);
-    mQuadTree.add(entity);
+    QUAD_TREE.add(entity);
 }
 
 std::vector<ecs::Entity> QuadTreeSystem::query(const AABB& aabb) {
-    return mQuadTree.query(aabb);
+    return QUAD_TREE.query(aabb);
+}
+
+void QuadTreeSystem::rebuild(s32 width, s32 height) {
+    QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(width / 2, height / 2)));
+    for (auto [entityid, entity] : getEntitiesRef()) {
+        QUAD_TREE.add(entity);
+    }
 }
 
 void QuadTreeSystem::onAdd(ecs::Entity entity) {
+    // RESEARCH unhandled edge case: fails if we try to create an entity beyond quadtree bounds.
     entity.get<Collider>().setEntity(entity);
-    mQuadTree.add(entity);
+    QUAD_TREE.add(entity);
 }
 
 void QuadTreeSystem::onRemove(ecs::Entity entity) {
-    mQuadTree.remove(entity);
+    QUAD_TREE.remove(entity);
 }
 
 }  // namespace whal

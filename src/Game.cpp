@@ -189,12 +189,6 @@ void Game::mainloop() {
         // Only rendering remains, so we can do "end of frame" stuff now
         System::world->killEntities();  // TODO this can go at the end of update()
 
-        if (System::frame.getFrame() == 0) {
-            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
-                print("player pos:", entity.get<Transform2D>().position);
-            }
-        }
-
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {
             for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {

@@ -13,8 +13,6 @@
 
 namespace whal::qtree {
 
-// TODO should store collisionlayer w/ entity as "Value" for easy filtering?
-
 class QuadTree {
 public:
     QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}

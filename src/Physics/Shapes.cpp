@@ -117,6 +117,10 @@ f32 Circle::getDistanceFromCenter(const Circle* other) const {
     return toFloatVec(getPosition() - other->getPosition()).len() - other->getRadius();
 }
 
+AABB Circle::getBoundingBox() const {
+    return AABB(mCenter, {mRadius, mRadius});
+}
+
 bool isIntersectAABBvsAABB(const AABB* first, const AABB* other) {
     const auto delta = other->getPosition() - first->getPosition();
     const auto overlap = first->getHalf() + other->getHalf();
@@ -150,6 +154,15 @@ Shape& Shape::operator=(const Shape& other) {
 Circle Shape::getCircle() const {
     assert(mShape == ShapeTag::Circle && "trying to run getCircle but ColliderShape is not a circle");
     return mCircle;
+}
+
+AABB Shape::getBoundingBox() const {
+    switch (mShape) {
+    case ShapeTag::AABB:
+        return mAABB;
+    case ShapeTag::Circle:
+        return mCircle.getBoundingBox();
+    }
 }
 
 AABB Shape::getAABB() const {

@@ -1,6 +1,7 @@
 #include "TriggerSystem.h"
 
 #include "ECS/Collision.h"
+#include "ECS/Systems/CollisionManager.h"
 #include "ECS/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
 
@@ -11,12 +12,16 @@ void TriggerSystem::fixedUpdate() {
         std::vector<ecs::Entity> newInsideList;
         auto& trigger = entity.get<Trigger>();
 
-        for (auto [otherid, other] : MovableColliders::getEntitiesRef()) {
+        for (auto other : QuadTreeSystem::query(trigger.shape.getBoundingBox())) {
             auto collider = other.get<Collider>();
+
             if (!LAYER_MATRIX.isOn(trigger.layer, collider.getCollisionLayer())) {
                 continue;
             }
-            bool wasInside = whal_find(trigger.insideEntities.begin(), trigger.insideEntities.end(), other) != trigger.insideEntities.end();
+            auto it = whal_find(trigger.insideEntities.begin(), trigger.insideEntities.end(), other);
+            const bool wasInside = it != trigger.insideEntities.end();
+            if (wasInside)
+                trigger.insideEntities.erase(it);  // so I can run onTriggerExit on entities outside BB
 
             if (trigger.shape.isOverlapping(collider.getShape())) {
                 newInsideList.push_back(other);
@@ -26,6 +31,13 @@ void TriggerSystem::fixedUpdate() {
                     trigger.onTriggerStay(entity, other);
                 }
             } else if (wasInside && trigger.onTriggerExit != nullptr) {
+                trigger.onTriggerExit(entity, other);
+            }
+        }
+
+        // any entities remaining in insideEntities have exited the trigger zone & aren't in the shape's bounding box.
+        if (trigger.onTriggerExit != nullptr) {
+            for (auto other : trigger.insideEntities) {
                 trigger.onTriggerExit(entity, other);
             }
         }

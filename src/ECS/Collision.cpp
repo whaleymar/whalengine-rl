@@ -177,7 +177,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 
         // average bounciness of both colliders
         f32 bounciness = (WhalMaterial::bounciness(mMaterial) + WhalMaterial::bounciness(hitinfo.otherMaterial)) / 2.0f;
-        if (!skipBounceStep && bounciness != 0.0) {
+        if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
             auto& velocity = mSelf.get<Velocity>();
             if ((isX && abs(velocity.total.x()) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y()) >= BOUNCE_THRESHOLD)) {
                 s32 ix = isX ? 0 : 1;
@@ -193,7 +193,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 }
             }
         }
-        // System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
         return true;
     }
     return false;

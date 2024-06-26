@@ -58,6 +58,8 @@ public:
     f32 getDistanceFromCenter(const AABB* aabb) const;
     f32 getDistanceFromCenter(const Circle* other) const;
 
+    AABB getBoundingBox() const;
+
 #ifndef NDEBUG
     void draw(Vector2f cameraPos, Color color) const;
 #endif
@@ -85,6 +87,8 @@ public:
 
     AABB getAABB() const;
     Circle getCircle() const;
+    AABB getBoundingBox() const;
+
     void setPosition(Vector2i center);
     void setPosition(Transform2D transform);
     Vector2i getPosition() const;
