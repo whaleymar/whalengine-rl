@@ -76,7 +76,8 @@ public:
                         bool isPushedBySolid = false);
     bool emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isXDirection, bool updateRigidBodyFlags);
 
-    bool isCollisionPossible(const Collider* other) const;
+    bool isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
+    bool isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
     HitInfo checkIsGroundedQT(const bool triggerCollisionEvents);
     bool isOtherGround(const Collider* other) const;
     std::vector<Collider*> getRidingCollidersQT() const;

@@ -376,26 +376,27 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
     mIsCollidable = wasCollidable;
 }
 
-bool Collider::isCollisionPossible(const Collider* other) const {
-    // TODO incorporate:
-    // - collisionDir (needs move normal as arg)
-    // - possibly a custom layerMask
-    return mIsCollidable && other->mIsCollidable && this != other && LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer);
+// we are moving, other is still.
+bool Collider::isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask) const {
+    return other->mIsCollidable && this != other && LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer) &&
+           (layerMask & other->mCollisionLayer) > 0 && checkDirectionalCollision(mShape, other->mShape, moveNormal, other->getCollisionDir());
+}
+
+// other is moving, we are still. Only affects directional collision check.
+bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask) const {
+    return other->mIsCollidable && this != other && LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer) &&
+           (layerMask & other->mCollisionLayer) > 0 && checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir());
 }
 
 // Check for collision 1 unit down.
 // (making sure to use the unmoved collider for the directional collision check so the edges are properly aligned)
 HitInfo Collider::checkIsGroundedQT(const bool triggerCollisionEvents) {
-    // RESEARCH collisionManager could track which map tiles are ground to reduce checks here?
-
     const auto movedCollider = AABB(mShape.getPosition() + Vector2i::unitDown, mShape.getHalf());
     HitInfo hitinfo;
 
     for (auto entity : QuadTreeSystem::query(movedCollider)) {
         const auto pCollider = &entity.get<Collider>();
-        // TODO this ugly layer check should be a method?
-        if (pCollider->isCollidable() && pCollider != this && LAYER_MATRIX.isOn(mCollisionLayer, pCollider->mCollisionLayer) &&
-            isOtherGround(pCollider) && checkDirectionalCollision(getShape(), pCollider->getShape(), {0, -1}, pCollider->getCollisionDir())) {
+        if (isCollisionPossible(pCollider, {0, -1}) && isOtherGround(pCollider)) {
             hitinfo = HitInfo(Vector2i(0, -1));
             hitinfo.setOther(pCollider->getEntity());
             hitinfo.otherMaterial = pCollider->getMaterial();
@@ -412,8 +413,10 @@ HitInfo Collider::checkIsGroundedQT(const bool triggerCollisionEvents) {
 
 // check other's collision layer and direction.
 bool Collider::isOtherGround(const Collider* other) const {
-    return (other->mCollisionLayer & getCollisionLayersThatCanStopMe()) > 0 &&
-           (other->mCollisionDir == CollisionDir::ALL || other->mCollisionDir == CollisionDir::UP);
+    // semisolids should be ground for each other, so just check if other is any solid? Works ig.
+
+    // return (other->mCollisionLayer & getCollisionLayersThatCanStopMe()) > 0 &&
+    return (other->isSolidAny() && (other->mCollisionDir == CollisionDir::ALL || other->mCollisionDir == CollisionDir::UP));
 }
 
 // get colliders that are riding us. Basically check which colliders would intersect us if we moved 1px up, taking collision layers and directional
@@ -426,10 +429,8 @@ std::vector<Collider*> Collider::getRidingCollidersQT() const {
     for (auto entity : QuadTreeSystem::query(movedCollider)) {
         const auto pCollider = &entity.get<Collider>();
 
-        // (making sure to use the unmoved collider for the directional collision check so the edges are properly aligned)
-        if (pCollider->isCollidable() && pCollider != this && LAYER_MATRIX.isOn(mCollisionLayer, pCollider->mCollisionLayer) &&
-            (layerMask & pCollider->mCollisionLayer) > 0 &&
-            (getCollisionDir() == CollisionDir::ALL || checkDirectionalCollision(pCollider->getShape(), getShape(), {0, -1}, getCollisionDir()))) {
+        // (making sure to not use the moved collider for the directional collision check so the edges are properly aligned)
+        if (isCollisionPossibleReversed(pCollider, {0, -1}, layerMask)) {
             riding.push_back(pCollider);
         }
     }
@@ -467,6 +468,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         moveVec = {0, toMoveRounded};
     }
     const auto prevColliderPos = AABB(mShape.getPosition() - moveVec, mShape.getHalf());
+    const auto prevColliderState = Collider(prevColliderPos, mCollisionLayer, mMaterial, nullptr, mCollisionDir);
 
     if (abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) > 1) {
         print("Rounding anomaly: Unrounded move value is", toMoveUnrounded, "but rounded value is ", toMoveRounded);
@@ -474,12 +476,10 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
     const f32 dt = System::dt();
     std::vector<Collider*> toCarry = riding;
+    const u16 notSolidMask = ~CollisionLayer::Solid;  // cannot be pushed or carried
     for (auto entity : QuadTreeSystem::query(mShape)) {
         Collider* other = &entity.get<Collider>();
-        if (!LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer) || !other->isCollidable() || other == this) {
-            continue;
-        }
-        if (checkDirectionalCollision(other->getShape(), prevColliderPos, moveVec * -1, getCollisionDir())) {
+        if (this != other && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1, notSolidMask)) {
             // push takes priority over carry
             auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
             if (it != toCarry.end()) {
@@ -581,18 +581,11 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
         return HitInfo();
     }
     const auto movedCollider = AABB(position, mShape.getHalf());
-    HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such
+    HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such. doesn't matter which specific collision is returned.
 
     for (auto entity : QuadTreeSystem::query(movedCollider)) {
         const auto collider = entity.get<Collider>();
-        if (!collider.isCollidable() || this == &collider || !LAYER_MATRIX.isOn(mCollisionLayer, collider.mCollisionLayer) ||
-            !(collider.mCollisionLayer & layerMask)) {
-            continue;
-        }
-
-        // check for one-way collision skips
-        const CollisionDir collisionDir = collider.getCollisionDir();
-        if (!checkDirectionalCollision(getShape(), collider.getShape(), moveNormal, collisionDir)) {
+        if (!isCollisionPossible(&collider, moveNormal, layerMask)) {
             continue;
         }
 
@@ -608,6 +601,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
             } else {
                 hitInfo.clearHorizontalFlags();
             }
+
             hitInfoToReturn = hitInfo;
             if (triggerCollisionEvents) {
                 System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitInfo);
