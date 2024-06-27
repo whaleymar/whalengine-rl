@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include <cassert>
 
 #include "Util/MathUtil.h"
@@ -26,12 +26,6 @@ struct Vector2T {
         e[0] = other.e[0];
         e[1] = other.e[1];
     }
-
-    // static Vector2T<T> unitUp;
-    // static Vector2T<T> unitDown;
-    // static Vector2T<T> unitLeft;
-    // static Vector2T<T> unitRight;
-    // static Vector2T<T> zero;
 
     static inline Vector2T<T> unitUp = {0, 1};
     static inline Vector2T<T> unitDown = {0, -1};

@@ -8,7 +8,7 @@ make
 ```
 
 # Building for Windows
-Requires Microsoft Visual C++ (MSVC) compiler and a Clang version that supports C++20. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. From here you have a couple options:
+Requires Microsoft Visual C++ (MSVC) compiler and a Clang version that supports C++20. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. Next, confirm you have clang by running `clang-cl -v` (should see similar output). From here you have a couple options:
 
 ## VSCode 
 From the `x64 Native Tools Command Prompt` type `code .` and hit enter. This should open VSCode. Now, open the project. Make sure you have the following extensions:
@@ -19,7 +19,7 @@ From the `x64 Native Tools Command Prompt` type `code .` and hit enter. This sho
 
 (I have no idea if some of the CMake extensions are redundant).
 
-Hit `ctrl+shift+p` to open the command listing, search CMake, and build the project. 
+Hit `ctrl+shift+p` to open the command listing, search CMake, and click `CMake: Build`
 
 ## CMake (from command line)
-Can *maybe* just `cd` to the project directory and type `make` (from the `x64 Native Tools Command Prompt`)
+idk, not working, don't feel like investigating
