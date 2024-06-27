@@ -3,6 +3,7 @@
 #include <forward_list>
 
 #include "whalECS/src/ECS.h"
+#include "Util/Vector.h"
 
 typedef struct Texture Texture;
 typedef Texture Texture2D;
@@ -22,7 +23,7 @@ public:
     void onRemove(const ecs::Entity) override;
 
     void drawEntities();
-    void drawEntity(ecs::Entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
+    void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
     void setSilhouetteShader(Shader* shader) { mShaderSilhouette = shader; }
 

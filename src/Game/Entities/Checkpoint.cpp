@@ -2,6 +2,7 @@
 
 #include "ECS/Transform.h"
 #include "Game/Components/Respawn.h"
+#include "whalECS/src/ECS.h"
 
 void onCheckpointEnter(whal::ecs::Entity self, whal::ecs::Entity other) {
     if (other.has<Respawn>() && other.has<IUseCheckpoints>()) {

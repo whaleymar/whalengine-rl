@@ -12,6 +12,8 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
+#include "Systems/System.h"
+
 namespace whal {
 
 Color hexStringARGBToColor(std::string hexString) {

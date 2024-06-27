@@ -1,4 +1,4 @@
-# Install
+# Building for Linux
 Installation requires C++20 and raylib 3.0+
 ```
 git clone https://github.com/whaleymar/whalengine-rl.git
@@ -6,3 +6,20 @@ cd whalengine-rl
 git submodule update --init --recursive
 make
 ```
+
+# Building for Windows
+Requires Microsoft Visual C++ (MSVC) compiler and a Clang version that supports C++20. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. From here you have a couple options:
+
+## VSCode 
+From the `x64 Native Tools Command Prompt` type `code .` and hit enter. This should open VSCode. Now, open the project. Make sure you have the following extensions:
+1. C/C++ IntelliSense, debugging, and code browing (Microsoft)
+2. CMake (twxs)
+3. CMake Language Support (Jose Torres)
+4. CMake Tools (Microsoft)
+
+(I have no idea if some of the CMake extensions are redundant).
+
+Hit `ctrl+shift+p` to open the command listing, search CMake, and build the project. 
+
+## CMake (from command line)
+Can *maybe* just `cd` to the project directory and type `make` (from the `x64 Native Tools Command Prompt`)

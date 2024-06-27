@@ -1,6 +1,7 @@
 #pragma once
 
 #include "whalECS/src/Expected.h"
+#include "Util/Types.h"
 
 typedef struct Color Color;
 
