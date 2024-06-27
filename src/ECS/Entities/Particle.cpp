@@ -7,6 +7,8 @@
 #include "ECS/Transform.h"
 #include "Settings.h"
 
+#include "Systems/System.h"
+
 namespace whal {
 
 Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lifetime) {

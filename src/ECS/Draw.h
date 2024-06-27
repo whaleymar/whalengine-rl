@@ -11,6 +11,10 @@ namespace whal {
 
 Color hexStringARGBToColor(std::string hexstring);
 
+namespace ecs {
+class Entity;
+}
+
 namespace Colors {
 
 inline static Color Clear = {0, 0, 0, 0};
@@ -73,9 +77,7 @@ struct FadeOut {
     f32 secondsRemaining;
 };
 
-Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
-                                               Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
-Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,
-                                             Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
+Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
+Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
 
 }  // namespace whal

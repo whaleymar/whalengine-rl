@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <memory>
 #include "Events/Events.h"
+#include "Systems/System.h"
 
 namespace whal {
 

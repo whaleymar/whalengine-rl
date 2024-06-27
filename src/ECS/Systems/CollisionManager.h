@@ -1,6 +1,8 @@
 #pragma once
 
 #include "whalECS/src/ECS.h"
+#include "Util/Types.h"
+#include "Util/Vector.h"
 
 namespace whal {
 
