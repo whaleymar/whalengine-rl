@@ -47,7 +47,7 @@ Corrade::Containers::Optional<Error> loadTestMap() {
     // createTestTrigger();
     // createTestSemiSolid();
     // createDepthTest();
-    // createPaletteTest();
+    createPaletteTest();
 
     auto ePlayer = createPlayer();
     if (!ePlayer.isExpected()) {
@@ -254,7 +254,7 @@ void createPaletteTest() {
     auto frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("actor/palette");
     if (frame) {
         auto sprite = Sprite(Depth::Level, *frame);
-        sprite.scale = {3, 3};
+        sprite.scale = {1, 1};
         newEntity.add(sprite);
         newEntity.add(Transform2D::tiles(7, -8));
 
