@@ -1,6 +1,8 @@
 build/
 .cache/
 os
+engined
+engine
 *.exe
 *.pdb
 *.ilk
