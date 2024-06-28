@@ -3,4 +3,5 @@ build/
 os
 *.exe
 *.pdb
+*.ilk
 # lib/
