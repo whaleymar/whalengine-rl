@@ -1,10 +1,10 @@
 .PHONY: all clean release
 
 all:
-	cmake . -DCMAKE_BUILD_TYPE=Debug -B build && $(MAKE) -C build -j
+	cmake . -DCMAKE_BUILD_TYPE=Debug -B build -G Ninja && cd build && cmake --build . -j && cd ..
 
 release:
-	cmake . -DCMAKE_BUILD_TYPE=Release -B build && $(MAKE) -C build -j
+	cmake . -DCMAKE_BUILD_TYPE=Release -B build -G Ninja && cd build && cmake --build . -j && cd ..
 
 clean:
 	rm -r build || true

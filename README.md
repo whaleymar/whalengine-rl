@@ -22,4 +22,4 @@ From the `x64 Native Tools Command Prompt` type `code .` and hit enter. This sho
 Hit `ctrl+shift+p` to open the command listing, search CMake, and click `CMake: Build`
 
 ## CMake (from command line)
-idk, not working, don't feel like investigating
+`cd` to the project directory and run `make`
