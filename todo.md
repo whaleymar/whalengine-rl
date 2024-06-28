@@ -1,6 +1,7 @@
 # To Do 
 
 ## Current Goal: 
+- map templates -> camera 
 
 ## Camera / Follow
 - pretty awful in general
@@ -20,6 +21,19 @@
 ## Map 
 - object layers
     - component factory functions (mostly done)
+        - light 
+        - radiance
+        - Animator
+        - Lifetime
+        - PlayerControl / FreeControl
+        - jumper
+        - follow / attach 
+        - tags 
+        - triggerzone 
+        - precisePosition
+        - game:
+            - respawn
+            - blaster
     - special metadata
         - camera strat (might want to rework)
     - Templates - use for prefabs?
