@@ -57,12 +57,12 @@ def readPalette(filepath: str) -> np.ndarray:
         raise ValueError("palette file '{}' does not exist".format(filepath))
 
 def paletteToTexture(palette, outpath):
-    N_COLORS_R = 4
-    N_COLORS_G = 4
-    N_COLORS_B = 4
+    N_COLORS_R = 16
+    N_COLORS_G = 16
+    N_COLORS_B = 16
 
     img = Image.new("RGB", (N_COLORS_R * N_COLORS_G, N_COLORS_B), "white")
-    testImg = Image.new("RGB", (N_COLORS_R * N_COLORS_G, N_COLORS_B), "white")
+    # testImg = Image.new("RGB", (N_COLORS_R * N_COLORS_G, N_COLORS_B), "white")
 
     rvals = np.linspace(0, N_COLORS_R, N_COLORS_R)
     gvals = np.linspace(0, N_COLORS_G, N_COLORS_G)
@@ -77,9 +77,9 @@ def paletteToTexture(palette, outpath):
                 y = b 
                 # print("closest color to ", list(rgb), " is ", list(p))
                 img.putpixel((x,y), tuple(p))
-                testImg.putpixel((x,y), tuple(rgb.astype(int))) 
+                # testImg.putpixel((x,y), tuple(rgb.astype(int))) 
     img.save(outpath)
-    testImg.save("test.png")
+    # testImg.save("test.png")
     print("saved to " + outpath)
 
 
