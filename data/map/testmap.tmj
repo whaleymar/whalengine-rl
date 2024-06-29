@@ -139,13 +139,12 @@
                  "properties":[
                         {
                          "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
+                         "propertytype":"Component_Collider",
                          "type":"class",
                          "value":
                             {
                              "CollisionDir":4,
-                             "halflenTexelsX":12,
-                             "halflenTexelsY":4
+                             "Layer":"Solid"
                             }
                         }, 
                         {
@@ -184,13 +183,12 @@
                  "properties":[
                         {
                          "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
+                         "propertytype":"Component_Collider",
                          "type":"class",
                          "value":
                             {
                              "CollisionDir":4,
-                             "halflenTexelsX":12,
-                             "halflenTexelsY":4
+                             "Layer":"Solid"
                             }
                         }, 
                         {
@@ -289,41 +287,18 @@
                 }, 
                 {
                  "height":8,
-                 "id":16,
-                 "name":"BottomLeftRef",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
-                            }
-                        }, 
-                        {
-                         "name":"Sprite",
-                         "propertytype":"Component_Sprite_NoAnim",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ff8c00ff",
-                             "Sprite":"tile\/dirtblock"
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":8,
-                 "x":0,
-                 "y":184
-                }, 
-                {
-                 "height":8,
                  "id":30,
                  "name":"SemiSolidTest",
                  "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid"
+                            }
+                        }, 
                         {
                          "name":"RigidBody",
                          "propertytype":"Component_RigidBody",
@@ -331,16 +306,6 @@
                          "value":
                             {
 
-                            }
-                        }, 
-                        {
-                         "name":"SemiSolidCollider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
                             }
                         }, 
                         {
@@ -375,22 +340,21 @@
                  "name":"SemiSolidTest",
                  "properties":[
                         {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid"
+                            }
+                        }, 
+                        {
                          "name":"RigidBody",
                          "propertytype":"Component_RigidBody",
                          "type":"class",
                          "value":
                             {
 
-                            }
-                        }, 
-                        {
-                         "name":"SemiSolidCollider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
                             }
                         }, 
                         {
@@ -425,22 +389,21 @@
                  "name":"SemiSolidTest",
                  "properties":[
                         {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid"
+                            }
+                        }, 
+                        {
                          "name":"RigidBody",
                          "propertytype":"Component_RigidBody",
                          "type":"class",
                          "value":
                             {
 
-                            }
-                        }, 
-                        {
-                         "name":"SemiSolidCollider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
                             }
                         }, 
                         {
@@ -470,51 +433,18 @@
                  "y":56
                 }, 
                 {
-                 "gid":2,
-                 "height":8,
-                 "id":25,
-                 "name":"Obj2",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
-                            }
-                        }, 
-                        {
-                         "name":"Sprite",
-                         "propertytype":"Component_Sprite_NoAnim",
-                         "type":"class",
-                         "value":
-                            {
-                             "Sprite":"tile\/purpledirt"
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":8,
-                 "x":128,
-                 "y":104
-                }, 
-                {
                  "height":32,
                  "id":26,
                  "name":"TestBlockBig",
                  "properties":[
                         {
                          "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
+                         "propertytype":"Component_Collider",
                          "type":"class",
                          "value":
                             {
-                             "Material":3,
-                             "halflenTexelsX":8,
-                             "halflenTexelsY":16
+                             "Layer":"Solid",
+                             "Material":3
                             }
                         }, 
                         {
@@ -539,22 +469,21 @@
                  "name":"BOTTOM",
                  "properties":[
                         {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid"
+                            }
+                        }, 
+                        {
                          "name":"RigidBody",
                          "propertytype":"Component_RigidBody",
                          "type":"class",
                          "value":
                             {
 
-                            }
-                        }, 
-                        {
-                         "name":"SemiSolidCollider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
                             }
                         }, 
                         {
@@ -589,22 +518,21 @@
                  "name":"TOP",
                  "properties":[
                         {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid"
+                            }
+                        }, 
+                        {
                          "name":"RigidBody",
                          "propertytype":"Component_RigidBody",
                          "type":"class",
                          "value":
                             {
 
-                            }
-                        }, 
-                        {
-                         "name":"SemiSolidCollider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":4,
-                             "halflenTexelsY":4
                             }
                         }, 
                         {
@@ -684,13 +612,11 @@
                  "properties":[
                         {
                          "name":"Collider",
-                         "propertytype":"Component_SolidCollider",
+                         "propertytype":"Component_Collider",
                          "type":"class",
                          "value":
                             {
-                             "CollisionDir":4,
-                             "halflenTexelsX":12,
-                             "halflenTexelsY":4
+                             "Layer":"Solid"
                             }
                         }, 
                         {
@@ -724,20 +650,70 @@
                 {
                  "id":45,
                  "name":"TestPrefabInstance",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_SemiSolidCollider",
-                         "type":"class",
-                         "value":
-                            {
-                             "halflenTexelsX":2,
-                             "halflenTexelsY":2
-                            }
-                        }],
                  "template":"templates\/TestPrefab.tj",
                  "x":54,
                  "y":94
+                }, 
+                {
+                 "height":8,
+                 "id":46,
+                 "name":"NEWCOLLIDER",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"SemiSolid",
+                             "Shape":48
+                            }
+                        }, 
+                        {
+                         "name":"RigidBody",
+                         "propertytype":"Component_RigidBody",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff5500",
+                             "Sprite":"tile\/dirtblock"
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+                             "velX":0
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":116,
+                 "y":80
+                }, 
+                {
+                 "height":24,
+                 "id":48,
+                 "name":"NEWCOLLIDER_SHAPE",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":112,
+                 "y":64
                 }],
          "opacity":1,
          "properties":[
@@ -851,7 +827,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":46,
+ "nextobjectid":49,
  "orientation":"orthogonal",
  "properties":[
         {

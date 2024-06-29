@@ -225,6 +225,7 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
         EntityMapData entityData;
         entityData.id = readInt(object, "id");
         bool hasPosition = false;
+        entityData.isPoint = true;
         if (pPrefab) {
             hasPosition = tryReadVector2i(*pPrefab, "x", "y", &entityData.position);
         }
@@ -235,10 +236,12 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
             continue;
         }
         if (pPrefab) {
-            tryReadVector2i(*pPrefab, "width", "height", &entityData.dimensionsTexels);
+            if (tryReadVector2i(*pPrefab, "width", "height", &entityData.dimensionsTexels))
+                entityData.isPoint = false;
         }
-        tryReadVector2i(object, "width", "height", &entityData.dimensionsTexels);
-        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, false);
+        if (tryReadVector2i(object, "width", "height", &entityData.dimensionsTexels))
+            entityData.isPoint = false;
+        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint);
         entity.add(trans);
 
         if (pPrefab) {

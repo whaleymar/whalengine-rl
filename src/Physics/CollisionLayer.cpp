@@ -1,10 +1,31 @@
 #include "CollisionLayer.h"
 
 #include <vector>
+#include "Util/String.h"
+
+#define RETURN_IF(var, name)                                                                                                                         \
+    if (isEqualString(#name, var))                                                                                                                   \
+    return name
 
 namespace whal {
 
 namespace CollisionLayer {
+
+Layer fromString(const char* layer) {
+    RETURN_IF(layer, None);
+    RETURN_IF(layer, Actor);
+    RETURN_IF(layer, Solid);
+    RETURN_IF(layer, SemiSolid);
+    RETURN_IF(layer, TriggerPhysics);
+    RETURN_IF(layer, TriggerActors);
+    RETURN_IF(layer, Player);
+    RETURN_IF(layer, Enemy);
+    RETURN_IF(layer, Npc);
+    RETURN_IF(layer, Light);
+    RETURN_IF(layer, Vision);
+
+    return None;
+}
 
 // This table is like Unity's Layer Collision Matrix.
 // It's symmetric, so each row only considers itself and rows below it.

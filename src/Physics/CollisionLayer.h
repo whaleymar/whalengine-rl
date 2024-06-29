@@ -24,6 +24,8 @@ enum Layer : u16 {
     Vision = 1 << 9,
 };
 
+Layer fromString(const char* layer);
+
 constexpr u16 ALL = 0xffff;
 constexpr u16 PHYSICS = Actor | Solid | SemiSolid;
 constexpr u16 SOLID = Solid | SemiSolid;

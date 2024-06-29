@@ -46,17 +46,15 @@ static const char* KEY_NAME = "name";
 static const char* KEY_VALUE = "value";
 
 template <typename T>
-T readVal(const nlohmann::json& data, std::string_view key);
+T readVal(const nlohmann::json& object, std::string_view key);
 
 template <typename T>
-bool tryReadVal(const nlohmann::json& data, std::string_view key, T* dst);
+bool tryReadVal(const nlohmann::json& object, std::string_view key, T* dst);
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     // {"Animator", addComponentAnimator},
-    {"Component_ActorCollider", addComponentActorCollider},
-    {"Component_SemiSolidCollider", addComponentSemiSolidCollider},
-    {"Component_SolidCollider", addComponentSolidCollider},
+    {"Component_Collider", addComponentCollider},
     {"Component_RespawnTrigger", addComponentRespawnTrigger},
     {"Component_Draw", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
@@ -76,8 +74,6 @@ ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory
 }
 
 void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
-    print("running makeDefaultComponent");
-
     std::string componentName = property[KEY_NAME];
     ComponentAdder creatorFunc = nullptr;
     if (getEntryIndex(componentName.c_str(), &creatorFunc) == -1) {
@@ -156,6 +152,22 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         }
         half = Transform2D::texels(half.x(), half.y()).position;
         DefaultSemiSolidCollider.getShapeMutable().setHalf(half);
+
+    } else if (componentName == "Component_Collider") {
+        DefaultCollider = Collider();
+        for (auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "CollisionDir") {
+                DefaultCollider.setCollisionDir(member[KEY_VALUE]);
+            } else if (memberName == "Material") {
+                DefaultCollider.setMaterial(member[KEY_VALUE]);
+            } else if (memberName == "Layer") {
+                std::string layer = member[KEY_VALUE];
+                DefaultCollider.setCollisionLayer(CollisionLayer::fromString(layer.c_str()));
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
 
     } else if (componentName == "Component_Draw") {
         DefaultDraw = Draw();
@@ -333,42 +345,33 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     }
 }
 
-void addComponentActorCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    Collider actor = ComponentFactory::DefaultActorCollider;
-    Vector2i halflenTexels = actor.getShape().getHalf() / PIXELS_PER_TEXEL;
-    WorldMaterial material = actor.getMaterial();
+void addComponentCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+    Collider collider = ComponentFactory::DefaultCollider;
+    CollisionDir collisionDir = collider.getCollisionDir();
+    WorldMaterial material = collider.getMaterial();
 
-    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
-    tryReadVal(values, "Material", &material);
+    if (tryReadVal(values, "CollisionDir", &collisionDir)) {
+        collider.setCollisionDir(collisionDir);
+    }
+    if (tryReadVal(values, "Material", &material)) {
+        collider.setMaterial(material);
+    }
 
-    entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Actor, material));
-}
+    std::string layerName;
+    if (tryReadVal(values, "Layer", &layerName)) {
+        collider.setCollisionLayer(CollisionLayer::fromString(layerName.c_str()));
+    }
 
-void addComponentSemiSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                                   EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    Collider semi = ComponentFactory::DefaultSemiSolidCollider;
-    Vector2i halflenTexels = semi.getShape().getHalf() / PIXELS_PER_TEXEL;
-    WorldMaterial material = semi.getMaterial();
-
-    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
-    tryReadVal(values, "Material", &material);
-
-    entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::SemiSolid, material));
-}
-
-void addComponentSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    Collider solid = ComponentFactory::DefaultSolidCollider;
-    Vector2i halflenTexels = solid.getShape().getHalf() / PIXELS_PER_TEXEL;
-    CollisionDir collisionDir = solid.getCollisionDir();
-    WorldMaterial material = solid.getMaterial();
-
-    tryReadVector2i(values, "halflenTexelsX", "halflenTexelsY", &halflenTexels);
-    tryReadVal(values, "CollisionDir", &collisionDir);
-    tryReadVal(values, "Material", &material);
-
-    entity.add(Collider(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL, CollisionLayer::Solid, material, nullptr, collisionDir));
+    if (values.contains("Shape")) {
+        s32 shapeId = readInt(values, "Shape");
+        Vector2i halflenTexels = readVector2i(allObjects[idToIndex.at(shapeId)], "width", "height") / 2;
+        collider.setShape(AABB(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL));
+    } else {
+        // there's no default shape object. Instead use the entity's dimensions
+        collider.setShape(AABB(entity.get<Transform2D>(), entityData.dimensionsTexels * PIXELS_PER_TEXEL / 2));
+    }
+    entity.add(collider);
 }
 
 void addComponentRespawnTrigger(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,

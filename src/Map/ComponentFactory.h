@@ -34,6 +34,7 @@ public:
 
     inline static Velocity DefaultVelocity;
     inline static RailsControl DefaultRailsControl;
+    inline static Collider DefaultCollider;
     inline static Collider DefaultActorCollider;
     inline static Collider DefaultSolidCollider;
     inline static Collider DefaultSemiSolidCollider;
@@ -48,12 +49,8 @@ void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& al
                           EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentActorCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentSemiSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                                   EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+void addComponentCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentRespawnTrigger(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
                                 EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
