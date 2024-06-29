@@ -47,7 +47,7 @@ Corrade::Containers::Optional<Error> loadTestMap() {
     // createTestTrigger();
     // createTestSemiSolid();
     // createDepthTest();
-    createPaletteTest();
+    // createPaletteTest();
 
     auto ePlayer = createPlayer();
     if (!ePlayer.isExpected()) {

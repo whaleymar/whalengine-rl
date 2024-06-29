@@ -11,10 +11,13 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "prefab-editor.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 9.450520833333332,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 48.41003031138056,
+                "x": 42.32570956186278,
                 "y": 47.98677321576193
             }
         },
@@ -23,11 +26,11 @@
                 11,
                 6
             ],
-            "scale": 2.1889583333333333,
+            "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 178.8521937755782,
-                "y": 100.2760064718759
+                "x": 152.66666666666663,
+                "y": 100.16666666666664
             }
         },
         "testmap2.tmj": {
@@ -37,8 +40,8 @@
             "scale": 2.1889583333333333,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 159.66498524792996,
-                "y": 95.70762348910247
+                "x": 159.43656609879127,
+                "y": 95.25078519082517
             }
         },
         "tile-collision.tsj": {
@@ -56,12 +59,12 @@
             "scale": 2.1889583333333333,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -482.1928238317312,
-                "y": 164.6902065289807
+                "x": 239.84010659560292,
+                "y": 96.16446178737985
             }
         }
     },
-    "last.objectTemplatePath": "/home/whaley/code/unnamed-engine/data/map/templates",
+    "last.objectTemplatePath": "/home/whaley/code/whalengine-rl/data/map/templates",
     "last.worldFilePath": "/home/whaley/code/unnamed-engine/data/map",
     "loadedWorlds": [
         "/home/whaley/code/unnamed-engine/data/map/testworld.world",
@@ -80,7 +83,7 @@
         "prefab-editor.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_RespawnTrigger",
+    "property.type": "Component_SemiSolidCollider",
     "recentFiles": [
         "testmap.tmj",
         "testmap2.tmj",

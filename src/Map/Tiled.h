@@ -32,12 +32,18 @@ struct LayerData {
     f32 parallax = 1.0;
 };
 
+struct EntityMapData {
+    Vector2i position;  // top left of tile
+    Vector2i dimensionsTexels;
+    s32 id;
+    bool isPoint;
+};
+
 struct TileLayer {
     std::string name;
     s32 width;
     s32 height;
     LayerData metadata;
-    // std::unique_ptr<s32[]> data;
     std::vector<s32> data;
 };
 

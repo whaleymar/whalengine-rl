@@ -49,7 +49,7 @@ template <typename T>
 T readVal(const nlohmann::json& data, std::string_view key);
 
 template <typename T>
-void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst);
+bool tryReadVal(const nlohmann::json& data, std::string_view key, T* dst);
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
@@ -75,8 +75,8 @@ ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory
     initFactory(S_COMPONENT_ENTRIES);
 }
 
-void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
-    // who cares
+void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
+    print("running makeDefaultComponent");
 
     std::string componentName = property[KEY_NAME];
     ComponentAdder creatorFunc = nullptr;
@@ -85,6 +85,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
     }
 
     if (componentName == "Component_RailsControl") {
+        DefaultRailsControl = RailsControl();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "isCycle") {
@@ -99,6 +100,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
         }
 
     } else if (componentName == "Component_ActorCollider") {
+        DefaultActorCollider = Collider();
         Vector2i half;
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
@@ -116,6 +118,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
         DefaultActorCollider.getShapeMutable().setHalf(half);
 
     } else if (componentName == "Component_SolidCollider") {
+        DefaultSolidCollider = Collider();
         Vector2i half;
         CollisionDir collisionDir;
         for (auto& member : property[KEY_MEMBERS]) {
@@ -137,6 +140,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
         DefaultSolidCollider.setCollisionDir(collisionDir);
 
     } else if (componentName == "Component_SemiSolidCollider") {
+        DefaultSemiSolidCollider = Collider();
         Vector2i half;
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
@@ -154,6 +158,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
         DefaultSemiSolidCollider.getShapeMutable().setHalf(half);
 
     } else if (componentName == "Component_Draw") {
+        DefaultDraw = Draw();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
@@ -164,6 +169,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
             }
         }
     } else if (componentName == "Component_Sprite_NoAnim") {
+        DefaultSprite = Sprite();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
@@ -176,6 +182,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
             }
         }
     } else if (componentName == "Component_RigidBody") {
+        DefaultRigidBody = RigidBody();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "momentumMultiplierX") {
@@ -191,6 +198,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
             }
         }
     } else if (componentName == "Component_Jumper") {
+        DefaultJumper = Jumper();
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "coyoteTimeSecondsMax") {
@@ -204,6 +212,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
             }
         }
     } else if (componentName == "Component_Velocity") {
+        DefaultVelocity = Velocity();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "velX") {
@@ -215,6 +224,7 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
             }
         }
     } else if (componentName == "Component_Follow") {
+        DefaultFollow = Follow();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "lookAheadX") {
@@ -244,8 +254,8 @@ void ComponentFactory::makeDefaultComponent(nlohmann::json property) {
     }
 }
 
-void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                          ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Velocity velocity = ComponentFactory::DefaultVelocity;
     tryReadVector2f(values, "velX", "velY", &velocity.stable);
 
@@ -253,7 +263,7 @@ void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& al
 }
 
 void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                              s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+                              EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     std::vector<RailsControl::CheckPoint> checkpoints;
     Corrade::Containers::Optional<RailsControl::EndBehavior> endBehavior;
     if (values.contains("Checkpoints")) {
@@ -275,14 +285,11 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
     entity.add(rails);
 }
 
-void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                      ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    s32 ix = idToIndex.at(thisId);
-    Vector2i frameSizeTexels = {allObjects[ix]["width"], allObjects[ix]["height"]};
-
+void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                      EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Draw draw = ComponentFactory::DefaultDraw;
     draw.depth = layerData.depth;
-    draw.setFrameSize(frameSizeTexels);
+    draw.setFrameSize(entityData.dimensionsTexels);
 
     // ARGB
     if (values.contains("Color")) {
@@ -295,8 +302,8 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
     entity.add(draw);
 }
 
-void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Sprite sprite = ComponentFactory::DefaultSprite;
 
     // ARGB
@@ -320,16 +327,14 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     } else {
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
-        s32 ix = idToIndex.at(thisId);
-        Vector2i frameSizeTexels = {allObjects[ix]["width"], allObjects[ix]["height"]};
         Draw draw = ComponentFactory::DefaultDraw;
-        draw.setFrameSize(frameSizeTexels);
+        draw.setFrameSize(entityData.dimensionsTexels);
         entity.add(draw);
     }
 }
 
 void addComponentActorCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider actor = ComponentFactory::DefaultActorCollider;
     Vector2i halflenTexels = actor.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = actor.getMaterial();
@@ -341,7 +346,7 @@ void addComponentActorCollider(const nlohmann::json& values, const nlohmann::jso
 }
 
 void addComponentSemiSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                                   s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+                                   EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider semi = ComponentFactory::DefaultSemiSolidCollider;
     Vector2i halflenTexels = semi.getShape().getHalf() / PIXELS_PER_TEXEL;
     WorldMaterial material = semi.getMaterial();
@@ -353,7 +358,7 @@ void addComponentSemiSolidCollider(const nlohmann::json& values, const nlohmann:
 }
 
 void addComponentSolidCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Collider solid = ComponentFactory::DefaultSolidCollider;
     Vector2i halflenTexels = solid.getShape().getHalf() / PIXELS_PER_TEXEL;
     CollisionDir collisionDir = solid.getCollisionDir();
@@ -367,10 +372,8 @@ void addComponentSolidCollider(const nlohmann::json& values, const nlohmann::jso
 }
 
 void addComponentRespawnTrigger(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                                s32 thisId, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    auto object = allObjects.at(idToIndex.at(thisId));
-    auto positionTexels = readVector2i(object);
-    Transform2D transform = getTransformFromMapPosition(positionTexels, {0, 0}, level, true);
+                                EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+    Transform2D transform = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, true);
     entity.set(transform);
 
     level.spawnPoints.push_back(transform.position);
@@ -391,13 +394,13 @@ void addComponentRespawnTrigger(const nlohmann::json& values, const nlohmann::js
     entity.add(Trigger(AABB(zoneCenter, zoneDimensions / 2), CollisionLayer::TriggerActors, &onCheckpointEnter));
 }
 
-void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     entity.add(loadFollowComponent(values, level));
 }
 
-void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                           ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                           EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     RigidBody rb = ComponentFactory::DefaultRigidBody;
 
     tryReadVector2f(values, "momentumMultiplierX", "momentumMultiplierY", &rb.momentumMultiplier);
@@ -406,8 +409,8 @@ void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& a
     entity.add(rb);
 }
 
-void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex, s32 thisId,
-                        ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
+void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
+                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     Jumper jumper = ComponentFactory::DefaultJumper;
 
     tryReadFloat(values, "jumpInitialVelocity", &jumper.jumpInitialVelocity);
@@ -515,47 +518,71 @@ T readVal(const nlohmann::json& data, std::string_view key) {
     return data[key];
 }
 
-void tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst) {
+bool tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst) {
     if (data.contains(key)) {
         *dst = data[key];
+        return true;
     }
+    return false;
 }
 
-void tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst) {
+bool tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst) {
     if (data.contains(key)) {
         *dst = data[key];
+        return true;
     }
+    return false;
 }
 
-void tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst) {
+bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst) {
+    bool foundOne = false;
     if (data.contains(xKey)) {
         dst->e[0] = data[xKey];
+        foundOne = true;
     }
     if (data.contains(yKey)) {
         dst->e[1] = data[yKey];
+        foundOne = true;
     }
+    return foundOne;
 }
 
-void tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
+bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
+    bool foundOne = false;
     if (data.contains(xKey)) {
         dst->e[0] = data[xKey];
+        foundOne = true;
     }
     if (data.contains(yKey)) {
         dst->e[1] = data[yKey];
+        foundOne = true;
     }
+    return foundOne;
 }
 
-void tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst) {
+bool tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst) {
     if (data.contains(key)) {
         *dst = data[key];
+        return true;
     }
+    return false;
+}
+
+bool tryReadString(const nlohmann::json& data, std::string_view key, std::string* dst) {
+    if (data.contains(key)) {
+        *dst = data[key];
+        return true;
+    }
+    return false;
 }
 
 template <typename T>
-void tryReadVal(const nlohmann::json& data, std::string_view key, T* dst) {
+bool tryReadVal(const nlohmann::json& data, std::string_view key, T* dst) {
     if (data.contains(key)) {
         *dst = data[key];
+        return true;
     }
+    return false;
 }
 
 }  // namespace whal

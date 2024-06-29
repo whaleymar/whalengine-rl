@@ -1,0 +1,22 @@
+{ "object":
+    {
+     "height":8,
+     "id":2,
+     "name":"TestPrefab",
+     "properties":[
+            {
+             "name":"DrawComponent",
+             "propertytype":"Component_Draw",
+             "type":"class",
+             "value":
+                {
+                 "Color":"#ffaaaaff"
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":8
+    },
+ "type":"template"
+}

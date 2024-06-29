@@ -3,7 +3,6 @@
 #include "ECS/Transform.h"
 #include "Settings.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 
 namespace whal {
 

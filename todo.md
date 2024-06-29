@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- map templates -> camera 
+- components map stuff -> camera 
 
 ## Camera / Follow
 - pretty awful in general
@@ -21,6 +21,7 @@
 ## Map 
 - object layers
     - component factory functions (mostly done)
+        - colliders -> consolidate & add a object ref for the shape
         - light 
         - radiance
         - Animator
@@ -36,7 +37,6 @@
             - blaster
     - special metadata
         - camera strat (might want to rework)
-    - Templates - use for prefabs?
 
 ## Graphics
 - outline shader
@@ -51,6 +51,8 @@
 ## Misc
 - ECS lib tasks
 - Logger queue that runs on another thread
+- idea to try components with virtual methods but still get registered to the base system: let T be the base component and V be a subclass: add component w/ `e.add<T>(V)`
+    - i have no idea if the compiler will yell at me or if the vtable would work right but it's worth a shot
 
 ## Bugs
 - isNearZero not working
