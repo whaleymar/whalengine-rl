@@ -83,7 +83,7 @@
         "prefab-editor.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_SemiSolidCollider",
+    "property.type": "Component_Collider",
     "recentFiles": [
         "testmap.tmj",
         "testmap2.tmj",

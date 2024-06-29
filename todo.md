@@ -21,7 +21,6 @@
 ## Map 
 - object layers
     - component factory functions (mostly done)
-        - colliders -> consolidate & add a object ref for the shape
         - light 
         - radiance
         - Animator

@@ -25,10 +25,42 @@
             "valuesAsFlags": false
         },
         {
+            "id": 27,
+            "name": "CollisionLayer",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "None",
+                "Actor",
+                "Solid",
+                "SemiSolid",
+                "TriggerPhysics",
+                "TriggerActors",
+                "Player",
+                "Enemy",
+                "Npc",
+                "Light",
+                "Vision"
+            ],
+            "valuesAsFlags": false
+        },
+        {
             "color": "#ffa0a0a4",
             "drawFill": true,
-            "id": 10,
+            "id": 26,
             "members": [
+                {
+                    "name": "CollisionDir",
+                    "propertyType": "CollisionDir",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "Layer",
+                    "propertyType": "CollisionLayer",
+                    "type": "string",
+                    "value": "None"
+                },
                 {
                     "name": "Material",
                     "propertyType": "Material",
@@ -36,17 +68,12 @@
                     "value": 0
                 },
                 {
-                    "name": "halflenTexelsX",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "halflenTexelsY",
-                    "type": "int",
+                    "name": "Shape",
+                    "type": "object",
                     "value": 0
                 }
             ],
-            "name": "Component_ActorCollider",
+            "name": "Component_Collider",
             "type": "class",
             "useAs": [
                 "property"
@@ -229,68 +256,6 @@
                 }
             ],
             "name": "Component_RigidBody",
-            "type": "class",
-            "useAs": [
-                "property"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 21,
-            "members": [
-                {
-                    "name": "Material",
-                    "propertyType": "Material",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "halflenTexelsX",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "halflenTexelsY",
-                    "type": "int",
-                    "value": 0
-                }
-            ],
-            "name": "Component_SemiSolidCollider",
-            "type": "class",
-            "useAs": [
-                "property"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 7,
-            "members": [
-                {
-                    "name": "CollisionDir",
-                    "propertyType": "CollisionDir",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "Material",
-                    "propertyType": "Material",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "halflenTexelsX",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "halflenTexelsY",
-                    "type": "int",
-                    "value": 0
-                }
-            ],
-            "name": "Component_SolidCollider",
             "type": "class",
             "useAs": [
                 "property"

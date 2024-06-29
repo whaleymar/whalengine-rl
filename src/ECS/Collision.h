@@ -46,6 +46,7 @@ public:
 
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
+    void setShape(AABB shape) { mShape = shape; }
     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
     void setCollisionCallback(CollisionCallback callback);  // Sends update signal to CollisionManager if callback was previously null.
     void setSquishCallback(CollisionCallback callback) { mSquishCallback = callback; }
@@ -60,6 +61,7 @@ public:
     CollisionDir getCollisionDir() const { return mCollisionDir; }
     void setCollisionDir(CollisionDir dir) { mCollisionDir = dir; }
     CollisionLayer::Layer getCollisionLayer() const { return mCollisionLayer; }
+    void setCollisionLayer(CollisionLayer::Layer layer) { mCollisionLayer = layer; }
 
     bool isActor() const { return mCollisionLayer & CollisionLayer::Actor; }
     bool isSolid() const { return mCollisionLayer & CollisionLayer::Solid; }
