@@ -2,6 +2,7 @@
 
 #include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"
+#include "Map/EntityFactory.h"
 #include "json.hpp"
 
 #include "Settings.h"
@@ -16,6 +17,7 @@
 #include "Systems/System.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
+#include "Util/ResourceManager.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
@@ -25,12 +27,16 @@ inline const char* MAP_DIR = "data/map";
 inline const char* TSET_SPRITE_DIR = "data/sprite/map";
 
 static ComponentFactory COMPONENT_FACTORY;
+static EntityFactory PREFAB_FACTORY;
+static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
 
-Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
-void parseTileLayer(nlohmann::json layer, TileMap& map);
-void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level);
-void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level);
-std::string getSpriteKeyFromPath(std::string& spritePath);
+static Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
+static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
+static void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level);
+static void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level);
+static std::string getSpriteKeyFromPath(std::string& spritePath);
+static const nlohmann::json& getTemplate(std::string_view templateFile);
+static std::string getTypeFromTemplate(const std::string templateFile);
 
 TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     // error handling sucks in this function but it's whatever
@@ -102,7 +108,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     return map;
 }
 
-Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
+static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     Depth layerDepth = defaultDepth;
     if (layer.contains("properties")) {
         for (auto& property : layer["properties"]) {
@@ -116,7 +122,7 @@ Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     return layerDepth;
 }
 
-void parseTileLayer(nlohmann::json layer, TileMap& map) {
+void parseTileLayer(const nlohmann::json& layer, TileMap& map) {
     s32 width = readInt(layer, "width");
     s32 height = readInt(layer, "height");
     const std::string name = readString(layer, "name");
@@ -127,21 +133,60 @@ void parseTileLayer(nlohmann::json layer, TileMap& map) {
 }
 
 // this will create entities and immediately add them to the level
-void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
+void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level) {
     using json = nlohmann::json;
 
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
-    json& objects = layer["objects"];
+    const json& objects = layer["objects"];
     std::unordered_map<s32, s32> idToIndex;
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
         idToIndex.insert({id, ix});
     }
 
+    auto addComponents = [&](ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object) {
+        std::string name = "";
+        tryReadString(object, "name", &name);
+        if (name.size()) {
+            entity.add(Name(name.c_str()));
+            // print("created entity: ", name);
+        }
+
+        if (!object.contains("properties")) {
+            return;
+        }
+
+        for (auto& property : object["properties"]) {
+            std::string componentName = readString(property, "propertytype");
+            ComponentAdder creatorFunc = nullptr;
+            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
+            if (creatorFunc == nullptr) {
+                continue;
+            }
+
+            creatorFunc(property["value"], objects, idToIndex, entityData, level, entity, layerData);
+        }
+    };
+
     for (auto& object : objects) {
-        std::string objType = object["type"];
+        std::string objType = "";
+        bool isTypeFound = false;
+        if (object.contains("type")) {
+            objType = readString(object, "type");
+            isTypeFound = true;
+        } else if (object.contains("template")) {
+            objType = getTypeFromTemplate(readString(object, "template"));
+            if (objType.size()) {
+                isTypeFound = true;
+            }
+        }
+
+        if (!isTypeFound) {
+            print("skipping object ID", readInt(object, "id"), "because it didn't have a type");
+            continue;
+        }
         if (objType != "Entity") {
             // check for metadata
 
@@ -166,36 +211,58 @@ void parseObjectLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
             continue;
         }
         ecs::Entity entity = eEntity.value();
-        std::string name = readString(object, "name");
-        if (name.size()) {
-            entity.add(Name(name.c_str()));
-            // print("Created Entity: ", name);
+
+        // check for prefab:
+        const nlohmann::json* pPrefab = nullptr;
+        if (object.contains("template")) {
+            auto templateFile = readString(object, "template");
+            const auto& prefab = getTemplate(templateFile);
+            pPrefab = &prefab;
         }
-        level.childEntities.insert(entity);
 
-        // top left
-        auto positionTexels = readVector2i(object);
-        auto dimensionsTexels = readVector2i(object, "width", "height");
-        s32 thisId = readInt(object, "id");
-
-        Transform2D trans = getTransformFromMapPosition(positionTexels, dimensionsTexels, level, false);
+        // now get transform
+        // check position/size in prefab first, then object
+        EntityMapData entityData;
+        entityData.id = readInt(object, "id");
+        bool hasPosition = false;
+        if (pPrefab) {
+            hasPosition = tryReadVector2i(*pPrefab, "x", "y", &entityData.position);
+        }
+        hasPosition = tryReadVector2i(object, "x", "y", &entityData.position) || hasPosition;
+        if (!hasPosition) {
+            print("Entity with ID", entityData.id, "has no coordinates");
+            entity.kill();
+            continue;
+        }
+        if (pPrefab) {
+            tryReadVector2i(*pPrefab, "width", "height", &entityData.dimensionsTexels);
+        }
+        tryReadVector2i(object, "width", "height", &entityData.dimensionsTexels);
+        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, false);
         entity.add(trans);
 
-        for (auto& property : object["properties"]) {
-            std::string componentName = readString(property, "propertytype");
-            ComponentAdder creatorFunc = nullptr;
-            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
-            if (creatorFunc == nullptr) {
-                continue;
-            }
+        if (pPrefab) {
+            // add template components
+            addComponents(entity, entityData, *pPrefab);
 
-            creatorFunc(property["value"], objects, idToIndex, thisId, level, entity, layerData);
+            // now run prefab factory function to do complicated stuff
+            const auto name = readString(*pPrefab, "name");
+            EntityBuilder builderFunc = nullptr;
+            PREFAB_FACTORY.getEntryIndex(name.c_str(), &builderFunc);
+            if (builderFunc != nullptr) {
+                builderFunc(entity, *pPrefab, level);
+            }
         }
+
+        // add object components with factory
+        addComponents(entity, entityData, object);
+
+        level.childEntities.insert(entity);
         entity.activate();
     }
 }
 
-void parseImageLayer(nlohmann::json layer, TileMap& map, ActiveLevel& level) {
+void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level) {
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
@@ -367,14 +434,14 @@ Corrade::Containers::Optional<Error> parseMapProject(const char* mapfile) {
         return jString.error();
     }
 
-    json data = json::parse(jString.value());
+    const json data = json::parse(jString.value());
     for (auto& propType : data["propertyTypes"]) {
         COMPONENT_FACTORY.makeDefaultComponent(propType);
     }
     return NULLOPT;
 }
 
-Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
+static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
     // parses a level's parameters and returns its LevelInfo struct
     // returns error if not found
 
@@ -472,6 +539,20 @@ std::string getSpriteKeyFromPath(std::string& spritePath) {
     }
     auto extensionIx = spritePath.find(".", ix + substrLen);
     return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
+}
+
+// TEMPLATE STUFF
+
+const nlohmann::json& getTemplate(std::string_view templateFile) {
+    const auto fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
+    return TEMPLATE_MANAGER.readData(fullPath.c_str())["object"];
+}
+
+std::string getTypeFromTemplate(const std::string templateFile) {
+    const auto prefabData = getTemplate(templateFile);
+    std::string objType = "";
+    tryReadString(prefabData, "type", &objType);
+    return objType;
 }
 
 }  // namespace whal

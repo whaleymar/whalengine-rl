@@ -9,10 +9,12 @@ namespace ecs {
 class Entity;
 }
 
-using EntityBuilder = ecs::Entity (*)(const nlohmann::json& tiledTemplate, ActiveLevel&);
+using EntityBuilder = void (*)(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 class EntityFactory : public Factory<EntityBuilder> {
 public:
     EntityFactory();
 };
+
+void createTestPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 
 }  // namespace whal

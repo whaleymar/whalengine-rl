@@ -114,6 +114,12 @@ bool Game::startup() {
         .registerSystems<QuadTreeSystem>()
         .registerSystems<RespawnListener>();
 
+    // build default components for factory
+    err = parseMapProject(TILED_PROJECT_FILE);
+    if (err) {
+        print("Error parsing ", TILED_PROJECT_FILE, ":", *err);
+    }
+
     return false;
 }
 

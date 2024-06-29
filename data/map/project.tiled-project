@@ -49,10 +49,7 @@
             "name": "Component_ActorCollider",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -69,10 +66,7 @@
             "name": "Component_Draw",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -129,9 +123,7 @@
             "name": "Component_Follow",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "project"
+                "property"
             ]
         },
         {
@@ -158,15 +150,7 @@
             "name": "Component_Jumper",
             "type": "class",
             "useAs": [
-                "property",
-                "map",
-                "layer",
-                "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
-                "project"
+                "property"
             ]
         },
         {
@@ -198,10 +182,7 @@
             "name": "Component_RailsControl",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -218,15 +199,7 @@
             "name": "Component_RespawnTrigger",
             "type": "class",
             "useAs": [
-                "property",
-                "map",
-                "layer",
-                "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
-                "project"
+                "property"
             ]
         },
         {
@@ -258,10 +231,7 @@
             "name": "Component_RigidBody",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -289,10 +259,7 @@
             "name": "Component_SemiSolidCollider",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -326,10 +293,7 @@
             "name": "Component_SolidCollider",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -351,10 +315,7 @@
             "name": "Component_Sprite_NoAnim",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {
@@ -376,10 +337,7 @@
             "name": "Component_Velocity",
             "type": "class",
             "useAs": [
-                "property",
-                "object",
-                "tile",
-                "project"
+                "property"
             ]
         },
         {

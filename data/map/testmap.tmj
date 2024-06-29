@@ -720,6 +720,24 @@
                  "width":24,
                  "x":264,
                  "y":22
+                }, 
+                {
+                 "id":45,
+                 "name":"TestPrefabInstance",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_SemiSolidCollider",
+                         "type":"class",
+                         "value":
+                            {
+                             "halflenTexelsX":2,
+                             "halflenTexelsY":2
+                            }
+                        }],
+                 "template":"templates\/TestPrefab.tj",
+                 "x":54,
+                 "y":94
                 }],
          "opacity":1,
          "properties":[
@@ -833,7 +851,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":44,
+ "nextobjectid":46,
  "orientation":"orthogonal",
  "properties":[
         {
