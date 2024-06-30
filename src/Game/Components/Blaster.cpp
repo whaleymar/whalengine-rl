@@ -247,15 +247,16 @@ void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
     rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
 
     constexpr f32 waitBetweenSils = 0.1;
+    constexpr f32 silLifetime = 1.5;
     if (entity.has<whal::Sprite>()) {
         u32 eventId = whal::System::schedule.eventFlow({entity})
-                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, 3.0, RED)
+                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .getId();
         rocketJumpComponent.silhouetteEventId = eventId;
     }

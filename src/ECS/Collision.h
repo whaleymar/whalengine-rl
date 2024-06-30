@@ -107,8 +107,8 @@ protected:
     AABB mShape;
     ecs::Entity mSelf;
     CollisionLayer::Layer mCollisionLayer;
-    CollisionCallback mOnCollisionEnter;
-    CollisionCallback mSquishCallback;
+    CollisionCallback mOnCollisionEnter = nullptr;
+    CollisionCallback mSquishCallback = &defaultSquish;
     f32 mXRemainder = 0.0;
     f32 mYRemainder = 0.0;
     Vector2f mStoredMomentum = {0, 0};

@@ -99,6 +99,33 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 31,
+            "members": [
+                {
+                    "name": "endAlpha",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "seconds",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "startAlpha",
+                    "type": "float",
+                    "value": 1
+                }
+            ],
+            "name": "Component_FadeOut",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 16,
             "members": [
                 {
@@ -183,6 +210,94 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 30,
+            "members": [
+                {
+                    "name": "seconds",
+                    "type": "float",
+                    "value": 1
+                }
+            ],
+            "name": "Component_Lifetime",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 32,
+            "members": [
+                {
+                    "name": "speed",
+                    "type": "float",
+                    "value": 80
+                }
+            ],
+            "name": "Component_PlayerControl",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 28,
+            "members": [
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "heightTexels",
+                    "type": "int",
+                    "value": -1
+                },
+                {
+                    "name": "radiusTexels",
+                    "type": "int",
+                    "value": -1
+                }
+            ],
+            "name": "Component_PointLight",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 29,
+            "members": [
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "heightTexels",
+                    "type": "int",
+                    "value": -1
+                },
+                {
+                    "name": "radiusTexels",
+                    "type": "int",
+                    "value": -1
+                }
+            ],
+            "name": "Component_Radiance",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 1,
             "members": [
                 {
@@ -207,23 +322,6 @@
                 }
             ],
             "name": "Component_RailsControl",
-            "type": "class",
-            "useAs": [
-                "property"
-            ]
-        },
-        {
-            "color": "#ffa0a0a4",
-            "drawFill": true,
-            "id": 25,
-            "members": [
-                {
-                    "name": "Shape",
-                    "type": "object",
-                    "value": 0
-                }
-            ],
-            "name": "Component_RespawnTrigger",
             "type": "class",
             "useAs": [
                 "property"
@@ -278,6 +376,61 @@
                 }
             ],
             "name": "Component_Sprite_NoAnim",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 34,
+            "members": [
+                {
+                    "name": "FreeControl",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "Player",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "PrecisePosition",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "Silhouette",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "Component_Tags",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 36,
+            "members": [
+                {
+                    "name": "Layer",
+                    "propertyType": "CollisionLayer",
+                    "type": "string",
+                    "value": "TriggerActors"
+                },
+                {
+                    "name": "Shape",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Trigger",
             "type": "class",
             "useAs": [
                 "property"

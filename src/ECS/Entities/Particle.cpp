@@ -39,7 +39,7 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
     particle.add(Draw(color, Vector2i(1, 1), Depth::Foreground1));
     particle.add(Lifetime(lifetime));
 
-    s32 radius = PIXELS_PER_TILE * 1;
+    s32 radius = TEXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});
     particle.add(Radiance{radius / 2, 0, color});
 

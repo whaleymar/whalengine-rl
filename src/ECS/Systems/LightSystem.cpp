@@ -10,6 +10,7 @@
 #include "ECS/Transform.h"
 #include "Game.h"
 #include "Gfx/Texture.h"
+#include "Settings.h"
 #include "raylib/src/raylib.h"
 
 namespace whal {
@@ -31,26 +32,27 @@ void PointLightSystem::update() {
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
         PointLight light = entity.get<PointLight>();
-        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
+        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
+        constexpr f32 defaultFadeTime = 0.25f;
         f32 intensity = 1.0;
-        s32 radius = light.radius;
+        s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
             intensity = (*fadeoutOpt)->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if ((*lifetimeOpt)->secondsRemaining < 0.25) {
-                intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
+            if ((*lifetimeOpt)->secondsRemaining < defaultFadeTime) {
+                intensity = (*lifetimeOpt)->secondsRemaining / defaultFadeTime;
             }
         }
 
-        // color.r = std::lerp(COLOR_AMBIENT.r, color.r, intensity);
-        // color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
-        // color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
-        // color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
-        radius = std::lerp(0, radius, intensity);
+        color.r = std::lerp(COLOR_AMBIENT.r, color.r, intensity);
+        color.g = std::lerp(COLOR_AMBIENT.g, color.g, intensity);
+        color.b = std::lerp(COLOR_AMBIENT.b, color.b, intensity);
+        color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
+        radius = std::lerp(radius / 2, radius, intensity);
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
         SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
@@ -75,14 +77,14 @@ void RadianceLightSystem::update() {
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
         Radiance light = entity.get<Radiance>();
-        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.height);
+        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
         auto lifetimeOpt = entity.tryGet<Lifetime>();
-        s32 radius = light.radius;
+        s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
             intensity = (*fadeoutOpt)->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
