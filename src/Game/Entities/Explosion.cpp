@@ -39,7 +39,17 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     auto entity = eEntity.value();
     auto _ = ecs::DeferActivate(entity);
 
-    Transform2D trans = Transform2D(center - Vector2i(0, halflen));
+    // ANIMATOR
+    constexpr f32 lifetime = 0.5;
+    constexpr s32 nFrames = 6;
+    constexpr f32 frameTime = lifetime / static_cast<f32>(nFrames);
+    static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};
+    Animator animator;
+    loadAnimations(animator, animInfo);
+    animator.setLooping(false);
+    // ----
+
+    Transform2D trans = Transform2D(center - Vector2i(0, animator.getFrame().dimensionsTexels.y() * PIXELS_PER_TEXEL / 2));
     entity.add(trans);
 
     entity.add(PushStrength(pushStrength));
@@ -68,17 +78,10 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
             other.add<RocketJumping>();
         }
     };
-    auto shape = Shape(Circle(trans, halflen));
+    auto shape = Shape(Circle(center, halflen));
     auto trigger = Trigger(shape, CollisionLayer::TriggerActors, pushEntityAway);
     entity.add(trigger);
 
-    constexpr f32 lifetime = 0.5;
-    constexpr s32 nFrames = 6;
-    constexpr f32 frameTime = lifetime / static_cast<f32>(nFrames);
-    static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
-    animator.setLooping(false);
     entity.add(animator);
     entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
 
