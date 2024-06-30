@@ -16,7 +16,8 @@
 namespace whal {
 
 // TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
-const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
+const Color COLOR_AMBIENT = Color(255, 255, 255, 255);
+// const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
 // const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 void PointLightSystem::update() {
