@@ -17,14 +17,15 @@ using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 
 struct Trigger {
     Trigger() = default;
-    Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback callbackEnter, TriggerCallback callbackExit = nullptr,
-            TriggerCallback callbackStay = nullptr);
+    Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback callbackEnter, Vector2i offset = {0, 0},
+            TriggerCallback callbackExit = nullptr, TriggerCallback callbackStay = nullptr);
 
     Shape shape;
-    CollisionLayer::Layer layer;
-    TriggerCallback onTriggerEnter;
-    TriggerCallback onTriggerExit;
-    TriggerCallback onTriggerStay;
+    Vector2i offset;  // offset from transform
+    CollisionLayer::Layer layer = CollisionLayer::TriggerActors;
+    TriggerCallback onTriggerEnter = nullptr;
+    TriggerCallback onTriggerExit = nullptr;
+    TriggerCallback onTriggerStay = nullptr;
     std::vector<ecs::Entity> insideEntities;
 };
 

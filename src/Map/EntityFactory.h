@@ -16,5 +16,6 @@ public:
 };
 
 void createTestPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
+void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 
 }  // namespace whal

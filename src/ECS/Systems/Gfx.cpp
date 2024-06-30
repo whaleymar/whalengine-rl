@@ -75,6 +75,7 @@ void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture
 
     Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
+    // TODO should sort entities so I only change shaders 2 * number of depth values times
     if (entity.has<Silhouette>()) {
         BeginShaderMode(*mShaderSilhouette);
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);

@@ -83,7 +83,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
 
     entity.add(Lifetime(lifetime));
-    entity.add(PointLight({PIXELS_PER_TILE * 5, halflen}));
+    entity.add(PointLight({TEXELS_PER_TILE * 5, halflen / PIXELS_PER_TEXEL}));
 
     // scale volume with distance from camera
     f32 distance = toFloatVec(getCameraPosition() - trans.position).len();

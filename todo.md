@@ -21,16 +21,8 @@
 ## Map 
 - object layers
     - component factory functions (mostly done)
-        - light 
-        - radiance
         - Animator
-        - Lifetime
-        - PlayerControl / FreeControl
-        - jumper
-        - follow / attach 
-        - tags 
-        - triggerzone 
-        - precisePosition
+        - attach -> this will be hard, need to resolve relationships once everything is built
         - game:
             - respawn
             - blaster
@@ -68,7 +60,8 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 
 ## Map:
 - bake tile data into a mesh & use that for lighting
-- should also give these tiles a Tile component that I can use for something like updating last safe point player was standing on
+- serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
+- a metadata tag to say an entity shouldn't active until the player enters its level -- esp useful for something with a lifetime
 
 ## Physics:
 - a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this?

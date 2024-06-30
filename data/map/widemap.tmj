@@ -20,37 +20,31 @@
                  "y":96
                 }, 
                 {
-                 "height":0,
-                 "id":3,
-                 "name":"SpawnPoint",
-                 "point":true,
+                 "id":6,
                  "properties":[
                         {
-                         "name":"CheckpointZone",
-                         "propertytype":"Component_RespawnTrigger",
+                         "name":"trigger",
+                         "propertytype":"Component_Trigger",
                          "type":"class",
                          "value":
                             {
-                             "Shape":5
+                             "Shape":7
                             }
                         }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":0,
+                 "template":"templates\/SpawnPointTrigger.tj",
                  "x":8,
-                 "y":92
+                 "y":88
                 }, 
                 {
-                 "height":104,
-                 "id":5,
+                 "height":102,
+                 "id":7,
                  "name":"",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
                  "x":0,
-                 "y":0
+                 "y":2
                 }],
          "opacity":1,
          "properties":[
@@ -108,7 +102,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":6,
+ "nextobjectid":8,
  "orientation":"orthogonal",
  "properties":[
         {

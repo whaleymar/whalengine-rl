@@ -650,6 +650,44 @@
                 {
                  "id":45,
                  "name":"TestPrefabInstance",
+                 "properties":[
+                        {
+                         "name":"Light",
+                         "propertytype":"Component_PointLight",
+                         "type":"class",
+                         "value":
+                            {
+                             "radiusTexels":16
+                            }
+                        }, 
+                        {
+                         "name":"Radiance",
+                         "propertytype":"Component_Radiance",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff557f",
+                             "radiusTexels":16
+                            }
+                        }, 
+                        {
+                         "name":"playerControl",
+                         "propertytype":"Component_PlayerControl",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"trigger",
+                         "propertytype":"Component_Trigger",
+                         "type":"class",
+                         "value":
+                            {
+                             "Shape":52
+                            }
+                        }],
                  "template":"templates\/TestPrefab.tj",
                  "x":54,
                  "y":94
@@ -689,6 +727,15 @@
                             }
                         }, 
                         {
+                         "name":"Tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Silhouette":false
+                            }
+                        }, 
+                        {
                          "name":"Velocity",
                          "propertytype":"Component_Velocity",
                          "type":"class",
@@ -696,10 +743,28 @@
                             {
                              "velX":0
                             }
+                        }, 
+                        {
+                         "name":"jumper",
+                         "propertytype":"Component_Jumper",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }, 
+                        {
+                         "name":"playercontrol",
+                         "propertytype":"Component_PlayerControl",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
                         }],
                  "rotation":0,
                  "type":"Entity",
-                 "visible":true,
+                 "visible":false,
                  "width":8,
                  "x":116,
                  "y":80
@@ -714,6 +779,17 @@
                  "width":16,
                  "x":112,
                  "y":64
+                }, 
+                {
+                 "height":32,
+                 "id":52,
+                 "name":"triggershape",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":20,
+                 "x":48,
+                 "y":80
                 }],
          "opacity":1,
          "properties":[
@@ -744,39 +820,6 @@
                  "width":0,
                  "x":8,
                  "y":72
-                }, 
-                {
-                 "height":48,
-                 "id":42,
-                 "name":"TestCheckpoint",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":26,
-                 "x":206,
-                 "y":40
-                }, 
-                {
-                 "height":0,
-                 "id":43,
-                 "name":"Test Spawn Point",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"RespawnTriggerZone",
-                         "propertytype":"Component_RespawnTrigger",
-                         "type":"class",
-                         "value":
-                            {
-                             "Shape":42
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":0,
-                 "x":220,
-                 "y":40
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -827,7 +870,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":49,
+ "nextobjectid":54,
  "orientation":"orthogonal",
  "properties":[
         {

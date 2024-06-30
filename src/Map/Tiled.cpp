@@ -171,6 +171,10 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
     };
 
     for (auto& object : objects) {
+        bool isVisible = true;
+        if (tryReadBool(object, "visible", &isVisible) && !isVisible) {
+            continue;
+        }
         std::string objType = "";
         bool isTypeFound = false;
         if (object.contains("type")) {
@@ -248,7 +252,7 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
             // add template components
             addComponents(entity, entityData, *pPrefab);
 
-            // now run prefab factory function to do complicated stuff
+            // now run prefab factory function to do complicated stuff to components, like adding callbacks
             const auto name = readString(*pPrefab, "name");
             EntityBuilder builderFunc = nullptr;
             PREFAB_FACTORY.getEntryIndex(name.c_str(), &builderFunc);
@@ -517,7 +521,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 }
 
 // convert top-left coordinate to bottom-middle
-Transform2D getTransformFromMapPosition(Vector2i positionTexels, Vector2i dimensionsTexels, ActiveLevel& level, bool isPoint) {
+Transform2D getTransformFromMapPosition(Vector2i positionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint) {
     // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
     // heights to match tiles, but points need manual adjustment

@@ -5,6 +5,7 @@
 
 #include "ECS/PlayerControl.h"
 #include "ECS/Systems/CollisionManager.h"
+#include "ECS/TriggerZone.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
@@ -156,6 +157,13 @@ void PhysicsSystem::fixedUpdate() {
                 vel.residualImpulse += remainder;
                 trans.position += moveRounded;
             }
+
+            if (entity.has<Trigger>()) {
+                auto trigger = entity.get<Trigger>();
+                Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
+                trigger.shape.setPosition(adjustedTransform);
+                entity.set(trigger);
+            }
         }
         // ----------------------------------------------------------------
 
@@ -210,6 +218,13 @@ void PhysicsSystem::fixedUpdate() {
         trans.position = entity.get<Collider>().getShape().getPositionEdge(Vector2i::unitDown);
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
             (*precisePositionOpt)->position = toFloatVec(trans.position);
+        }
+
+        if (entity.has<Trigger>()) {
+            auto trigger = entity.get<Trigger>();
+            Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
+            trigger.shape.setPosition(adjustedTransform);
+            entity.set(trigger);
         }
     }
 

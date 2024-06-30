@@ -102,8 +102,7 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
     sil.add<Silhouette>();
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(sprite.getFrameSizeTexels().x(), sprite.getFrameSizeTexels().y()) * PIXELS_PER_TEXEL,
-                       sprite.getFrameSizeTexels().y() / 2 * PIXELS_PER_TEXEL});
+    sil.add(PointLight{std::max(sprite.getFrameSizeTexels().x(), sprite.getFrameSizeTexels().y()), sprite.getFrameSizeTexels().y() / 2});
 
     return sil;
 }
@@ -127,10 +126,8 @@ Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, C
     sil.add<Silhouette>();
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(draw.getFrameSizeTexels().x(), draw.getFrameSizeTexels().y()) * PIXELS_PER_TEXEL,
-                       draw.getFrameSizeTexels().y() / 2 * PIXELS_PER_TEXEL});
-    sil.add(Radiance({std::max(draw.getFrameSizeTexels().x(), draw.getFrameSizeTexels().y()) * PIXELS_PER_TEXEL,
-                      draw.getFrameSizeTexels().y() / 2 * PIXELS_PER_TEXEL, draw.color}));
+    sil.add(PointLight{std::max(draw.getFrameSizeTexels().x(), draw.getFrameSizeTexels().y()), draw.getFrameSizeTexels().y() / 2});
+    sil.add(Radiance({std::max(draw.getFrameSizeTexels().x(), draw.getFrameSizeTexels().y()), draw.getFrameSizeTexels().y() / 2, draw.color}));
 
     return sil;
 }

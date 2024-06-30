@@ -7,8 +7,8 @@
 namespace whal {
 
 struct IEmitLight {
-    s32 radius = 1;
-    s32 height = 0;  // offset from transform
+    s32 radiusTexels = 1;
+    s32 heightTexels = 0;  // offset from transform
     Color color = WHITE;
 };
 

@@ -70,14 +70,16 @@ struct FadeOut {
     bool isDone() const { return time <= 0; }
 
     f32 time;
-    f32 startAlpha;
-    f32 endAlpha;
+    f32 startAlpha;  // between 0-1
+    f32 endAlpha;    // between 0-1
 
     // managed:
     f32 secondsRemaining;
 };
 
-Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
-Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
+Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
+                                               Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
+Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,
+                                             Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
 
 }  // namespace whal
