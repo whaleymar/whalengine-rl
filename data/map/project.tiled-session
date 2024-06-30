@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "widemap.tmj",
+    "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -29,8 +29,8 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 147.99999999999997,
+                "y": 94.83333333333334
             }
         },
         "testmap2.tmj": {
@@ -86,10 +86,10 @@
     "project": "project.tiled-project",
     "property.type": "Component_Trigger",
     "recentFiles": [
-        "testmap.tmj",
-        "testmap2.tmj",
         "prefab-editor.tmj",
         "widemap.tmj",
+        "testmap2.tmj",
+        "testmap.tmj",
         "tile-collision.tsj",
         "tileset-small.tsj"
     ]

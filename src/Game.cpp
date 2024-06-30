@@ -166,7 +166,7 @@ void Game::mainloop() {
     Shader shaderSilhouette = LoadShader(0, "src/Shader/silhouette.glsl");
     spriteSystem->setSilhouetteShader(&shaderSilhouette);
 
-    Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.fs");
+    Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.glsl");
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
     bool isQuantizeOn = false;
 
@@ -267,11 +267,6 @@ void Game::mainloop() {
         if (IsKeyPressed(KEY_Q)) {
             isQuantizeOn = !isQuantizeOn;
         }
-        if (isQuantizeOn) {
-            BeginShaderMode(shaderQuantize);
-
-            SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-        }
 
         // this unflips the y axis for some reason
         DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
@@ -281,8 +276,6 @@ void Game::mainloop() {
         DrawTexture(targetTextureRadiance.texture, 0, 0, WHITE);
         EndBlendMode();
 
-        if (isQuantizeOn)
-            EndShaderMode();
         EndTextureMode();
 
         // -----------------------------------------------------------------------
@@ -296,8 +289,16 @@ void Game::mainloop() {
 
         BeginMode2D(*mScreenSpaceCamera);
 
+        if (isQuantizeOn) {
+            BeginShaderMode(shaderQuantize);
+            SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+        }
+
         Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
         DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
+
+        if (isQuantizeOn)
+            EndShaderMode();
 
         EndMode2D();
 

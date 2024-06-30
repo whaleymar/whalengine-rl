@@ -40,6 +40,7 @@ def findCol(col:np.ndarray, palette:np.ndarray) -> np.ndarray: # col should be n
     # RESEARCH use OKLab
     distances = np.sum(((palette-col)*np.array([.299, .587, .114]))**2, axis=1)
     return palette[np.argmin(distances)]
+    # return col
 
 def getPNG(path: str) -> np.ndarray:
     # returns numpy array of image
@@ -61,8 +62,7 @@ def paletteToTexture(palette, outpath):
     N_COLORS_G = 16
     N_COLORS_B = 16
 
-    img = Image.new("RGB", (N_COLORS_R * N_COLORS_G, N_COLORS_B), "white")
-    # testImg = Image.new("RGB", (N_COLORS_R * N_COLORS_G, N_COLORS_B), "white")
+    img = Image.new("RGB", (N_COLORS_R * N_COLORS_B, N_COLORS_G), "white")
 
     rvals = np.linspace(0, N_COLORS_R, N_COLORS_R)
     gvals = np.linspace(0, N_COLORS_G, N_COLORS_G)
@@ -70,16 +70,12 @@ def paletteToTexture(palette, outpath):
     for r in range(N_COLORS_R):
         for g in range(N_COLORS_G):
             for b in range(N_COLORS_B):
-                # rgb = np.array([r/N_COLORS_R,g/N_COLORS_G, b/N_COLORS_B]) * 255
-                rgb = np.array([rvals[r]/N_COLORS_R,gvals[g]/N_COLORS_G, bvals[b]/N_COLORS_B]) * 255
+                rgb = (np.array([rvals[r]/N_COLORS_R,gvals[g]/N_COLORS_G, bvals[b]/N_COLORS_B]) * 255).astype(int)
                 p = findCol(rgb, palette)
-                x = r + (g * N_COLORS_G)
-                y = b 
-                # print("closest color to ", list(rgb), " is ", list(p))
+                x = r + (b * N_COLORS_B)
+                y = g
                 img.putpixel((x,y), tuple(p))
-                # testImg.putpixel((x,y), tuple(rgb.astype(int))) 
     img.save(outpath)
-    # testImg.save("test.png")
     print("saved to " + outpath)
 
 
