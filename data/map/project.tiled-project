@@ -405,6 +405,11 @@
                     "name": "Silhouette",
                     "type": "bool",
                     "value": false
+                },
+                {
+                    "name": "Wiggle",
+                    "type": "bool",
+                    "value": false
                 }
             ],
             "name": "Component_Tags",

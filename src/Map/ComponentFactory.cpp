@@ -607,6 +607,11 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
         entity.add(PrecisePosition::fromTrans(entity.get<Transform2D>()));
         hasTag = false;
     }
+
+    if (tryReadBool(values, "Wiggle", &hasTag) && hasTag) {
+        entity.add<Wiggle>();
+        hasTag = false;
+    }
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {

@@ -79,8 +79,6 @@ void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& al
                           EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 void addComponentLifetime(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
                           EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-// void addComponentAnimator(nlohmann::json& data, ecs::Entity entity);
-// void addComponentChildren(nlohmann::json& data, ecs::Entity entity);
 void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
                         EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 
