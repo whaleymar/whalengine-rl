@@ -27,8 +27,8 @@ struct ActiveLevel;
 struct EntityMapData;
 
 // there is no base component class, so I'll pass the entity to the creation function instead of returning a component
-using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, s32>&, EntityMapData, ActiveLevel&,
-                                ecs::Entity, LayerData layerData);
+using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, std::pair<s32, ecs::Entity>>&,
+                                EntityMapData, ActiveLevel&, ecs::Entity, LayerData layerData);
 class ComponentFactory : public Factory<ComponentAdder> {
 public:
     ComponentFactory();
@@ -46,41 +46,60 @@ public:
     inline static Sprite DefaultSprite;
     inline static FadeOut DefaultFadeout;
     inline static Follow DefaultFollow;
+    inline static Attach DefaultAttach;
     inline static PointLight DefaultPointLight;
     inline static Radiance DefaultRadiance;
     inline static Lifetime DefaultLifeTime;
 };
 
-void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                      EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                              EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentCollider(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                         EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                           EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentPlayerControl(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                               EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                      EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                         EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                       EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentLifetime(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                          EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects, const std::unordered_map<s32, s32>& idToIndex,
-                        EntityMapData entityData, ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects,
+                      const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                      ecs::Entity entity, LayerData layerData);
+void addComponentVelocity(const nlohmann::json& values, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                          ecs::Entity entity, LayerData layerData);
+void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json& allObjects,
+                              const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                              ecs::Entity entity, LayerData layerData);
+void addComponentCollider(const nlohmann::json& values, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                          ecs::Entity entity, LayerData layerData);
+void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& allObjects,
+                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                         ecs::Entity entity, LayerData layerData);
+void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects,
+                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                           ecs::Entity entity, LayerData layerData);
+void addComponentPlayerControl(const nlohmann::json& values, const nlohmann::json& allObjects,
+                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                               ecs::Entity entity, LayerData layerData);
+void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allObjects,
+                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData);
+void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects,
+                      const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                      ecs::Entity entity, LayerData layerData);
+void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,
+                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData);
+void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
+                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                         ecs::Entity entity, LayerData layerData);
+void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects,
+                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                       ecs::Entity entity, LayerData layerData);
+void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                          ecs::Entity entity, LayerData layerData);
+void addComponentLifetime(const nlohmann::json& values, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                          ecs::Entity entity, LayerData layerData);
+void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects,
+                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData);
+void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allObjects,
+                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData);
 
 Follow loadFollowComponent(const nlohmann::json& values, ActiveLevel& level);
 RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints,

@@ -55,7 +55,7 @@ if (WIN32)
 elseif(UNIX)
     find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
-    # these don't seem to work with clang-cl TODO test first two separately
+    # these don't seem to work with clang-cl 
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)

@@ -139,11 +139,28 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
+    bool failedToAllocateEntities = false;
     const json& objects = layer["objects"];
-    std::unordered_map<s32, s32> idToIndex;
+    std::unordered_map<s32, std::pair<s32, ecs::Entity>> idToIndex;
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
-        idToIndex.insert({id, ix});
+
+        auto eEntity = System::world->entity(false);
+        if (!eEntity.isExpected()) {
+            failedToAllocateEntities = true;
+            break;
+        }
+        ecs::Entity entity = eEntity.value();
+        idToIndex.insert({id, {ix, entity}});
+    }
+
+    if (failedToAllocateEntities) {
+        print("Failed to allocate entities for level ", level.filepath);
+
+        // kill entities that we already made:
+        for (auto [id, pair] : idToIndex) {
+            pair.second.kill();
+        }
     }
 
     auto addComponents = [&](ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object) {
@@ -210,12 +227,6 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
             continue;
         }
 
-        auto eEntity = System::world->entity(false);
-        if (!eEntity.isExpected()) {
-            continue;
-        }
-        ecs::Entity entity = eEntity.value();
-
         // check for prefab:
         const nlohmann::json* pPrefab = nullptr;
         if (object.contains("template")) {
@@ -228,6 +239,7 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
         // check position/size in prefab first, then object
         EntityMapData entityData;
         entityData.id = readInt(object, "id");
+        ecs::Entity entity = idToIndex.at(entityData.id).second;
         bool hasPosition = false;
         entityData.isPoint = true;
         if (pPrefab) {
