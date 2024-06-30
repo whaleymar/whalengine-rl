@@ -84,7 +84,7 @@
         "prefab-editor.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "bool",
+    "property.type": "Component_Trigger",
     "recentFiles": [
         "testmap.tmj",
         "testmap2.tmj",

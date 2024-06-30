@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- components map stuff -> camera 
+- camera rework
 
 ## Camera / Follow
 - pretty awful in general
@@ -20,12 +20,6 @@
 
 ## Map 
 - object layers
-    - component factory functions (mostly done)
-        - Animator ? probably not possible
-        - attach -> this will be hard, need to resolve relationships once everything is built
-        - game:
-            - respawn
-            - blaster
     - special metadata
         - camera strat (might want to rework)
 

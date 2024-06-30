@@ -47,6 +47,23 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 37,
+            "members": [
+                {
+                    "name": "target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Attach",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 26,
             "members": [
                 {
