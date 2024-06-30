@@ -171,6 +171,13 @@ bool brain(Animator& animator, ecs::Entity entity) {
     return frameChanged;
 }
 
+Animator getAnimator() {
+    Animator animator;
+    loadAnimations(animator, PlayerAnim::S_PLAYER_ANIM_INFO);
+    animator.brain = &PlayerAnim::brain;
+    return animator;
+}
+
 }  // namespace PlayerAnim
 
 Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprite) {
@@ -208,12 +215,9 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
     }
 
     // graphics
-    Animator animator;
-    loadAnimations(animator, PlayerAnim::S_PLAYER_ANIM_INFO);
-    animator.brain = &PlayerAnim::brain;
-    player.add(animator);
+    player.add(PlayerAnim::getAnimator());
 
-    Frame frame = animator.getFrame();
+    Frame frame = player.get<Animator>().getFrame();
     sprite.depth = Depth::Player;
     sprite.setFrameSize(frame.dimensionsTexels.x(), frame.dimensionsTexels.y());
     sprite.atlasPositionTexels = frame.atlasPositionTexels;

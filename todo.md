@@ -21,7 +21,7 @@
 ## Map 
 - object layers
     - component factory functions (mostly done)
-        - Animator
+        - Animator ? probably not possible
         - attach -> this will be hard, need to resolve relationships once everything is built
         - game:
             - respawn
