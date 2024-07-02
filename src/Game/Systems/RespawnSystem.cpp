@@ -5,7 +5,7 @@
 #include "Game/Components/Respawn.h"
 #include "Systems/System.h"
 
-void RespawnListener::onEvent(whal::ecs::Entity entity) {
+void RespawnListener::onEvent(whal::DeathEvent, whal::ecs::Entity entity) {
     if (!RespawnListener::getEntitiesRef().contains(entity.id())) {
         return;
     }

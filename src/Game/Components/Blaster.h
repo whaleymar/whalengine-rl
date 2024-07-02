@@ -40,7 +40,7 @@ public:
     void onRemove(whal::ecs::Entity entity) override;
     void onPause() override {}
     void onUnpause() override;
-    void onEvent(whal::InputType, bool) override;
+    void onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType, bool) override;
 
     static void addAimReticles();
     static void updateFacingDirections(bool isFacingRight);

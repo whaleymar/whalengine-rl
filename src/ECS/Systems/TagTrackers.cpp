@@ -8,7 +8,7 @@
 
 namespace whal {
 
-void CameraSystem::onEvent(ecs::Entity player, ActiveLevel& activeLevel) {
+void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& activeLevel) {
     auto camera = first();
     if (activeLevel.cameraFollow) {
         Follow follow = *activeLevel.cameraFollow;

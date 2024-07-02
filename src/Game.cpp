@@ -20,6 +20,7 @@
 #include "ECS/Systems/TriggerSystem.h"
 #include "ECS/Transform.h"
 
+#include "Events/Events.h"
 #include "Events/Listeners.h"
 
 #include "Game/Components/Blaster.h"
@@ -315,7 +316,7 @@ void Game::end() {
     CloseWindow();
 }
 
-void Game::onEvent(ecs::Entity entity) {
+void Game::onEvent(whal::DeathEvent, ecs::Entity entity) {
     removeEntityFromLevel(entity);
 }
 

@@ -18,7 +18,7 @@ class CameraSystem : public ecs::ISystem<Camera, Transform2D>,
                      public ecs::AttrUniqueEntity,
                      public IListen<EnteredLevelEvent, true, ecs::Entity, ActiveLevel&> {
 public:
-    void onEvent(ecs::Entity player, ActiveLevel& activeLevel);
+    void onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& activeLevel);
 };
 
 Corrade::Containers::Optional<ecs::Entity> getCamera();
