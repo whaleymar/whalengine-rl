@@ -1,5 +1,7 @@
 #include "TriggerZone.h"
 
+#include "whalECS/src/ECS.h"
+
 namespace whal {
 
 Trigger::Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback callbackEnter, Vector2i offset_, TriggerCallback callbackExit,

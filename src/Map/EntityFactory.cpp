@@ -1,4 +1,6 @@
 #include "EntityFactory.h"
+
+#include "whalECS/src/ECS.h"
 #include "ECS/TriggerZone.h"
 #include "Game/Entities/Checkpoint.h"
 

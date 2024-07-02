@@ -1,6 +1,7 @@
 #include "ShaderManager.h"
 
 #include <array>
+#include <cassert>
 #include <raylib.h>
 
 namespace whal {
