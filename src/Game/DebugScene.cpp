@@ -47,7 +47,7 @@ Corrade::Containers::Optional<Error> loadTestMap() {
     // createTestTrigger();
     // createTestSemiSolid();
     // createDepthTest();
-    createPaletteTest();
+    // createPaletteTest();
 
     auto ePlayer = createPlayer();
     if (!ePlayer.isExpected()) {
@@ -173,7 +173,7 @@ void createTestPlatform() {
 
         // TESTING ATTACH COMPONENT
         // ------------------------
-        auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock");
+        auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/testgrass");
         if (frameOpt) {
             Sprite sprite = Sprite(Depth::Level, *frameOpt);
             Expected<ecs::Entity> grassOpt = createDecal(trans, sprite);

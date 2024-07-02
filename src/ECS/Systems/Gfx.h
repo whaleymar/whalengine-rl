@@ -2,8 +2,8 @@
 
 #include <forward_list>
 
-#include "whalECS/src/ECS.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 typedef struct Texture Texture;
 typedef Texture Texture2D;
@@ -25,11 +25,8 @@ public:
     void drawEntities();
     void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
-    void setSilhouetteShader(Shader* shader) { mShaderSilhouette = shader; }
-
 private:
     std::forward_list<ecs::Entity> mSorted;
-    Shader* mShaderSilhouette;
 };
 
 class DrawSystem : public ecs::ISystem<Transform2D, Draw> {

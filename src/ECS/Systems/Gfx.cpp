@@ -1,7 +1,7 @@
 #include "ECS/Systems/Gfx.h"
 #include <raylib.h>
 
-#include "ECS/Tags.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 
@@ -14,11 +14,16 @@
 namespace whal {
 
 void SpriteSystem::onAdd(const ecs::Entity entity) {
+    // insert entities into sorted order, based on depth, then shader
     f32 fDepth = depthToFloat(entity.get<Sprite>().depth);
+    s16 shaderIx = static_cast<s16>(entity.get<Sprite>().shader);
+
     auto prev = mSorted.before_begin();
     for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-        f32 fDepthNew = depthToFloat(it->get<Sprite>().depth);
-        if (fDepthNew >= fDepth) {
+        Sprite sprite = it->get<Sprite>();
+        f32 curDepth = depthToFloat(sprite.depth);
+        s16 curShaderIx = static_cast<s16>(sprite.shader);
+        if (curDepth > fDepth || (curDepth == fDepth && curShaderIx >= shaderIx)) {
             mSorted.insert_after(prev, entity);
             return;
         }
@@ -32,14 +37,27 @@ void SpriteSystem::onRemove(const ecs::Entity entity) {
 }
 
 void SpriteSystem::drawEntities() {
+    if (mSorted.empty()) {
+        return;
+    }
+
     auto cameraPosF = getCameraPositionPrecise();
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
+    Shaders prevShader = mSorted.begin()->get<Sprite>().shader;
+    BeginShaderMode(ShaderManager::get(prevShader));
     for (auto const entity : mSorted) {
+        Shaders newShader = entity.get<Sprite>().shader;
+        if (newShader != prevShader) {
+            prevShader = newShader;
+            EndShaderMode();
+            BeginShaderMode(ShaderManager::get(newShader));
+        }
         drawEntity(entity, spriteTexture, cameraPosF);
     }
+    EndShaderMode();
 }
 
 void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
@@ -76,13 +94,13 @@ void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture
     Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
 
     // TODO should sort entities so I only change shaders 2 * number of depth values times
-    if (entity.has<Silhouette>()) {
-        BeginShaderMode(*mShaderSilhouette);
-        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
-        EndShaderMode();
-    } else {
-        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
-    }
+    // if (entity.has<Silhouette>()) {
+    //     BeginShaderMode(ShaderManager::get(Shaders::Silhouette));
+    //     DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
+    //     EndShaderMode();
+    // } else {
+    DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
+    // }
 }
 
 void DrawSystem::drawEntities() {

@@ -12,46 +12,6 @@ uniform vec4 colDiffuse;
 // Output fragment color
 out vec4 finalColor;
 
-
-// float gamma = 0.6;
-// float numColors = 8.0;
-//
-// void main()
-// {
-//     // Texel color fetching from texture sampler
-//     vec3 texelColor = texture(texture0, fragTexCoord.xy).rgb;
-//
-//     texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
-//     texelColor = texelColor*numColors;
-//     texelColor = floor(texelColor);
-//     texelColor = texelColor/numColors;
-//     texelColor = pow(texelColor, vec3(1.0/gamma));
-//
-//     finalColor = vec4(texelColor, 1.0);
-// }
-
-// const float N_COLORS_R = 4.;
-// const float N_COLORS_G = 4.;
-// const float N_COLORS_B = 4.;
-// const float N_COLORS_R = 16.;
-// const float N_COLORS_G = 16.;
-// const float N_COLORS_B = 16.;
-//
-// void main() {
-//     vec3 texelColor = texture(texture0, fragTexCoord.xy).rgb;
-//
-//     float r = texelColor.r * N_COLORS_R ;
-//     float g = texelColor.g * N_COLORS_G ;
-//     float b = texelColor.b * N_COLORS_B;
-//     float num = 1./256.;
-//
-//     float r = 256. * texelColor.r;
-//     float g = 256. * texelColor.g;
-//     float x = floor(r * 256. + r * g * N_COLORS_G) * num;
-//     float y = texelColor.b;
-//     finalColor = vec4(texture(palette, vec2(x,y)).rgb, 1.0);
-// }
-
  #define MAXCOLOR 15.0
  #define COLORS 16.0
  #define WIDTH 256.0

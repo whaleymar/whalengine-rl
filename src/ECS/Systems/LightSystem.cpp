@@ -9,6 +9,7 @@
 #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Transform.h"
 #include "Game.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "raylib/src/raylib.h"
@@ -20,11 +21,16 @@ const Color COLOR_AMBIENT = Color(255, 255, 255, 255);
 // const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
 // const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
+PointLightSystem::PointLightSystem() {
+    mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
+}
+
 void PointLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
 
-    BeginShaderMode(*mShaderPtr);
+    Shader shader = ShaderManager::get(Shaders::PointLight);
+    BeginShaderMode(shader);
     BeginTextureMode(TextureManager::instance().getLightingTexture());
     BeginMode2D(*Game::instance().getWorldCamera());
 
@@ -56,7 +62,7 @@ void PointLightSystem::update() {
         radius = std::lerp(radius / 2, radius, intensity);
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
-        SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
+        SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
         Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
@@ -68,11 +74,16 @@ void PointLightSystem::update() {
     EndShaderMode();
 }
 
+RadianceLightSystem::RadianceLightSystem() {
+    mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::Radiance), "position");
+}
+
 void RadianceLightSystem::update() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
 
-    BeginShaderMode(*mShaderPtr);
+    Shader shader = ShaderManager::get(Shaders::Radiance);
+    BeginShaderMode(shader);
     BeginMode2D(*Game::instance().getWorldCamera());
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
@@ -96,7 +107,7 @@ void RadianceLightSystem::update() {
         radius = std::lerp(0, radius, intensity);
 
         Vector2 screenPosV(screenPosition.x(), screenPosition.y());
-        SetShaderValue(*mShaderPtr, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
+        SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
         Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);

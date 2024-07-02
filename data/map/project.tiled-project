@@ -419,11 +419,6 @@
                     "value": false
                 },
                 {
-                    "name": "Silhouette",
-                    "type": "bool",
-                    "value": false
-                },
-                {
                     "name": "Wiggle",
                     "type": "bool",
                     "value": false

@@ -5,7 +5,6 @@
 
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
-#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
@@ -30,14 +29,15 @@ constexpr f32 getPixelSize(const s32 frameSize, const f32 scale) {
     return static_cast<f32>(frameSize) * PIXELS_PER_TEXEL * scale;
 }
 
-IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels) : depth(depth_), color(color_), mFrameSizeTexels(frameSizeTexels){};
+IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_)
+    : color(color_), depth(depth_), shader(shader_), mFrameSizeTexels(frameSizeTexels){};
 
 void IDraw::setAlpha(u8 alpha) {
     color.a = alpha;
 }
 
-Sprite::Sprite(Depth depth_, Frame frame, Color color_)
-    : IDraw(depth_, color_, frame.dimensionsTexels), atlasPositionTexels(frame.atlasPositionTexels) {}
+Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
+    : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
 
 void Sprite::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
     mFrameSizeTexels = {frameSizeX, frameSizeY};
@@ -56,7 +56,7 @@ void Sprite::setColor(Color color_) {
     color = color_;
 }
 
-Draw::Draw(Color color_, Vector2i frameSizeTexels_, Depth depth_) : IDraw(depth_, color_, frameSizeTexels_) {}
+Draw::Draw(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
 
 void Draw::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
     mFrameSizeTexels = {frameSizeX, frameSizeY};
@@ -97,9 +97,10 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
     if (color) {
         sprite.color = *color;
     }
+    sprite.shader = Shaders::Silhouette;
+    sprite.depth = Depth::BehindPlayer;
     sil.add(sprite);
 
-    sil.add<Silhouette>();
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
     sil.add(PointLight{std::max(sprite.getFrameSizeTexels().x(), sprite.getFrameSizeTexels().y()), sprite.getFrameSizeTexels().y() / 2});
@@ -121,9 +122,10 @@ Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, C
     if (color) {
         draw.color = *color;
     }
+    draw.shader = Shaders::Silhouette;
+    draw.depth = Depth::BehindPlayer;
     sil.add(draw);
 
-    sil.add<Silhouette>();
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
     sil.add(PointLight{std::max(draw.getFrameSizeTexels().x(), draw.getFrameSizeTexels().y()), draw.getFrameSizeTexels().y() / 2});

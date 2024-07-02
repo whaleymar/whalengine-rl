@@ -34,6 +34,15 @@ struct System {
         }
     }
 
+    static void Update() {
+        input.update();
+        dt.update();
+        schedule.tick(dt());
+        frame.update();
+        audio.update();
+        world->update();
+    }
+
     static void togglePause() { setPaused(!IsPaused); }
     static bool isPaused() { return IsPaused; }
     static void quit() { IsQuit = true; }
