@@ -120,10 +120,10 @@ void PhysicsSystem::fixedUpdate() {
 
         // if impulse ends, use residual
         Vector2f impulse = vel.impulse;
-        if (!impulse.x() && abs(vel.residualImpulse.x()) >= MOVE_EPSILON) {
+        if (!impulse.x() && !isNearZero(vel.residualImpulse.x(), MOVE_EPSILON)) {
             impulse.e[0] += vel.residualImpulse.x();
         }
-        if (!impulse.y() && abs(vel.residualImpulse.y()) >= MOVE_EPSILON) {
+        if (!impulse.y() && !isNearZero(vel.residualImpulse.y(), MOVE_EPSILON)) {
             impulse.e[1] += vel.residualImpulse.y();
         }
 
