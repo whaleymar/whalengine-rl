@@ -59,16 +59,16 @@ template <typename E, bool RunOnPause, typename... T>
 class IListen {
 public:
     virtual ~IListen() { System::eventMgr.stopListening<E, T...>(mListener); }
-    virtual void onEvent(T...) = 0;
+    virtual void onEvent(E, T...) = 0;
 
 protected:
     IListen()
         : mListener([this](T... args) {
               if constexpr (RunOnPause) {
-                  this->onEvent(args...);
+                  this->onEvent(E{}, args...);
               } else {
                   if (!System::isPaused())
-                      this->onEvent(args...);
+                      this->onEvent(E{}, args...);
               }
           }) {
         System::eventMgr.registerListener<E>(mListener);

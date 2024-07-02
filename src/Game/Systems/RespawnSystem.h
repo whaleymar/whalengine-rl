@@ -9,5 +9,5 @@ struct Respawn;
 
 class RespawnListener : public whal::ecs::ISystem<Respawn>, public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
 public:
-    void onEvent(whal::ecs::Entity) override;
+    void onEvent(whal::DeathEvent, whal::ecs::Entity) override;
 };

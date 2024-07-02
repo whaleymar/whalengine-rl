@@ -36,7 +36,7 @@ public:
     void end();
 
     // calls removeEntityFromLevel on killed entity
-    void onEvent(whal::ecs::Entity) override;
+    void onEvent(whal::DeathEvent, whal::ecs::Entity) override;
 
     void removeEntityFromLevel(whal::ecs::Entity entity);
     Corrade::Containers::Optional<Error> loadScene(const char* name);

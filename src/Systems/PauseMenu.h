@@ -21,7 +21,7 @@ public:
         return instance_;
     }
 
-    void onEvent(InputType input) override;
+    void onEvent(whal::ButtonPressEvent, InputType input) override;
     void draw(Font* font) const;
     bool isActive() const { return mIsActive; }
 

@@ -123,7 +123,7 @@ void shootProjectile() {
     }
 }
 
-void ProjectileSystem::onEvent(whal::InputType input, bool isPress) {
+void ProjectileSystem::onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType input, bool isPress) {
     if (input == whal::InputType::AIM) {
         if (isPress && !getIsAiming()) {
             setIsAiming(true);

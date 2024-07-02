@@ -16,7 +16,7 @@ class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSys
 public:
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
-    void onEvent(ecs::Entity entity) override;
+    void onEvent(DeathEvent, ecs::Entity entity) override;
 };
 
 class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IFixedUpdate, public ecs::IMonitorSystem {
@@ -34,7 +34,7 @@ public:
     void fixedUpdate() override;
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
-    void onEvent(ecs::Entity entity) override;
+    void onEvent(DeathEvent, ecs::Entity entity) override;
 };
 
 }  // namespace whal

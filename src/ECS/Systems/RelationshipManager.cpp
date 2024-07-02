@@ -12,7 +12,7 @@
 namespace whal {
 
 // removes entity from child list
-void EntityChildSystem::onEvent(ecs::Entity entity) {
+void EntityChildSystem::onEvent(DeathEvent, ecs::Entity entity) {
     for (auto [entityid, parent] : getEntitiesRef()) {
         auto& children = parent.get<Children>();
         auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
@@ -162,7 +162,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
 }
 
 // if the target of an entity's Follow component dies, remove the follow component.
-void FollowSystem::onEvent(ecs::Entity killedEntity) {
+void FollowSystem::onEvent(DeathEvent, ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
     for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {
         if (entity.get<Follow>().targetEntityID == killedEntity.id()) {

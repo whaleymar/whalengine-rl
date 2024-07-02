@@ -24,7 +24,7 @@ class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>,
 
 public:
     void fixedUpdate() override;
-    void onEvent(ecs::Entity, HitInfo) override;
+    void onEvent(CollisionEvent, ecs::Entity, HitInfo) override;
 
     static CallbackMap& getCollisionCallbackQueue() { return mCollisionCallbackQueue; }
 

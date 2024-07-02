@@ -14,7 +14,7 @@ s32 pythonMod(s32 a, s32 b) {
     return (b + (a % b)) % b;
 }
 
-void PauseMenu::onEvent(InputType input) {
+void PauseMenu::onEvent(whal::ButtonPressEvent, InputType input) {
     if (!isActive()) {
         if (input == InputType::PAUSE) {
             activate();
