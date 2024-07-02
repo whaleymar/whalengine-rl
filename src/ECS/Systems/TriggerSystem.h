@@ -9,9 +9,9 @@ struct Velocity;
 struct Trigger;
 class Collider;
 
-class TriggerSystem : public ecs::ISystem<Trigger>, public ecs::IFixedUpdate {
+class TriggerSystem : public ecs::ISystem<Trigger>, public ecs::IUpdate {
 public:
-    void fixedUpdate() override;
+    void update() override;
 };
 
 class MovableColliders : public ecs::ISystem<Transform2D, Velocity, Collider> {};

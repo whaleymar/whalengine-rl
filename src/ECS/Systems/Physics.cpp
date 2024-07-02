@@ -73,7 +73,7 @@ void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hi
     }
 }
 
-void PhysicsSystem::fixedUpdate() {
+void PhysicsSystem::update() {
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesRef()) {

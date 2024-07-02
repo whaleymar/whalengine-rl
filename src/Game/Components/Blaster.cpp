@@ -181,7 +181,7 @@ void ProjectileSystem::addAimReticles() {
     }
 }
 
-void ProjectileSystem::fixedUpdate() {
+void ProjectileSystem::update() {
     if (!mIsAiming) {
         return;
     }
@@ -227,7 +227,7 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
     }
 }
 
-void RocketJumpingSystem::fixedUpdate() {
+void RocketJumpingSystem::update() {
     using namespace whal;
 
     for (auto [entityid, entity] : getEntitiesCopy()) {

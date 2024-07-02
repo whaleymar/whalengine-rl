@@ -6,9 +6,9 @@ namespace whal {
 
 struct OnFrameEnd;
 
-class OnFrameEndSystem : public ecs::ISystem<OnFrameEnd>, public ecs::IFixedUpdate {
+class OnFrameEndSystem : public ecs::ISystem<OnFrameEnd>, public ecs::IUpdate {
 public:
-    void fixedUpdate() override;
+    void update() override;
 };
 
 }  // namespace whal

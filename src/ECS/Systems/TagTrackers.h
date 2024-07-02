@@ -28,11 +28,11 @@ void setCameraPosition(Vector2i pos);
 void setCameraTarget(ecs::Entity target);
 
 class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform2D>,
-                            public ecs::IFixedUpdate,
+                            public ecs::IUpdate,
                             public ecs::AttrUniqueEntity,
                             public ecs::AttrUpdateDuringPause {
 public:
-    void fixedUpdate() override;
+    void update() override;
 };
 
 }  // namespace whal

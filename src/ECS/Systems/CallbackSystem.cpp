@@ -4,7 +4,7 @@
 
 namespace whal {
 
-void OnFrameEndSystem::fixedUpdate() {
+void OnFrameEndSystem::update() {
     for (auto [entityid, entity] : getEntitiesCopy()) {
         // not bothering with a null check
 

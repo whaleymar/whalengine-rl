@@ -30,12 +30,12 @@ struct RocketJumping {
 };
 
 class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>,
-                         public whal::ecs::IFixedUpdate,
+                         public whal::ecs::IUpdate,
                          public whal::ecs::IMonitorSystem,
                          public whal::ecs::IReactToPause,
                          public whal::IListen<whal::ButtonPressOrReleaseEvent, false, whal::InputType, bool> {
 public:
-    void fixedUpdate() override;
+    void update() override;
     void onAdd(whal::ecs::Entity entity) override {}
     void onRemove(whal::ecs::Entity entity) override;
     void onPause() override {}
@@ -52,12 +52,11 @@ private:
     inline static bool mIsAimUpdateNeeded = false;
 };
 
-// TODO good candidate for updating every few frames
 class RocketJumpingSystem : public whal::ecs::ISystem<RocketJumping, whal::RigidBody, whal::Transform2D, whal::Velocity>,
                             public whal::ecs::IMonitorSystem,
-                            public whal::ecs::IFixedUpdate {
+                            public whal::ecs::IUpdate {
 public:
     void onAdd(const whal::ecs::Entity) override;
     void onRemove(const whal::ecs::Entity) override;
-    void fixedUpdate() override;
+    void update() override;
 };

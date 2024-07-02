@@ -39,9 +39,9 @@ public:
     void drawEntities();
 };
 
-class FadeOutSystem : public ecs::ISystem<Transform2D, FadeOut>, public ecs::IFixedUpdate {
+class FadeOutSystem : public ecs::ISystem<Transform2D, FadeOut>, public ecs::IUpdate {
 public:
-    void fixedUpdate() override;
+    void update() override;
 };
 
 }  // namespace whal

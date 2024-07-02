@@ -96,7 +96,7 @@ void setCameraPosition(Vector2i pos) {
     }
 }
 
-void AudioListenerSystem::fixedUpdate() {
+void AudioListenerSystem::update() {
     if (getEntitiesRef().empty()) {
         return;
     }

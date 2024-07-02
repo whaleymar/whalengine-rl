@@ -5,7 +5,7 @@
 
 namespace whal {
 
-void LifetimeSystem::fixedUpdate() {
+void LifetimeSystem::update() {
     f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesRef()) {
         auto& lifetime = entity.get<Lifetime>();

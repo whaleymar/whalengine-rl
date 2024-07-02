@@ -145,7 +145,7 @@ void DrawDebugSystem::drawEntities() {
     }
 }
 
-void FadeOutSystem::fixedUpdate() {
+void FadeOutSystem::update() {
     f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesCopy()) {
         auto& fadeOutComponent = entity.get<FadeOut>();

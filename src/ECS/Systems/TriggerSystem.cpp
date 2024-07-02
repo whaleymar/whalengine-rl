@@ -7,7 +7,7 @@
 
 namespace whal {
 
-void TriggerSystem::fixedUpdate() {
+void TriggerSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         std::vector<ecs::Entity> newInsideList;
         auto& trigger = entity.get<Trigger>();
