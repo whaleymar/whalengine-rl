@@ -26,6 +26,7 @@
 #include "Game/DebugScene.h"
 #include "Game/Systems/RespawnSystem.h"
 
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Map/Level.h"
 #include "Map/Tiled.h"
@@ -148,25 +149,11 @@ void Game::mainloop() {
     RenderTexture2D targetTextureRadiance =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
-    // Color clearColor = {51, 76, 76, 255};
-    Color clearColor = {5, 5, 5, 255};
+    Color clearColor = {51, 76, 76, 255};
+    // Color clearColor = {5, 5, 5, 255};
     Color clearColorTransparent = {0, 0, 0, 0};
 
-    // TODO should put these shaders in system constructors/destructors?
-    Shader shaderPointLight = LoadShader(0, "src/Shader/pointlight.glsl");
-    auto lightPosUniform = GetShaderLocation(shaderPointLight, "position");
-    lightSystem->setShader(&shaderPointLight);
-    lightSystem->setPositionUniform(lightPosUniform);
-
-    Shader shaderRadiance = LoadShader(0, "src/Shader/radiancelight.glsl");
-    auto radiancePosUniform = GetShaderLocation(shaderRadiance, "position");
-    radianceSystem->setShader(&shaderRadiance);
-    radianceSystem->setPositionUniform(radiancePosUniform);
-
-    Shader shaderSilhouette = LoadShader(0, "src/Shader/silhouette.glsl");
-    spriteSystem->setSilhouetteShader(&shaderSilhouette);
-
-    Shader shaderQuantize = LoadShader(0, "src/Shader/quantize.glsl");
+    Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
     bool isQuantizeOn = false;
 
@@ -176,30 +163,26 @@ void Game::mainloop() {
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
     while (!WindowShouldClose() && !System::isQuit()) {
-        System::input.update();
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = getCameraPositionPrecise();
             updateLoadedLevels(cameraPos);
         }
 
-        System::dt.update();
-        System::schedule.tick(System::dt());
-        System::frame.update();
-        System::audio.update();
-
-        System::world->update();
+        System::Update();
 
         // Update Scene
         checkIfInNewLevel();
 
-        // Only rendering remains, so we can do "end of frame" stuff now
-        System::world->killEntities();  // TODO this can go at the end of update()
+        // RENDERING STUFF
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {
             for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
                 entity.kill();
             }
+        }
+        if (IsKeyPressed(KEY_R)) {
+            reloadScene();
         }
 #endif
 
@@ -216,10 +199,10 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        lightSystem->update();  // this gets drawn to its own texture
-        BeginTextureMode(targetTextureRadiance);
-        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
-        radianceSystem->update();                // draws to current texture
+        lightSystem->update();                    // this gets drawn to its own texture
+        BeginTextureMode(targetTextureRadiance);  // TODO put this in update call like i do with lighting
+        ClearBackground(clearColorTransparent);   // don't overwrite background stuff
+        radianceSystem->update();                 // draws to current texture
         EndTextureMode();
 
         // do backgrounds on their own texture so lighting doesn't affect them
@@ -320,11 +303,6 @@ void Game::mainloop() {
     UnloadRenderTexture(targetTextureBackground);
     UnloadRenderTexture(targetTextureRadiance);
     UnloadRenderTexture(postProcessTexture);
-
-    UnloadShader(shaderSilhouette);
-    UnloadShader(shaderQuantize);
-    UnloadShader(shaderRadiance);
-    UnloadShader(shaderPointLight);
 }
 
 void Game::end() {

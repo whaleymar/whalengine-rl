@@ -10,8 +10,6 @@
 
 ## Entity Prefabs
 - death plane
-- read prefab component values from YAML
-    - combined w/ hot reloading, would make fine tuning prototypes easier
 
 ## Components
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
@@ -36,8 +34,6 @@
 ## Misc
 - ECS lib tasks
 - Logger queue that runs on another thread
-- idea to try components with virtual methods but still get registered to the base system: let T be the base component and V be a subclass: add component w/ `e.add<T>(V)`
-    - i have no idea if the compiler will yell at me or if the vtable would work right but it's worth a shot
 
 ## Bugs
 - isNearZero not working

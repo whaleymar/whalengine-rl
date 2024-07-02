@@ -12,23 +12,19 @@ struct Transform2D;
 
 class PointLightSystem : public ecs::ISystem<Transform2D, PointLight> {
 public:
+    PointLightSystem();
     void update();
-    void setShader(Shader* shader) { mShaderPtr = shader; }
-    void setPositionUniform(int id) { mPositionUniform = id; }
 
 private:
-    Shader* mShaderPtr = nullptr;
     int mPositionUniform;
 };
 
 class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance> {
 public:
+    RadianceLightSystem();
     void update();
-    void setShader(Shader* shader) { mShaderPtr = shader; }
-    void setPositionUniform(int id) { mPositionUniform = id; }
 
 private:
-    Shader* mShaderPtr = nullptr;
     int mPositionUniform;
 };
 

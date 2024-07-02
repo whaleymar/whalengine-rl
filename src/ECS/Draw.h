@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "Gfx/Depth.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -27,10 +28,11 @@ inline static Color Pink = {242, 116, 217, 255};
 
 // hard coded as rectangles until I need something else
 struct IDraw {
-    IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels);
-    Depth depth;
+    IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_);
     Color color;
     Vector2f scale = {1, 1};
+    Depth depth;
+    Shaders shader;
 
     Vector2i getFrameSizeTexels() const { return mFrameSizeTexels; }
     void setAlpha(u8 alpha);
@@ -40,7 +42,7 @@ protected:
 };
 
 struct Sprite : public IDraw {
-    Sprite(Depth depth_ = Depth::Player, Frame frame = {}, Color color_ = WHITE);
+    Sprite(Depth depth_ = Depth::Player, Frame frame = {}, Color color_ = WHITE, Shaders shader_ = Shaders::Default);
 
     Vector2i atlasPositionTexels;
 
@@ -51,7 +53,7 @@ struct Sprite : public IDraw {
 };
 
 struct Draw : public IDraw {
-    Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player);
+    Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
 
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);

@@ -19,12 +19,12 @@ inline constexpr s32 WINDOW_WIDTH_ACTUAL = 1280;
 inline constexpr s32 WINDOW_HEIGHT_ACTUAL = 720;
 
 inline constexpr s32 BLEED_SIZE = 0;
-inline constexpr s32 WINDOW_WIDTH_PIXELS = 640;
-inline constexpr s32 WINDOW_HEIGHT_PIXELS = 360;
-inline constexpr s32 PIXELS_PER_TEXEL = 2;
-// inline constexpr s32 WINDOW_WIDTH_PIXELS = 320;
-// inline constexpr s32 WINDOW_HEIGHT_PIXELS = 180;
-// inline constexpr s32 PIXELS_PER_TEXEL = 1;
+// inline constexpr s32 WINDOW_WIDTH_PIXELS = 640;
+// inline constexpr s32 WINDOW_HEIGHT_PIXELS = 360;
+// inline constexpr s32 PIXELS_PER_TEXEL = 2;
+inline constexpr s32 WINDOW_WIDTH_PIXELS = 320;
+inline constexpr s32 WINDOW_HEIGHT_PIXELS = 180;
+inline constexpr s32 PIXELS_PER_TEXEL = 1;
 
 inline constexpr s32 TEXELS_PER_TILE = 8;
 

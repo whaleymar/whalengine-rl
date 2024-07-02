@@ -20,6 +20,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lif
     auto particle = expected.value();
 
     particle.add(transform);
+    particle.add(PrecisePosition::fromTrans(transform));
     particle.add(Draw(color, Vector2i(1, 1), Depth::Foreground1));
     particle.add(Lifetime(lifetime));
 
@@ -35,6 +36,7 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
     auto particle = expected.value();
 
     particle.add(transform);
+    particle.add(PrecisePosition::fromTrans(transform));
     particle.add(Name("particle"));
     particle.add(Draw(color, Vector2i(1, 1), Depth::Foreground1));
     particle.add(Lifetime(lifetime));

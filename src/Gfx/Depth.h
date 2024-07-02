@@ -5,7 +5,19 @@
 namespace whal {
 
 // any changes to this needs to be mirrored in the Tiled project
-enum class Depth : u8 { BackgroundStatic, BackgroundFar, BackgroundMid, BackgroundNear, Level, Player, Foreground3, Foreground2, Foreground1, Debug };
+enum class Depth : u8 {
+    BackgroundStatic,
+    BackgroundFar,
+    BackgroundMid,
+    BackgroundNear,
+    Level,
+    Player,
+    Foreground3,
+    Foreground2,
+    Foreground1,
+    Debug,
+    BehindPlayer
+};
 
 inline constexpr f32 depthToFloat(Depth depth) {
     switch (depth) {
@@ -19,6 +31,8 @@ inline constexpr f32 depthToFloat(Depth depth) {
         return 0.3;
     case Depth::Level:
         return 0.4;
+    case Depth::BehindPlayer:
+        return 0.45;
     case Depth::Player:
         return 0.5;
     case Depth::Foreground3:

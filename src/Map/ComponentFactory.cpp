@@ -649,11 +649,6 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
         hasTag = false;
     }
 
-    if (tryReadBool(values, "Silhouette", &hasTag) && hasTag) {
-        entity.add<Silhouette>();
-        hasTag = false;
-    }
-
     if (tryReadBool(values, "PrecisePosition", &hasTag) && hasTag) {
         entity.add(PrecisePosition::fromTrans(entity.get<Transform2D>()));
         hasTag = false;
