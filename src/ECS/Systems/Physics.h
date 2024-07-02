@@ -17,13 +17,11 @@ struct HitInfo;
 
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
-class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>,
-                      public ecs::IFixedUpdate,
-                      public IListen<CollisionEvent, true, ecs::Entity, HitInfo> {
+class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>, public ecs::IUpdate, public IListen<CollisionEvent, true, ecs::Entity, HitInfo> {
     using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, std::function<void()>>>, ecs::EntityHash>;
 
 public:
-    void fixedUpdate() override;
+    void update() override;
     void onEvent(CollisionEvent, ecs::Entity, HitInfo) override;
 
     static CallbackMap& getCollisionCallbackQueue() { return mCollisionCallbackQueue; }

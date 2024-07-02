@@ -13,7 +13,7 @@ namespace whal {
 
 constexpr f32 APPROACH_SPEED_X = 7.5;  // 5 frames to max speed
 
-void ControllerSystem::fixedUpdate() {
+void ControllerSystem::update() {
     if (!System::input.isMovementEnabled()) {
         return;
     }
@@ -58,7 +58,7 @@ void ControllerSystem::fixedUpdate() {
     }
 }
 
-void FreeControlSystem::fixedUpdate() {
+void FreeControlSystem::update() {
     if (!System::input.isMovementEnabled()) {
         return;
     }
@@ -86,7 +86,7 @@ void FreeControlSystem::fixedUpdate() {
     }
 }
 
-void JumpSystem::fixedUpdate() {
+void JumpSystem::update() {
     if (!System::input.isJumpingEnabled()) {
         return;
     }

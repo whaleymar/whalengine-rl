@@ -34,7 +34,7 @@ void AttachSystem::onAdd(ecs::Entity entity) {
     entity.get<Attach>().initTarget(entity);
 }
 
-void AttachSystem::fixedUpdate() {
+void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         Transform2D& trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
@@ -43,7 +43,7 @@ void AttachSystem::fixedUpdate() {
     }
 }
 
-void FollowSystem::fixedUpdate() {
+void FollowSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
         Transform2D trans = entity.get<Transform2D>();
         auto& follow = entity.get<Follow>();

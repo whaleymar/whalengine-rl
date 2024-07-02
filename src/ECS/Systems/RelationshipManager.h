@@ -19,19 +19,19 @@ public:
     void onEvent(DeathEvent, ecs::Entity entity) override;
 };
 
-class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IFixedUpdate, public ecs::IMonitorSystem {
+class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:
-    void fixedUpdate() override;
+    void update() override;
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override {}
 };
 
 class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D>,
-                     public ecs::IFixedUpdate,
+                     public ecs::IUpdate,
                      public ecs::IMonitorSystem,
                      public IListen<DeathEvent, true, ecs::Entity> {
 public:
-    void fixedUpdate() override;
+    void update() override;
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
     void onEvent(DeathEvent, ecs::Entity entity) override;

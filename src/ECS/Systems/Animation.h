@@ -8,9 +8,9 @@ struct Animator;
 struct Sprite;
 struct Transform2D;
 
-class AnimationSystem : public ecs::ISystem<Animator, Sprite, Transform2D>, public ecs::IFixedUpdate, public ecs::AttrUpdateDuringPause {
+class AnimationSystem : public ecs::ISystem<Animator, Sprite, Transform2D>, public ecs::IUpdate, public ecs::AttrUpdateDuringPause {
 public:
-    void fixedUpdate() override;
+    void update() override;
 };
 
 }  // namespace whal
