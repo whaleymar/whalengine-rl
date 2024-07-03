@@ -13,6 +13,10 @@
 
 namespace whal::qtree {
 
+// TODO this is quite slow for moving entities, since they require multiple removals/adds per frame
+// but it's very fast for things that don't move.
+// should use this for entities without a velocity component, but a spatial grid for things with velocity,
+// and then a lookup would basically dispatch the correct data struct based on entity.has<Velocity>()
 class QuadTree {
 public:
     QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}
