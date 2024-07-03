@@ -180,7 +180,7 @@ Animator getAnimator() {
 
 }  // namespace PlayerAnim
 
-Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprite) {
+Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected;
@@ -218,15 +218,7 @@ Expected<ecs::Entity> createPlayerWithSprite(Transform2D transform, Sprite sprit
     player.add(PlayerAnim::getAnimator());
 
     Frame frame = player.get<Animator>().getFrame();
-    sprite.depth = Depth::Player;
-    sprite.setFrameSize(frame.dimensionsTexels.x(), frame.dimensionsTexels.y());
-    sprite.atlasPositionTexels = frame.atlasPositionTexels;
-
-    // testing:
-    // sprite.color = {255, 0, 0, 255};
-    // player.add<Silhouette>();
-    // player.add(FadeOut(5.0));
-
+    Sprite sprite(Depth::Player, frame);
     player.add(sprite);
 
     constexpr s32 width = 16;
@@ -266,13 +258,11 @@ Expected<ecs::Entity> createPlayer() {
     } else {
         trans = Transform2D::tiles(15, 10);
     }
-    Sprite sprite;
-    return createPlayerWithSprite(trans, sprite);
+    return createPlayerAt(trans);
 }
 
-// use sprite with pre-constructed vao/vbo created on main thread
-void respawnPlayer(Transform2D trans, Sprite sprite) {
-    Expected<ecs::Entity> player = createPlayerWithSprite(trans, sprite);
+void respawnPlayer(Transform2D trans) {
+    Expected<ecs::Entity> player = createPlayerAt(trans);
     if (!player.isExpected()) {
         print(player.error());
     }
