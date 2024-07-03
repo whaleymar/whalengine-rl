@@ -4,14 +4,13 @@
 
 namespace whal {
 struct Transform2D;
-struct Sprite;
 }  // namespace whal
 
 // creates event flow when entity dies
 // order is 1) onDeath, 2) wait 3) spawn function, 4) onRespawn
 // null fxn ptrs are fine
 struct Respawn {
-    using Spawner = void (*)(whal::Transform2D, whal::Sprite);
+    using Spawner = void (*)(whal::Transform2D);
     using Callback = void (*)();
 
     f32 waitTime = 0;

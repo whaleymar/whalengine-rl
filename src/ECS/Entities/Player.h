@@ -8,10 +8,9 @@ namespace ecs {
 class Entity;
 }
 struct Transform2D;
-struct Sprite;
 
 Expected<ecs::Entity> createPlayer();
 
-void respawnPlayer(Transform2D transform, Sprite sprite);
+void respawnPlayer(Transform2D transform);
 
 }  // namespace whal
