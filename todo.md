@@ -27,7 +27,7 @@
     - Removing ECS include from System.h makes things slower for some reason
 
 ## Misc
-- ECS lib tasks
+- ECS parallelization (low priority)
 - Logger queue that runs on another thread
 
 ## Bugs
@@ -57,3 +57,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - map: support tile rotations / flips? (leaning towards no)
 - should use 3rd party lib for Expected cause my impl sucks
 - triggers which have some constraint, like X>=50
+
+## ECS:
+- the entity.set<T> problem (with IMonitor systems): it doesn't really make sense to handle the problem at the system level, because not all component modifications matter. If anything, could do an event callback for when a component is modified and let systems listen for specific component modifications

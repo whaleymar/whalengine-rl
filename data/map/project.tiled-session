@@ -5,8 +5,8 @@
     },
     "activeFile": "testmap.tmj",
     "expandedProjectPaths": [
-        "templates",
-        "."
+        ".",
+        "templates"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -27,21 +27,21 @@
                 6
             ],
             "scale": 3,
-            "selectedLayer": 4,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 151.33333333333331,
-                "y": 94.16666666666667
+                "x": 151.99999999999997,
+                "y": 91.5
             }
         },
         "testmap2.tmj": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2.1889583333333333,
-            "selectedLayer": 2,
+            "scale": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 159.89340439706862,
-                "y": 96.16446178737985
+                "x": -115,
+                "y": 91.83333333333334
             }
         },
         "tile-collision.tsj": {
@@ -49,7 +49,7 @@
             "scaleInEditor": 11
         },
         "tileset-small.tsj": {
-            "scaleInDock": 1,
+            "scaleInDock": 4,
             "scaleInEditor": 11
         },
         "widemap.tmj": {
@@ -57,10 +57,10 @@
                 2
             ],
             "scale": 3,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 240,
-                "y": 95.83333333333333
+                "x": -139.33333333333331,
+                "y": 149.16666666666663
             }
         }
     },
