@@ -9,16 +9,33 @@
 
 namespace whal {
 
+Vector2i getRotationCorrection(Vector2i half, f32 rotationDegrees) {
+    // -180deg is up
+    // -90deg is right
+    // 0deg is down
+    // 90 deg is left
+    f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
+    return toIntVecRounded(Vector2f(-0.5, -1.0) * toFloatVec(half) * Vector2f(std::cos(correctRadians), std::sin(correctRadians)));
+}
+
+Vector2i transToCenter(Transform2D trans, Vector2i half) {
+    return trans.position + getRotationCorrection(half, trans.rotationDegrees);
+}
+
+Vector2i centerToTrans(Vector2i center, Vector2i half, f32 rotationDegrees) {
+    return center - getRotationCorrection(half, rotationDegrees);
+}
+
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
-AABB::AABB(Transform2D transform, Vector2i half) : mCenter(transform.position.x(), transform.position.y() + half.y()), mHalf(half) {}
+AABB::AABB(Transform2D transform, Vector2i half) : mCenter(transToCenter(transform, half)), mHalf(half) {}
 
 void AABB::setPosition(Vector2i center) {
     mCenter = center;
 }
 
 void AABB::setPosition(Transform2D transform) {
-    mCenter = Vector2i(transform.position.x(), transform.position.y() + mHalf.y());
+    mCenter = transToCenter(transform, mHalf);
 }
 
 bool AABB::isOverlapping(const AABB* other) const {

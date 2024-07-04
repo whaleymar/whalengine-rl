@@ -5,15 +5,11 @@
 namespace whal {
 
 struct Transform2D;
-struct Velocity;
 struct Trigger;
-class Collider;
 
-class TriggerSystem : public ecs::ISystem<Trigger>, public ecs::IUpdate {
+class TriggerSystem : public ecs::ISystem<Transform2D, Trigger>, public ecs::IUpdate {
 public:
     void update() override;
 };
-
-class MovableColliders : public ecs::ISystem<Transform2D, Velocity, Collider> {};
 
 }  // namespace whal

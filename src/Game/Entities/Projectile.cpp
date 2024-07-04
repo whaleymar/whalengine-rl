@@ -75,8 +75,7 @@ void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
             particle.add(OnFrameEnd([](ecs::Entity e) {
                 e.add(RigidBody({0, 0}));
 
-                auto pos = e.get<Transform2D>().position;
-                e.add(Collider::Actor(AABB(pos, {1, 1})));
+                e.add(Collider::Actor(AABB(e.get<Transform2D>(), {1, 1})));
                 e.get<Collider>().setMaterial(WorldMaterial::Rubber);
             }));
 
