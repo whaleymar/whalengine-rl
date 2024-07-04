@@ -18,6 +18,10 @@ Vector2i toIntVec(const Vector2f floatVec) {
     return Vector2i(static_cast<s32>(floatVec.x()), static_cast<s32>(floatVec.y()));
 }
 
+Vector2i toIntVecRounded(const Vector2f floatVec) {
+    return Vector2i(std::roundf(floatVec.x()), std::roundf(floatVec.y()));
+}
+
 Vector2f fromRaylib(Vector2 rlVec) {
     return {rlVec.x, rlVec.y};
 }

@@ -114,7 +114,7 @@ bool Game::startup() {
     System::world->BeginSystemRegistration()
         .registerSystems<DrawSystem, SpriteSystem, DrawDebugSystem, PointLightSystem,
                          RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
-        .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem, MovableColliders>()
+        .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
         .registerSystems<QuadTreeSystem>()
         .registerSystems<RespawnListener>();
 
@@ -165,6 +165,7 @@ void Game::mainloop() {
                                        1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+
     while (!WindowShouldClose() && !System::isQuit()) {
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = getCameraPositionPrecise();

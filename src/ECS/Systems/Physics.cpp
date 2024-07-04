@@ -214,8 +214,8 @@ void PhysicsSystem::update() {
     // done after all movement in case things get pushed by others
     for (auto entity : allColliderEntities) {
         Transform2D& trans = entity.get<Transform2D>();
-        // position is bottom-middle of collider
-        trans.position = entity.get<Collider>().getShape().getPositionEdge(Vector2i::unitDown);
+        auto shape = entity.get<Collider>().getShape();
+        trans.position = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
             (*precisePositionOpt)->position = toFloatVec(trans.position);
         }

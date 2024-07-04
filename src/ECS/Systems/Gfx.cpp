@@ -71,45 +71,10 @@ void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture
     const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
 
     Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
-    Vector2f dstPosition;
-    Vector2f origin;
-    if (trans.rotationDegrees == 0) {
-        // subtract size.y() so we draw from bottom left instead of top left
-        dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y() - dstSize.y()};
+    Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
 
-        // I want to scale from the bottom middle, but draw from the bottom left, so move dstPosition right by halfx
-        // this won't work for scaling from the middle though?
-        origin = Vector2f(dstSize.x() * 0.5, 0);
-    } else {
-        // the divide by 4 pixel adjustments are magic numbers. Idk why but they make things match perfectly
-        // RESEARCH what happens if i try passing effectiveDstSize to dstRect?
-
-        f32 radians = static_cast<f32>(trans.rotationDegrees) * DEG2RAD;
-        f32 effectiveHeight = abs(frameSize.x() * std::sin(radians)) + abs(frameSize.y() * std::cos(radians));
-        f32 effectiveWidth = abs(frameSize.x() * std::cos(radians)) + abs(frameSize.y() * std::sin(radians));
-        Vector2f effectiveDstSize(effectiveWidth * sprite.scale.x() * FPIXELS_PER_TEXEL, effectiveHeight * sprite.scale.y() * FPIXELS_PER_TEXEL);
-        // dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y() - effectiveDstSize.y() / 4};
-        dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
-
-        // -180deg is up
-        // -90deg is right
-        // 0deg is down
-        // 90 deg is left
-        // idk why, but this fixes it
-
-        f32 unitCircleDegrees = trans.rotationDegrees * -1.0f - 90;
-        Vector2f unitDirection(std::cos(DEG2RAD * unitCircleDegrees), std::sin(DEG2RAD * unitCircleDegrees));
-        if (!isNearZero(unitDirection.x(), 0.01)) {
-            f32 adjustment = effectiveDstSize.x() / 4.0f * -sign(unitDirection.x());
-            dstPosition.e[0] += adjustment;
-        }
-        if (!isNearZero(unitDirection.y(), 0.01)) {
-            dstPosition.e[1] += effectiveDstSize.y() / 4.0f * sign(unitDirection.y());
-        }
-
-        // dstRect is unchanged, so origin is still middle of that
-        origin = dstSize * 0.5;
-    }
+    // rotate about transform
+    Vector2f origin = Vector2f(dstSize.x() * 0.5, dstSize.y());
 
     Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
     DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
