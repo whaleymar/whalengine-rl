@@ -69,11 +69,13 @@ public:
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
     RenderTexture2D& getLightingTexture() { return mLightingTexture; }
+    RenderTexture2D& getBloomTexture() { return mBloomTexture; }
 
     Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
     void drawBackgroundTextures();
     void drawLightingTexture();
+    void drawBloomTexture();
 
     void unloadAll();
 
@@ -91,6 +93,7 @@ private:
     std::vector<std::string> mTextureNames;
 
     RenderTexture2D mLightingTexture;
+    RenderTexture2D mBloomTexture;
     Corrade::Containers::Optional<RenderTexture2D> mBGTextureStatic;
     Corrade::Containers::Optional<RenderTexture2D> mBGTextureFar;
     Corrade::Containers::Optional<RenderTexture2D> mBGTextureMid;

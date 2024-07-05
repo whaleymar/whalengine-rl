@@ -151,8 +151,6 @@ void Game::mainloop() {
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
     RenderTexture2D targetTextureBackground =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-    RenderTexture2D targetTextureRadiance =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     Color clearColor = {51, 76, 76, 255};
     // Color clearColor = {5, 5, 5, 255};
@@ -224,11 +222,8 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        lightSystem->update();                    // this gets drawn to its own texture
-        BeginTextureMode(targetTextureRadiance);  // TODO put this in update call like i do with lighting
-        ClearBackground(clearColorTransparent);   // don't overwrite background stuff
-        radianceSystem->update();                 // draws to current texture
-        EndTextureMode();
+        lightSystem->update();     // this gets drawn to its own texture
+        radianceSystem->update();  // this gets drawn to its own texture
 
         // do backgrounds on their own texture so lighting doesn't affect them
         BeginTextureMode(targetTextureBackground);
@@ -245,9 +240,7 @@ void Game::mainloop() {
 
         EndMode2D();
 
-        BeginBlendMode(BLEND_MULTIPLIED);
         TextureManager::instance().drawLightingTexture();
-        EndBlendMode();
 
 #ifndef NDEBUG
         BeginMode2D(*mWorldSpaceCamera);
@@ -280,9 +273,7 @@ void Game::mainloop() {
         DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
         DrawTexture(targetTexture.texture, 0, 0, WHITE);
 
-        BeginBlendMode(BLEND_ADDITIVE);
-        DrawTexture(targetTextureRadiance.texture, 0, 0, WHITE);
-        EndBlendMode();
+        TextureManager::instance().drawBloomTexture();
 
         EndTextureMode();
 
@@ -326,7 +317,6 @@ void Game::mainloop() {
 
     UnloadRenderTexture(targetTexture);
     UnloadRenderTexture(targetTextureBackground);
-    UnloadRenderTexture(targetTextureRadiance);
     UnloadRenderTexture(postProcessTexture);
 }
 

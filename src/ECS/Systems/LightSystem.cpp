@@ -17,8 +17,8 @@
 namespace whal {
 
 // TODO should be set in level (maybe make it one of a few options like dark, dim, normal, bright)
-const Color COLOR_AMBIENT = Color(255, 255, 255, 255);
-// const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
+// const Color COLOR_AMBIENT = Color(255, 255, 255, 255);
+const Color COLOR_AMBIENT = Color(200, 200, 200, 255);
 // const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 PointLightSystem::PointLightSystem() {
@@ -84,7 +84,10 @@ void RadianceLightSystem::update() {
 
     Shader shader = ShaderManager::get(Shaders::Radiance);
     BeginShaderMode(shader);
+    BeginTextureMode(TextureManager::instance().getBloomTexture());
     BeginMode2D(*Game::instance().getWorldCamera());
+
+    ClearBackground({0, 0, 0, 0});  // don't overwrite background stuff
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
@@ -115,6 +118,7 @@ void RadianceLightSystem::update() {
     }
 
     EndMode2D();
+    EndTextureMode();
     EndShaderMode();
 }
 

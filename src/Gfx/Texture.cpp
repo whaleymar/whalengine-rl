@@ -120,7 +120,8 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
 }
 
 TextureManager::TextureManager()
-    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)), mBGTextureStatic(RenderTexture2D()),
+    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)),
+      mBloomTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)), mBGTextureStatic(RenderTexture2D()),
       mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
@@ -380,7 +381,15 @@ void TextureManager::drawLightingTexture() {
         Rectangle(0.0f, 0.0f, static_cast<f32>(mLightingTexture.texture.width), -1 * static_cast<f32>(mLightingTexture.texture.height));
     Rectangle dstRect(0, 0, mLightingTexture.texture.width, mLightingTexture.texture.height);
 
+    BeginBlendMode(BLEND_MULTIPLIED);
     DrawTexturePro(mLightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
+    EndBlendMode();
+}
+
+void TextureManager::drawBloomTexture() {
+    BeginBlendMode(BLEND_ADDITIVE);
+    DrawTexture(mBloomTexture.texture, 0, 0, WHITE);
+    EndBlendMode();
 }
 
 void TextureManager::unloadAll() {
@@ -405,6 +414,7 @@ void TextureManager::unloadAll() {
     }
 
     UnloadRenderTexture(mLightingTexture);
+    UnloadRenderTexture(mBloomTexture);
 }
 
 }  // namespace whal
