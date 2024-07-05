@@ -88,15 +88,6 @@ bool brain(Animator& animator, ecs::Entity entity) {
         }
     } else {
         if (jumperOpt && (*jumperOpt)->isJumping) {
-            if ((animator.getAnimation().id == JUMP_FORWARD || animator.getAnimation().id == RISE_FORWARD) && vel.total.y() <= 1 &&
-                animator.setAnimation(PEAK_FORWARD)) {
-                return true;
-            }
-
-            if (animator.getAnimation().id == JUMP && vel.total.y() <= 1 && animator.setAnimation(PEAK)) {
-                return true;
-            }
-
             bool isJumping = [](s32 animId) -> bool {
                 switch (animId) {
                 case JUMP:

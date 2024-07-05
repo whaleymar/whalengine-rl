@@ -15,6 +15,7 @@ struct RigidBody {
 
     Vector2f frictionMultiplier = {1.0, 1.0};  // x is ground, y is air
     Vector2f momentumMultiplier = {1.0, 0.5};
+    f32 gravityMultiplier = 1.0;
 
     // automatically managed:
     s32 momentumCooldownFrames = 0;

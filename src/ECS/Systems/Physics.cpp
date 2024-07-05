@@ -33,10 +33,10 @@ constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no l
 
 using BoundCollisionCallback = std::function<void()>;
 
-void applyGravity(Velocity& velocity, f32 dt, bool isJumping) {
+void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {
     bool isInJumpPeak = isJumping && isBetween(velocity.total.y(), JUMP_PEAK_SPEED_MAX, 0.0f);
     f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - JUMP_PEAK_GRAVITY_MULT);
-    velocity.stable.e[1] = approach(velocity.stable.y(), TERMINAL_VELOCITY_Y, GRAVITY * peakMultiplier * dt);
+    velocity.stable.e[1] = approach(velocity.stable.y(), gravityMultiplier * TERMINAL_VELOCITY_Y, gravityMultiplier * GRAVITY * peakMultiplier * dt);
 }
 
 void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
@@ -192,9 +192,9 @@ void PhysicsSystem::update() {
                         // a little lower than 0 while applying reduced gravity
                         (*jumpControl)->isJumping = false;
                     }
-                    applyGravity(vel, dt, (*jumpControl)->isJumping);
+                    applyGravity(vel, dt, (*rbOpt)->gravityMultiplier, (*jumpControl)->isJumping);
                 } else {
-                    applyGravity(vel, dt, false);
+                    applyGravity(vel, dt, (*rbOpt)->gravityMultiplier, false);
                 }
 
                 (*rbOpt)->isLanding = false;
