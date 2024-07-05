@@ -18,7 +18,7 @@
                 }],
          "repeatx":true,
          "type":"imagelayer",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -38,7 +38,7 @@
                 }],
          "repeatx":true,
          "type":"imagelayer",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -820,7 +820,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":12,
+ "nextlayerid":13,
  "nextobjectid":56,
  "orientation":"orthogonal",
  "properties":[

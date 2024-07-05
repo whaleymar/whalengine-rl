@@ -35,7 +35,7 @@ public:
     Corrade::Containers::Optional<Rectangle> getFrame(const char* name) const;
     bool isValid() const { return mIsValid; }
     const Texture2D& getTexture() const { return mTexture; }
-    Corrade::Containers::Optional<RenderTexture2D> frameToTexture(const char* frameName) const;
+    Corrade::Containers::Optional<RenderTexture2D> frameToBackgroundTexture(const char* frameName) const;
 
 private:
     Texture2D mTexture;

@@ -95,13 +95,15 @@ Corrade::Containers::Optional<Rectangle> TextureAtlas::getFrame(const char* name
     return search->second;
 }
 
-Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToTexture(const char* frameName) const {
+Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const char* frameName) const {
     Corrade::Containers::Optional<Rectangle> frameOpt = getFrame(frameName);
     if (!frameOpt) {
         return NULLOPT;
     }
 
-    RenderTexture2D texture = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_TEXELS);
+    s32 height = std::max(frameOpt->height, FWINDOW_HEIGHT_TEXELS);
+    RenderTexture2D texture = LoadRenderTexture(width * PIXELS_PER_TEXEL, height * PIXELS_PER_TEXEL);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
     f32 heightDiff = WINDOW_HEIGHT_TEXELS - frameOpt->height;
@@ -113,15 +115,6 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToTexture(cons
     DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
 
     EndTextureMode();
-
-    // debugging texture:
-    // const char* exportPath = "/home/whaley/code/whalengine-rl/tmpimg.png";
-    // Image img = LoadImageFromTexture(texture.texture);
-    // if (ExportImage(img, exportPath)) {
-    //     print("wrote bg texture to ", exportPath);
-    // } else {
-    //     print("error writing image");
-    // }
 
     return texture;
 }
@@ -211,9 +204,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
         if (mBGTextureStatic) {
             UnloadRenderTexture(*mBGTextureStatic);
         }
-        mBGTextureStatic = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        mBGTextureStatic = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
         if (!mBGTextureStatic) {
-            return Error("Couldn't create texture");
+            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
         texname = "static";
         break;
@@ -222,9 +215,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
         if (mBGTextureFar) {
             UnloadRenderTexture(*mBGTextureFar);
         }
-        mBGTextureFar = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        mBGTextureFar = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
         if (!mBGTextureFar) {
-            return Error("Couldn't create texture");
+            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
         mScrollFar = {};
         texname = "far";
@@ -235,9 +228,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
         if (mBGTextureMid) {
             UnloadRenderTexture(*mBGTextureMid);
         }
-        mBGTextureMid = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        mBGTextureMid = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
         if (!mBGTextureMid) {
-            return Error("Couldn't create texture");
+            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
         mScrollMid = {};
         texname = "mid";
@@ -248,9 +241,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
         if (mBGTextureNear) {
             UnloadRenderTexture(*mBGTextureNear);
         }
-        mBGTextureNear = getTextureAtlas(atlasName).frameToTexture(spriteName);
+        mBGTextureNear = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
         if (!mBGTextureNear) {
-            return Error("Couldn't create texture");
+            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
         mScrollNear = {};
         texname = "near";
@@ -263,18 +256,16 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
     // raylib: ""
     // NOTE: Be careful, background width must be equal or bigger than screen width
     // if not, texture should be draw more than two times for scrolling effect
-    // TODO i need a param for that ^
-    // TODO what if the frame is wider than the window? probably broken
 
     // ^ maybe i should check if the width/height is less than half the screen & then duplicate it
     // so if my frame is 100px wide then it gets drawn 3x
     // BUT that wouldn't tile neatly. Should only divide texture into powers of 2 (i.e. draw 1/2/4/8 frames evenly spaced)
+    // OR i just leave it to the user to make it wide enough :)
 
     return NULLOPT;
 }
 
 void TextureManager::drawBackgroundTextures() {
-    const Rectangle bgTextureDestRec = {0, 0, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS};
     Rectangle screenSourceRec;
 
     // const Vector2f cameraPos = getCameraPositionPrecise();
@@ -312,53 +303,53 @@ void TextureManager::drawBackgroundTextures() {
     }
 
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
-    auto drawBG = [bgTextureDestRec](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset, Color color = WHITE) -> void {
+    auto drawBG = [](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset, Color color = WHITE) -> void {
         DrawTexturePro(texture, screenSourceRec,
-                       {offset.x() - PIXELS_PER_TILE / 2, offset.y() + PIXELS_PER_TILE / 2, bgTextureDestRec.width, bgTextureDestRec.height},
-                       {0.0f, 0.0f}, 0.0f, color);
+                       {offset.x() - PIXELS_PER_TILE / 2, offset.y() + PIXELS_PER_TILE / 2, (f32)texture.width, (f32)texture.height}, {0.0f, 0.0f},
+                       0.0f, color);
     };
 
-    auto drawBackgrounds = [drawBG, bgTextureDestRec](RenderTexture2D tex, Rectangle screenSourceRec, const BGData bgdata, Vector2f& scrollVar) {
+    auto drawBackgrounds = [drawBG](RenderTexture2D tex, Rectangle screenSourceRec, const BGData bgdata, Vector2f& scrollVar) {
         screenSourceRec = {0.0f, 0.0f, static_cast<f32>(tex.texture.width), -1 * static_cast<f32>(tex.texture.height)};
 
         drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -scrollVar.y()});
         if (bgdata.isRepeatX && bgdata.isRepeatY) {
             // repeat right:
-            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -scrollVar.y()});
 
             // repeat left:
-            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -scrollVar.y()});
 
             // repeat up:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), tex.texture.height - scrollVar.y()});
 
             // repeat down:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -tex.texture.height - scrollVar.y()});
 
             // repeat top right
-            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), tex.texture.height - scrollVar.y()});
 
             // repeat top left
-            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), tex.texture.height - scrollVar.y()});
 
             // repeat bottom right
-            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -tex.texture.height - scrollVar.y()});
 
             // repeat bottom left
-            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -tex.texture.height - scrollVar.y()});
 
         } else if (bgdata.isRepeatX) {
             // repeat right:
-            drawBG(tex.texture, screenSourceRec, {bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -scrollVar.y()});
 
             // repeat left:
-            drawBG(tex.texture, screenSourceRec, {-bgTextureDestRec.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -scrollVar.y()});
         } else if (bgdata.isRepeatY) {
             // repeat up:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), tex.texture.height - scrollVar.y()});
 
             // repeat down:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -bgTextureDestRec.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -tex.texture.height - scrollVar.y()});
         }
     };
 
