@@ -6,6 +6,7 @@
 #include "ECS/Entities/Camera.h"
 #include "ECS/Name.h"
 #include "ECS/RailsControl.h"
+#include "ECS/RigidBody.h"
 #include "ECS/Systems/Animation.h"
 #include "ECS/Systems/CallbackSystem.h"
 #include "ECS/Systems/CollisionManager.h"
@@ -18,6 +19,7 @@
 #include "ECS/Systems/RelationshipManager.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "ECS/Systems/TriggerSystem.h"
+#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 
 #include "Events/Events.h"
@@ -166,6 +168,10 @@ void Game::mainloop() {
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
 
+#ifndef NDEBUG
+    bool isCreativeMode = false;
+#endif
+
     while (!WindowShouldClose() && !System::isQuit()) {
         if (System::frame.getFrame() == 0) {
             Vector2f cameraPos = getCameraPositionPrecise();
@@ -187,6 +193,21 @@ void Game::mainloop() {
         }
         if (IsKeyPressed(KEY_R)) {
             reloadScene();
+        }
+        if (IsKeyPressed(KEY_P)) {
+            if (isCreativeMode) {
+                isCreativeMode = false;
+                for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
+                    entity.remove<FreeControl>();
+                    entity.add<RigidBody>();
+                }
+            } else {
+                isCreativeMode = true;
+                for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
+                    entity.add<FreeControl>();
+                    entity.remove<RigidBody>();
+                }
+            }
         }
 #endif
 

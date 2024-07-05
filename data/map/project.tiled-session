@@ -23,14 +23,14 @@
         },
         "testmap.tmj": {
             "expandedObjectLayers": [
-                11,
-                6
+                6,
+                11
             ],
             "scale": 3,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 151.99999999999997,
-                "y": 91.5
+                "x": 160,
+                "y": 95.83333333333333
             }
         },
         "testmap2.tmj": {
@@ -40,8 +40,8 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -115,
-                "y": 91.83333333333334
+                "x": 160,
+                "y": 95.83333333333333
             }
         },
         "tile-collision.tsj": {
@@ -59,8 +59,8 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -139.33333333333331,
-                "y": 149.16666666666663
+                "x": 240,
+                "y": 95.83333333333333
             }
         }
     },
@@ -84,7 +84,7 @@
         "prefab-editor.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Trigger",
+    "property.type": "Depth",
     "recentFiles": [
         "prefab-editor.tmj",
         "widemap.tmj",

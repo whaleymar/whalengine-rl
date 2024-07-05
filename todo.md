@@ -14,6 +14,9 @@
 ## Components
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
 
+## Gfx
+- replace radiance with bloom?
+
 ## Map 
 - object layers
     - special metadata

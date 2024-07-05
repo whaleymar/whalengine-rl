@@ -51,7 +51,9 @@ inline constexpr s32 PIXELS_PER_TILE = PIXELS_PER_TEXEL * TEXELS_PER_TILE;
 inline constexpr f32 FPIXELS_PER_TILE = FPIXELS_PER_TEXEL * FTEXELS_PER_TILE;
 
 inline constexpr s32 WINDOW_WIDTH_TEXELS = WINDOW_WIDTH_PIXELS / PIXELS_PER_TEXEL;
+inline constexpr f32 FWINDOW_WIDTH_TEXELS = FWINDOW_WIDTH_PIXELS / FPIXELS_PER_TEXEL;
 inline constexpr s32 WINDOW_HEIGHT_TEXELS = WINDOW_HEIGHT_PIXELS / PIXELS_PER_TEXEL;
+inline constexpr f32 FWINDOW_HEIGHT_TEXELS = FWINDOW_HEIGHT_PIXELS / FPIXELS_PER_TEXEL;
 
 /////////////////////////////////////////////////////////////
 ////////////////////// FILE PATHS ///////////////////////////
