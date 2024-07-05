@@ -16,6 +16,7 @@
 
 ## Gfx
 - replace radiance with bloom?
+- combine draw and sprite components so depth works for draw
 
 ## Map 
 - object layers
