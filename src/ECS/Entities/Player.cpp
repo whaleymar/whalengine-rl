@@ -223,8 +223,9 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<RigidBody>();
     // player.add<FreeControl>();
 
-    player.add(PointLight{TEXELS_PER_TILE * 4, TEXELS_PER_TILE, {255, 255, 204, 255}});
-    player.add(Radiance{TEXELS_PER_TILE * 1, TEXELS_PER_TILE, {255, 255, 255, 175}});
+    player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
+    // player.add(BoxLight{{TEXELS_PER_TILE * 3, TEXELS_PER_TILE, {255, 255, 204, 255}}, frame.dimensionsTexels});
+    // player.add(Radiance{TEXELS_PER_TILE * 1, TEXELS_PER_TILE, {255, 255, 255, 175}});
 
     player.add(Respawn{2, &respawnPlayer, transform.position,
                        []() {

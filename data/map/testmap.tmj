@@ -649,6 +649,26 @@
                 }, 
                 {
                  "id":45,
+                 "properties":[
+                        {
+                         "name":"Light",
+                         "propertytype":"Component_PointLight",
+                         "type":"class",
+                         "value":
+                            {
+                             "radiusTexels":64
+                            }
+                        }, 
+                        {
+                         "name":"Radiance",
+                         "propertytype":"Component_Radiance",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff557f",
+                             "radiusTexels":8
+                            }
+                        }],
                  "template":"templates\/LightBlock.tj",
                  "type":"Entity",
                  "x":54,
@@ -844,6 +864,7 @@
          "type":"class",
          "value":
             {
+             "LightLevel":0,
              "isWorldEntryPoint":true
             }
         }, 

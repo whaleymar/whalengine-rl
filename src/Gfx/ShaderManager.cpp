@@ -18,6 +18,7 @@ ShaderManager::ShaderManager() {
     static const ShaderInfo shaderInfo[] = {
         {Shaders::Default, 0, 0},
         {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
+        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl"},
         {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
         {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl"},

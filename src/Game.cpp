@@ -114,7 +114,7 @@ bool Game::startup() {
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()
-        .registerSystems<DrawSystem, SpriteSystem, DrawDebugSystem, PointLightSystem,
+        .registerSystems<DrawSystem, SpriteSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
                          RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
         .registerSystems<QuadTreeSystem>()
@@ -134,7 +134,6 @@ void Game::mainloop() {
     auto drawSystem = System::world->getSystem<DrawSystem>();
     auto spriteSystem = System::world->getSystem<SpriteSystem>();
     auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
-    auto lightSystem = System::world->getSystem<PointLightSystem>();
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
     // load scene
@@ -222,7 +221,7 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        lightSystem->update();     // this gets drawn to its own texture
+        drawLights();
         radianceSystem->update();  // this gets drawn to its own texture
 
         // do backgrounds on their own texture so lighting doesn't affect them

@@ -6,7 +6,7 @@ typedef struct Shader Shader;
 
 namespace whal {
 
-enum class Shaders : s16 { Default = 0, PointLight, Radiance, Silhouette, Quantize, Outline, _Count_DO_NOT_USE_ME };
+enum class Shaders : s16 { Default = 0, PointLight, BoxLight, Radiance, Silhouette, Quantize, Outline, _Count_DO_NOT_USE_ME };
 
 class ShaderManager {
 public:
