@@ -1,5 +1,6 @@
 #include "Tiled.h"
 
+#include "ECS/Light.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"
 #include "Map/EntityFactory.h"
@@ -104,6 +105,22 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         map.name = "Unknown";
     }
     level.name = map.name;
+
+    // add ambient lighting for the level
+    auto eEntity = System::world->entity();
+    if (eEntity.isExpected()) {
+        auto lightEntity = eEntity.value();
+        // idk why but i need 1 tile of extra height
+        lightEntity.add(Transform2D(level.worldOffsetPixels +
+                                    toIntVec(level.sizeTexels * 0.5 + Vector2f(-FTEXELS_PER_TILE / 2, FTEXELS_PER_TILE)) * PIXELS_PER_TEXEL));
+
+        BoxLight boxLight = {{3 * TEXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, toIntVec(level.sizeTexels * 0.5)};
+        lightEntity.add(boxLight);
+
+        level.childEntities.insert(lightEntity);
+    } else {
+        print("Couldn't allocate entity for level lighting");
+    }
 
     return map;
 }
@@ -480,7 +497,13 @@ static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
             auto mapInfo = property["value"];
             bool isWorldEntryPoint = false;
             tryReadBool(mapInfo, "isWorldEntryPoint", &isWorldEntryPoint);
-            Level::LevelInfo lvlInfo = {isWorldEntryPoint};
+
+            LevelLighting light = LevelLighting::Normal;
+            if (mapInfo.contains("LightLevel")) {
+                light = mapInfo["LightLevel"];
+            }
+
+            Level::LevelInfo lvlInfo = {isWorldEntryPoint, light};
             return lvlInfo;
         }
     }

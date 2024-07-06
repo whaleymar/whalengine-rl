@@ -18,6 +18,15 @@
 
 namespace whal {
 
+Color getLightColor(LevelLighting lightLevel) {
+    switch (lightLevel) {
+    case LevelLighting::Normal:
+        return WHITE;
+    case LevelLighting::Dark:
+        return BLACK;
+    }
+}
+
 bool Scene::isValid() const {
     return startLevelIx >= 0;
 }

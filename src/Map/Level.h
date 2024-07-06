@@ -10,13 +10,19 @@
 #include "ECS/Relationships.h"
 #include "Util/Vector.h"
 
+typedef struct Color Color;
+
 namespace whal {
 
 struct TileMap;
 
+enum class LevelLighting { Dark, Normal };
+Color getLightColor(LevelLighting);
+
 struct Level {
     struct LevelInfo {
         bool isWorldEntryPoint = false;
+        LevelLighting lighting = LevelLighting::Normal;
     };
     std::string filepath;           // used for level comparisons
     Vector2f worldPosOriginTexels;  // top left

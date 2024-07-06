@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "testmap.tmj",
+    "activeFile": "testmap2.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -23,14 +23,14 @@
         },
         "testmap.tmj": {
             "expandedObjectLayers": [
-                6,
-                11
+                11,
+                6
             ],
             "scale": 3,
-            "selectedLayer": 5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 397.3333333333333,
+                "y": 90.5
             }
         },
         "testmap2.tmj": {
@@ -40,8 +40,8 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 76.99999999999999,
+                "y": 90.16666666666667
             }
         },
         "tile-collision.tsj": {
@@ -59,8 +59,8 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 240,
-                "y": 95.83333333333333
+                "x": -149.66666666666666,
+                "y": 147.16666666666663
             }
         }
     },
@@ -84,12 +84,12 @@
         "prefab-editor.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Depth",
+    "property.type": "LightLevel",
     "recentFiles": [
+        "testmap.tmj",
         "prefab-editor.tmj",
         "widemap.tmj",
         "testmap2.tmj",
-        "testmap.tmj",
         "tile-collision.tsj",
         "tileset-small.tsj"
     ]

@@ -509,6 +509,17 @@
             ]
         },
         {
+            "id": 38,
+            "name": "LightLevel",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "Dark",
+                "Normal"
+            ],
+            "valuesAsFlags": false
+        },
+        {
             "color": "#ffa0a0a4",
             "drawFill": true,
             "id": 15,
@@ -566,6 +577,12 @@
             "drawFill": true,
             "id": 22,
             "members": [
+                {
+                    "name": "LightLevel",
+                    "propertyType": "LightLevel",
+                    "type": "int",
+                    "value": 1
+                },
                 {
                     "name": "isWorldEntryPoint",
                     "type": "bool",
