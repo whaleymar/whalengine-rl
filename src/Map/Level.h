@@ -33,7 +33,6 @@ struct Level {
 };
 
 struct ActiveLevel : public Level {
-    std::string name;
     std::set<ecs::Entity> childEntities;
     Vector2i worldOffsetPixels;
 
