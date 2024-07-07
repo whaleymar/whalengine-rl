@@ -2,6 +2,7 @@
 
 #include "ECS/Light.h"
 #include "Game.h"
+#include "Game/Components/Blaster.h"
 #include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 
@@ -186,23 +187,20 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<PlayerControl>();
     player.add<Jumper>();
     player.add<Wiggle>();
+    player.add<Blaster>();
 
-    if (!getCamera()) {
-        createCamera(player);
-    } else {
-        // check what kind of camera the level we're in uses
-        bool followPlayer = true;
-        auto levelOpt = Game::instance().getScene().getLevelAt(transform.position);
-        if (levelOpt) {
-            auto activeLevel = Game::instance().getScene().getLoadedLevel(*levelOpt);
-            if (activeLevel.isExpected() && !activeLevel.value()->cameraFollow) {
-                followPlayer = false;
-            }
+    // check what kind of camera the level we're in uses
+    bool followPlayer = true;
+    auto levelOpt = Game::instance().getScene().getLevelAt(transform.position);
+    if (levelOpt) {
+        auto activeLevel = Game::instance().getScene().getLoadedLevel(*levelOpt);
+        if (activeLevel.isExpected() && !activeLevel.value()->cameraFollow) {
+            followPlayer = false;
         }
+    }
 
-        if (followPlayer) {
-            setCameraTarget(player);
-        }
+    if (followPlayer) {
+        setCameraTarget(player);
     }
 
     // graphics

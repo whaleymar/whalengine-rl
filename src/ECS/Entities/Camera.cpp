@@ -13,7 +13,7 @@
 
 namespace whal {
 
-Expected<ecs::Entity> createCamera(ecs::Entity target) {
+Expected<ecs::Entity> createCamera(Transform2D trans) {
     auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected;
@@ -21,10 +21,8 @@ Expected<ecs::Entity> createCamera(ecs::Entity target) {
     auto _ = ecs::DeferActivate(expected.value());
 
     auto camera = expected.value();
-    Transform2D trans = target.get<Transform2D>();
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
-    camera.add(Follow(target));
     camera.add<Velocity>();
     camera.add(Name("Camera"));
     camera.add<Camera>();
