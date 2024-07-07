@@ -7,6 +7,7 @@
 #include "ECS/Systems/CollisionManager.h"
 #include "ECS/TriggerZone.h"
 #include "Events/Events.h"
+#include "Game.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
 
@@ -18,6 +19,7 @@
 
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -210,8 +212,24 @@ void PhysicsSystem::update() {
     // done after all movement in case things get pushed by others
     for (auto entity : allColliderEntities) {
         Transform2D& trans = entity.get<Transform2D>();
-        auto shape = entity.get<Collider>().getShape();
-        trans.position = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
+        auto const shape = entity.get<Collider>().getShape();
+        auto const newPosition = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
+
+        // make sure player(s) can't go out of bounds
+        if (entity.has<Player>()) {
+            if (Game::instance().getScene().getLevelAt(newPosition)) {
+                trans.position = newPosition;
+            } else {
+                // tried to go out of bounds. simulate fake collision with world boundary
+                auto closestPointInBounds = Game::instance().getScene().getClosestPositionInBounds(newPosition);
+                trans.position = closestPointInBounds;
+                QuadTreeSystem::updatePosition(entity, &entity.get<Collider>().getShapeMutable(), trans);
+            }
+
+        } else {
+            trans.position = newPosition;
+        }
+
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
             (*precisePositionOpt)->position = toFloatVec(trans.position);
         }

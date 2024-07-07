@@ -89,6 +89,27 @@ Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const 
     return NULLOPT;
 }
 
+Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
+    Vector2i worldPosTexels = toIntVecRounded(toFloatVec(worldPos) * FTEXELS_PER_PIXEL);
+    s32 minDistance = 999999;
+    Vector2i closestPosition;
+    for (Level lvl : allLevels) {
+        const AABB lvlBox(toIntVec(lvl.worldPosOriginTexels + lvl.sizeTexels * Vector2f(0.5, -0.5)), toIntVec(lvl.sizeTexels * 0.5));
+
+        const auto delta = worldPosTexels - lvlBox.getPosition();
+        const auto half = lvlBox.getHalf();
+        const auto closestPoint = lvlBox.getPosition() + Vector2i(clamp(delta.x(), -half.x(), half.x()), clamp(delta.y(), -half.y(), half.y()));
+
+        s32 distance = (closestPoint - worldPosTexels).len();
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestPosition = closestPoint;
+        }
+    }
+
+    return closestPosition * PIXELS_PER_TEXEL;
+}
+
 Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     for (auto& active : loadedLevels) {
         if (active == level) {

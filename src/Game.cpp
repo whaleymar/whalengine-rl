@@ -425,15 +425,15 @@ void Game::checkIfInNewLevel(bool overrideCache) {
     static std::string lastLevel = "default";
     std::string curLevel;
     ecs::Entity player = System::world->getSystem<PlayerSystem>()->first();
-    ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
+    // ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
 
     // add halfX so visually the middle of the player has to enter the new level for it to change
     Vector2i playerPosition = player.get<Transform2D>().position + Vector2i(player.get<Collider>().getShape().getHalf().x(), 0);
     auto levelOpt = mActiveScene.getLevelAt(playerPosition);
 
-    bool doDefaultCamera = false;
+    // bool doDefaultCamera = false;
     if (!levelOpt) {
-        doDefaultCamera = true;
+        // doDefaultCamera = true;
     } else {
         curLevel = levelOpt->filepath;
         if (!overrideCache && curLevel == lastLevel) {
@@ -444,24 +444,24 @@ void Game::checkIfInNewLevel(bool overrideCache) {
         Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(*levelOpt);
         if (!activeOpt.isExpected()) {
             print("Couldn't load level. Got error:", activeOpt.error());
-            doDefaultCamera = true;
+            // doDefaultCamera = true;
         } else {
             System::eventMgr.triggerEvent<EnteredLevelEvent>(player, *activeOpt.value());
         }
     }
-    if (doDefaultCamera) {
-        curLevel = "default";
-        if (!overrideCache && curLevel == lastLevel) {
-            return;
-        }
-        lastLevel = curLevel;
-        Follow follow = Follow(player);
-        if (camera.has<Follow>()) {
-            camera.set(follow);
-        } else {
-            camera.add(follow);
-        }
-    }
+    // if (doDefaultCamera) {
+    //     curLevel = "default";
+    //     if (!overrideCache && curLevel == lastLevel) {
+    //         return;
+    //     }
+    //     lastLevel = curLevel;
+    //     Follow follow = Follow(player);
+    //     if (camera.has<Follow>()) {
+    //         camera.set(follow);
+    //     } else {
+    //         camera.add(follow);
+    //     }
+    // }
 }
 
 void Game::loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount) {
