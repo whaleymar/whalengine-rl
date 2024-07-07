@@ -11,7 +11,9 @@ namespace ecs {
 class Entity;
 }
 
-Expected<ecs::Entity> createCamera(ecs::Entity target);
+struct Transform2D;
+
+Expected<ecs::Entity> createCamera(Transform2D transform);
 RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextPosition);
 
 }  // namespace whal

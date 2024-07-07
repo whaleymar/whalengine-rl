@@ -362,8 +362,19 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
         return errOpt;
     }
 
-    Vector2i startPos = mActiveScene.loadSceneAndGetStartPosition();
-    setCameraPosition(startPos);
+    auto eFirstLevel = mActiveScene.loadAndGetFirstLevel();
+    if (!eFirstLevel.isExpected()) {
+        return eFirstLevel.error();
+    }
+
+    Vector2i startPos = eFirstLevel.value()->initialSpawnPoint;
+    Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
+
+    if (!getCamera()) {
+        createCamera(Transform2D(cameraFocus));
+    } else {
+        setCameraPosition(cameraFocus);
+    }
     updateLoadedLevels(toFloatVec(startPos));
 
     mIsSceneLoaded = true;

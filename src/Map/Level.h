@@ -54,7 +54,7 @@ struct Scene {
     bool isValid() const;
     Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);
     Level getStartLevel() const;
-    Vector2i loadSceneAndGetStartPosition();
+    Expected<ActiveLevel*> loadAndGetFirstLevel();
     Vector2i getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i position);
     Corrade::Containers::Optional<Level> getLevelAt(Vector2i worldPosition) const;
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;

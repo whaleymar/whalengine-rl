@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-start.tmj",
+    "activeFile": "world1-jumptutorial.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -74,8 +74,8 @@
             "scale": 2.66296875,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 159.97183594437598,
-                "y": 95.94554949246024
+                "x": -169.92313559819283,
+                "y": 141.00803849087603
             }
         },
         "world1-start.tmj": {
@@ -120,8 +120,8 @@
     "property.type": "Depth",
     "recentFiles": [
         "mossy-tileset.tsj",
-        "world1-jumptutorial.tmj",
         "world1-start.tmj",
+        "world1-jumptutorial.tmj",
         "world1.tmj",
         "testmap2.tmj",
         "prefab-editor.tmj",

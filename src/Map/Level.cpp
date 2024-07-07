@@ -44,18 +44,12 @@ Level Scene::getStartLevel() const {
     return allLevels[startLevelIx];
 }
 
-Vector2i Scene::loadSceneAndGetStartPosition() {
-    auto eStartLvlActive = getLoadedLevel(getStartLevel());
-    if (!eStartLvlActive.isExpected()) {
-        print("Got error in getStartPosition: ", eStartLvlActive.error());
-        return {};
-    } else if (eStartLvlActive.value()->spawnPoints.size() == 0) {
-        print(eStartLvlActive.value()->filepath, "has no spawn points, but one was requested");
-        return {};
+Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
+    auto eActiveLevel = getLoadedLevel(getStartLevel());
+    if (eActiveLevel.isExpected()) {
+        initialSpawnPoint = eActiveLevel.value()->initialSpawnPoint;
     }
-
-    initialSpawnPoint = eStartLvlActive.value()->initialSpawnPoint;
-    return initialSpawnPoint;
+    return eActiveLevel;
 }
 
 Vector2i Scene::getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i referencePoint) {

@@ -23,8 +23,6 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
-#include "Game/Components/Blaster.h"
-
 void createTestPlatform();
 void createTestTrigger();
 void createTestSemiSolid();
@@ -54,8 +52,6 @@ Corrade::Containers::Optional<Error> loadTestMap() {
     if (!ePlayer.isExpected()) {
         return ePlayer.error();
     }
-    auto player = ePlayer.value();
-    player.add<Blaster>();
 
     return err;
 }
