@@ -6,7 +6,7 @@
 		<img n="map/celeste-treesdark" x="321" y="0" w="320" h="151" />
 		<img n="map/celeste-treesbg" x="642" y="0" w="320" h="135" />
 		<img n="actor/palette" x="963" y="0" w="256" h="16" />
-		<img n="map/reduced_tiledset" x="1220" y="0" w="40" h="40" />
+		<img n="map/tileset-mossy" x="1220" y="0" w="48" h="48" />
 		<img n="effect/explosion6" x="963" y="17" w="32" h="32" />
 		<img n="effect/explosion5" x="996" y="17" w="32" h="32" />
 		<img n="effect/explosion4" x="1029" y="17" w="32" h="32" />
@@ -30,36 +30,35 @@
 		<img n="actor/witch-run8" x="1099" y="50" w="16" h="20" />
 		<img n="actor/witch-run7" x="1116" y="50" w="16" h="20" />
 		<img n="actor/witch-run6" x="1133" y="50" w="16" h="20" />
-		<img n="actor/witch-run5" x="1261" y="0" w="16" h="20" />
-		<img n="actor/witch-run4" x="1278" y="0" w="16" h="20" />
-		<img n="actor/witch-run3" x="1295" y="0" w="16" h="20" />
-		<img n="actor/witch-run2" x="1312" y="0" w="16" h="20" />
-		<img n="actor/witch-run1" x="1329" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising4" x="1346" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising3" x="1363" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising2" x="1380" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising1" x="1397" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_peak2" x="1414" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_peak1" x="1431" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward2" x="1346" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward1" x="1448" y="0" w="16" h="20" />
-		<img n="actor/witch-idle5" x="1465" y="0" w="16" h="20" />
-		<img n="actor/witch-idle4" x="1482" y="0" w="16" h="20" />
-		<img n="actor/witch-idle3" x="1499" y="0" w="16" h="20" />
-		<img n="actor/witch-idle2" x="1516" y="0" w="16" h="20" />
+		<img n="actor/witch-run5" x="1269" y="0" w="16" h="20" />
+		<img n="actor/witch-run4" x="1286" y="0" w="16" h="20" />
+		<img n="actor/witch-run3" x="1303" y="0" w="16" h="20" />
+		<img n="actor/witch-run2" x="1320" y="0" w="16" h="20" />
+		<img n="actor/witch-run1" x="1337" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising4" x="1354" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising3" x="1371" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising2" x="1388" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising1" x="1405" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_peak2" x="1422" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_peak1" x="1439" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward2" x="1354" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward1" x="1456" y="0" w="16" h="20" />
+		<img n="actor/witch-idle5" x="1473" y="0" w="16" h="20" />
+		<img n="actor/witch-idle4" x="1490" y="0" w="16" h="20" />
+		<img n="actor/witch-idle3" x="1507" y="0" w="16" h="20" />
+		<img n="actor/witch-idle2" x="1524" y="0" w="16" h="20" />
 		<img n="actor/witch-idle1" x="1082" y="50" w="16" h="20" />
-		<img n="actor/witch-fall4" x="1414" y="0" w="16" h="20" />
-		<img n="actor/witch-fall3" x="1533" y="0" w="16" h="20" />
-		<img n="actor/witch-fall2" x="1550" y="0" w="16" h="20" />
-		<img n="actor/witch-fall1" x="1567" y="0" w="16" h="20" />
-		<img n="effect/bluefire4" x="1584" y="0" w="15" h="20" />
-		<img n="effect/bluefire3" x="1600" y="0" w="15" h="20" />
-		<img n="effect/bluefire2" x="1616" y="0" w="15" h="20" />
-		<img n="effect/bluefire1" x="1632" y="0" w="15" h="20" />
-		<img n="map/collision-binary-tile" x="1150" y="50" w="8" h="8" />
-		<img n="tile/testgrass" x="1648" y="0" w="8" h="8" />
-		<img n="tile/translucent" x="1657" y="0" w="8" h="8" />
-		<img n="tile/dirtblock" x="1666" y="0" w="8" h="8" />
-		<img n="tile/purpledirt" x="1675" y="0" w="8" h="8" />
+		<img n="actor/witch-fall4" x="1422" y="0" w="16" h="20" />
+		<img n="actor/witch-fall3" x="1541" y="0" w="16" h="20" />
+		<img n="actor/witch-fall2" x="1558" y="0" w="16" h="20" />
+		<img n="actor/witch-fall1" x="1575" y="0" w="16" h="20" />
+		<img n="effect/bluefire4" x="1592" y="0" w="15" h="20" />
+		<img n="effect/bluefire3" x="1608" y="0" w="15" h="20" />
+		<img n="effect/bluefire2" x="1624" y="0" w="15" h="20" />
+		<img n="effect/bluefire1" x="1640" y="0" w="15" h="20" />
+		<img n="tile/testgrass" x="1150" y="50" w="8" h="8" />
+		<img n="tile/translucent" x="1656" y="0" w="8" h="8" />
+		<img n="tile/dirtblock" x="1665" y="0" w="8" h="8" />
+		<img n="tile/purpledirt" x="1674" y="0" w="8" h="8" />
 	</tex>
 </atlas>

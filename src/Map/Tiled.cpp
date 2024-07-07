@@ -88,23 +88,13 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         map.tilesets.push_back(tset);
     }
 
-    bool isNameFound = false;
     for (auto& property : data["properties"]) {
         std::string propName = readString(property, "name");
         std::string propType = readString(property, "type");
-        if (propName == "Name") {
-            std::string mapName = readString(property, "value");
-            map.name = mapName;
-            isNameFound = true;
-        } else if (propName == "CameraFollowParams") {
+        if (propName == "CameraFollowParams") {
             level.cameraFollow = loadFollowComponent(property["value"], level);
         }
     }
-    if (!isNameFound) {
-        print("A `Name` Property wasn't found in ", path);
-        map.name = "Unknown";
-    }
-    level.name = map.name;
 
     // add ambient lighting for the level
     auto eEntity = System::world->entity();

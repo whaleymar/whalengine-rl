@@ -38,7 +38,7 @@ public:
 
 private:
     struct CacheItem {
-        const char* path;
+        std::string path;
         T data;
     };
 

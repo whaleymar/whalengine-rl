@@ -35,14 +35,15 @@ void createPaletteTest();
 using namespace whal;
 
 Corrade::Containers::Optional<Error> loadMap() {
-    const char* scenefile = "testworld.world";
+    // const char* scenefile = "testworld.world";
+    const char* scenefile = "world1.world";
     return Game::instance().loadScene(scenefile);
 }
 
 Corrade::Containers::Optional<Error> loadTestMap() {
     // createTestPlatform();
     auto err = loadMap();
-    createTestPlatform();
+    // createTestPlatform();
     // createTestMouseTracker();
     // createTestTrigger();
     // createTestSemiSolid();

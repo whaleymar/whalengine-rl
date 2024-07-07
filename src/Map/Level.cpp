@@ -50,7 +50,7 @@ Vector2i Scene::loadSceneAndGetStartPosition() {
         print("Got error in getStartPosition: ", eStartLvlActive.error());
         return {};
     } else if (eStartLvlActive.value()->spawnPoints.size() == 0) {
-        print(eStartLvlActive.value()->name, "has no spawn points, but one was requested");
+        print(eStartLvlActive.value()->filepath, "has no spawn points, but one was requested");
         return {};
     }
 
@@ -108,9 +108,8 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x(), level.worldPosOriginTexels.y() - level.sizeTexels.y()).position;
-    ActiveLevel lvl = {level, "", {}, worldOffsetPixels, {}, {}, {}, {}};
+    ActiveLevel lvl = {level, {}, worldOffsetPixels, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
-    print("loaded", map.name);
 
     std::vector<std::vector<s32>> collisionGrid;
     for (s32 x = 0; x < map.widthTiles; x++) {
@@ -190,7 +189,7 @@ void unloadLevel(ActiveLevel& level) {
     for (auto entity : toKill) {
         entity.kill();
     }
-    print("unloaded level:", level.name);
+    print("unloaded level:", level.filepath);
 }
 
 void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32, s32> endPoint) {
