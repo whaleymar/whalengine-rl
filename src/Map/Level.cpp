@@ -116,6 +116,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
         // std::vector<s32> collisionColumn;
         for (s32 y = 0; y < map.heightTiles; y++) {
             Transform2D trans = Transform2D(Transform2D::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
+            trans.facing = Facing::Right;
             s32 ix = map.widthTiles * y + x;
 
             for (auto& layer : map.layers) {
