@@ -401,6 +401,23 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 39,
+            "members": [
+                {
+                    "name": "target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Switch",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 34,
             "members": [
                 {

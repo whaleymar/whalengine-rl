@@ -211,7 +211,6 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add(sprite);
 
     constexpr s32 width = 16;
-    // constexpr s32 height = 16;
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
     constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
     player.add(Collider::Actor(transform, Vector2i(halfLenX, halfLenY)));

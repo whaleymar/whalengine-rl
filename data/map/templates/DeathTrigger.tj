@@ -1,0 +1,31 @@
+{ "object":
+    {
+     "height":80,
+     "id":3,
+     "name":"DeathTrigger",
+     "properties":[
+            {
+             "name":"Draw",
+             "propertytype":"Component_Draw",
+             "type":"class",
+             "value":
+                {
+                 "Color":"#ffff55ff"
+                }
+            }, 
+            {
+             "name":"Trigger",
+             "propertytype":"Component_Trigger",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":16
+    },
+ "type":"template"
+}
