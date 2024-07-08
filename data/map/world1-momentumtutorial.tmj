@@ -185,6 +185,96 @@
                  "width":0,
                  "x":92,
                  "y":116
+                }, 
+                {
+                 "id":8,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":9
+                            }
+                        }],
+                 "template":"templates\/RailsMoveSwitch.tj",
+                 "x":108,
+                 "y":70
+                }, 
+                {
+                 "height":24,
+                 "id":9,
+                 "name":"Gate2",
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "Layer":"Solid"
+                            }
+                        }, 
+                        {
+                         "name":"Draw",
+                         "propertytype":"Component_Draw",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffff0000"
+                            }
+                        }, 
+                        {
+                         "name":"Rails",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":10,
+                             "isCycle":false,
+                             "speed":50
+                            }
+                        }],
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":206,
+                 "y":96
+                }, 
+                {
+                 "height":0,
+                 "id":10,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-24
+                        }],
+                 "properties":[
+                        {
+                         "name":"move1",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"move2",
+                         "propertytype":"RailsMovement",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":210,
+                 "y":116
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -193,7 +283,7 @@
          "y":0
         }],
  "nextlayerid":3,
- "nextobjectid":8,
+ "nextobjectid":11,
  "orientation":"orthogonal",
  "properties":[
         {

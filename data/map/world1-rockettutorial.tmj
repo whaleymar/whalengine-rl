@@ -117,10 +117,10 @@
                  "visible":true,
                  "width":48,
                  "x":88,
-                 "y":160
+                 "y":168
                 }, 
                 {
-                 "height":8,
+                 "height":16,
                  "id":9,
                  "name":"Rubble",
                  "properties":[
@@ -147,7 +147,7 @@
                  "visible":true,
                  "width":48,
                  "x":88,
-                 "y":8
+                 "y":0
                 }, 
                 {
                  "id":11,

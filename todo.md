@@ -1,15 +1,17 @@
 # To Do 
 
 ## Current Goal: 
-- camera rework
+- levels!
+
+## levels and game mechanics (each thing should have a level that teaches how to use)
+- limited ammo: 4 shots, reload on landing
+    - needs visual indicator
+- parachute
 
 ## Camera / Follow
 - pretty awful in general
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
-
-## Entity Prefabs
-- death plane
 
 ## Components
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system

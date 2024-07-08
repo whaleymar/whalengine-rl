@@ -16,12 +16,18 @@ struct PlayerControl;
 
 struct Blaster {
     f32 projectileSpeed = 160;  // same as terminal velocity
-    f32 shotKnockback = 50;
+    f32 shotKnockback = 52;
     f32 projectileLifetimeSeconds = 3.5;
     f32 explosionRadius = FPIXELS_PER_TILE * 2.5;
-    Vector2i aimDirection;
+    f32 cooldownSeconds = 0.25;
+    Vector2i aimDirection;  // TODO enum
+    s32 maxShots = 4;
+    Vector2f pushStrengthDefault = {100, 105};
+    Vector2f pushStrengthDownAngle = {100, 150};
 
     Corrade::Containers::Optional<whal::ecs::Entity> aimReticle = Corrade::Containers::NullOpt;
+    f32 cooldownRemaining = 0;
+    s32 shotsRemaining = maxShots;
 };
 
 struct RocketJumping {

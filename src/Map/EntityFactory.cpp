@@ -5,6 +5,7 @@
 #include "ECS/Draw.h"
 #include "ECS/RailsControl.h"
 #include "ECS/RigidBody.h"
+#include "ECS/Tags.h"
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 #include "Game/Components/Switch.h"
@@ -35,6 +36,9 @@ void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledT
 void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
     auto collisionCallback = [](ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
                                 Vector2i hitNormal) {
+        if (other.has<Particle>() || hitNormal.y() != 1) {
+            return;
+        }
         auto& rails = callbackEntity.get<RailsControl>();
         if (rails.isWaiting && rails.curTarget == 0) {
             rails.startManually();

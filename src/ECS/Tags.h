@@ -24,5 +24,6 @@ struct Player {};
 struct Camera {};
 struct AudioListener {};
 struct FreeControl {};  // lets entity move in any direction; an entity shouldn't have this component + rigidbody
+struct Particle {};
 
 }  // namespace whal

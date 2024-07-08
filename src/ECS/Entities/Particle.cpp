@@ -4,6 +4,7 @@
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
 #include "ECS/Name.h"
+#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "Settings.h"
 
@@ -23,6 +24,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lif
     particle.add(PrecisePosition::fromTrans(transform));
     particle.add(Draw(color, Vector2i(1, 1), Depth::Foreground1));
     particle.add(Lifetime(lifetime));
+    particle.add<Particle>();
 
     return particle;
 }
@@ -40,6 +42,7 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
     particle.add(Name("particle"));
     particle.add(Draw(color, Vector2i(1, 1), Depth::Foreground1));
     particle.add(Lifetime(lifetime));
+    particle.add<Particle>();
 
     s32 radius = TEXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});

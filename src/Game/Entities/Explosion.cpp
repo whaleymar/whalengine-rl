@@ -5,6 +5,7 @@
 #include "ECS/PlayerControl.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
+#include "Game/MathUtil.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
@@ -60,16 +61,30 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();
         Vector2f delta = toFloatVec(otherCollider.getPosition() - center);
-        auto unitDelta = delta.isZero() ? Vector2f::zero : delta.norm();
+        auto unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
 
         // slight knockback falloff based on distance
         auto circle = trigger.shape.getCircle();
-        f32 distanceMultiplier = 1 - std::pow(circle.getDistanceFromCenter(&otherCollider) / circle.getRadius(), 2);
+        auto distanceFromCenter = circle.getDistanceFromCenter(&otherCollider);
+
+        f32 distanceMultiplier = 1 - std::pow(distanceFromCenter / circle.getRadius(), 2);
         PushStrength cPushStrength = self.get<PushStrength>();
 
         Velocity& vel = other.get<Velocity>();
         // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
         auto impulse = unitDelta * distanceMultiplier * cPushStrength.strength;
+        // if (other.has<Player>()) {
+        //     print("circle center: ", circle.getPosition());
+        //     print("player center: ", otherCollider.getPosition());
+        //     print("Distance from explosion center: ", distanceFromCenter);
+        //     // print("(rounded from): ", prevValue);
+        //     print("Distance Multiplier: ", distanceMultiplier);
+        //     print("Player Velocity before push: ", vel.stable);
+        //     print("unitDelta: ", unitDelta);
+        //     print("strength: ", cPushStrength.strength);
+        //     print("Impulse force: ", impulse);
+        //     print("");
+        // }
         vel.stable += impulse;
 
         // ----------------------------
