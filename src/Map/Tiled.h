@@ -37,6 +37,7 @@ struct EntityMapData {
     Vector2i dimensionsTexels;
     s32 id;
     bool isPoint;
+    bool isParsingTemplate = false;
 };
 
 struct TileLayer {

@@ -27,7 +27,7 @@
 using namespace whal;
 
 // skip explosion if we're colliding with the entity that shot us and the shot just occurred
-bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
+static bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
     constexpr f32 selfCollisionEnableTime = 0.5f;
 
     auto projectileInfo = self.get<ProjectileInfo>();
@@ -40,7 +40,7 @@ bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
     return false;
 }
 
-void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
+static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     if (surfaceNormal.y() > 0) {
         center.e[1]--;  // so doesn't get stuck
     }
@@ -91,7 +91,7 @@ void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     }
 }
 
-void makeDefaultExplosion(ecs::Entity self) {
+static void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
 
     Vector2f pushStrength = {100, 100};
@@ -103,7 +103,7 @@ void makeDefaultExplosion(ecs::Entity self) {
     }
 }
 
-void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
+static void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
     if (!selfCollider->isAlive()) {
         return;
     }

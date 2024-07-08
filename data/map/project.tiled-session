@@ -5,8 +5,8 @@
     },
     "activeFile": "world1-momentumtutorial.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -67,15 +67,26 @@
                 "y": 145.16666666666663
             }
         },
+        "world1-blaster_get.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2.6778125,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 151.42957171198506,
+                "y": -21.472750612673593
+            }
+        },
         "world1-jumptutorial.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3.04890625,
+            "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 160.05739763234766,
-                "y": 95.93604263824118
+                "x": 398.64628311354886,
+                "y": -109.97782705099777
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -83,10 +94,10 @@
                 2
             ],
             "scale": 2.6778125,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": -74.6878282179951,
-                "y": 146.94830201890537
+                "x": -173.8359201773836,
+                "y": 96.90745711284862
             }
         },
         "world1-rockettutorial.tmj": {
@@ -96,8 +107,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 435.43003851091146,
-                "y": 146.57486287781538
+                "x": 11.016454662154274,
+                "y": 273.1707317073171
             }
         },
         "world1-start.tmj": {
@@ -107,7 +118,7 @@
             "scale": 3.04890625,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 160.05739763234766,
+                "x": 160.0573976323477,
                 "y": 95.93604263824118
             }
         },
@@ -138,7 +149,8 @@
         "world1-start.tmj",
         "world1-jumptutorial.tmj",
         "world1-rockettutorial.tmj",
-        "world1-momentumtutorial.tmj"
+        "world1-momentumtutorial.tmj",
+        "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
     "property.type": "RailsMovement",
@@ -147,14 +159,14 @@
         "world1-start.tmj",
         "world1-jumptutorial.tmj",
         "world1-rockettutorial.tmj",
+        "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",
         "world1.tmj",
         "testmap2.tmj",
         "prefab-editor.tmj",
         "tileset-small.tsj",
         "widemap.tmj",
-        "testmap.tmj",
-        "tile-collision.tsj"
+        "testmap.tmj"
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {

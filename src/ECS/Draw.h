@@ -22,7 +22,9 @@ inline static Color Clear = {0, 0, 0, 0};
 inline static Color Magenta = {255, 0, 255, 255};
 inline static Color Emerald = {80, 204, 96, 255};
 inline static Color Purple = {198, 51, 242, 255};
-inline static Color Pink = {242, 116, 217, 255};
+// inline static Color Pink = {242, 116, 217, 255};
+inline static Color Pink = {255, 170, 255, 255};
+inline static Color LightBlue = {85, 255, 255, 255};
 
 }  // namespace Colors
 

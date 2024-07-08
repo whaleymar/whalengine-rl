@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/Respawn.h"
+#include "Game/Save/EventFlags.h"
 #include "whalECS/src/ECS.h"
 
 #include "Settings.h"
@@ -187,7 +188,10 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<PlayerControl>();
     player.add<Jumper>();
     player.add<Wiggle>();
-    player.add<Blaster>();
+
+    if (EventFlags::check(EventFlags::HasMagicHat)) {
+        player.add<Blaster>();
+    }
 
     // check what kind of camera the level we're in uses
     bool followPlayer = true;

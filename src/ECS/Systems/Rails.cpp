@@ -48,11 +48,11 @@ void RailsSystem::update() {
             }
             return (*velOpt)->stable.len();
         }();
-        f32 epsilon = speed * SPEED_DIVISOR + 1;
+        f32 epsilon = speed >= 60 ? speed * SPEED_DIVISOR + 1 : 0.95;
 
         if (rails.isWaiting) {
             // waiting at checkpoint
-            if (rails.curTarget != 0 || rails.isCycle || rails.isVelocityUpdateNeeded) {
+            if (rails.isNextStepAutomatic() || rails.isVelocityUpdateNeeded) {
                 if (rails.curActionTime >= rails.waitTime) {
                     // start moving
                     rails.step();

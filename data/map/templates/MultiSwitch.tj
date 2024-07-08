@@ -1,8 +1,8 @@
 { "object":
     {
      "height":8,
-     "id":4,
-     "name":"WeightedPlatform",
+     "id":12,
+     "name":"MultiSwitch",
      "properties":[
             {
              "name":"Collider",
@@ -23,20 +23,36 @@
                 }
             }, 
             {
-             "name":"Rails",
-             "propertytype":"Component_RailsControl",
+             "name":"PointLight",
+             "propertytype":"Component_PointLight",
              "type":"class",
              "value":
                 {
-                 "isCycle":false,
-                 "speed":50,
-                 "waitTime":2
+
+                }
+            }, 
+            {
+             "name":"Radiance",
+             "propertytype":"Component_Radiance",
+             "type":"class",
+             "value":
+                {
+                 "Color":"#ffff5500"
+                }
+            }, 
+            {
+             "name":"Switch",
+             "propertytype":"Component_Switch",
+             "type":"class",
+             "value":
+                {
+
                 }
             }],
      "rotation":0,
      "type":"Entity",
      "visible":true,
-     "width":24
+     "width":8
     },
  "type":"template"
 }

@@ -269,7 +269,9 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
 
         if (pPrefab) {
             // add template components
+            entityData.isParsingTemplate = true;
             addComponents(entity, entityData, *pPrefab);
+            entityData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
             const auto name = readString(*pPrefab, "name");

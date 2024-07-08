@@ -1,8 +1,8 @@
 { "object":
     {
-     "height":8,
+     "height":24,
      "id":4,
-     "name":"WeightedPlatform",
+     "name":"Gate",
      "properties":[
             {
              "name":"Collider",
@@ -28,15 +28,24 @@
              "type":"class",
              "value":
                 {
+                 "CycleBehavior":"ManualAllSteps",
                  "isCycle":false,
-                 "speed":50,
-                 "waitTime":2
+                 "speed":50
+                }
+            }, 
+            {
+             "name":"SwitchGate",
+             "propertytype":"Component_SwitchGate",
+             "type":"class",
+             "value":
+                {
+                 "numKeys":1
                 }
             }],
      "rotation":0,
      "type":"Entity",
      "visible":true,
-     "width":24
+     "width":8
     },
  "type":"template"
 }

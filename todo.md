@@ -8,6 +8,10 @@
     - needs visual indicator
 - parachute
 
+## Polish
+- Particle emitter component on player hands/feet (?) while RJing
+- Particle emitter component on projectile
+
 ## Camera / Follow
 - pretty awful in general
 - different movement types (easein/out stuff)
@@ -35,6 +39,7 @@
 ## Misc
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
+- make component factory functions static 
 
 ## Bugs
 - cppcheck issues

@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "Game/Components/Switch.h"
 #include "json_fwd.hpp"
 
 #include "ECS/Collision.h"
@@ -50,6 +51,7 @@ public:
     inline static PointLight DefaultPointLight;
     inline static Radiance DefaultRadiance;
     inline static Lifetime DefaultLifeTime;
+    inline static SwitchGate DefaultSwitchGate;
 };
 
 void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -102,8 +104,7 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
                         ecs::Entity entity, LayerData layerData);
 
 Follow loadFollowComponent(const nlohmann::json& values, ActiveLevel& level);
-RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints,
-                                          ActiveLevel& level);
+bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level);
 
 // Utility Functions
 

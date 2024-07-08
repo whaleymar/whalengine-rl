@@ -16,7 +16,7 @@ namespace whal {
 
 struct TileMap;
 
-enum class LevelLighting { Dark, Normal };
+enum class LevelLighting { Dark, Normal, Dim };
 Color getLightColor(LevelLighting);
 
 struct Level {

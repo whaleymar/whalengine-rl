@@ -323,9 +323,10 @@
                     "value": 0
                 },
                 {
-                    "name": "isCycle",
-                    "type": "bool",
-                    "value": true
+                    "name": "CycleBehavior",
+                    "propertyType": "RailsCycleBehavior",
+                    "type": "string",
+                    "value": "ManualStart"
                 },
                 {
                     "name": "speed",
@@ -410,6 +411,28 @@
                 }
             ],
             "name": "Component_Switch",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 41,
+            "members": [
+                {
+                    "name": "isPersistent",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "numKeys",
+                    "type": "int",
+                    "value": 1
+                }
+            ],
+            "name": "Component_SwitchGate",
             "type": "class",
             "useAs": [
                 "property"
@@ -532,7 +555,8 @@
             "type": "enum",
             "values": [
                 "Dark",
-                "Normal"
+                "Normal",
+                "Dim"
             ],
             "valuesAsFlags": false
         },
@@ -627,6 +651,18 @@
                 "Water",
                 "Metal",
                 "Rubber"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "id": 40,
+            "name": "RailsCycleBehavior",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "Automatic",
+                "ManualStart",
+                "ManualAllSteps"
             ],
             "valuesAsFlags": false
         },

@@ -24,6 +24,8 @@ Color getLightColor(LevelLighting lightLevel) {
         return WHITE;
     case LevelLighting::Dark:
         return BLACK;
+    case LevelLighting::Dim:
+        return Color(125, 125, 125, 255);
     }
 }
 
