@@ -19,69 +19,6 @@
 // where a shot originates from, relative to shooter's transform
 const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
 
-Vector2f closestOrdinalDirection(Vector2f vecf) {
-    vecf = vecf.norm();
-    const f32 invRootTwo = 1.0f / std::sqrt(2.0f);
-    auto tryUnitDir = [vecf](Vector2f& closest, f32& minDegreesAway, Vector2f other) {
-        f32 otherDP = vecf.dot(other);
-        f32 degreesAway = std::abs(std::acos(otherDP));
-        if (degreesAway < minDegreesAway) {
-            closest = other;
-            minDegreesAway = degreesAway;
-        }
-    };
-
-    if (vecf.x() == 0) {
-        if (vecf.y() == 0) {
-            return {1.0, 0.0};
-        } else {
-            return Vector2f(0.0, sign(vecf.y()));
-        }
-    } else if (vecf.x() < 0) {
-        if (vecf.y() == 0) {
-            return {-1.0, 0};
-        } else if (vecf.y() < 0) {
-            // SW quadrant
-            Vector2f closest = Vector2f::unitLeft;
-            f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));
-
-            tryUnitDir(closest, degreesAway, Vector2f::unitDown);
-            tryUnitDir(closest, degreesAway, Vector2f(-1, -1) * invRootTwo);
-            return closest;
-        } else {
-            // NW quadrant
-            Vector2f closest = Vector2f::unitLeft;
-            f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));
-
-            tryUnitDir(closest, degreesAway, Vector2f::unitUp);
-            tryUnitDir(closest, degreesAway, Vector2f(-1, 1) * invRootTwo);
-            return closest;
-        }
-
-    } else {
-        if (vecf.y() == 0) {
-            return {1.0, 0};
-        } else if (vecf.y() < 0) {
-            // SE quadrant
-            Vector2f closest = Vector2f::unitRight;
-            f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));
-
-            tryUnitDir(closest, degreesAway, Vector2f::unitDown);
-            tryUnitDir(closest, degreesAway, Vector2f(1, -1) * invRootTwo);
-            return closest;
-
-        } else {
-            // NE quadrant
-            Vector2f closest = Vector2f::unitRight;
-            f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));
-
-            tryUnitDir(closest, degreesAway, Vector2f::unitUp);
-            tryUnitDir(closest, degreesAway, Vector2f(1, 1) * invRootTwo);
-            return closest;
-        }
-    }
-}
-
 void shootProjectile() {
     using namespace whal;
 
@@ -96,6 +33,15 @@ void shootProjectile() {
     // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormali);
 
     for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
+        Blaster& blaster = entity.get<Blaster>();
+        if (blaster.cooldownRemaining > 0 || blaster.shotsRemaining == 0) {
+            if (blaster.aimReticle) {
+                blaster.aimReticle->kill();
+                blaster.aimReticle = Corrade::Containers::NullOpt;
+            }
+            continue;
+        }
+
         Transform2D trans = entity.get<Transform2D>();
 
         // change where the projectile starts (relative to shooting entity)
@@ -103,13 +49,14 @@ void shootProjectile() {
         // Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
 
         Vector2f velocity;
-        Blaster& blaster = entity.get<Blaster>();
         Vector2f moveNormal = toFloatVec(blaster.aimDirection);
         velocity = moveNormal * blaster.projectileSpeed;
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
-        auto totalVel = velocity;
-        makeProjectile(entityid, shotOrigin, totalVel, blaster.projectileLifetimeSeconds, blaster.explosionRadius);
+        auto totalVelocity = velocity;
+        const bool isDownwardAngle = totalVelocity.x() != 0 && totalVelocity.y() < 0;
+        Vector2f pushStrength = isDownwardAngle ? blaster.pushStrengthDownAngle : blaster.pushStrengthDefault;
+        makeProjectile(entityid, shotOrigin, totalVelocity, blaster.projectileLifetimeSeconds, blaster.explosionRadius, pushStrength);
 
         // push shooter in opposite direction of projectile
         if (auto velOpt = entity.tryGet<Velocity>(); velOpt) {
@@ -120,6 +67,9 @@ void shootProjectile() {
 
         blaster.aimReticle->kill();
         blaster.aimReticle = Corrade::Containers::NullOpt;
+
+        blaster.cooldownRemaining = blaster.cooldownSeconds;
+        blaster.shotsRemaining--;
     }
 }
 
@@ -159,10 +109,14 @@ void ProjectileSystem::onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType 
 void ProjectileSystem::addAimReticles() {
     Vector2i aimDirection = whal::System::input.getMoveNormal();
     for (auto [entityid, entity] : getEntitiesRef()) {
+        Blaster& blaster = entity.get<Blaster>();
+        // if (blaster.cooldownRemaining > 0) {
+        //     continue;
+        // }
+
         auto childExpected = whal::System::world->entity(false);
         if (childExpected.isExpected()) {
             auto child = childExpected.value();
-            Blaster& blaster = entity.get<Blaster>();
             blaster.aimReticle = child;
             auto _ = whal::ecs::DeferActivate(child);
 
@@ -182,12 +136,23 @@ void ProjectileSystem::addAimReticles() {
 }
 
 void ProjectileSystem::update() {
-    if (!mIsAiming) {
-        return;
-    }
+    // if (!mIsAiming) {
+    //     return;
+    // }
+    f32 dt = whal::System::dt();
     Vector2i aimDirection = whal::System::input.getMoveNormal();
     for (auto [entityid, entity] : getEntitiesRef()) {
         Blaster& blaster = entity.get<Blaster>();
+
+        if (blaster.cooldownRemaining > 0) {
+            blaster.cooldownRemaining -= dt;
+        }
+        if (blaster.shotsRemaining < blaster.maxShots) {
+            if (!entity.has<whal::RigidBody>() || entity.get<whal::RigidBody>().isGrounded) {
+                blaster.shotsRemaining = blaster.maxShots;
+            }
+        }
+
         if (!blaster.aimReticle) {
             // not initialized
             continue;
