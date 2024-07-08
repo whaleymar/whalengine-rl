@@ -46,7 +46,7 @@ RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextP
                             {currentPosition, RailsControl::Movement::LINEAR},
                             {nextPosition, RailsControl::Movement::EASEO_CUBE},
                         },
-                        0, true, &onCameraAtDestination);
+                        0, RailsControl::CycleBehavior::AUTOMATIC_LOOP, &onCameraAtDestination);
 }
 
 }  // namespace whal

@@ -8,8 +8,10 @@ namespace whal {
 
 constexpr f32 SPEED_CURVE_EPSILON = 0.01;
 
-RailsControl::RailsControl(f32 moveSpeed_, std::vector<CheckPoint> checkPoints_, f32 waitTime_, bool isCycle_, ArrivalCallback callback)
-    : mCheckpoints(checkPoints_), speed(moveSpeed_), waitTime(waitTime_), arrivalCallback(callback), curActionTime(waitTime_), isCycle(isCycle_) {}
+RailsControl::RailsControl(f32 moveSpeed_, std::vector<CheckPoint> checkPoints_, f32 waitTime_, CycleBehavior cycleBehavior_,
+                           ArrivalCallback callback)
+    : mCheckpoints(checkPoints_), speed(moveSpeed_), waitTime(waitTime_), arrivalCallback(callback), curActionTime(waitTime_),
+      endBehavior(cycleBehavior_) {}
 
 void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform2D& trans) {
     mCheckpoints = std::move(checkpoints);
@@ -31,7 +33,7 @@ void RailsControl::step() {
     if (isForward) {
         curTarget++;
         if (curTarget == mCheckpoints.size()) {
-            if (endBehavior == EndBehavior::TO_START) {
+            if (isLooping()) {
                 curTarget = 0;
             } else {
                 curTarget -= 2;
@@ -153,6 +155,16 @@ f32 RailsControl::getSpeedNew() {
 
 bool RailsControl::isValid() const {
     return mCheckpoints.size() > 1;
+}
+
+bool RailsControl::isLooping() const {
+    return endBehavior == CycleBehavior::MANUAL_ALLSTEPS_LOOP || endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_LOOP ||
+           endBehavior == CycleBehavior::AUTOMATIC_LOOP;
+}
+
+bool RailsControl::isNextStepAutomatic() const {
+    return endBehavior == CycleBehavior::AUTOMATIC_LOOP || endBehavior == CycleBehavior::AUTOMATIC_BACKTRACK ||
+           (curTarget != 0 && (endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_LOOP || endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK));
 }
 
 void RailsControl::prepareForFirstStep(Transform2D& trans) {

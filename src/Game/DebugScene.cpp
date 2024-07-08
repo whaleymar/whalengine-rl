@@ -114,7 +114,7 @@ Corrade::Containers::Optional<Error> loadDebugScene() {
                                         {Transform2D::tiles(5, 15).position, RailsControl::Movement::EASEI_CUBE},
                                         // {Transform::tiles(15, 15).position, RailsControl::Movement::EASEI_CUBE},
                                     },
-                                    2, true);
+                                    2, RailsControl::CycleBehavior::AUTOMATIC_LOOP);
     platform.add<RailsControl>(pathControl);
 
     auto platformClone = createBlock(Transform2D::tiles(6, 1)).value();
@@ -125,7 +125,7 @@ Corrade::Containers::Optional<Error> loadDebugScene() {
             // {Transform::tiles(5, 15).position, RailsControl::Movement::EASEIO_BEZIER},
             // {Transform::tiles(15, 15).position, RailsControl::Movement::EASEI_CUBE},
         },
-        2, true);
+        2, RailsControl::CycleBehavior::AUTOMATIC_LOOP);
     platformClone.add<RailsControl>(pathControlClone);
 
     auto rightPlatform = createBlock(Transform2D::tiles(36, 1)).value();
@@ -159,7 +159,7 @@ void createTestPlatform() {
                                             {Transform2D::tiles(x, -15).position, RailsControl::Movement::LINEAR},
                                             {Transform2D::tiles(x, -10).position, RailsControl::Movement::EASEI_CUBE},
                                         },
-                                        2, false);
+                                        2);
         platform.add<RailsControl>(pathControl);
         platform.add(Name("callback platform"));
         platform.get<Collider>().setCollisionCallback(&startRailsMovement);

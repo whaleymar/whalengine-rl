@@ -13,7 +13,18 @@ class Entity;
 struct Transform2D;
 
 struct RailsControl {
-    enum class EndBehavior : u8 { TO_START, REVERSE };
+    // Automatic: moves by itself
+    // Manual_FirstStep: requires manual start, then moves by itself through all checkpoints and waits at the start again
+    // Manual_AllSteps: requires manual start at each checkpoint
+    enum class CycleBehavior : u8 {
+        AUTOMATIC_LOOP,
+        AUTOMATIC_BACKTRACK,
+        MANUAL_FIRSTSTEP_LOOP,
+        MANUAL_FIRSTSTEP_BACKTRACK,
+        MANUAL_ALLSTEPS_LOOP,
+        MANUAL_ALLSTEPS_BACKTRACK,
+    };
+
     enum class Movement { LINEAR, EASEIO_BEZIER, EASEIO_SINE, EASEI_QUAD, EASEI_CUBE, EASEO_QUAD, EASEO_CUBE };
 
     struct CheckPoint {
@@ -23,8 +34,8 @@ struct RailsControl {
 
     using ArrivalCallback = void (*)(ecs::Entity, RailsControl&);
 
-    RailsControl(f32 moveSpeed_ = 40, std::vector<CheckPoint> checkPoints_ = {}, f32 waitTime_ = 0, bool isCycle_ = true,
-                 ArrivalCallback callback = nullptr);
+    RailsControl(f32 moveSpeed_ = 40, std::vector<CheckPoint> checkPoints_ = {}, f32 waitTime_ = 0,
+                 CycleBehavior cycleBehavior_ = CycleBehavior::MANUAL_FIRSTSTEP_LOOP, ArrivalCallback callback = nullptr);
 
 private:
     std::vector<CheckPoint> mCheckpoints;
@@ -37,9 +48,7 @@ public:
     Vector2f startPosition;
     f32 curActionTime = 0;  // time spent moving or waiting
 
-    // TODO should rework this, combined with EndBehavior enum, to allow for indefinite waiting at each checkpoint
-    bool isCycle;  // if true, repeats after returning to first checkpoint
-    EndBehavior endBehavior;
+    CycleBehavior endBehavior = CycleBehavior::MANUAL_FIRSTSTEP_LOOP;
     bool isWaiting = true;
     bool isVelocityUpdateNeeded = false;
     bool isForward = true;
@@ -52,6 +61,8 @@ public:
     f32 getSpeed(Vector2i currentPosition);
     f32 getSpeedNew();
     bool isValid() const;
+    bool isLooping() const;
+    bool isNextStepAutomatic() const;
     void prepareForFirstStep(Transform2D& trans);
 };
 

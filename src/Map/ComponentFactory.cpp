@@ -3,6 +3,7 @@
 #include "CorradeOptional.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
+#include "ECS/Name.h"
 #include "ECS/Tags.h"
 #include "ECS/TriggerZone.h"
 #include "Game/Components/Switch.h"
@@ -60,6 +61,10 @@ static void addSwitchComponent(const nlohmann::json& values, const nlohmann::jso
                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                                ecs::Entity entity, LayerData layerData);
 
+static void addSwitchGateComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
+                                   const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
+                                   ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     // {"Animator", addComponentAnimator},
@@ -79,6 +84,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Velocity", addComponentVelocity},
     {"Component_Tags", addTagComponents},
     {"Component_Switch", addSwitchComponent},
+    {"Component_SwitchGate", addSwitchGateComponent},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -96,8 +102,8 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         DefaultRailsControl = RailsControl();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
-            if (memberName == "isCycle") {
-                DefaultRailsControl.isCycle = member[KEY_VALUE];
+            if (memberName == "RailsCycleBehavior") {
+                // do nothing; default hard coded in factory method b/c it's not 1:1 with struct data
             } else if (memberName == "speed") {
                 DefaultRailsControl.speed = member[KEY_VALUE];
             } else if (memberName == "waitTime") {
@@ -292,6 +298,21 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 print("Skipping member ", memberName, "for", componentName);
             }
         }
+
+    } else if (componentName == "Component_SwitchGate") {
+        DefaultSwitchGate = SwitchGate();
+        for (auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "numKeys") {
+                DefaultSwitchGate.numKeys = member[KEY_VALUE];
+            } else if (memberName == "isPersistent") {
+                DefaultSwitchGate.isPersistent = member[KEY_VALUE];
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+    } else if (componentName == "Component_Switch") {
+        // do nothing
     } else {
         print("unhandled default component type: ", componentName);
     }
@@ -310,20 +331,36 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                               ecs::Entity entity, LayerData layerData) {
     std::vector<RailsControl::CheckPoint> checkpoints;
-    Corrade::Containers::Optional<RailsControl::EndBehavior> endBehavior;
+    bool isCycle = false;
     if (values.contains("Checkpoints")) {
         s32 id = values["Checkpoints"];
         const nlohmann::json checkPointObj = allObjects.at(idToIndex.at(id).first);
-        endBehavior = loadCheckpoints(checkPointObj, checkpoints, level);
+        isCycle = loadCheckpoints(checkPointObj, checkpoints, level);
     }
 
     RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : ComponentFactory::DefaultRailsControl;
     rails.setCheckpoints(checkpoints, entity.get<Transform2D>());
-    if (endBehavior) {
-        rails.endBehavior = *endBehavior;
+
+    std::string cycleBehavior = "ManualStart";
+    tryReadString(values, "CycleBehavior", &cycleBehavior);
+    if (isCycle) {
+        if (cycleBehavior == "Automatic") {
+            rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_LOOP;
+        } else if (cycleBehavior == "ManualStart") {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_LOOP;
+        } else {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_ALLSTEPS_LOOP;
+        }
+    } else {
+        if (cycleBehavior == "Automatic") {
+            rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_BACKTRACK;
+        } else if (cycleBehavior == "ManualStart") {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK;
+        } else {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_ALLSTEPS_BACKTRACK;
+        }
     }
 
-    tryReadBool(values, "isCycle", &rails.isCycle);
     tryReadFloat(values, "speed", &rails.speed);
     tryReadFloat(values, "waitTime", &rails.waitTime);
 
@@ -598,11 +635,12 @@ Follow loadFollowComponent(const nlohmann::json& values, ActiveLevel& level) {
     return follow;
 }
 
-RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints,
-                                          ActiveLevel& level) {
+// returns true if checkpoints form a cycle
+bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, ActiveLevel& level) {
     // generic rewrite:
     const s32 parentX = readInt(checkpointData, "x");
     const s32 parentY = readInt(checkpointData, "y");
+    assert(checkpointData.contains("properties") && "Checkpoint object has no properties");
     const auto& properties = checkpointData["properties"];
     std::vector<RailsControl::Movement> moveProps;
     for (const auto& moveProperty : properties) {
@@ -610,9 +648,9 @@ RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, 
         moveProps.push_back(static_cast<RailsControl::Movement>(moveIx));
     }
 
-    bool isToStart = checkpointData.contains("polygon");
+    bool isCycle = checkpointData.contains("polygon");
     std::string pathKey;
-    if (isToStart) {
+    if (isCycle) {
         pathKey = "polygon";
     } else {
         pathKey = "polyline";
@@ -627,7 +665,8 @@ RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, 
         RailsControl::Movement moveType;
         if (ix >= moveProps.size()) {
             std::string name = readString(checkpointData, KEY_NAME);
-            print(name, " has ", moveProps.size(), " move type params but it has more points");
+            print("Checkpoints object with ID", readInt(checkpointData, "id"), "in level", level.filepath, "has", moveProps.size(),
+                  "move type params but it has more points");
             moveType = RailsControl::Movement::LINEAR;
         } else {
             moveType = moveProps[ix];
@@ -638,7 +677,7 @@ RailsControl::EndBehavior loadCheckpoints(const nlohmann::json& checkpointData, 
         ix++;
     }
 
-    return isToStart ? RailsControl::EndBehavior::TO_START : RailsControl::EndBehavior::REVERSE;
+    return isCycle;
 }
 
 void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -670,13 +709,29 @@ void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allO
                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
     s32 targetId;
-    if (!tryReadInt(values, "target", &targetId)) {
-        print("Entity with Map id ", entityData.id, "has Switch component with no target");
+
+    if (entityData.isParsingTemplate) {
         return;
     }
 
+    if (!tryReadInt(values, "target", &targetId)) {
+        print(entity.get<Name>(), "has Switch component with no target");
+        assert(false);
+    }
+
+    MY_ASSERT(idToIndex.contains(targetId),
+              whal_format("Target ID {} pointed to by {}'s SwitchComponent was not found", targetId, entity.get<Name>().name));
     ecs::Entity target = idToIndex.at(targetId).second;
     entity.add(Switch{target.id()});
+}
+
+void addSwitchGateComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
+                            const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                            ecs::Entity entity, LayerData layerData) {
+    SwitchGate gate = entity.has<SwitchGate>() ? entity.get<SwitchGate>() : ComponentFactory::DefaultSwitchGate;
+    tryReadInt(values, "numKeys", &gate.numKeys);
+    tryReadBool(values, "isPersistent", &gate.isPersistent);
+    entity.add(gate);
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {

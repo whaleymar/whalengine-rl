@@ -1,8 +1,8 @@
 { "object":
     {
-     "height":10,
-     "id":2,
-     "name":"RailsMoveSwitch",
+     "height":8,
+     "id":3,
+     "name":"Magic Hat",
      "properties":[
             {
              "name":"Draw",
@@ -14,14 +14,30 @@
                 }
             }, 
             {
+             "name":"PointLight",
+             "propertytype":"Component_PointLight",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }, 
+            {
              "name":"Radiance",
              "propertytype":"Component_Radiance",
              "type":"class",
              "value":
                 {
-                 "Color":"#ffff557f",
-                 "heightTexels":5,
-                 "radiusTexels":16
+
+                }
+            }, 
+            {
+             "name":"Rails",
+             "propertytype":"Component_RailsControl",
+             "type":"class",
+             "value":
+                {
+
                 }
             }, 
             {
@@ -36,6 +52,15 @@
             {
              "name":"Trigger",
              "propertytype":"Component_Trigger",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }, 
+            {
+             "name":"Velocity",
+             "propertytype":"Component_Velocity",
              "type":"class",
              "value":
                 {

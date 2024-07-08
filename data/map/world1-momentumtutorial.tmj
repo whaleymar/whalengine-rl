@@ -57,7 +57,7 @@
                          "type":"class",
                          "value":
                             {
-                             "target":4
+                             "target":12
                             }
                         }, 
                         {
@@ -84,47 +84,6 @@
                  "width":16,
                  "x":72,
                  "y":48
-                }, 
-                {
-                 "height":24,
-                 "id":4,
-                 "name":"Gate",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_Collider",
-                         "type":"class",
-                         "value":
-                            {
-                             "Layer":"Solid"
-                            }
-                        }, 
-                        {
-                         "name":"Draw",
-                         "propertytype":"Component_Draw",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ffff0000"
-                            }
-                        }, 
-                        {
-                         "name":"Rails",
-                         "propertytype":"Component_RailsControl",
-                         "type":"class",
-                         "value":
-                            {
-                             "Checkpoints":7,
-                             "isCycle":false,
-                             "speed":50
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":8,
-                 "x":88,
-                 "y":96
                 }, 
                 {
                  "id":5,
@@ -195,53 +154,12 @@
                          "type":"class",
                          "value":
                             {
-                             "target":9
+                             "target":13
                             }
                         }],
                  "template":"templates\/RailsMoveSwitch.tj",
                  "x":108,
                  "y":70
-                }, 
-                {
-                 "height":24,
-                 "id":9,
-                 "name":"Gate2",
-                 "properties":[
-                        {
-                         "name":"Collider",
-                         "propertytype":"Component_Collider",
-                         "type":"class",
-                         "value":
-                            {
-                             "Layer":"Solid"
-                            }
-                        }, 
-                        {
-                         "name":"Draw",
-                         "propertytype":"Component_Draw",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ffff0000"
-                            }
-                        }, 
-                        {
-                         "name":"Rails",
-                         "propertytype":"Component_RailsControl",
-                         "type":"class",
-                         "value":
-                            {
-                             "Checkpoints":10,
-                             "isCycle":false,
-                             "speed":50
-                            }
-                        }],
-                 "rotation":0,
-                 "type":"Entity",
-                 "visible":true,
-                 "width":8,
-                 "x":206,
-                 "y":96
                 }, 
                 {
                  "height":0,
@@ -273,8 +191,46 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":210,
+                 "x":196,
                  "y":116
+                }, 
+                {
+                 "id":12,
+                 "properties":[
+                        {
+                         "name":"Rails",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":7,
+                             "CycleBehavior":"ManualAllSteps",
+                             "isCycle":false,
+                             "speed":50
+                            }
+                        }],
+                 "template":"templates\/Gate.tj",
+                 "x":88,
+                 "y":96
+                }, 
+                {
+                 "id":13,
+                 "properties":[
+                        {
+                         "name":"Rails",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":10,
+                             "CycleBehavior":"ManualAllSteps",
+                             "isCycle":false,
+                             "speed":50
+                            }
+                        }],
+                 "template":"templates\/Gate.tj",
+                 "x":192,
+                 "y":96
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -283,7 +239,7 @@
          "y":0
         }],
  "nextlayerid":3,
- "nextobjectid":11,
+ "nextobjectid":14,
  "orientation":"orthogonal",
  "properties":[
         {

@@ -18,14 +18,21 @@
             "fileName": "world1-rockettutorial.tmj",
             "height": 192,
             "width": 320,
-            "x": 600,
-            "y": -192
+            "x": 696,
+            "y": -384
         },
         {
             "fileName": "world1-momentumtutorial.tmj",
             "height": 192,
             "width": 320,
-            "x": 920,
+            "x": 1016,
+            "y": -384
+        },
+        {
+            "fileName": "world1-blaster_get.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 568,
             "y": -192
         }
     ],
