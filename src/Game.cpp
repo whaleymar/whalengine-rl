@@ -5,6 +5,7 @@
 #include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
 #include "ECS/Name.h"
+#include "ECS/PlayerControl.h"
 #include "ECS/RailsControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Systems/Animation.h"
@@ -197,12 +198,19 @@ void Game::mainloop() {
                 for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
                     entity.remove<FreeControl>();
                     entity.add<RigidBody>();
+                    constexpr s32 width = 16;
+                    constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
+                    constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
+                    entity.add(Collider::Actor(entity.get<Transform2D>(), Vector2i(halfLenX, halfLenY)));
+                    entity.set(PlayerControl());
                 }
             } else {
                 isCreativeMode = true;
                 for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
                     entity.add<FreeControl>();
                     entity.remove<RigidBody>();
+                    entity.remove<Collider>();
+                    entity.set(PlayerControl{250});
                 }
             }
         }
@@ -368,11 +376,24 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     }
 
     Vector2i startPos = eFirstLevel.value()->initialSpawnPoint;
-    Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
 
     if (!getCamera()) {
+        Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
         createCamera(Transform2D(cameraFocus));
     } else {
+        // by default, camera is at the first level
+        Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
+
+        // but if the player exists, check the level they're in
+        if (!PlayerSystem::getEntitiesRef().empty()) {
+            auto levelOpt = mActiveScene.getLevelAt(PlayerSystem::first().get<Transform2D>().position);
+            if (levelOpt) {
+                auto eActiveLvl = mActiveScene.getLoadedLevel(*levelOpt);
+                if (eActiveLvl.isExpected()) {
+                    cameraFocus = eActiveLvl.value()->cameraFocalPoint;
+                }
+            }
+        }
         setCameraPosition(cameraFocus);
     }
     updateLoadedLevels(toFloatVec(startPos));
@@ -438,8 +459,11 @@ void Game::checkIfInNewLevel(bool overrideCache) {
     ecs::Entity player = System::world->getSystem<PlayerSystem>()->first();
     // ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
 
-    // add halfX so visually the middle of the player has to enter the new level for it to change
-    Vector2i playerPosition = player.get<Transform2D>().position + Vector2i(player.get<Collider>().getShape().getHalf().x(), 0);
+    Vector2i playerPosition = player.get<Transform2D>().position;
+    if (player.has<Collider>()) {
+        // add halfX so visually the middle of the player has to enter the new level for it to change
+        playerPosition += Vector2i(player.get<Collider>().getShape().getHalf().x(), 0);
+    }
     auto levelOpt = mActiveScene.getLevelAt(playerPosition);
 
     // bool doDefaultCamera = false;

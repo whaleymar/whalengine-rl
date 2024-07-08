@@ -5,6 +5,7 @@
 #include "ECS/Light.h"
 #include "ECS/Tags.h"
 #include "ECS/TriggerZone.h"
+#include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Util/Vector.h"
 #include "json.hpp"
@@ -55,6 +56,10 @@ T readVal(const nlohmann::json& object, std::string_view key);
 template <typename T>
 bool tryReadVal(const nlohmann::json& object, std::string_view key, T* dst);
 
+static void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
+                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                               ecs::Entity entity, LayerData layerData);
+
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     // {"Animator", addComponentAnimator},
@@ -73,6 +78,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Jumper", addComponentJumper},
     {"Component_Velocity", addComponentVelocity},
     {"Component_Tags", addTagComponents},
+    {"Component_Switch", addSwitchComponent},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -517,7 +523,7 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
 
     s32 targetId;
     if (!tryReadInt(values, "target", &targetId)) {
-        print("Entity with id ", entityData.id, "has attach component with no target");
+        print("Entity with Map id ", entityData.id, "has attach component with no target");
         return;
     }
 
@@ -658,6 +664,19 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
         entity.add<Wiggle>();
         hasTag = false;
     }
+}
+
+void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
+                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                        ecs::Entity entity, LayerData layerData) {
+    s32 targetId;
+    if (!tryReadInt(values, "target", &targetId)) {
+        print("Entity with Map id ", entityData.id, "has Switch component with no target");
+        return;
+    }
+
+    ecs::Entity target = idToIndex.at(targetId).second;
+    entity.add(Switch{target.id()});
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {
