@@ -21,18 +21,18 @@ void drawColliders() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
     for (const auto [entityid, entity] : QuadTreeSystem::getEntitiesRef()) {
-        auto collider = &entity.get<Collider>();
+        const auto collider = entity.get<Collider>();
         Color color;
-        if (collider->isActor()) {
+        if (collider.isActor()) {
             color = Colors::Magenta;
-        } else if (collider->isSolid()) {
+        } else if (collider.isSolid()) {
             color = RED;
-        } else if (collider->isSemiSolid()) {
+        } else if (collider.isSemiSolid()) {
             color = Colors::Pink;
         } else {
             color = BLUE;
         }
-        collider->getShape().draw(cameraPos, color);
+        collider.getShape().draw(cameraPos, color);
     }
 
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesRef()) {

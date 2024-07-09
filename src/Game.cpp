@@ -404,9 +404,10 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
 
 void Game::unloadScene() {
     while (!mActiveScene.loadedLevels.empty()) {
-        auto& lvl = mActiveScene.loadedLevels.back();
-        unloadLevel(lvl);
+        // copy and pop level so the EntityDeathListener doesn't mutate the level we're deleting
+        auto lvlCopy = mActiveScene.loadedLevels.back();
         mActiveScene.loadedLevels.pop_back();
+        unloadLevel(lvlCopy);
     }
     mActiveScene.startLevelIx = -1;
     clearMapCache();
@@ -415,6 +416,7 @@ void Game::unloadScene() {
     for (auto entity : toKill) {
         entity.kill();
     }
+    System::world->killEntities();
     mIsSceneLoaded = false;
 }
 

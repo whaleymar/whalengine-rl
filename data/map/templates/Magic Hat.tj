@@ -5,15 +5,6 @@
      "name":"Magic Hat",
      "properties":[
             {
-             "name":"Draw",
-             "propertytype":"Component_Draw",
-             "type":"class",
-             "value":
-                {
-                 "Color":"#ffffaaff"
-                }
-            }, 
-            {
              "name":"PointLight",
              "propertytype":"Component_PointLight",
              "type":"class",
@@ -28,7 +19,8 @@
              "type":"class",
              "value":
                 {
-
+                 "Color":"#ff000000",
+                 "radiusTexels":3
                 }
             }, 
             {
