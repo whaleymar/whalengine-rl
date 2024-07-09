@@ -1,12 +1,12 @@
 #include "ECS/Systems/Gfx.h"
 #include <raylib.h>
 
+#include "ECS/Tags.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 
 #include "ECS/Systems/TagTrackers.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/Draw.h"
@@ -50,6 +50,9 @@ void SpriteSystem::drawEntities() {
     Shaders prevShader = mSorted.begin()->get<Sprite>().shader;
     BeginShaderMode(ShaderManager::get(prevShader));
     for (auto const entity : mSorted) {
+        if (entity.has<Invisible>()) {
+            continue;
+        }
         Shaders newShader = entity.get<Sprite>().shader;
         if (newShader != prevShader) {
             prevShader = newShader;
@@ -86,6 +89,9 @@ void DrawSystem::drawEntities() {
 
     // sorting not required since Draw components don't have transparency
     for (auto const [entityid, entity] : getEntitiesRef()) {
+        if (entity.has<Invisible>()) {
+            continue;
+        }
         Transform2D& trans = entity.get<Transform2D>();
         Draw& draw = entity.get<Draw>();
 

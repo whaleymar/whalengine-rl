@@ -7,11 +7,13 @@
 #include "ECS/Draw.h"
 #include "ECS/Name.h"
 #include "ECS/Relationships.h"
+#include "ECS/Tags.h"
 #include "Events/Events.h"
 #include "Settings.h"
 #include "Systems/Event.h"
 #include "Systems/InputHandler.h"
 #include "Systems/System.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/RigidBody.h"
@@ -39,11 +41,11 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
     Animator animator;
     loadAnimations(animator, animInfo);
 
-    entity.add(Sprite(Depth::Player, animator.getFrame()));
+    entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
 
     animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
         auto& sprite = self.get<Sprite>();
-        f32 unsquishStep = System::dt() * 1.50;
+        f32 unsquishStep = System::dt();
         sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
 
         ecs::Entity owner = ecs::Entity(self.get<Attach>().targetEntityID);
@@ -57,9 +59,13 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
             if (targetFrameIx == 0) {
                 sprite.scale = {1.2, 0.8};
             }
+            sprite.color.a = 255;
+            if (self.has<FadeOut>()) {
+                self.remove<FadeOut>();
+            }
             return true;
-        } else if (targetFrameIx == 0 && sprite.scale.x() == 0.0f) {
-            // TODO NoDraw
+        } else if (targetFrameIx == 0 && sprite.scale.x() == 1.0f && sprite.color.a == 255 && !self.has<FadeOut>()) {
+            self.add(FadeOut(0.2, 1.0, 0.5));
         }
         return false;
     };

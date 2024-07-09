@@ -7,6 +7,7 @@
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
 #include "ECS/Systems/TagTrackers.h"
+#include "ECS/Tags.h"
 #include "ECS/Transform.h"
 #include "Game.h"
 #include "Gfx/ShaderManager.h"
@@ -44,6 +45,9 @@ void PointLightSystem::update() {
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
+        if (entity.has<Invisible>()) {
+            continue;
+        }
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
@@ -94,6 +98,10 @@ void BoxLightSystem::update() {
 
     Texture randomTexture = TextureManager::instance().getLightingTexture().texture;
     for (auto [entityid, entity] : getEntitiesRef()) {
+        if (entity.has<Invisible>()) {
+            continue;
+        }
+
         // do this every entity so draw calls aren't instanced and the uniform changes
         // should be fine if there aren't a ton of these lights
         BeginShaderMode(shader);
@@ -156,6 +164,10 @@ void RadianceLightSystem::update() {
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesRef()) {
+        if (entity.has<Invisible>()) {
+            continue;
+        }
+
         Radiance light = entity.get<Radiance>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
