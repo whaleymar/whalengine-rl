@@ -13,15 +13,17 @@ class Entity;
 }  // namespace ecs
 
 struct Attach {
+    enum class DirectionParam { IgnoreFacing, UseFacingForOffset, UseFacingForAll };
+
     Attach() = default;
-    Attach(ecs::Entity target, Vector2i offset = {0, 0});
+    Attach(ecs::Entity target, Vector2i offset = {0, 0}, DirectionParam directionParam_ = DirectionParam::IgnoreFacing);
 
     void initTarget(ecs::Entity self);
     ecs::Entity getTarget() const;
 
-    // ecs::Entity targetEntity;
     ecs::EntityID targetEntityID;
     Vector2i offsetTexels;
+    DirectionParam directionParam;
 };
 
 // in general, dead zone should be bigger than lookahead
