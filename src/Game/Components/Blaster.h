@@ -42,7 +42,7 @@ class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster,
                          public whal::IListen<whal::ButtonPressOrReleaseEvent, false, whal::InputType, bool> {
 public:
     void update() override;
-    void onAdd(whal::ecs::Entity entity) override {}
+    void onAdd(whal::ecs::Entity entity) override;
     void onRemove(whal::ecs::Entity entity) override;
     void onPause() override {}
     void onUnpause() override;

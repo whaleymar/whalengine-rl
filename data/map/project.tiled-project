@@ -11,6 +11,18 @@
     ],
     "propertyTypes": [
         {
+            "id": 42,
+            "name": "AttachDirectionParam",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "IgnoreFacing",
+                "UseFacingForOffset",
+                "UseFacingForAll"
+            ],
+            "valuesAsFlags": false
+        },
+        {
             "id": 20,
             "name": "CollisionDir",
             "storageType": "int",
@@ -49,6 +61,12 @@
             "drawFill": true,
             "id": 37,
             "members": [
+                {
+                    "name": "DirectionParam",
+                    "propertyType": "AttachDirectionParam",
+                    "type": "int",
+                    "value": 0
+                },
                 {
                     "name": "target",
                     "type": "object",

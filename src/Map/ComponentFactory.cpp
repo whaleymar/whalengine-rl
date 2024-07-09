@@ -564,6 +564,8 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
         return;
     }
 
+    tryReadVal(values, "DirectionParam", &attach.directionParam);
+
     ecs::Entity target = idToIndex.at(targetId).second;
     attach.targetEntityID = target.id();
 

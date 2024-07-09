@@ -68,5 +68,10 @@
 		<img n="tile/translucent" x="1792" y="0" w="8" h="8" />
 		<img n="tile/dirtblock" x="1801" y="0" w="8" h="8" />
 		<img n="tile/purpledirt" x="1810" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge5" x="1819" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge4" x="1828" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge3" x="1837" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge2" x="1846" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge1" x="1855" y="0" w="8" h="8" />
 	</tex>
 </atlas>

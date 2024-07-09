@@ -1,5 +1,6 @@
 #include "RelationshipManager.h"
 
+#include "ECS/Name.h"
 #include "Settings.h"
 
 #include "ECS/Relationships.h"
@@ -7,6 +8,7 @@
 #include "ECS/Velocity.h"
 #include "Events/Events.h"
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -26,6 +28,9 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
     std::vector<ecs::EntityID> childrencopy = std::move(entity.get<Children>().entityIDs);
     for (auto childEntityID : childrencopy) {
         ecs::Entity childEntity(childEntityID);
+        if (childEntity.has<Name>()) {
+            print("Killing child entity: ", childEntity.get<Name>());
+        }
         childEntity.kill();
     }
 }
@@ -39,8 +44,22 @@ void AttachSystem::update() {
         const Transform2D trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
         ecs::Entity targetEntity(attach.targetEntityID);
-        const Vector2i targetPosition = targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
-        entity.set(Transform2D(targetPosition));
+        auto targetTrans = targetEntity.get<Transform2D>();
+        const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
+                                         attach.directionParam == Attach::DirectionParam::UseFacingForOffset) &&
+                                                targetTrans.facing == Facing::Left ?
+                                            Vector2i(-1, 1) :
+                                            Vector2i(1, 1);
+        const Vector2i targetPosition = targetTrans.position + attach.offsetTexels * PIXELS_PER_TEXEL * offsetModifier;
+        if (targetPosition == trans.position) {
+            continue;
+        }
+
+        if (attach.directionParam == Attach::DirectionParam::UseFacingForAll) {
+            entity.set(Transform2D(targetPosition, targetTrans.facing));
+        } else {
+            entity.set(Transform2D(targetPosition));
+        }
     }
 }
 

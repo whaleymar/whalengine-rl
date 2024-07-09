@@ -23,7 +23,7 @@
 ## Gfx
 - replace radiance with bloom?
 - combine draw and sprite components so depth works for draw
-    - tagged union; also add bezier draw component
+    - tagged union; also add bezier draw component, text draw component
 
 ## Map 
 - object layers

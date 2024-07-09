@@ -72,10 +72,10 @@
                 2
             ],
             "scale": 5.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 105.9090909090909,
-                "y": 155.90909090909093
+                "x": 480.27272727272725,
+                "y": 99.54545454545455
             }
         },
         "world1-jumptutorial.tmj": {
@@ -104,11 +104,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2.6778125,
+            "scale": 5.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 159.8319523865095,
-                "y": 96.1605788306687
+                "x": -61.90909090909091,
+                "y": 139.36363636363637
             }
         },
         "world1-start.tmj": {
@@ -153,7 +153,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Tags",
+    "property.type": "AttachDirectionParam",
     "recentFiles": [
         "mossy-tileset.tsj",
         "world1-start.tmj",

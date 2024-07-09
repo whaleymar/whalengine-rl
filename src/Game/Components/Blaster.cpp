@@ -1,7 +1,12 @@
 #include "Blaster.h"
 #include <raylib.h>
 
+#include "ECS/AnimUtil.h"
+#include "ECS/Animator.h"
+#include "ECS/Callback.h"
 #include "ECS/Draw.h"
+#include "ECS/Name.h"
+#include "ECS/Relationships.h"
 #include "Events/Events.h"
 #include "Settings.h"
 #include "Systems/Event.h"
@@ -19,9 +24,52 @@
 // where a shot originates from, relative to shooter's transform
 const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
 
-void shootProjectile() {
-    using namespace whal;
+using namespace whal;
 
+ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
+    auto entity = System::world->entity(false).value();
+    auto _ = ecs::DeferActivate(entity);
+
+    const Vector2i offsetTexels = {-TEXELS_PER_TILE, 2 * TEXELS_PER_TILE};
+    entity.add(Transform2D(attachedEntity.get<Transform2D>().position + offsetTexels));
+    entity.add(Attach(attachedEntity, offsetTexels, Attach::DirectionParam::UseFacingForOffset));
+    entity.add(Name("Mana Gauge"));
+
+    AnimInfo animInfo = {{"actor/mana-gauge", 0, 5, 0.0}};
+    Animator animator;
+    loadAnimations(animator, animInfo);
+
+    entity.add(Sprite(Depth::Player, animator.getFrame()));
+
+    animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
+        auto& sprite = self.get<Sprite>();
+        f32 unsquishStep = System::dt() * 1.50;
+        sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
+
+        ecs::Entity owner = ecs::Entity(self.get<Attach>().targetEntityID);
+        auto blaster = owner.get<Blaster>();
+
+        s32 frameIx = animator.curFrameIx;
+        s32 targetFrameIx = blaster.maxShots - blaster.shotsRemaining;
+
+        if (frameIx != targetFrameIx) {
+            animator.curFrameIx = targetFrameIx;
+            if (targetFrameIx == 0) {
+                sprite.scale = {1.2, 0.8};
+            }
+            return true;
+        } else if (targetFrameIx == 0 && sprite.scale.x() == 0.0f) {
+            // TODO NoDraw
+        }
+        return false;
+    };
+
+    entity.add(animator);
+
+    return entity;
+}
+
+void shootProjectile() {
     ProjectileSystem::setIsAiming(false);
 
     // slight delay for enabling movement so player can adjust arrow keys
@@ -73,30 +121,30 @@ void shootProjectile() {
     }
 }
 
-void ProjectileSystem::onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType input, bool isPress) {
-    if (input == whal::InputType::AIM) {
+void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool isPress) {
+    if (input == InputType::AIM) {
         if (isPress && !getIsAiming()) {
             setIsAiming(true);
             addAimReticles();
 
             // deactivate movement controls; those keys are now for aiming
-            whal::System::input.disableMovement();
-            whal::System::input.disableJumping();
+            System::input.disableMovement();
+            System::input.disableJumping();
 
         } else if (!isPress && ProjectileSystem::getIsAiming()) {
             shootProjectile();
         }
     } else if (isPress) {
         switch (input) {
-        case whal::InputType::UP:
-        case whal::InputType::DOWN:
+        case InputType::UP:
+        case InputType::DOWN:
             mIsAimUpdateNeeded = true;
             return;
-        case whal::InputType::LEFT:
+        case InputType::LEFT:
             updateFacingDirections(false);
             mIsAimUpdateNeeded = true;
             return;
-        case whal::InputType::RIGHT:
+        case InputType::RIGHT:
             updateFacingDirections(true);
             mIsAimUpdateNeeded = true;
             return;
@@ -107,30 +155,30 @@ void ProjectileSystem::onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType 
 }
 
 void ProjectileSystem::addAimReticles() {
-    Vector2i aimDirection = whal::System::input.getMoveNormal();
+    Vector2i aimDirection = System::input.getMoveNormal();
     for (auto [entityid, entity] : getEntitiesRef()) {
         Blaster& blaster = entity.get<Blaster>();
         // if (blaster.cooldownRemaining > 0) {
         //     continue;
         // }
 
-        auto childExpected = whal::System::world->entity(false);
+        auto childExpected = System::world->entity(false);
         if (childExpected.isExpected()) {
             auto child = childExpected.value();
             blaster.aimReticle = child;
-            auto _ = whal::ecs::DeferActivate(child);
+            auto _ = ecs::DeferActivate(child);
 
             // if not holding any direction, start with facing direction
-            whal::Transform2D parentTrans = entity.get<whal::Transform2D>();
+            Transform2D parentTrans = entity.get<Transform2D>();
             if (aimDirection.isZero()) {
-                aimDirection.e[0] = parentTrans.facing == whal::Facing::Left ? -1 : 1;
+                aimDirection.e[0] = parentTrans.facing == Facing::Left ? -1 : 1;
             }
             blaster.aimDirection = aimDirection;
 
             Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * aimDirection;
             Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
-            child.add(whal::Transform2D(position));
-            child.add(whal::Draw(BROWN));
+            child.add(Transform2D(position));
+            child.add(Draw(BROWN));
         }
     }
 }
@@ -139,8 +187,8 @@ void ProjectileSystem::update() {
     // if (!mIsAiming) {
     //     return;
     // }
-    f32 dt = whal::System::dt();
-    Vector2i aimDirection = whal::System::input.getMoveNormal();
+    f32 dt = System::dt();
+    Vector2i aimDirection = System::input.getMoveNormal();
     for (auto [entityid, entity] : getEntitiesRef()) {
         Blaster& blaster = entity.get<Blaster>();
 
@@ -148,7 +196,7 @@ void ProjectileSystem::update() {
             blaster.cooldownRemaining -= dt;
         }
         if (blaster.shotsRemaining < blaster.maxShots) {
-            if (!entity.has<whal::RigidBody>() || entity.get<whal::RigidBody>().isGrounded) {
+            if (!entity.has<RigidBody>() || entity.get<RigidBody>().isGrounded) {
                 blaster.shotsRemaining = blaster.maxShots;
             }
         }
@@ -157,19 +205,24 @@ void ProjectileSystem::update() {
             // not initialized
             continue;
         }
-        whal::Transform2D parentTrans = entity.get<whal::Transform2D>();
+        Transform2D parentTrans = entity.get<Transform2D>();
         if (!aimDirection.isZero() && mIsAimUpdateNeeded) {
             blaster.aimDirection = aimDirection;
         }
 
         Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * blaster.aimDirection;
         Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
-        blaster.aimReticle->set(whal::Transform2D(position));
+        blaster.aimReticle->set(Transform2D(position));
     }
     mIsAimUpdateNeeded = false;
 }
 
-void ProjectileSystem::onRemove(whal::ecs::Entity entity) {
+void ProjectileSystem::onAdd(ecs::Entity entity) {
+    // cannot add/remove components in IMonitor methods
+    System::schedule.eventFlow({entity}).add([](ecs::Entity entity) { createManaGauge(entity); }, entity);
+}
+
+void ProjectileSystem::onRemove(ecs::Entity entity) {
     auto blaster = entity.get<Blaster>();
     if (blaster.aimReticle) {
         blaster.aimReticle->kill();
@@ -177,7 +230,7 @@ void ProjectileSystem::onRemove(whal::ecs::Entity entity) {
 }
 
 void ProjectileSystem::onUnpause() {
-    if (getIsAiming() && !whal::System::input.isOn(whal::InputType::AIM)) {
+    if (getIsAiming() && !System::input.isOn(InputType::AIM)) {
         shootProjectile();
     }
 }
@@ -187,8 +240,8 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
         return;
     }
     for (auto [entityid, entity] : getEntitiesRef()) {
-        auto& trans = entity.get<whal::Transform2D>();
-        trans.facing = isFacingRight ? whal::Facing::Right : whal::Facing::Left;
+        auto& trans = entity.get<Transform2D>();
+        trans.facing = isFacingRight ? Facing::Right : Facing::Left;
     }
 }
 
@@ -205,31 +258,31 @@ void RocketJumpingSystem::update() {
     }
 }
 
-void RocketJumpingSystem::onAdd(const whal::ecs::Entity entity) {
-    auto& rb = entity.get<whal::RigidBody>();
+void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
+    auto& rb = entity.get<RigidBody>();
     auto& rocketJumpComponent = entity.get<RocketJumping>();
     rocketJumpComponent.prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
     rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
 
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;
-    if (entity.has<whal::Sprite>()) {
-        u32 eventId = whal::System::schedule.eventFlow({entity})
-                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
+    if (entity.has<Sprite>()) {
+        u32 eventId = System::schedule.eventFlow({entity})
+                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
+                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
+                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
-                          .add(&whal::makeSilhouetteFromSprite, entity, silLifetime, RED)
+                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .getId();
         rocketJumpComponent.silhouetteEventId = eventId;
     }
 }
 
-void RocketJumpingSystem::onRemove(const whal::ecs::Entity entity) {
-    auto& rb = entity.get<whal::RigidBody>();
+void RocketJumpingSystem::onRemove(const ecs::Entity entity) {
+    auto& rb = entity.get<RigidBody>();
     const auto rocketJumpComponent = entity.get<RocketJumping>();
     rb.frictionMultiplier = rocketJumpComponent.prevFrictionMultiplier;  // restore saved value
-    whal::System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
+    System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
 }
