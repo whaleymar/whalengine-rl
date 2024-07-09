@@ -1,5 +1,7 @@
 #include "EntityFactory.h"
 
+#include "ECS/AnimUtil.h"
+#include "ECS/Animator.h"
 #include "ECS/Callback.h"
 #include "ECS/Collision.h"
 #include "ECS/Draw.h"
@@ -10,6 +12,7 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 #include "Game/Components/Blaster.h"
+#include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Save/EventFlags.h"
@@ -85,6 +88,13 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+    const AnimInfo animInfo = {{"actor/magichat", 0, 8, 0.2}};
+    Animator animator;
+    loadAnimations(animator, animInfo);
+    animator.brain = &basicAnimation;
+    entity.add(animator);
+    entity.add(Sprite(Depth::Level, animator.getFrame()));
+
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;
@@ -119,6 +129,10 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
 void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
     entity.get<Collider>().setCollisionCallback(
         [](ecs::Entity self, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
+            // if (!other.has<ProjectileInfo>()) {
+            //     return;
+            // }
+
             auto flipSwitch = self.get<Switch>();
             ecs::EntityID targetID = flipSwitch.target;
 

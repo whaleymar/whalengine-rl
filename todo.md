@@ -23,11 +23,19 @@
 ## Gfx
 - replace radiance with bloom?
 - combine draw and sprite components so depth works for draw
+    - tagged union; also add bezier draw component
 
 ## Map 
 - object layers
     - special metadata
         - camera strat (might want to rework)
+- SingleEntityLayer
+    - basically i want to draw a bunch of tiles and have it (effectively) be one entity that moves together
+    - nice when I want more complex geometry or i just want an object to be drawn with tiles
+    - implementation plan: create class which layers can use. If they use this SingleEntityLayer class, then create a parent entity which owns all tile entities
+    - the layer has component properties
+    - all tiles are attached to parent
+    - would need some way to say "if collision and collider has parent, try running parent callback"
 
 ## Improving compile times:
 - would be GREAT to use the <iosfwd> include in Print.h and move the iostream import outside of the header file, but not sure how to do that bc it's templated

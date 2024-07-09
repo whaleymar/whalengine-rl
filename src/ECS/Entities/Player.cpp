@@ -164,7 +164,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     return frameChanged;
 }
 
-Animator getAnimator() {
+static Animator getAnimator() {
     Animator animator;
     loadAnimations(animator, PlayerAnim::S_PLAYER_ANIM_INFO);
     animator.brain = &PlayerAnim::brain;
