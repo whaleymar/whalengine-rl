@@ -77,23 +77,14 @@
                             }
                         }, 
                         {
-                         "name":"Radiance",
-                         "propertytype":"Component_Radiance",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ff55ffff",
-                             "radiusTexels":8
-                            }
-                        }, 
-                        {
                          "name":"Rails",
                          "propertytype":"Component_RailsControl",
                          "type":"class",
                          "value":
                             {
                              "Checkpoints":4,
-                             "speed":1,
+                             "CycleBehavior":"Automatic",
+                             "speed":4,
                              "waitTime":0.1
                             }
                         }, 

@@ -19,8 +19,8 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ff000000",
-                 "radiusTexels":3
+                 "Color":"#ff226666",
+                 "radiusTexels":7
                 }
             }, 
             {
@@ -39,6 +39,15 @@
              "value":
                 {
 
+                }
+            }, 
+            {
+             "name":"Tags",
+             "propertytype":"Component_Tags",
+             "type":"class",
+             "value":
+                {
+                 "PrecisePosition":true
                 }
             }, 
             {

@@ -129,9 +129,9 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
 void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
     entity.get<Collider>().setCollisionCallback(
         [](ecs::Entity self, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-            // if (!other.has<ProjectileInfo>()) {
-            //     return;
-            // }
+            if (!other.has<ProjectileInfo>()) {
+                return;
+            }
 
             auto flipSwitch = self.get<Switch>();
             ecs::EntityID targetID = flipSwitch.target;
@@ -145,8 +145,15 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
                 if (target.has<Draw>()) {
                     target.get<Draw>().setColor(Colors::LightBlue);
                 }
-                // TODO onEnd, if at last checkpoint and persistent, remove rails component
-                // then create system with RailsControl and SwitchGate. Listen for player death, and reset to start position if it happens
+                if (gate.isPersistent) {
+                    rails.arrivalCallback = [](ecs::Entity self, RailsControl& rails) {
+                        if (rails.isAtLastCheckpoint()) {
+                            self.add(OnFrameEnd([](ecs::Entity self) -> void { self.remove<RailsControl>(); }));
+                        }
+                    };
+                }
+                // TODO create system with RailsControl and SwitchGate (not persistent). Listen for player death, and reset to start position if it
+                // happens
             }
 
             if (self.has<Draw>()) {
