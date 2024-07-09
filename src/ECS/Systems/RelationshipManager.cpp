@@ -36,10 +36,11 @@ void AttachSystem::onAdd(ecs::Entity entity) {
 
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesRef()) {
-        Transform2D& trans = entity.get<Transform2D>();
+        const Transform2D trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
         ecs::Entity targetEntity(attach.targetEntityID);
-        trans.position = targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
+        const Vector2i targetPosition = targetEntity.get<Transform2D>().position + attach.offsetTexels * PIXELS_PER_TEXEL;
+        entity.set(Transform2D(targetPosition));
     }
 }
 

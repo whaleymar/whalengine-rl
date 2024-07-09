@@ -74,8 +74,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 151.42957171198506,
-                "y": -21.472750612673593
+                "x": 316.48967207375426,
+                "y": 131.6372972342164
             }
         },
         "world1-jumptutorial.tmj": {
@@ -96,8 +96,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -173.8359201773836,
-                "y": 96.90745711284862
+                "x": -358.3148558758315,
+                "y": 102.88248337028826
             }
         },
         "world1-rockettutorial.tmj": {
@@ -107,8 +107,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 11.016454662154274,
-                "y": 273.1707317073171
+                "x": -3.5476718403547522,
+                "y": 171.59528533084375
             }
         },
         "world1-start.tmj": {
@@ -153,7 +153,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "RailsMovement",
+    "property.type": "Component_Velocity",
     "recentFiles": [
         "mossy-tileset.tsj",
         "world1-start.tmj",

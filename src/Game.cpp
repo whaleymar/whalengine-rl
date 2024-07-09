@@ -409,6 +409,7 @@ void Game::unloadScene() {
         mActiveScene.loadedLevels.pop_back();
     }
     mActiveScene.startLevelIx = -1;
+    clearMapCache();
 
     std::set<ecs::Entity> toKill = std::move(mActiveScene.childEntities);
     for (auto entity : toKill) {

@@ -4,6 +4,7 @@
 
 #include "CorradeOptional.h"
 #include "CorradePointer.h"
+#include "json_fwd.hpp"
 
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -26,6 +27,8 @@ Corrade::Containers::Optional<Error> parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform2D getTransformFromMapPosition(Vector2i mapCenterPositionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint);
 const TileSet* getTileSet(const TileMap& map, s32 blockId);
+Vector2i getObjectSize(const nlohmann::json& objectData);
+void clearMapCache();
 
 struct LayerData {
     Depth depth;

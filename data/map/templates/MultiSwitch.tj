@@ -28,7 +28,7 @@
              "type":"class",
              "value":
                 {
-
+                 "radiusTexels":64
                 }
             }, 
             {
@@ -37,7 +37,7 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ffff5500"
+                 "Color":"#ff226767"
                 }
             }, 
             {

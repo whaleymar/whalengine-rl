@@ -13,6 +13,8 @@ class ResourceManager {
 public:
     ResourceManager() = default;
 
+    void clearCache() { mCache.clear(); }
+
     const T& readData(const char* filePath) {
         for (auto it = mCache.begin(); it != mCache.end(); it++) {
             if (isEqualString(it->path, filePath)) {
