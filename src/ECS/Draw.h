@@ -38,6 +38,9 @@ struct IDraw {
 
     Vector2i getFrameSizeTexels() const { return mFrameSizeTexels; }
     void setAlpha(u8 alpha);
+    void setFrameSize(s32 x, s32 y);
+    void setFrameSize(Vector2i frameSize);
+    void setColor(Color color_);
 
 protected:
     Vector2i mFrameSizeTexels;
@@ -45,21 +48,20 @@ protected:
 
 struct Sprite : public IDraw {
     Sprite(Depth depth_ = Depth::Player, Frame frame = {}, Color color_ = WHITE, Shaders shader_ = Shaders::Default);
+    void setFrame(Frame frame);
 
     Vector2i atlasPositionTexels;
-
-    void setFrame(Frame frame);
-    void setFrameSize(s32 x, s32 y);
-    void setFrameSize(Vector2i frameSize);
-    void setColor(Color color_);
 };
 
 struct Draw : public IDraw {
     Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
+};
 
-    void setFrameSize(s32 x, s32 y);
-    void setFrameSize(Vector2i frameSize);
-    void setColor(Color color_);
+struct DrawText : public IDraw {
+    DrawText(const char* string = "", Depth depth_ = Depth::Player, Color color_ = WHITE, Vector2i frameSizeTexels = {8, 8},
+             Shaders shader_ = Shaders::Default);
+
+    const char* text;
 };
 
 struct DrawDebug : public Draw {};

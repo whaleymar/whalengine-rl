@@ -36,39 +36,30 @@ void IDraw::setAlpha(u8 alpha) {
     color.a = alpha;
 }
 
-Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
-    : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
-
-void Sprite::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
+void IDraw::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
     mFrameSizeTexels = {frameSizeX, frameSizeY};
 }
 
-void Sprite::setFrameSize(Vector2i frameSize) {
+void IDraw::setFrameSize(Vector2i frameSize) {
     mFrameSizeTexels = frameSize;
 }
+
+void IDraw::setColor(Color rgb) {
+    color = rgb;
+}
+
+Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
+    : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
 
 void Sprite::setFrame(Frame frame) {
     setFrameSize(frame.dimensionsTexels);
     atlasPositionTexels = frame.atlasPositionTexels;
 }
 
-void Sprite::setColor(Color color_) {
-    color = color_;
-}
-
 Draw::Draw(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
 
-void Draw::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
-    mFrameSizeTexels = {frameSizeX, frameSizeY};
-}
-
-void Draw::setFrameSize(Vector2i frameSize) {
-    mFrameSizeTexels = frameSize;
-}
-
-void Draw::setColor(Color rgb) {
-    color = rgb;
-}
+DrawText::DrawText(const char* string, Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_)
+    : IDraw(depth_, color_, frameSizeTexels, shader_), text(string) {}
 
 f32 FadeOut::getIntensity() const {
     f32 t = secondsRemaining / time;
