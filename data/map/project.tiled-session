@@ -85,8 +85,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 398.64628311354886,
-                "y": -109.97782705099777
+                "x": 159.8319523865095,
+                "y": 96.1605788306687
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -96,8 +96,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -358.3148558758315,
-                "y": 102.88248337028826
+                "x": 159.8319523865095,
+                "y": 96.1605788306687
             }
         },
         "world1-rockettutorial.tmj": {
@@ -107,8 +107,8 @@
             "scale": 2.6778125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -3.5476718403547522,
-                "y": 171.59528533084375
+                "x": 159.8319523865095,
+                "y": 96.1605788306687
             }
         },
         "world1-start.tmj": {
@@ -153,7 +153,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Sprite_NoAnim",
+    "property.type": "Component_Tags",
     "recentFiles": [
         "mossy-tileset.tsj",
         "world1-start.tmj",
