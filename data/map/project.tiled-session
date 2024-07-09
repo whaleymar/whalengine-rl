@@ -71,11 +71,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 5.5,
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 480.27272727272725,
-                "y": 99.54545454545455
+                "x": -391.16666666666663,
+                "y": 278.5
             }
         },
         "world1-jumptutorial.tmj": {

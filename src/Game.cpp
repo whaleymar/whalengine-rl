@@ -115,7 +115,7 @@ bool Game::startup() {
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()
-        .registerSystems<DrawSystem, SpriteSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
+        .registerSystems<DrawSystem, SpriteSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
                          RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
         .registerSystems<QuadTreeSystem>()
@@ -134,6 +134,7 @@ void Game::mainloop() {
     // these are used for rendering, which still is run in this function but I might move it eventually
     auto drawSystem = System::world->getSystem<DrawSystem>();
     auto spriteSystem = System::world->getSystem<SpriteSystem>();
+    auto textSystem = System::world->getSystem<DrawTextSystem>();
     auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
@@ -244,6 +245,7 @@ void Game::mainloop() {
 
         spriteSystem->drawEntities();
         drawSystem->drawEntities();
+        // textSystem->drawEntities();
 
         EndMode2D();
 
@@ -303,8 +305,11 @@ void Game::mainloop() {
         Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
         DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
-        if (isQuantizeOn)
+        if (isQuantizeOn) {
             EndShaderMode();
+        }
+
+        textSystem->drawEntities(color);
 
         EndMode2D();
 

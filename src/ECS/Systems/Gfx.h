@@ -8,6 +8,7 @@
 typedef struct Texture Texture;
 typedef Texture Texture2D;
 typedef struct Shader Shader;
+typedef struct Color Color;
 
 namespace whal {
 
@@ -16,6 +17,7 @@ struct Sprite;
 struct Draw;
 struct DrawDebug;
 struct FadeOut;
+struct DrawText;
 
 class SpriteSystem : public ecs::ISystem<Transform2D, Sprite>, public ecs::IMonitorSystem {
 public:
@@ -32,6 +34,12 @@ private:
 class DrawSystem : public ecs::ISystem<Transform2D, Draw> {
 public:
     void drawEntities();
+};
+
+class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {
+public:
+    DrawTextSystem();
+    void drawEntities(Color tint);
 };
 
 class DrawDebugSystem : public ecs::ISystem<Transform2D, DrawDebug> {
