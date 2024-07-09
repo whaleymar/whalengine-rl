@@ -570,9 +570,10 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
     auto thisPosition = entity.get<Transform2D>().position;
 
     // other isn't guaranteed to have been parsed. Calculate its transform manually
+    // TODO broken for objects with template size
     const auto& targetObj = allObjects[idToIndex.at(targetId).first];
-    Vector2i otherDimsTexels;
-    tryReadVector2i(targetObj, "width", "height", &otherDimsTexels);
+    Vector2i otherDimsTexels = getObjectSize(targetObj);
+    // tryReadVector2i(targetObj, "width", "height", &otherDimsTexels);
     const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDimsTexels, level, false).position;
 
     attach.offsetTexels = (thisPosition - otherPosition) / PIXELS_PER_TEXEL;

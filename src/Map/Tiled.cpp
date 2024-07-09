@@ -39,6 +39,10 @@ static std::string getSpriteKeyFromPath(std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static std::string getTypeFromTemplate(const std::string templateFile);
 
+void clearMapCache() {
+    TEMPLATE_MANAGER.clearCache();
+}
+
 TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     // error handling sucks in this function but it's whatever
 
@@ -587,6 +591,19 @@ std::string getTypeFromTemplate(const std::string templateFile) {
     std::string objType = "";
     tryReadString(prefabData, "type", &objType);
     return objType;
+}
+
+// reads size from object data, taking templates into account
+Vector2i getObjectSize(const nlohmann::json& objectData) {
+    Vector2i size;
+    if (objectData.contains("template")) {
+        auto templateFile = readString(objectData, "template");
+        const auto& prefab = getTemplate(templateFile);
+        tryReadVector2i(prefab, "width", "height", &size);
+    }
+
+    tryReadVector2i(objectData, "width", "height", &size);
+    return size;
 }
 
 }  // namespace whal

@@ -5,6 +5,15 @@
      "name":"RubbleFallSwitch",
      "properties":[
             {
+             "name":"Collider",
+             "propertytype":"Component_Collider",
+             "type":"class",
+             "value":
+                {
+                 "Layer":"Solid"
+                }
+            }, 
+            {
              "name":"Draw",
              "propertytype":"Component_Draw",
              "type":"class",
@@ -27,15 +36,6 @@
             {
              "name":"Switch",
              "propertytype":"Component_Switch",
-             "type":"class",
-             "value":
-                {
-
-                }
-            }, 
-            {
-             "name":"Trigger",
-             "propertytype":"Component_Trigger",
              "type":"class",
              "value":
                 {
