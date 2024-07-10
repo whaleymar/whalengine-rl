@@ -11,8 +11,7 @@ class Entity;
 class Collider;
 class AABB;
 
-using CollisionCallback = void (*)(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
-                                   Vector2i hitNormal);
+using CollisionCallback = void (*)(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal);
 
 enum class CollisionDir : u8 { ALL, LEFT, RIGHT, DOWN, UP };
 

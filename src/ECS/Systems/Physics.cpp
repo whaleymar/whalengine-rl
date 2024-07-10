@@ -1,7 +1,6 @@
 #include "Physics.h"
 
 #include <cmath>
-#include <functional>
 
 #include "ECS/PlayerControl.h"
 #include "ECS/Systems/CollisionManager.h"
@@ -32,7 +31,9 @@ constexpr f32 MOVE_EPSILON = 0.1;
 constexpr f32 JUMP_PEAK_GRAVITY_MULT = 0.5;
 constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no longer considered "jumping"
 
-using BoundCollisionCallback = std::function<void()>;
+using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, Vector2i>>, ecs::EntityHash>;
+
+static CallbackMap S_CALLBACK_QUEUE;
 
 void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {
     bool isInJumpPeak = isJumping && isBetween(velocity.total.y(), JUMP_PEAK_SPEED_MAX, 0.0f);
@@ -49,32 +50,26 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 // If both entities are moving, this might get called twice for the same pair of entities.
 // So I have a helper function that makes sure callbacks are called exactly once per collision
 void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hitinfo) {
-    auto& queue = PhysicsSystem::getCollisionCallbackQueue();
-    auto& movingCollider = movingEntity.get<Collider>();
-    auto& otherCollider = hitinfo.getOther().get<Collider>();
-
-    auto addIfUnique = [](std::vector<std::pair<ecs::Entity, BoundCollisionCallback>>& entityList, ecs::Entity callbackOwner, ecs::Entity other,
-                          Collider* callbackOwnerCollider, Collider* otherCollider, Vector2i moveNormal) {
+    auto addIfUnique = [](std::vector<std::pair<ecs::Entity, Vector2i>>& entityList, ecs::Entity other, Vector2i moveNormal) {
         for (auto [entity, _] : entityList) {
             if (entity == other) {
                 return;
             }
         }
-        // TODO it's weird i'm not passing hitinfo here. The callback should take hitinfo instead of moveNormal
-        BoundCollisionCallback boundFunc =
-            std::bind(callbackOwnerCollider->getOnCollisionEnter(), callbackOwner, other, callbackOwnerCollider, otherCollider, moveNormal);
-        entityList.push_back({other, boundFunc});
+        entityList.push_back({other, moveNormal});
     };
 
-    if (movingCollider.getOnCollisionEnter() != nullptr) {
-        addIfUnique(queue[movingEntity], movingEntity, hitinfo.getOther(), &movingCollider, &otherCollider, hitinfo.toVec());
+    if (movingEntity.get<Collider>().getOnCollisionEnter() != nullptr) {
+        addIfUnique(S_CALLBACK_QUEUE[movingEntity], hitinfo.getOther(), hitinfo.toVec());
     }
-    if (otherCollider.getOnCollisionEnter() != nullptr) {
-        addIfUnique(queue[hitinfo.getOther()], hitinfo.getOther(), movingEntity, &otherCollider, &movingCollider, hitinfo.toVec() * -1);
+    if (hitinfo.getOther().get<Collider>().getOnCollisionEnter() != nullptr) {
+        addIfUnique(S_CALLBACK_QUEUE[hitinfo.getOther()], movingEntity, hitinfo.toVec() * -1);
     }
 }
 
 void PhysicsSystem::update() {
+    S_CALLBACK_QUEUE.clear();
+
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesRef()) {
@@ -242,12 +237,11 @@ void PhysicsSystem::update() {
     }
 
     // do collision callbacks
-    for (auto& [callbackEntity, hitList] : mCollisionCallbackQueue) {
-        for (auto& [otherEntity, callback] : hitList) {
-            callback();
+    for (auto& [callbackEntity, hitList] : S_CALLBACK_QUEUE) {
+        for (auto& [otherEntity, hitNormal] : hitList) {
+            callbackEntity.get<Collider>().getOnCollisionEnter()(callbackEntity, otherEntity, hitNormal);
         }
     }
-    mCollisionCallbackQueue.clear();
 }
 
 }  // namespace whal

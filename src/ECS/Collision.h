@@ -18,7 +18,7 @@ struct HitInfo;
 // }
 
 // the default function which is called when a non-solid collider is squished between two solids (it dies).
-void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal);
+void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal);
 
 // currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
@@ -88,7 +88,7 @@ public:
 
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,
                              const bool triggerCollisionEvents = false) const;
-    void squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal);
+    void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 
     // momentum:

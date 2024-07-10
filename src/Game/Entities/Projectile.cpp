@@ -103,8 +103,9 @@ static void makeDefaultExplosion(ecs::Entity self) {
     }
 }
 
-static void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
-    if (!selfCollider->isAlive()) {
+static void Explode(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
+    auto& selfCollider = self.get<Collider>();
+    if (!selfCollider.isAlive()) {
         return;
     }
     if (skipParentCollision(self, other)) {
@@ -114,12 +115,12 @@ static void Explode(ecs::Entity self, ecs::Entity other, Collider* selfCollider,
     Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
     f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
-        Vector2i pos = selfCollider->getShape().getPositionEdge(moveNormal);
+        Vector2i pos = selfCollider.getShape().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius, pushStrength);
         makeExplosionParticles(pos, moveNormal);
     }
     self.kill();
-    selfCollider->setIsDead();
+    selfCollider.setIsDead();
 }
 
 Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius,

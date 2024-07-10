@@ -26,12 +26,13 @@ constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 constexpr s32 CORNERCORRECTIONWIGGLE = 3 * PIXELS_PER_TEXEL;
 constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bounce
 
-void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-    if (callbackEntityCollider->isSemiSolid() && otherCollider->isSemiSolid()) {
+void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
+    auto& callbackEntityCollider = callbackEntity.get<Collider>();
+    if (callbackEntityCollider.isSemiSolid() && other.get<Collider>().isSemiSolid()) {
         return;
     }
-    callbackEntityCollider->getEntity().kill();
-    callbackEntityCollider->setIsDead();
+    callbackEntityCollider.getEntity().kill();
+    callbackEntityCollider.setIsDead();
 }
 
 // try wiggling out of upward collision.
@@ -44,17 +45,17 @@ bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNor
     return false;
 }
 
-void squishEntity(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-    callbackEntityCollider->squish(other, otherCollider, hitNormal);
+void squishEntity(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
+    callbackEntity.get<Collider>().squish(other, hitNormal);
 }
 
 // a semisolid pushing another semisolid shouldn't squish it. If it runs into a [semi]solid, just stop movement
-void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
-                                   Vector2i hitNormal) {
-    if (callbackEntityCollider->isSemiSolid() && otherCollider->isSolidAny()) {
+void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
+    auto& callbackEntityCollider = callbackEntity.get<Collider>();
+    if (callbackEntityCollider.isSemiSolid() && other.get<Collider>().isSolidAny()) {
         return;
     }
-    callbackEntityCollider->squish(other, otherCollider, hitNormal);
+    callbackEntityCollider.squish(other, hitNormal);
 }
 
 Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
@@ -294,7 +295,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
                 }
             }
             if (callback != nullptr) {
-                callback(getEntity(), hitInfo.getOther(), this, &hitInfo.getOther().get<Collider>(), moveNormal);
+                callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
             return hitInfo;
         }
@@ -339,7 +340,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
                 }
             }
             if (callback != nullptr) {
-                callback(getEntity(), hitInfo.getOther(), this, &hitInfo.getOther().get<Collider>(), moveNormal);
+                callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
             return hitInfo;
         }
@@ -611,8 +612,8 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     return hitInfoToReturn;
 }
 
-void Collider::squish(ecs::Entity other, Collider* otherCollider, Vector2i hitNormal) {
-    mSquishCallback(mSelf, other, this, otherCollider, hitNormal);
+void Collider::squish(ecs::Entity other, Vector2i hitNormal) {
+    mSquishCallback(mSelf, other, hitNormal);
 }
 
 void Collider::setMomentum(const f32 momentum, const bool isXDirection) {
