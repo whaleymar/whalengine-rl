@@ -47,8 +47,7 @@ void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledT
 }
 
 void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
-    auto collisionCallback = [](ecs::Entity callbackEntity, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider,
-                                Vector2i hitNormal) {
+    auto collisionCallback = [](ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
         if (other.has<Particle>() || hitNormal.y() != 1) {
             return;
         }
@@ -70,23 +69,22 @@ void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTempla
 }
 
 void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
-    entity.get<Collider>().setCollisionCallback(
-        [](ecs::Entity self, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-            auto flipSwitch = self.get<Switch>();
-            ecs::EntityID targetID = flipSwitch.target;
+    entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
+        auto flipSwitch = self.get<Switch>();
+        ecs::EntityID targetID = flipSwitch.target;
 
-            ecs::Entity target(targetID);
-            target.add<RigidBody>();
-            target.add<Velocity>();
-            if (target.has<Draw>()) {
-                target.get<Draw>().setColor(Colors::LightBlue);
-            }
+        ecs::Entity target(targetID);
+        target.add<RigidBody>();
+        target.add<Velocity>();
+        if (target.has<Draw>()) {
+            target.get<Draw>().setColor(Colors::LightBlue);
+        }
 
-            if (self.has<Draw>()) {
-                self.get<Draw>().setColor(Colors::LightBlue);
-            }
-            self.add(OnFrameEnd([](ecs::Entity e) { e.remove<Trigger>(); }));
-        });
+        if (self.has<Draw>()) {
+            self.get<Draw>().setColor(Colors::LightBlue);
+        }
+        self.add(OnFrameEnd([](ecs::Entity e) { e.remove<Trigger>(); }));
+    });
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
@@ -129,67 +127,66 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
 }
 
 void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
-    entity.get<Collider>().setCollisionCallback(
-        [](ecs::Entity self, ecs::Entity other, Collider* callbackEntityCollider, Collider* otherCollider, Vector2i hitNormal) {
-            if (!other.has<ProjectileInfo>()) {
-                return;
+    entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
+        if (!other.has<ProjectileInfo>()) {
+            return;
+        }
+
+        auto flipSwitch = self.get<Switch>();
+        ecs::EntityID targetID = flipSwitch.target;
+
+        ecs::Entity target(targetID);
+        auto& gate = target.get<SwitchGate>();
+        if (gate.numKeys > 0) {
+            gate.numKeys--;
+        }
+        if (gate.numKeys == 0) {
+            auto& rails = target.get<RailsControl>();
+            rails.startManually();
+            if (target.has<Draw>()) {
+                target.get<Draw>().setColor(Colors::LightBlue);
             }
-
-            auto flipSwitch = self.get<Switch>();
-            ecs::EntityID targetID = flipSwitch.target;
-
-            ecs::Entity target(targetID);
-            auto& gate = target.get<SwitchGate>();
-            if (gate.numKeys > 0) {
-                gate.numKeys--;
-            }
-            if (gate.numKeys == 0) {
-                auto& rails = target.get<RailsControl>();
-                rails.startManually();
-                if (target.has<Draw>()) {
-                    target.get<Draw>().setColor(Colors::LightBlue);
-                }
-                if (gate.isPersistent) {
-                    rails.arrivalCallback = [](ecs::Entity self, RailsControl& rails) {
-                        if (rails.isAtLastCheckpoint()) {
-                            self.add(OnFrameEnd([](ecs::Entity self) -> void { self.remove<RailsControl>(); }));
-                        }
-                    };
-                } else if (rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_LOOP ||
-                           rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK) {
-                    // unset switch once cycle is done
-                    System::schedule.eventFlow({self}).addWait(1.0f).add(
-                        [](ecs::Entity self) {
-                            if (self.has<Draw>()) {
-                                self.get<Draw>().setColor(Colors::Pink);
-                            }
-
-                            if (self.has<Radiance>()) {
-                                self.get<Radiance>().color = Color(34, 103, 103, 255);
-                            }
-
-                            auto target = ecs::Entity(self.get<Switch>().target);
-                            if (target.has<Draw>()) {
-                                target.get<Draw>().setColor(Colors::Pink);
-                            }
-                        },
-                        self);
-                }
-                // TODO create system with RailsControl and SwitchGate (not persistent). Listen for player death, and reset to start position if it
-                // happens
-            }
-
-            if (self.has<Draw>()) {
-                self.get<Draw>().setColor(Colors::LightBlue);
-            }
-            if (self.has<Radiance>()) {
-                self.get<Radiance>().color = WHITE;
-            }
-
             if (gate.isPersistent) {
-                self.get<Collider>().setCollisionCallback(nullptr);
+                rails.arrivalCallback = [](ecs::Entity self, RailsControl& rails) {
+                    if (rails.isAtLastCheckpoint()) {
+                        self.add(OnFrameEnd([](ecs::Entity self) -> void { self.remove<RailsControl>(); }));
+                    }
+                };
+            } else if (rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_LOOP ||
+                       rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK) {
+                // unset switch once cycle is done
+                System::schedule.eventFlow({self}).addWait(1.0f).add(
+                    [](ecs::Entity self) {
+                        if (self.has<Draw>()) {
+                            self.get<Draw>().setColor(Colors::Pink);
+                        }
+
+                        if (self.has<Radiance>()) {
+                            self.get<Radiance>().color = Color(34, 103, 103, 255);
+                        }
+
+                        auto target = ecs::Entity(self.get<Switch>().target);
+                        if (target.has<Draw>()) {
+                            target.get<Draw>().setColor(Colors::Pink);
+                        }
+                    },
+                    self);
             }
-        });
+            // TODO create system with RailsControl and SwitchGate (not persistent). Listen for player death, and reset to start position if it
+            // happens
+        }
+
+        if (self.has<Draw>()) {
+            self.get<Draw>().setColor(Colors::LightBlue);
+        }
+        if (self.has<Radiance>()) {
+            self.get<Radiance>().color = WHITE;
+        }
+
+        if (gate.isPersistent) {
+            self.get<Collider>().setCollisionCallback(nullptr);
+        }
+    });
 }
 
 void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {

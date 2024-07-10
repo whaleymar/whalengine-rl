@@ -139,14 +139,14 @@ Corrade::Containers::Optional<Error> loadDebugScene() {
     return Corrade::Containers::NullOpt;
 }
 
-void startRailsMovement(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
+void startRailsMovement(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
     auto& rails = self.get<RailsControl>();
     if (rails.isWaiting && rails.curTarget == 0) {
         rails.startManually();
     }
 }
 
-void killEntityCallback(ecs::Entity self, ecs::Entity other, Collider* selfCollider, Collider* otherCollider, Vector2i moveNormal) {
+void killEntityCallback(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
     other.kill();
 }
 
