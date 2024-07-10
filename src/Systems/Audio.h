@@ -47,7 +47,7 @@ public:
     friend System;
     friend AudioClip;
 
-    void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
+    void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
     void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
     void stopMusic();
@@ -116,6 +116,9 @@ public:
     inline static AudioClip MENU_SELECT;
     inline static AudioClip MENU_OPEN;
     inline static AudioClip MENU_CLOSE;
+    inline static AudioClip MAJOR_ITEM_GET;
+    inline static AudioClip SWITCH_FLIP;
+    inline static AudioClip DOOR_OPEN;
 
     Corrade::Containers::Optional<Error> load();
 
