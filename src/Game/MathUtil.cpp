@@ -3,6 +3,9 @@
 #include <cmath>
 
 Vector2f closestOrdinalDirection(Vector2f vecf) {
+    if (vecf.isZero()) {
+        return Vector2f::unitRight;
+    }
     vecf = vecf.norm();
     const f32 invRootTwo = 1.0f / std::sqrt(2.0f);
     auto tryUnitDir = [vecf](Vector2f& closest, f32& minDegreesAway, Vector2f other) {

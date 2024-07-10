@@ -133,7 +133,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     auto _ = ecs::DeferActivate(entity);
 
     // the sprite is pointing down by default. Get angle between for rotation
-    Vector2f moveNormal = velocity.norm();
+    Vector2f moveNormal = velocity.isZero() ? Vector2f::unitRight : velocity.norm();
     Vector2f referenceAngle = Vector2f::unitDown;
     f32 dot = moveNormal.dot(referenceAngle);
     f32 det = moveNormal.det(referenceAngle);
@@ -141,8 +141,8 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     Transform2D trans(position, angleRadians * RAD_TO_DEG);
 
     Velocity vel(velocity);
-    s32 len = 4;
-    s32 halflenPixels = len / 2 * PIXELS_PER_TEXEL;
+    constexpr s32 len = 4;
+    constexpr s32 halflenPixels = len / 2 * PIXELS_PER_TEXEL;
 
     entity.add(trans);
     entity.add(vel);

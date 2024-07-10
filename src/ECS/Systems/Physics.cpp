@@ -47,7 +47,7 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 // Any type of collision (regular, push, carry) is emitted as an event and received here.
 // If the moving entity or the other entity have callbacks, they're added to a queue and called once everything has moved.
 // If both entities are moving, this might get called twice for the same pair of entities.
-// So I have a helper function that makes sure they're unique
+// So I have a helper function that makes sure callbacks are called exactly once per collision
 void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hitinfo) {
     auto& queue = PhysicsSystem::getCollisionCallbackQueue();
     auto& movingCollider = movingEntity.get<Collider>();
