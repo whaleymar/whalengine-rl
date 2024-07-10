@@ -50,9 +50,9 @@ void PauseMenu::draw(Font* font) const {
     if (!isActive()) {
         return;
     }
-    constexpr s32 spacing = 24;   // PARAM
-    constexpr s32 fontSize = 48;  // PARAM
-    constexpr s32 spacingX = 0;   // PARAM
+    constexpr s32 spacing = 24;                                 // PARAM
+    constexpr s32 fontSize = 48 * VIRTUAL_SCREEN_RATIO / 4.0f;  // PARAM
+    constexpr s32 spacingX = 0;                                 // PARAM
 
     constexpr s32 lineheight = spacing + fontSize;
     constexpr s32 menuHeight = lineheight * N_BUTTONS - spacing;  // n-1 fence posts

@@ -21,7 +21,7 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
                                     int selectStart, int selectLength, Color selectTint, Color selectBackTint);
 
 static Font DEFAULT_FONT;
-static const s32 FONT_SIZE = 40;
+static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
 void SpriteSystem::onAdd(const ecs::Entity entity) {
     // insert entities into sorted order, based on depth, then shader

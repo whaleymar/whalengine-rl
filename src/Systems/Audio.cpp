@@ -94,6 +94,8 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         return;
     }
 
+    stopMusic();
+
     auto result = mSystem->createStream(path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
     if (result != FMOD_OK) {
         print("couldn't load music stream:", path, "\nGot error:", FMOD_ErrorString(result));
@@ -231,8 +233,10 @@ void AudioPlayer::stopMusic() {
     if (mIsPlayingMusic) {
         mMusicChannel->stop();
     }
-    mMusic->release();
-    mMusic = nullptr;
+    if (mMusic) {
+        mMusic->release();
+        mMusic = nullptr;
+    }
     mIsPlayingMusic = false;
 }
 
@@ -410,6 +414,21 @@ Corrade::Containers::Optional<Error> Sfx::load() {
     }
 
     errOpt = MENU_SELECT.load("data/audio/sfx/menu_choose.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = SWITCH_FLIP.load("data/audio/sfx/switch_flip.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = DOOR_OPEN.load("data/audio/sfx/door_open.wav");
+    if (errOpt) {
+        return errOpt;
+    }
+
+    errOpt = MAJOR_ITEM_GET.load("data/audio/sfx/major_item_get.mp3");
     if (errOpt) {
         return errOpt;
     }

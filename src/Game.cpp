@@ -148,8 +148,6 @@ void Game::mainloop() {
         return;
     }
 
-    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
-
     // experimenting with adding some extra pixels on border
     RenderTexture2D targetTexture =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
@@ -368,6 +366,8 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
         unloadScene(resetPlayers);
     }
 
+    System::audio.playMusic("data/audio/music/provingGroundsTheme.mp3");
+
     auto errOpt = parseWorld(filename, mActiveScene);
     if (errOpt) {
         mIsSceneLoaded = false;
@@ -411,6 +411,8 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
 }
 
 void Game::unloadScene(bool resetPlayers) {
+    System::audio.stopAll();
+
     while (!mActiveScene.loadedLevels.empty()) {
         // copy and pop level so the EntityDeathListener doesn't mutate the level we're deleting
         auto lvlCopy = mActiveScene.loadedLevels.back();

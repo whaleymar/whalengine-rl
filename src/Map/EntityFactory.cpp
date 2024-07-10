@@ -83,6 +83,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
         if (self.has<Draw>()) {
             self.get<Draw>().setColor(Colors::LightBlue);
         }
+        System::audio.playClip(Sfx::SWITCH_FLIP, 0.25);
         self.add(OnFrameEnd([](ecs::Entity e) { e.remove<Trigger>(); }));
     });
 }
@@ -121,6 +122,7 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
 
         other.add<Blaster>();
         EventFlags::set(EventFlags::HasMagicHat);
+        System::audio.playClip(Sfx::MAJOR_ITEM_GET, 0.2);
 
         self.kill();
     };
@@ -131,6 +133,8 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
         if (!other.has<ProjectileInfo>()) {
             return;
         }
+
+        System::audio.playClip(Sfx::SWITCH_FLIP, 0.25);
 
         auto flipSwitch = self.get<Switch>();
         ecs::EntityID targetID = flipSwitch.target;
@@ -143,6 +147,7 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
         if (gate.numKeys == 0) {
             auto& rails = target.get<RailsControl>();
             rails.startManually();
+            System::audio.playClip(Sfx::DOOR_OPEN);
             if (target.has<Draw>()) {
                 target.get<Draw>().setColor(Colors::LightBlue);
             }
