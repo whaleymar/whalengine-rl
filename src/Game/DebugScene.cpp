@@ -35,7 +35,7 @@ using namespace whal;
 Corrade::Containers::Optional<Error> loadMap() {
     // const char* scenefile = "testworld.world";
     const char* scenefile = "world1.world";
-    return Game::instance().loadScene(scenefile);
+    return Game::instance().loadScene(scenefile, true);
 }
 
 Corrade::Containers::Optional<Error> loadTestMap() {

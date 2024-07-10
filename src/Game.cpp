@@ -4,6 +4,7 @@
 
 #include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
+#include "ECS/Entities/Player.h"
 #include "ECS/Name.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RailsControl.h"
@@ -22,12 +23,12 @@
 #include "ECS/Systems/TriggerSystem.h"
 #include "ECS/Tags.h"
 #include "ECS/Transform.h"
+#include "Game/Components/Respawn.h"
 
 #include "Events/Events.h"
 #include "Events/Listeners.h"
 
 #include "Game/Components/Blaster.h"
-#include "Game/DebugScene.h"
 #include "Game/Systems/RespawnSystem.h"
 
 #include "Gfx/ShaderManager.h"
@@ -47,6 +48,7 @@
 // GAME SETTINGS
 
 constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
+const char* SCENE_FILE = "world1.world";
 
 // /GAME SETTINGS
 
@@ -139,7 +141,8 @@ void Game::mainloop() {
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
     // load scene
-    auto err = loadTestMap();
+    // auto err = loadTestMap();
+    auto err = loadScene(SCENE_FILE, true);
     if (err) {
         print("Error loading debug scene: ", *err);
         return;
@@ -360,9 +363,9 @@ void Game::removeEntityFromLevel(ecs::Entity entity) {
     }
 }
 
-Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
+Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool resetPlayers) {
     if (mIsSceneLoaded) {
-        unloadScene();
+        unloadScene(resetPlayers);
     }
 
     auto errOpt = parseWorld(filename, mActiveScene);
@@ -377,6 +380,10 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     }
 
     Vector2i startPos = eFirstLevel.value()->initialSpawnPoint;
+
+    if (resetPlayers || PlayerSystem::getEntitiesRef().empty()) {
+        createPlayer();
+    }
 
     if (!getCamera()) {
         Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
@@ -403,7 +410,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename) {
     return NULLOPT;
 }
 
-void Game::unloadScene() {
+void Game::unloadScene(bool resetPlayers) {
     while (!mActiveScene.loadedLevels.empty()) {
         // copy and pop level so the EntityDeathListener doesn't mutate the level we're deleting
         auto lvlCopy = mActiveScene.loadedLevels.back();
@@ -415,14 +422,27 @@ void Game::unloadScene() {
 
     std::set<ecs::Entity> toKill = std::move(mActiveScene.childEntities);
     for (auto entity : toKill) {
+        if (entity.has<Respawn>()) {
+            entity.remove<Respawn>();
+        }
         entity.kill();
     }
+
+    if (resetPlayers) {
+        for (auto [entityid, entity] : PlayerSystem::getEntitiesCopy()) {
+            if (entity.has<Respawn>()) {
+                entity.remove<Respawn>();
+            }
+            entity.kill();
+        }
+    }
+
     System::world->killEntities();
     mIsSceneLoaded = false;
 }
 
-Corrade::Containers::Optional<Error> Game::reloadScene() {
-    auto errOpt = loadScene(mActiveScene.name.c_str());
+Corrade::Containers::Optional<Error> Game::reloadScene(bool resetPlayers) {
+    auto errOpt = loadScene(mActiveScene.name.c_str(), resetPlayers);
     if (!errOpt) {
         checkIfInNewLevel(true);
     }

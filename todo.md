@@ -4,9 +4,8 @@
 - levels!
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
-- limited ammo: 4 shots, reload on landing
-    - needs visual indicator
 - parachute
+- air current (propeller?) -> comes before propeller
 
 ## Polish
 - Particle emitter component on player hands/feet (?) while RJing
@@ -25,6 +24,10 @@
 - combine draw and sprite components so depth works for draw
     - tagged union; also add bezier draw component, text draw component
 
+
+## Physics 
+- collider offset
+
 ## Map 
 - object layers
     - special metadata
@@ -36,6 +39,7 @@
     - the layer has component properties
     - all tiles are attached to parent
     - would need some way to say "if collision and collider has parent, try running parent callback"
+- background/foreground layers w/out parallax should be written to a texture?
 
 ## Improving compile times:
 - would be GREAT to use the <iosfwd> include in Print.h and move the iostream import outside of the header file, but not sure how to do that bc it's templated
