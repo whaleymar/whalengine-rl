@@ -16,12 +16,12 @@
 
 namespace whal {
 
-static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint);
-static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint,
+static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint);
+static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                                     int selectStart, int selectLength, Color selectTint, Color selectBackTint);
 
 static Font DEFAULT_FONT;
-static const s32 FONT_SIZE = 20;
+static const s32 FONT_SIZE = 40;
 
 void SpriteSystem::onAdd(const ecs::Entity entity) {
     // insert entities into sorted order, based on depth, then shader
@@ -85,8 +85,11 @@ void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture
     Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
     Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
 
-    // rotate about transform
-    Vector2f origin = Vector2f(dstSize.x() * 0.5, dstSize.y());
+    // rotate about center or transform
+    Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x() * 0.5, dstSize.y());
+    if (sprite.isRotateAboutCenter) {
+        dstPosition -= Vector2f(0, dstSize.y() / 2.0f);
+    }
 
     Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
     DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
@@ -139,7 +142,7 @@ void DrawTextSystem::drawEntities(Color tint) {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawText draw = entity.get<DrawText>();
 
-        Vector2f frameSize = toFloatVec(draw.getFrameSizeTexels()) * FPIXELS_PER_TEXEL * VIRTUAL_SCREEN_RATIO * draw.scale;
+        Vector2f frameSize = toFloatVec(draw.frameSizeTexels) * FPIXELS_PER_TEXEL * VIRTUAL_SCREEN_RATIO * draw.scale;
 
         // text is drawn at full resolution
         Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y()};
@@ -149,13 +152,14 @@ void DrawTextSystem::drawEntities(Color tint) {
         // drawing one line:
         // Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, draw.text, FONT_SIZE, spacing);
         // dstPosition -= Vector2f(textDimensions.x / 2, textDimensions.y);
-
         // DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x(), dstPosition.y()), FONT_SIZE, spacing, ColorTint(draw.color, tint));
 
         // drawing wrapped:
-        dstPosition -= frameSize * 0.5;
+        dstPosition -= frameSize * Vector2f(0.5, 1);
+        dstPosition +=
+            Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);  // needs half tile offset for some reason; might be an issue with map data
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), frameSize.x(), frameSize.y());
-        DrawTextBoxed(DEFAULT_FONT, draw.text, dstRect, FONT_SIZE, spacing, true, ColorTint(draw.color, tint));
+        DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), dstRect, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint));
     }
 }
 
@@ -201,17 +205,20 @@ void FadeOutSystem::update() {
 }
 
 // // Draw text using font inside rectangle limits
-static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint) {
-    DrawTextBoxedSelectable(font, text, rec, fontSize, spacing, wordWrap, tint, 0, 0, WHITE, WHITE);
+static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint) {
+    DrawTextBoxedSelectable(font, text, rec, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, WHITE);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
-static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint,
-                                    int selectStart, int selectLength, Color selectTint, Color selectBackTint) {
+static void DrawTextBoxedSelectable(Font font, const char* text, const Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center,
+                                    Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint) {
     int length = TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
 
     float textOffsetY = 0;     // Offset between lines (on line break '\n')
     float textOffsetX = 0.0f;  // Offset X to next character to draw
+
+    bool isLineMeasureNeeded = true;
+    float centerOffsetX = 0.0f;
 
     float scaleFactor = fontSize / (float)font.baseSize;  // Character rectangle scaling factor
 
@@ -249,8 +256,6 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
         // When wordWrap is OFF we don't need the measure state so we go to the drawing state immediately
         // and begin drawing on the next line before we can get outside the container.
         if (state == MEASURE_STATE) {
-            // TODO: There are multiple types of spaces in UNICODE, maybe it's a good idea to add support for more
-            // Ref: http://jkorpela.fi/chars/spaces.html
             if ((codepoint == ' ') || (codepoint == '\t') || (codepoint == '\n'))
                 endLine = i;
 
@@ -279,6 +284,15 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
                 k = tmp;
             }
         } else {
+            if (isLineMeasureNeeded && center) {
+                const std::string lineStr = endLine == -1 ? std::string(text).substr(startLine == -1 ? 0 : startLine + 1) :
+                                                            std::string(text).substr(startLine == -1 ? 0 : startLine + 1, endLine - startLine);
+
+                Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, lineStr.c_str(), FONT_SIZE, spacing);
+                centerOffsetX = (rec.width - textDimensions.x) / 2;
+
+                isLineMeasureNeeded = false;
+            }
             if (codepoint == '\n') {
                 if (!wordWrap) {
                     textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
@@ -304,13 +318,14 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 
                 // Draw current character glyph
                 if ((codepoint != ' ') && (codepoint != '\t')) {
-                    DrawTextCodepoint(font, codepoint, (Vector2){rec.x + textOffsetX, rec.y + textOffsetY}, fontSize,
+                    DrawTextCodepoint(font, codepoint, (Vector2){rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY}, fontSize,
                                       isGlyphSelected ? selectTint : tint);
                 }
             }
 
             if (wordWrap && (i == endLine)) {
-                textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
+                // textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
+                textOffsetY += (font.baseSize) * scaleFactor;
                 textOffsetX = 0;
                 startLine = endLine;
                 endLine = -1;
@@ -319,6 +334,7 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
                 k = lastk;
 
                 state = !state;
+                isLineMeasureNeeded = true;
             }
         }
 

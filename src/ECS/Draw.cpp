@@ -58,8 +58,8 @@ void Sprite::setFrame(Frame frame) {
 
 Draw::Draw(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
 
-DrawText::DrawText(const char* string, Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_)
-    : IDraw(depth_, color_, frameSizeTexels, shader_), text(string) {}
+DrawText::DrawText(const char* string, Color color_, Vector2i frameSizeTexels_, bool centered)
+    : text(string), color(color_), frameSizeTexels(frameSizeTexels_), isCentered(centered) {}
 
 f32 FadeOut::getIntensity() const {
     f32 t = secondsRemaining / time;

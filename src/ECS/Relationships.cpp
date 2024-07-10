@@ -1,7 +1,6 @@
 #include "Relationships.h"
 
 #include "ECS/Draw.h"
-#include "ECS/Name.h"
 #include "ECS/Transform.h"
 #include "whalECS/src/ECS.h"
 

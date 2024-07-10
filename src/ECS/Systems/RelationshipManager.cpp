@@ -29,7 +29,7 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
     for (auto childEntityID : childrencopy) {
         ecs::Entity childEntity(childEntityID);
         if (childEntity.has<Name>()) {
-            print("Killing child entity: ", childEntity.get<Name>());
+            print("Killing child entity: ", childEntity.get<Name>(), " -- ID == ", childEntity.id());
         }
         childEntity.kill();
     }

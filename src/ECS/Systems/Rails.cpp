@@ -48,7 +48,7 @@ void RailsSystem::update() {
             }
             return (*velOpt)->stable.len();
         }();
-        f32 epsilon = speed >= 60 ? speed * SPEED_DIVISOR + 1 : 0.95;
+        f32 epsilon = speed >= 50 ? speed * SPEED_DIVISOR + 1 : 0.95;
 
         if (rails.isWaiting) {
             // waiting at checkpoint

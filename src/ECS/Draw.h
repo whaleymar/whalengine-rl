@@ -51,17 +51,21 @@ struct Sprite : public IDraw {
     void setFrame(Frame frame);
 
     Vector2i atlasPositionTexels;
+    bool isRotateAboutCenter = false;
 };
 
 struct Draw : public IDraw {
     Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
 };
 
-struct DrawText : public IDraw {
-    DrawText(const char* string = "", Depth depth_ = Depth::Player, Color color_ = WHITE, Vector2i frameSizeTexels = {8, 8},
-             Shaders shader_ = Shaders::Default);
+struct DrawText {
+    DrawText(const char* string = "", Color color_ = WHITE, Vector2i frameSizeTexels = {8, 8}, bool centered = false);
 
-    const char* text;
+    std::string text;
+    Color color;
+    Vector2f scale = {1, 1};
+    Vector2i frameSizeTexels;
+    bool isCentered;
 };
 
 struct DrawDebug : public Draw {};

@@ -52,6 +52,7 @@ public:
     inline static Radiance DefaultRadiance;
     inline static Lifetime DefaultLifeTime;
     inline static SwitchGate DefaultSwitchGate;
+    inline static DrawText DefaultDrawText;
 };
 
 void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects,

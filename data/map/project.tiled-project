@@ -409,6 +409,16 @@
                     "name": "Sprite",
                     "type": "string",
                     "value": ""
+                },
+                {
+                    "name": "rotateAboutCenter",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "rotationDegrees",
+                    "type": "int",
+                    "value": 0
                 }
             ],
             "name": "Component_Sprite_NoAnim",
@@ -467,6 +477,11 @@
                     "value": false
                 },
                 {
+                    "name": "Invisible",
+                    "type": "bool",
+                    "value": false
+                },
+                {
                     "name": "Player",
                     "type": "bool",
                     "value": false
@@ -483,6 +498,33 @@
                 }
             ],
             "name": "Component_Tags",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 43,
+            "members": [
+                {
+                    "name": "center",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "text",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "Component_Text",
             "type": "class",
             "useAs": [
                 "property"
