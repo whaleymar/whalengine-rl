@@ -63,7 +63,7 @@ void RailsSystem::update() {
                     Vector2i newDelta = rails.getTarget().position - transform.position;
 
                     // prevent divide by zero
-                    if (newDelta.x() == 0 && newDelta.y() == 0) {
+                    if (newDelta.isZero()) {
                         // we're already at target for some reason, so no need to wait again
                         entity.add<Velocity>();
                         rails.curActionTime = rails.waitTime;
@@ -98,7 +98,7 @@ void RailsSystem::update() {
 
         } else {
             // moving to next checkpoint
-            if (rails.isVelocityUpdateNeeded) {
+            if (rails.isVelocityUpdateNeeded && !delta.isZero()) {
                 f32 speed = rails.getSpeed(transform.position);
                 entity.set(Velocity(delta.norm() * speed));
             }
