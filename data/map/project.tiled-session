@@ -78,8 +78,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 156.5,
-                "y": 142.16666666666663
+                "x": 156.16666666666666,
+                "y": 141.83333333333334
             }
         },
         "world1-jumptutorial.tmj": {
@@ -89,8 +89,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 285.16666666666663,
-                "y": -6.166666666666657
+                "x": 160,
+                "y": 96.16666666666666
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -100,8 +100,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -482.8333333333333,
-                "y": 117.16666666666664
+                "x": 160,
+                "y": 96.16666666666666
             }
         },
         "world1-rockettutorial.tmj": {
@@ -111,8 +111,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -215.16666666666666,
-                "y": 182.5
+                "x": 160,
+                "y": 96.16666666666666
             }
         },
         "world1-start.tmj": {
@@ -122,8 +122,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1077.1666666666665,
-                "y": -136.83333333333331
+                "x": 160,
+                "y": 96.16666666666666
             }
         },
         "world1.tmj": {
@@ -160,8 +160,8 @@
     "project": "project.tiled-project",
     "property.type": "Component_Tags",
     "recentFiles": [
-        "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
+        "mossy-tileset.tsj",
         "world1-start.tmj",
         "world1-jumptutorial.tmj",
         "world1-rockettutorial.tmj",

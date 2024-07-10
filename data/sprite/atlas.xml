@@ -7,13 +7,14 @@
 		<img n="map/celeste-treesbg" x="642" y="0" w="320" h="135" />
 		<img n="actor/palette" x="963" y="0" w="256" h="16" />
 		<img n="map/tileset-mossy" x="1220" y="0" w="48" h="48" />
-		<img n="map/mossy-tileset-background" x="963" y="17" w="32" h="32" />
-		<img n="effect/explosion6" x="996" y="17" w="32" h="32" />
-		<img n="effect/explosion5" x="1029" y="17" w="32" h="32" />
-		<img n="effect/explosion4" x="1062" y="17" w="32" h="32" />
-		<img n="effect/explosion3" x="1095" y="17" w="32" h="32" />
-		<img n="effect/explosion2" x="1128" y="17" w="32" h="32" />
-		<img n="effect/explosion1" x="1161" y="17" w="32" h="32" />
+		<img n="map/mushroom-tileset" x="963" y="17" w="32" h="32" />
+		<img n="map/mossy-tileset-background" x="996" y="17" w="32" h="32" />
+		<img n="effect/explosion6" x="1029" y="17" w="32" h="32" />
+		<img n="effect/explosion5" x="1062" y="17" w="32" h="32" />
+		<img n="effect/explosion4" x="1095" y="17" w="32" h="32" />
+		<img n="effect/explosion3" x="1128" y="17" w="32" h="32" />
+		<img n="effect/explosion2" x="1161" y="17" w="32" h="32" />
+		<img n="effect/explosion1" x="1269" y="0" w="32" h="32" />
 		<img n="actor/witch-fallstill4" x="1194" y="17" w="16" h="20" />
 		<img n="actor/witch-fallstill3" x="1194" y="38" w="16" h="20" />
 		<img n="actor/witch-fallstill2" x="963" y="50" w="16" h="20" />
@@ -29,51 +30,51 @@
 		<img n="actor/witch-jumpstill2" x="1133" y="50" w="16" h="20" />
 		<img n="actor/witch-jumpstill1" x="1150" y="50" w="16" h="20" />
 		<img n="actor/witch-run8" x="1167" y="50" w="16" h="20" />
-		<img n="actor/witch-run7" x="1269" y="0" w="16" h="20" />
-		<img n="actor/witch-run6" x="1286" y="0" w="16" h="20" />
-		<img n="actor/witch-run5" x="1303" y="0" w="16" h="20" />
-		<img n="actor/witch-run4" x="1320" y="0" w="16" h="20" />
-		<img n="actor/witch-run3" x="1337" y="0" w="16" h="20" />
-		<img n="actor/witch-run2" x="1354" y="0" w="16" h="20" />
-		<img n="actor/witch-run1" x="1371" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising4" x="1388" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising3" x="1405" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising2" x="1422" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_rising1" x="1439" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_peak2" x="1456" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward_peak1" x="1473" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward2" x="1388" y="0" w="16" h="20" />
-		<img n="actor/witch-jumpforward1" x="1490" y="0" w="16" h="20" />
-		<img n="actor/witch-idle5" x="1507" y="0" w="16" h="20" />
-		<img n="actor/witch-idle4" x="1524" y="0" w="16" h="20" />
-		<img n="actor/witch-idle3" x="1541" y="0" w="16" h="20" />
-		<img n="actor/witch-idle2" x="1558" y="0" w="16" h="20" />
+		<img n="actor/witch-run7" x="1302" y="0" w="16" h="20" />
+		<img n="actor/witch-run6" x="1319" y="0" w="16" h="20" />
+		<img n="actor/witch-run5" x="1336" y="0" w="16" h="20" />
+		<img n="actor/witch-run4" x="1353" y="0" w="16" h="20" />
+		<img n="actor/witch-run3" x="1370" y="0" w="16" h="20" />
+		<img n="actor/witch-run2" x="1387" y="0" w="16" h="20" />
+		<img n="actor/witch-run1" x="1404" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising4" x="1421" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising3" x="1438" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising2" x="1455" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_rising1" x="1472" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_peak2" x="1489" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward_peak1" x="1506" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward2" x="1421" y="0" w="16" h="20" />
+		<img n="actor/witch-jumpforward1" x="1523" y="0" w="16" h="20" />
+		<img n="actor/witch-idle5" x="1540" y="0" w="16" h="20" />
+		<img n="actor/witch-idle4" x="1557" y="0" w="16" h="20" />
+		<img n="actor/witch-idle3" x="1574" y="0" w="16" h="20" />
+		<img n="actor/witch-idle2" x="1591" y="0" w="16" h="20" />
 		<img n="actor/witch-idle1" x="1150" y="50" w="16" h="20" />
-		<img n="actor/witch-fall4" x="1456" y="0" w="16" h="20" />
-		<img n="actor/witch-fall3" x="1575" y="0" w="16" h="20" />
-		<img n="actor/witch-fall2" x="1592" y="0" w="16" h="20" />
-		<img n="actor/witch-fall1" x="1609" y="0" w="16" h="20" />
-		<img n="effect/bluefire4" x="1626" y="0" w="15" h="20" />
-		<img n="effect/bluefire3" x="1642" y="0" w="15" h="20" />
-		<img n="effect/bluefire2" x="1658" y="0" w="15" h="20" />
-		<img n="effect/bluefire1" x="1674" y="0" w="15" h="20" />
-		<img n="actor/magichat8" x="1690" y="0" w="16" h="9" />
-		<img n="actor/magichat7" x="1707" y="0" w="16" h="9" />
-		<img n="actor/magichat6" x="1724" y="0" w="16" h="9" />
-		<img n="actor/magichat5" x="1741" y="0" w="16" h="9" />
-		<img n="actor/magichat4" x="1758" y="0" w="16" h="9" />
-		<img n="actor/magichat3" x="1775" y="0" w="16" h="9" />
-		<img n="actor/magichat2" x="1792" y="0" w="16" h="9" />
-		<img n="actor/magichat1" x="1809" y="0" w="16" h="9" />
+		<img n="actor/witch-fall4" x="1489" y="0" w="16" h="20" />
+		<img n="actor/witch-fall3" x="1608" y="0" w="16" h="20" />
+		<img n="actor/witch-fall2" x="1625" y="0" w="16" h="20" />
+		<img n="actor/witch-fall1" x="1642" y="0" w="16" h="20" />
+		<img n="effect/bluefire4" x="1659" y="0" w="15" h="20" />
+		<img n="effect/bluefire3" x="1675" y="0" w="15" h="20" />
+		<img n="effect/bluefire2" x="1691" y="0" w="15" h="20" />
+		<img n="effect/bluefire1" x="1707" y="0" w="15" h="20" />
+		<img n="actor/magichat8" x="1723" y="0" w="16" h="9" />
+		<img n="actor/magichat7" x="1740" y="0" w="16" h="9" />
+		<img n="actor/magichat6" x="1757" y="0" w="16" h="9" />
+		<img n="actor/magichat5" x="1774" y="0" w="16" h="9" />
+		<img n="actor/magichat4" x="1791" y="0" w="16" h="9" />
+		<img n="actor/magichat3" x="1808" y="0" w="16" h="9" />
+		<img n="actor/magichat2" x="1825" y="0" w="16" h="9" />
+		<img n="actor/magichat1" x="1842" y="0" w="16" h="9" />
 		<img n="tile/testgrass" x="1211" y="17" w="8" h="8" />
 		<img n="tile/translucent" x="1211" y="26" w="8" h="8" />
 		<img n="tile/dirtblock" x="1211" y="35" w="8" h="8" />
 		<img n="tile/purpledirt" x="1211" y="44" w="8" h="8" />
 		<img n="actor/arrow" x="1184" y="50" w="8" h="8" />
-		<img n="actor/mana-gauge5" x="1826" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge4" x="1835" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge3" x="1844" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge2" x="1853" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge1" x="1862" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge5" x="1859" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge4" x="1868" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge3" x="1877" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge2" x="1886" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge1" x="1895" y="0" w="8" h="8" />
 	</tex>
 </atlas>
