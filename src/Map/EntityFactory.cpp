@@ -26,6 +26,7 @@ static void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tile
 static void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
+static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
@@ -34,6 +35,7 @@ static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"RubbleFallSwitch", createRubbleFallSwitch},
     {"Magic Hat", createMagicHat},
     {"MultiSwitch", createSwitch},
+    {"AppearTrigger", createAppearTrigger},
 };
 
 EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
@@ -138,7 +140,9 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
 
             ecs::Entity target(targetID);
             auto& gate = target.get<SwitchGate>();
-            gate.numKeys--;
+            if (gate.numKeys > 0) {
+                gate.numKeys--;
+            }
             if (gate.numKeys == 0) {
                 auto& rails = target.get<RailsControl>();
                 rails.startManually();
@@ -151,6 +155,25 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
                             self.add(OnFrameEnd([](ecs::Entity self) -> void { self.remove<RailsControl>(); }));
                         }
                     };
+                } else if (rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_LOOP ||
+                           rails.endBehavior == RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK) {
+                    // unset switch once cycle is done
+                    System::schedule.eventFlow({self}).addWait(1.0f).add(
+                        [](ecs::Entity self) {
+                            if (self.has<Draw>()) {
+                                self.get<Draw>().setColor(Colors::Pink);
+                            }
+
+                            if (self.has<Radiance>()) {
+                                self.get<Radiance>().color = Color(34, 103, 103, 255);
+                            }
+
+                            auto target = ecs::Entity(self.get<Switch>().target);
+                            if (target.has<Draw>()) {
+                                target.get<Draw>().setColor(Colors::Pink);
+                            }
+                        },
+                        self);
                 }
                 // TODO create system with RailsControl and SwitchGate (not persistent). Listen for player death, and reset to start position if it
                 // happens
@@ -163,8 +186,22 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
                 self.get<Radiance>().color = WHITE;
             }
 
-            self.get<Collider>().setCollisionCallback(nullptr);
+            if (gate.isPersistent) {
+                self.get<Collider>().setCollisionCallback(nullptr);
+            }
         });
+}
+
+void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+    entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
+        if (!other.has<Player>()) {
+            return;
+        }
+        ecs::Entity target(self.get<Switch>().target);
+        if (target.has<Invisible>()) {
+            target.remove<Invisible>();
+        }
+    };
 }
 
 }  // namespace whal

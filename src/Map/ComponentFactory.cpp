@@ -65,6 +65,10 @@ static void addSwitchGateComponent(const nlohmann::json& values, const nlohmann:
                                    const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                    ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 
+static void addComponentText(const nlohmann::json& values, const nlohmann::json& allObjects,
+                             const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                             ecs::Entity entity, LayerData layerData);
+
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     // {"Animator", addComponentAnimator},
@@ -85,6 +89,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Tags", addTagComponents},
     {"Component_Switch", addSwitchComponent},
     {"Component_SwitchGate", addSwitchGateComponent},
+    {"Component_Text", addComponentText},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -167,6 +172,10 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultSprite.setColor(hexStringARGBToColor(hexString));
             } else if (memberName == "Sprite") {
                 // do nothing
+            } else if (memberName == "rotationDegrees") {
+                // do nothing, affects Transform
+            } else if (memberName == "rotateAboutCenter") {
+                DefaultSprite.isRotateAboutCenter = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -299,6 +308,22 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             }
         }
 
+    } else if (componentName == "Component_Text") {
+        DefaultDrawText = DrawText();
+        for (auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "text") {
+                DefaultDrawText.text = member[KEY_VALUE];
+            } else if (memberName == "color") {
+                std::string hexString = member[KEY_VALUE];
+                DefaultDrawText.color = hexStringARGBToColor(hexString);
+            } else if (memberName == "center") {
+                DefaultDrawText.isCentered = member[KEY_VALUE];
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+
     } else if (componentName == "Component_SwitchGate") {
         DefaultSwitchGate = SwitchGate();
         for (auto& member : property[KEY_MEMBERS]) {
@@ -389,6 +414,13 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : ComponentFactory::DefaultSprite;
+
+    s32 rotationDegrees;
+    if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
+        entity.get<Transform2D>().rotationDegrees = rotationDegrees;
+    }
+
+    tryReadBool(values, "rotateAboutCenter", &sprite.isRotateAboutCenter);
 
     // ARGB
     if (values.contains("Color")) {
@@ -704,6 +736,11 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
         entity.add<Wiggle>();
         hasTag = false;
     }
+
+    if (tryReadBool(values, "Invisible", &hasTag) && hasTag) {
+        entity.add<Invisible>();
+        hasTag = false;
+    }
 }
 
 void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -733,6 +770,25 @@ void addSwitchGateComponent(const nlohmann::json& values, const nlohmann::json& 
     tryReadInt(values, "numKeys", &gate.numKeys);
     tryReadBool(values, "isPersistent", &gate.isPersistent);
     entity.add(gate);
+}
+
+void addComponentText(const nlohmann::json& values, const nlohmann::json& allObjects,
+                      const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                      ecs::Entity entity, LayerData layerData) {
+    DrawText text = entity.has<DrawText>() ? entity.get<DrawText>() : ComponentFactory::DefaultDrawText;
+
+    // ARGB
+    if (values.contains("color")) {
+        std::string hexcode = "#ffffffff";
+        hexcode = values["color"];
+        Color color = hexStringARGBToColor(hexcode);
+        text.color = color;
+    }
+
+    tryReadString(values, "text", &text.text);
+    tryReadBool(values, "center", &text.isCentered);
+    text.frameSizeTexels = entityData.dimensionsTexels;
+    entity.add(text);
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {

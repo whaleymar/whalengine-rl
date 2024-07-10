@@ -1,0 +1,23 @@
+{ "object":
+    {
+     "height":8,
+     "id":12,
+     "name":"Arrow",
+     "properties":[
+            {
+             "name":"Sprite",
+             "propertytype":"Component_Sprite_NoAnim",
+             "type":"class",
+             "value":
+                {
+                 "Sprite":"actor\/arrow",
+                 "rotateAboutCenter":true
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":8
+    },
+ "type":"template"
+}

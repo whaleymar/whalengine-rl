@@ -63,6 +63,7 @@ public:
     bool isValid() const;
     bool isLooping() const;
     bool isNextStepAutomatic() const;
+    bool isAtFirstCheckpoint() const { return curTarget == 0; }
     bool isAtLastCheckpoint() const { return curTarget == (mCheckpoints.size() - 1); }
     void prepareForFirstStep(Transform2D& trans);
 };

@@ -223,7 +223,7 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();
     // player.add<FreeControl>();
-    player.add(DrawText("Test message. This message is really long the quick brown fox jumped over the lazy dog", Depth::Player, GRAY, {40, 40}));
+    // player.add(DrawText("Test message. This message is really long the quick brown fox jumped over the lazy dog", GRAY, {100, 100}, true));
 
     player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
     // player.add(BoxLight{{TEXELS_PER_TILE * 3, TEXELS_PER_TILE, {255, 255, 204, 255}}, frame.dimensionsTexels});

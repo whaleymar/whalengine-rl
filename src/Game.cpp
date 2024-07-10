@@ -153,7 +153,8 @@ void Game::mainloop() {
     RenderTexture2D targetTextureBackground =
         LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
     RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
-    Color clearColor = {51, 76, 76, 255};
+    // Color clearColor = {73, 77, 126, 255};
+    Color clearColor = {58, 57, 106, 255};
     // Color clearColor = {5, 5, 5, 255};
     Color clearColorTransparent = {0, 0, 0, 0};
 
@@ -172,11 +173,6 @@ void Game::mainloop() {
 #endif
 
     while (!WindowShouldClose() && !System::isQuit()) {
-        if (System::frame.getFrame() == 0) {
-            Vector2f cameraPos = getCameraPositionPrecise();
-            updateLoadedLevels(cameraPos);
-        }
-
         System::Update();
 
         // Update Scene
@@ -483,6 +479,10 @@ void Game::checkIfInNewLevel(bool overrideCache) {
             return;
         }
         // IN NEW LEVEL
+
+        Vector2f cameraPos = getCameraPositionPrecise();
+        updateLoadedLevels(cameraPos);
+
         lastLevel = curLevel;
         Expected<ActiveLevel*> activeOpt = mActiveScene.getLoadedLevel(*levelOpt);
         if (!activeOpt.isExpected()) {

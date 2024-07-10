@@ -1,0 +1,31 @@
+{ "object":
+    {
+     "height":32,
+     "id":24,
+     "name":"AppearTrigger",
+     "properties":[
+            {
+             "name":"Switch",
+             "propertytype":"Component_Switch",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }, 
+            {
+             "name":"Trigger",
+             "propertytype":"Component_Trigger",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":40
+    },
+ "type":"template"
+}

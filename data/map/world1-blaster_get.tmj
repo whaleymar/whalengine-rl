@@ -3,6 +3,48 @@
  "infinite":false,
  "layers":[
         {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 47, 39, 40, 52, 37, 38, 47, 44, 44, 44, 44, 44, 50, 41, 51, 48, 42, 38, 46, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 38, 46, 42, 38, 47, 52, 45, 51, 50, 38, 47, 52, 45, 51, 52, 51, 43, 48, 42, 41, 51, 48, 47, 40, 48, 46, 46, 42, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 41, 45, 37, 49, 52, 37, 0, 49, 48, 47, 44, 48, 46, 47, 48, 47, 52, 51, 48, 42, 41, 45, 45, 45, 45, 51, 52, 37, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 38, 46, 46, 42, 41, 37, 0, 0, 41, 45, 45, 45, 45, 45, 51, 52, 51, 48, 47, 43, 50, 0, 0, 0, 0, 38, 47, 50, 38, 42, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 49, 40, 52, 48, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 37, 49, 40, 52, 45, 37, 0, 0, 0, 0, 49, 39, 48, 47, 50, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 41, 45, 37, 41, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 51, 48, 42, 0, 0, 0, 0, 0, 41, 45, 45, 45, 37, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 45, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 38, 42,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 50,
+            38, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 37,
+            49, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            49, 50, 0, 0, 0, 0, 38, 46, 46, 42, 0, 0, 0, 0, 0, 0, 0, 0, 38, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            41, 37, 0, 0, 38, 46, 47, 39, 40, 48, 42, 0, 0, 0, 0, 0, 0, 38, 47, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 49, 40, 44, 39, 52, 51, 48, 42, 0, 0, 0, 0, 38, 47, 40, 48, 46, 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 41, 45, 45, 45, 37, 49, 39, 48, 46, 46, 46, 46, 47, 39, 43, 40, 39, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 38, 46, 46, 46, 46, 47, 44, 39, 43, 43, 39, 39, 44, 43, 44, 40, 40, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 49, 44, 44, 44, 39, 39, 40, 39, 39, 40, 39, 39, 40, 39, 39, 39, 43, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 38, 47, 40, 40, 52, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 51, 44, 39, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 41, 51, 39, 43, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 45, 45, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":24,
+         "id":3,
+         "name":"Background",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":3
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":40,
+         "x":0,
+         "y":0
+        }, 
+        {
          "data":[26, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26, 11, 9,
             11, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 17, 16, 22,
             10, 9, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 21, 19, 20, 9,
@@ -257,6 +299,15 @@
                             {
                              "target":21
                             }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
                         }],
                  "template":"templates\/MultiSwitch.tj",
                  "x":8,
@@ -293,6 +344,15 @@
                             }
                         }, 
                         {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }, 
+                        {
                          "name":"velocity",
                          "propertytype":"Component_Velocity",
                          "type":"class",
@@ -319,7 +379,7 @@
                              "Checkpoints":7,
                              "CycleBehavior":"ManualAllSteps",
                              "isCycle":false,
-                             "speed":75
+                             "speed":15
                             }
                         }],
                  "template":"templates\/Gate.tj",
@@ -338,6 +398,15 @@
                             {
                              "target":21
                             }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
                         }],
                  "template":"templates\/MultiSwitch.tj",
                  "x":48,
@@ -353,6 +422,15 @@
                          "value":
                             {
                              "target":21
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
                             }
                         }],
                  "template":"templates\/MultiSwitch.tj",
@@ -421,6 +499,501 @@
                  "width":0,
                  "x":316,
                  "y":140
+                }, 
+                {
+                 "height":8,
+                 "id":25,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":14
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "width":32,
+                 "x":136,
+                 "y":160
+                }, 
+                {
+                 "height":8,
+                 "id":26,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":17
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "width":32,
+                 "x":136,
+                 "y":146
+                }, 
+                {
+                 "height":8,
+                 "id":27,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":18
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "width":32,
+                 "x":136,
+                 "y":132
+                }, 
+                {
+                 "height":8,
+                 "id":28,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":15
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "width":32,
+                 "x":136,
+                 "y":118
+                }, 
+                {
+                 "height":32,
+                 "id":29,
+                 "properties":[
+                        {
+                         "name":"Collider",
+                         "propertytype":"Component_Collider",
+                         "type":"class",
+                         "value":
+                            {
+                             "CollisionDir":2,
+                             "Layer":"Solid"
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/OneWayPlatform.tj",
+                 "width":8,
+                 "x":128,
+                 "y":152
+                }, 
+                {
+                 "height":10,
+                 "id":30,
+                 "properties":[
+                        {
+                         "name":"Text",
+                         "propertytype":"Component_Text",
+                         "type":"class",
+                         "value":
+                            {
+                             "text":"Shoot:"
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/TextBox.tj",
+                 "width":34,
+                 "x":124,
+                 "y":62
+                }, 
+                {
+                 "height":10,
+                 "id":31,
+                 "properties":[
+                        {
+                         "name":"Tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }, 
+                        {
+                         "name":"Text",
+                         "propertytype":"Component_Text",
+                         "type":"class",
+                         "value":
+                            {
+                             "center":true,
+                             "color":"#ffaaaaff",
+                             "text":"X"
+                            }
+                        }],
+                 "template":"templates\/TextBox.tj",
+                 "width":16,
+                 "x":160,
+                 "y":62
+                }, 
+                {
+                 "height":10,
+                 "id":32,
+                 "properties":[
+                        {
+                         "name":"Text",
+                         "propertytype":"Component_Text",
+                         "type":"class",
+                         "value":
+                            {
+                             "text":"Aim:"
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/TextBox.tj",
+                 "width":28,
+                 "x":124,
+                 "y":80
+                }, 
+                {
+                 "height":10,
+                 "id":33,
+                 "properties":[
+                        {
+                         "name":"Tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }, 
+                        {
+                         "name":"Text",
+                         "propertytype":"Component_Text",
+                         "type":"class",
+                         "value":
+                            {
+                             "center":true,
+                             "color":"#ffaaaaff",
+                             "text":"X"
+                            }
+                        }],
+                 "template":"templates\/TextBox.tj",
+                 "width":12,
+                 "x":150,
+                 "y":80
+                }, 
+                {
+                 "height":10,
+                 "id":34,
+                 "properties":[
+                        {
+                         "name":"Text",
+                         "propertytype":"Component_Text",
+                         "type":"class",
+                         "value":
+                            {
+                             "text":"+"
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/TextBox.tj",
+                 "width":8,
+                 "x":162,
+                 "y":80
+                }, 
+                {
+                 "id":35,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffffffff",
+                             "Sprite":"actor\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":90
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":184,
+                 "y":88
+                }, 
+                {
+                 "id":36,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffffffff",
+                             "Sprite":"actor\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":0
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":194,
+                 "y":88
+                }, 
+                {
+                 "id":37,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffffffff",
+                             "Sprite":"actor\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":180
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":174,
+                 "y":88
+                }, 
+                {
+                 "id":38,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffffffff",
+                             "Sprite":"actor\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":270
+                            }
+                        }, 
+                        {
+                         "name":"tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "Invisible":true
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":184,
+                 "y":78
+                }, 
+                {
+                 "id":39,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":30
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":40,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":31
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":41,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":32
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":42,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":34
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":43,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":37
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":44,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":38
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":45,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":35
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":46,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":36
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
+                }, 
+                {
+                 "id":47,
+                 "properties":[
+                        {
+                         "name":"Switch",
+                         "propertytype":"Component_Switch",
+                         "type":"class",
+                         "value":
+                            {
+                             "target":33
+                            }
+                        }],
+                 "template":"templates\/AppearTrigger.tj",
+                 "x":132,
+                 "y":104
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -428,8 +1001,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":3,
- "nextobjectid":25,
+ "nextlayerid":4,
+ "nextobjectid":48,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -448,6 +1021,10 @@
         {
          "firstgid":1,
          "source":"mossy-tileset.tsj"
+        }, 
+        {
+         "firstgid":37,
+         "source":"mossy-tileset-background.tsj"
         }],
  "tilewidth":8,
  "type":"map",

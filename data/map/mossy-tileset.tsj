@@ -20,12 +20,6 @@
                  "name":"",
                  "probability":1,
                  "tile":-1
-                }, 
-                {
-                 "color":"#00ff00",
-                 "name":"",
-                 "probability":1,
-                 "tile":-1
                 }],
          "name":"CORNER",
          "tile":-1,
@@ -102,10 +96,6 @@
                 {
                  "tileid":25,
                  "wangid":[0, 1, 0, 1, 0, 1, 0, 0]
-                }, 
-                {
-                 "tileid":26,
-                 "wangid":[0, 1, 0, 1, 0, 1, 0, 1]
                 }]
         }, 
         {
