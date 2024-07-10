@@ -123,6 +123,20 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     return result;
 }
 
+struct Tile {
+    s32 gid;
+    bool isFlipH;
+    bool isFlipY;
+};
+
+Tile getTile(u32 tileMask) {
+    Tile tile;
+    tile.isFlipH = tileMask & 0x80000000;  // Check if the 32nd bit is on
+    tile.isFlipY = tileMask & 0x40000000;  // Check if the 31st bit is on
+    tile.gid = tileMask & 0x0FFFFFFF;      // Mask out the upper 4 bits to get the ID
+    return tile;
+}
+
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x(), level.worldPosOriginTexels.y() - level.sizeTexels.y()).position;
     ActiveLevel lvl = {level, {}, worldOffsetPixels, {}, {}, {}, {}};
@@ -138,12 +152,19 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
             s32 ix = map.widthTiles * y + x;
 
             for (auto& layer : map.layers) {
-                s32 blockID = layer.data[ix];
+                u32 tileMask = layer.data[ix];
+                Tile tile = getTile(tileMask);
+                s32 blockID = tile.gid;
+                if (tile.isFlipH && !tile.isFlipY) {
+                    trans.facing = Facing::Left;
+                } else if (tile.isFlipY && !tile.isFlipH) {
+                    trans.rotationDegrees = 180;
+                    trans.facing = Facing::Left;
+                } else if (tile.isFlipH && tile.isFlipY) {
+                    trans.rotationDegrees = 180;
+                }
 
                 if (blockID != 0) {
-                    // for now, am assuming everything in the base layer has collision
-                    // collisionColumn.push_back(1);
-
                     Expected<Frame> frame = getTileFrame(map, blockID);
                     if (!frame.isExpected()) {
                         print(frame.error());
@@ -153,7 +174,9 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         }
                     } else {
                         Sprite sprite = Sprite(layer.metadata.depth, frame.value());
+                        sprite.isRotateAboutCenter = true;
 
+                        // everything with Level/Player depth has collision
                         if (layer.metadata.depth == Depth::Level || layer.metadata.depth == Depth::Player) {
                             // not using collision mesh because i lose material info
                             const TileSet* tset = getTileSet(map, blockID);
