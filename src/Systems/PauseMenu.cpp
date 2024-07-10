@@ -2,12 +2,13 @@
 #include <raylib.h>
 
 #include "Events/Events.h"
+#include "Game.h"
 #include "Settings.h"
 #include "System.h"
 
 namespace whal {
 
-static const char* S_BUTTON_TO_NAME[] = {"Resume", "Exit"};
+static const char* S_BUTTON_TO_NAME[] = {"Resume", "Restart", "Exit"};
 
 s32 pythonMod(s32 a, s32 b) {
     // behaves like a % b in python (different from c++ for negative #s)
@@ -71,6 +72,11 @@ void PauseMenu::doCursorAction() {
     case Button::Resume:
         deactivate();
         break;
+    case Button::Restart: {
+        deactivate();
+        Game::instance().reloadScene(true);
+        break;
+    }
     case Button::Exit:
         System::quit();
         break;

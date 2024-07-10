@@ -34,6 +34,20 @@
             "width": 320,
             "x": 568,
             "y": -192
+        },
+        {
+            "fileName": "world1-blasterplatformtest.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 1440,
+            "y": -424
+        },
+        {
+            "fileName": "world1-bonus-blasterplatform.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 1528,
+            "y": -232
         }
     ],
     "onlyShowAdjacentMaps": false,

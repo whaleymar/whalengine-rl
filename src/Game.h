@@ -39,9 +39,9 @@ public:
     void onEvent(whal::DeathEvent, whal::ecs::Entity) override;
 
     void removeEntityFromLevel(whal::ecs::Entity entity);
-    Corrade::Containers::Optional<Error> loadScene(const char* name);
-    void unloadScene();
-    Corrade::Containers::Optional<Error> reloadScene();
+    Corrade::Containers::Optional<Error> loadScene(const char* name, bool resetPlayers);
+    void unloadScene(bool resetPlayers);
+    Corrade::Containers::Optional<Error> reloadScene(bool resetPlayers = false);
     whal::Scene& getScene();
     void updateLoadedLevels(Vector2f cameraWorldPosPixels);
     void checkIfInNewLevel(bool overrideCache = false);

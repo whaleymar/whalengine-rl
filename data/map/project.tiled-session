@@ -76,10 +76,29 @@
                 2
             ],
             "scale": 3,
-            "selectedLayer": 2,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 156.16666666666666,
-                "y": 141.83333333333334
+                "x": 959,
+                "y": 41.5
+            }
+        },
+        "world1-blasterplatformtest.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2.8678125,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 146.80178707638663,
+                "y": 155.69358178053832
+            }
+        },
+        "world1-bonus-blasterplatform.tmj": {
+            "scale": 2.8678125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 44.28462460499074,
+                "y": 101.99411572409285
             }
         },
         "world1-jumptutorial.tmj": {
@@ -89,19 +108,19 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 381.3333333333333,
+                "y": -90.83333333333331
             }
         },
         "world1-momentumtutorial.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 2.8678125,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 350.0926228615016,
+                "y": 111.75765500708295
             }
         },
         "world1-rockettutorial.tmj": {
@@ -111,8 +130,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 552,
+                "y": 124.5
             }
         },
         "world1-start.tmj": {
@@ -120,10 +139,10 @@
                 2
             ],
             "scale": 3,
-            "selectedLayer": 2,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 454,
+                "y": 102.83333333333334
             }
         },
         "world1.tmj": {
@@ -158,11 +177,12 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Tags",
+    "property.type": "Map_MapInfo",
     "recentFiles": [
+        "world1-blasterplatformtest.tmj",
+        "world1-start.tmj",
         "mossy-tileset-background.tsj",
         "mossy-tileset.tsj",
-        "world1-start.tmj",
         "world1-jumptutorial.tmj",
         "world1-rockettutorial.tmj",
         "world1-momentumtutorial.tmj",
@@ -170,8 +190,7 @@
         "world1.tmj",
         "testmap2.tmj",
         "prefab-editor.tmj",
-        "tileset-small.tsj",
-        "widemap.tmj"
+        "tileset-small.tsj"
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {
