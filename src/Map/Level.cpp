@@ -127,13 +127,15 @@ struct Tile {
     s32 gid;
     bool isFlipH;
     bool isFlipY;
+    bool isRotate;
 };
 
 Tile getTile(u32 tileMask) {
     Tile tile;
-    tile.isFlipH = tileMask & 0x80000000;  // Check if the 32nd bit is on
-    tile.isFlipY = tileMask & 0x40000000;  // Check if the 31st bit is on
-    tile.gid = tileMask & 0x0FFFFFFF;      // Mask out the upper 4 bits to get the ID
+    tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
+    tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
+    tile.isRotate = tileMask & 0x20000000;  // Check if the 30th bit is on
+    tile.gid = tileMask & 0x0FFFFFFF;       // Mask out the upper 4 bits to get the ID
     return tile;
 }
 
@@ -154,14 +156,35 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
             for (auto& layer : map.layers) {
                 u32 tileMask = layer.data[ix];
                 Tile tile = getTile(tileMask);
+                Tile originalTile = tile;
                 s32 blockID = tile.gid;
-                if (tile.isFlipH && !tile.isFlipY) {
+
+                // the rotate flag technically means diagonal flipping or something idk it's some jank
+                if (tile.isRotate) {
+                    if (tile.isFlipY) {
+                        tile.isFlipH = !tile.isFlipH;
+                    }
+                    if (!tile.isFlipH) {
+                        tile.isFlipY = !tile.isFlipY;
+                    } else if (!tile.isFlipY) {
+                        tile.isFlipH = false;
+                    }
+                }
+
+                if (originalTile.isRotate && originalTile.isFlipY && originalTile.isFlipH) {
+                    trans.facing = Facing::Left;
+                    // trans.rotationDegrees = 180;
+                } else if (tile.isFlipH && !tile.isFlipY) {
                     trans.facing = Facing::Left;
                 } else if (tile.isFlipY && !tile.isFlipH) {
                     trans.rotationDegrees = 180;
                     trans.facing = Facing::Left;
                 } else if (tile.isFlipH && tile.isFlipY) {
                     trans.rotationDegrees = 180;
+                }
+
+                if (tile.isRotate) {
+                    trans.rotationDegrees += 90;
                 }
 
                 if (blockID != 0) {
