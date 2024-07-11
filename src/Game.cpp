@@ -191,6 +191,9 @@ void Game::mainloop() {
         if (IsKeyPressed(KEY_R)) {
             reloadScene();
         }
+        if (IsKeyPressed(KEY_F)) {
+            ToggleFullscreen();
+        }
         if (IsKeyPressed(KEY_P)) {
             if (isCreativeMode) {
                 isCreativeMode = false;

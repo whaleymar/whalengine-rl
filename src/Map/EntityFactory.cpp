@@ -189,7 +189,8 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
         }
 
         if (gate.isPersistent) {
-            self.get<Collider>().setCollisionCallback(nullptr);
+            // do this at the end of the frame in case multiple colliders trigger this on the same frame
+            System::schedule.eventFlow({self}).add([](ecs::Entity self) { self.get<Collider>().setCollisionCallback(nullptr); }, self);
         }
     });
 }
