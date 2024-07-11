@@ -262,6 +262,64 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 44,
+            "members": [
+                {
+                    "name": "Collider",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "Direction",
+                    "propertyType": "CollisionDir",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "Light",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "RigidBody",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "Shape",
+                    "type": "object",
+                    "value": 0
+                },
+                {
+                    "name": "lifetimeSeconds",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "maxSpeed",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "particlesPerSecond",
+                    "type": "int",
+                    "value": 1
+                }
+            ],
+            "name": "Component_ParticleEmitter",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 32,
             "members": [
                 {

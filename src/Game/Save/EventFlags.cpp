@@ -16,4 +16,8 @@ bool check(Flag flag) {
     return (S_FLAGS & flag) > 0;
 }
 
+void resetAll() {
+    S_FLAGS = 0;
+}
+
 }  // namespace EventFlags

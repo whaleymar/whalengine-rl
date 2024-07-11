@@ -4,6 +4,7 @@
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
 #include "ECS/Name.h"
+#include "ECS/ParticleEmitter.h"
 #include "ECS/Tags.h"
 #include "ECS/TriggerZone.h"
 #include "Game/Components/Switch.h"
@@ -69,6 +70,10 @@ static void addComponentText(const nlohmann::json& values, const nlohmann::json&
                              const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                              ecs::Entity entity, LayerData layerData);
 
+static void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::json& allObjects,
+                                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
+                                        ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     // {"Animator", addComponentAnimator},
@@ -90,6 +95,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Switch", addSwitchComponent},
     {"Component_SwitchGate", addSwitchGateComponent},
     {"Component_Text", addComponentText},
+    {"Component_ParticleEmitter", addComponentParticleEmitter},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -319,6 +325,53 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultDrawText.color = hexStringARGBToColor(hexString);
             } else if (memberName == "center") {
                 DefaultDrawText.isCentered = member[KEY_VALUE];
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+
+    } else if (componentName == "Component_ParticleEmitter") {
+        DefaultParticleEmitter = ParticleEmitter();
+        for (auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "Collider") {
+                bool isCollider = member[KEY_VALUE];
+                if (isCollider) {
+                    DefaultParticleEmitter.settings |= ParticleSetting::Collider;
+                }
+
+            } else if (memberName == "Color") {
+                std::string hexString = member[KEY_VALUE];
+                DefaultParticleEmitter.color = hexStringARGBToColor(hexString);
+
+            } else if (memberName == "lifetimeSeconds") {
+                DefaultParticleEmitter.lifetimeSeconds = member[KEY_VALUE];
+
+            } else if (memberName == "maxSpeed") {
+                DefaultParticleEmitter.maxSpeedTexelsPerSecond = member[KEY_VALUE];
+
+            } else if (memberName == "particlesPerSecond") {
+                DefaultParticleEmitter.particlesPerSecond = member[KEY_VALUE];
+
+            } else if (memberName == "Direction") {
+                CollisionDir dir = member[KEY_VALUE];
+                DefaultParticleEmitter.setDirection(dir);
+
+            } else if (memberName == "RigidBody") {
+                bool isRigidBody = member[KEY_VALUE];
+                if (isRigidBody) {
+                    DefaultParticleEmitter.settings |= ParticleSetting::RigidBody;
+                }
+
+            } else if (memberName == "Light") {
+                bool isLight = member[KEY_VALUE];
+                if (isLight) {
+                    DefaultParticleEmitter.settings |= ParticleSetting::Light;
+                }
+
+            } else if (memberName == "Shape") {
+                // do nothing
+
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -789,6 +842,63 @@ void addComponentText(const nlohmann::json& values, const nlohmann::json& allObj
     tryReadBool(values, "center", &text.isCentered);
     text.frameSizeTexels = entityData.dimensionsTexels;
     entity.add(text);
+}
+
+void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::json& allObjects,
+                                 const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
+                                 ecs::Entity entity, LayerData layerData) {
+    ParticleEmitter emitter = entity.has<ParticleEmitter>() ? entity.get<ParticleEmitter>() : ComponentFactory::DefaultParticleEmitter;
+
+    // ARGB
+    if (values.contains("Color")) {
+        std::string hexcode = "#ffffffff";
+        hexcode = values["Color"];
+        Color color = hexStringARGBToColor(hexcode);
+        emitter.color = color;
+    }
+
+    tryReadFloat(values, "lifetimeSeconds", &emitter.lifetimeSeconds);
+    tryReadFloat(values, "maxSpeed", &emitter.maxSpeedTexelsPerSecond);
+    tryReadInt(values, "particlesPerSecond", &emitter.particlesPerSecond);
+
+    bool hasFlag = false;
+    if (tryReadBool(values, "Collider", &hasFlag) && hasFlag) {
+        emitter.settings |= ParticleSetting::Collider;
+        hasFlag = false;
+    }
+    if (tryReadBool(values, "Light", &hasFlag) && hasFlag) {
+        emitter.settings |= ParticleSetting::Light;
+        hasFlag = false;
+    }
+    if (tryReadBool(values, "RigidBody", &hasFlag) && hasFlag) {
+        emitter.settings |= ParticleSetting::RigidBody;
+        hasFlag = false;
+    }
+
+    CollisionDir collisionDir;
+    if (tryReadVal(values, "Direction", &collisionDir)) {
+        emitter.setDirection(collisionDir);
+    }
+
+    if (values.contains("Shape")) {
+        s32 shapeId = readInt(values, "Shape");
+
+        // calc distance between this object and Shape for the offset
+        Vector2i halflenTexels = readVector2i(allObjects[idToIndex.at(shapeId).first], "width", "height") / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+
+        const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
+        const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
+        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
+
+        emitter.offsetTexels = otherTrans - thisTrans + Vector2i(0, halflenTexels.y());
+        emitter.aabbHalfTexels = halflenTexels;
+    } else {
+        // emitter.offsetTexels = Vector2i(0, entityData.dimensionsTexels.y() / 2);
+        emitter.aabbHalfTexels = entityData.dimensionsTexels / 2;
+    }
+
+    entity.add(emitter);
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {

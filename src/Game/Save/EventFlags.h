@@ -10,6 +10,7 @@ enum Flag : u64 {
 
 void set(Flag flag);
 void reset(Flag flag);
+void resetAll();
 bool check(Flag flag);
 
 }  // namespace EventFlags

@@ -27,6 +27,7 @@
 
 ## Physics 
 - collider offset
+    - replace AABB/Circle center ? don't need them if i have transform
 
 ## Map 
 - object layers

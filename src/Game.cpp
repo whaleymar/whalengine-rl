@@ -16,6 +16,7 @@
 #include "ECS/Systems/Gfx.h"
 #include "ECS/Systems/Lifetime.h"
 #include "ECS/Systems/LightSystem.h"
+#include "ECS/Systems/ParticleEmitterSystem.h"
 #include "ECS/Systems/Physics.h"
 #include "ECS/Systems/Rails.h"
 #include "ECS/Systems/RelationshipManager.h"
@@ -29,6 +30,7 @@
 #include "Events/Listeners.h"
 
 #include "Game/Components/Blaster.h"
+#include "Game/Save/EventFlags.h"
 #include "Game/Systems/RespawnSystem.h"
 
 #include "Gfx/ShaderManager.h"
@@ -111,8 +113,7 @@ bool Game::startup() {
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
         .sequential<PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem>()
-        // .parallel<ProjectileSystem, RocketJumpingSystem>()  // game specific systems
-        .parallel<ProjectileSystem>()  // game specific systems
+        .parallel<ParticleEmitterSystem, ProjectileSystem>()
         .parallel<RocketJumpingSystem>(2)
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
@@ -412,6 +413,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
 
 void Game::unloadScene(bool resetPlayers) {
     System::audio.stopAll();
+    EventFlags::resetAll();  // TODO should not live here
 
     while (!mActiveScene.loadedLevels.empty()) {
         // copy and pop level so the EntityDeathListener doesn't mutate the level we're deleting
