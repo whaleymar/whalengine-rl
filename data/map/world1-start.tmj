@@ -105,6 +105,23 @@
                 }, 
                 {
                  "id":4,
+                 "properties":[
+                        {
+                         "name":"ParticleEmitter",
+                         "propertytype":"Component_ParticleEmitter",
+                         "type":"class",
+                         "value":
+                            {
+                             "Collider":true,
+                             "Color":"#ffffaaff",
+                             "Direction":4,
+                             "Light":true,
+                             "RigidBody":true,
+                             "lifetimeSeconds":2,
+                             "maxSpeed":100,
+                             "particlesPerSecond":3
+                            }
+                        }],
                  "template":"templates\/DeathTrigger.tj",
                  "x":280,
                  "y":112

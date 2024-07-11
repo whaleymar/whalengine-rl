@@ -9,6 +9,7 @@
 #include "ECS/Draw.h"
 #include "ECS/Lifetime.h"
 #include "ECS/Light.h"
+#include "ECS/ParticleEmitter.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RailsControl.h"
 #include "ECS/Relationships.h"
@@ -53,6 +54,7 @@ public:
     inline static Lifetime DefaultLifeTime;
     inline static SwitchGate DefaultSwitchGate;
     inline static DrawText DefaultDrawText;
+    inline static ParticleEmitter DefaultParticleEmitter;
 };
 
 void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObjects,

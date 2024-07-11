@@ -29,7 +29,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lif
     return particle;
 }
 
-Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f32 lifetime) {
+Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f32 lifetime, bool fullRadiance) {
     auto expected = System::world->entity(false);
     if (!expected.isExpected()) {
         return expected;
@@ -46,7 +46,12 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
 
     s32 radius = TEXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});
-    particle.add(Radiance{radius / 2, 0, color});
+    if (fullRadiance) {
+        particle.add(Radiance{radius / 2, 0, color});
+
+    } else {
+        particle.add(Radiance{radius / 2, 0, Color(color.r, color.g, color.b, color.a / 2)});
+    }
 
     return particle;
 }
