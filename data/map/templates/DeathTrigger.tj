@@ -14,6 +14,22 @@
                 }
             }, 
             {
+             "name":"ParticleEmitter",
+             "propertytype":"Component_ParticleEmitter",
+             "type":"class",
+             "value":
+                {
+                 "Collider":true,
+                 "Color":"#ffffaaff",
+                 "Direction":4,
+                 "Light":true,
+                 "RigidBody":true,
+                 "lifetimeSeconds":2,
+                 "maxSpeed":80,
+                 "particlesPerSecond":3
+                }
+            }, 
+            {
              "name":"Trigger",
              "propertytype":"Component_Trigger",
              "type":"class",

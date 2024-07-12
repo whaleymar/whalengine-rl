@@ -246,7 +246,6 @@ void Game::mainloop() {
 
         spriteSystem->drawEntities();
         drawSystem->drawEntities();
-        // textSystem->drawEntities();
 
         EndMode2D();
 
@@ -304,7 +303,11 @@ void Game::mainloop() {
         }
 
         Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
+
+        // looks cool, but is too much to apply it to the whole scene
+        // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
         DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
+        // EndShaderMode();
 
         if (isQuantizeOn) {
             EndShaderMode();

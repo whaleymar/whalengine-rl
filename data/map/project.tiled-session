@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-blaster_get.tmj",
+    "activeFile": "world1-jumptutorial.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -81,8 +81,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 150.5,
-                "y": 114.5
+                "x": -261.5,
+                "y": 295.8333333333333
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -109,10 +109,10 @@
                 2
             ],
             "scale": 3,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 151.5,
+                "y": 103.16666666666664
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -142,10 +142,10 @@
                 2
             ],
             "scale": 3,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": 471.8333333333333,
+                "y": 103.5
             }
         },
         "world1.tmj": {
@@ -185,10 +185,10 @@
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
         "world1-start.tmj",
-        "world1-jumptutorial.tmj",
-        "world1-rockettutorial.tmj",
-        "world1-momentumtutorial.tmj",
         "world1-blaster_get.tmj",
+        "world1-momentumtutorial.tmj",
+        "world1-rockettutorial.tmj",
+        "world1-jumptutorial.tmj",
         "world1-blasterplatformtest.tmj",
         "world1.tmj",
         "testmap2.tmj",

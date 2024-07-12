@@ -23,6 +23,7 @@ ShaderManager::ShaderManager() {
         {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl"},
         {Shaders::Outline, 0, "src/Shader/outline.glsl"},
+        {Shaders::Bloom, 0, "src/Shader/bloom.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
