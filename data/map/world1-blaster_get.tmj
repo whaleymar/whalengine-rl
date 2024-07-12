@@ -110,6 +110,19 @@
                  "name":"Magic Hat Instance",
                  "properties":[
                         {
+                         "name":"ParticleEmitter",
+                         "propertytype":"Component_ParticleEmitter",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#05ffffff",
+                             "Shape":48,
+                             "lifetimeSeconds":0.75,
+                             "maxSpeed":10,
+                             "particlesPerSecond":10
+                            }
+                        }, 
+                        {
                          "name":"PointLight",
                          "propertytype":"Component_PointLight",
                          "type":"class",
@@ -994,6 +1007,17 @@
                  "template":"templates\/AppearTrigger.tj",
                  "x":132,
                  "y":104
+                }, 
+                {
+                 "height":2,
+                 "id":48,
+                 "name":"hat spawnsquare",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":4,
+                 "x":150,
+                 "y":171
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1002,7 +1026,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":48,
+ "nextobjectid":49,
  "orientation":"orthogonal",
  "properties":[
         {

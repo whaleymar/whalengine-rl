@@ -5,6 +5,18 @@
      "name":"Magic Hat",
      "properties":[
             {
+             "name":"ParticleEmitter",
+             "propertytype":"Component_ParticleEmitter",
+             "type":"class",
+             "value":
+                {
+                 "Color":"#05ffffff",
+                 "lifetimeSeconds":0.75,
+                 "maxSpeed":10,
+                 "particlesPerSecond":10
+                }
+            }, 
+            {
              "name":"PointLight",
              "propertytype":"Component_PointLight",
              "type":"class",
