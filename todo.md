@@ -40,7 +40,8 @@
     - the layer has component properties
     - all tiles are attached to parent
     - would need some way to say "if collision and collider has parent, try running parent callback"
-- background/foreground layers w/out parallax should be written to a texture?
+- background/foreground layers should be written to a texture?
+- could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 
 ## Improving compile times:
 - would be GREAT to use the <iosfwd> include in Print.h and move the iostream import outside of the header file, but not sure how to do that bc it's templated

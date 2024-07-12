@@ -104,29 +104,6 @@
                  "y":96
                 }, 
                 {
-                 "id":4,
-                 "properties":[
-                        {
-                         "name":"ParticleEmitter",
-                         "propertytype":"Component_ParticleEmitter",
-                         "type":"class",
-                         "value":
-                            {
-                             "Collider":true,
-                             "Color":"#ffffaaff",
-                             "Direction":4,
-                             "Light":true,
-                             "RigidBody":true,
-                             "lifetimeSeconds":2,
-                             "maxSpeed":100,
-                             "particlesPerSecond":3
-                            }
-                        }],
-                 "template":"templates\/DeathTrigger.tj",
-                 "x":280,
-                 "y":112
-                }, 
-                {
                  "id":5,
                  "properties":[
                         {
@@ -341,6 +318,12 @@
                  "template":"templates\/AppearTrigger.tj",
                  "x":176,
                  "y":80
+                }, 
+                {
+                 "id":29,
+                 "template":"templates\/DeathTrigger.tj",
+                 "x":280,
+                 "y":112
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -349,7 +332,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":29,
+ "nextobjectid":30,
  "orientation":"orthogonal",
  "properties":[
         {

@@ -6,6 +6,7 @@
 #include <raylib.h>
 #include <string>
 
+#include "ECS/Collision.h"
 #include "ECS/Draw.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Settings.h"
@@ -382,12 +383,19 @@ void TextureManager::drawLightingTexture() {
     Rectangle dstRect(0, 0, mLightingTexture.texture.width, mLightingTexture.texture.height);
 
     BeginBlendMode(BLEND_MULTIPLIED);
+    // doesnt look good, just makes everything look way brighter
+    // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
     DrawTexturePro(mLightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
+    // EndShaderMode();
     EndBlendMode();
 }
 
 void TextureManager::drawBloomTexture() {
     BeginBlendMode(BLEND_ADDITIVE);
+    // way too bright
+    // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
+    // DrawTexture(mBloomTexture.texture, 0, 0, WHITE);
+    // EndShaderMode();
     DrawTexture(mBloomTexture.texture, 0, 0, WHITE);
     EndBlendMode();
 }

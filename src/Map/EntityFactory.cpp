@@ -95,6 +95,7 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
     animator.brain = &basicAnimation;
     entity.add(animator);
     entity.add(Sprite(Depth::Level, animator.getFrame()));
+    // entity.add(Sprite(Depth::Level, animator.getFrame(), WHITE, Shaders::Bloom));
 
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
@@ -107,6 +108,7 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
         ecs::Entity target(targetID);
 
         // TODO eventually want to await until player "Ok"s some dialogue box OR a cutscene ends
+        // lock controls during this eventflow
         System::schedule.eventFlow({target}).addWait(0.5).add(
             [](ecs::Entity e) {
                 auto& rails = e.get<RailsControl>();
