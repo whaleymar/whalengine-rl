@@ -106,6 +106,8 @@ Vector2i toIntVecRounded(const Vector2f floatVec);
 Vector2f fromRaylib(Vector2 rlVec);
 Vector2i fromRaylibInt(Vector2 rlVec);
 
+Vector2f angleToUnit(f32 angle);
+
 inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
     return Vector2f(myLerp(vec1.x(), vec2.x(), t), myLerp(vec1.y(), vec2.y(), t));
 }

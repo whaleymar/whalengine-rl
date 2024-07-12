@@ -7,6 +7,8 @@
 #include "ECS/Velocity.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
+#include "Util/Print.h"
+#include "Util/Vector.h"
 
 namespace whal {
 
@@ -14,7 +16,14 @@ void ParticleEmitterSystem::update() {
     // these are between -1 and 1
     const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
     const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
-    const Vector2f speedSample = Vector2f(System::rng.uniform() - 0.5, System::rng.uniform() - 0.5) * 2;
+
+    const Vector2f sampleSpeed = angleToUnit(360.0f * System::rng.uniform());
+
+    // if (System::frame.getFrame() == 0) {
+    //     f32 sample = System::rng.uniform();
+    //     auto thing = angleToUnit(360.0f * sample);
+    //     print(thing, "len: ", thing.len());
+    // }
 
     const f32 spawnSample = System::rng.uniform();
 
@@ -35,7 +44,8 @@ void ParticleEmitterSystem::update() {
         const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x() * locationSampleX));
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y() * locationSampleY));
 
-        Vector2f velocity = speedSample * emitter.maxSpeedTexelsPerSecond;
+        // Vector2f velocity = speedSample * emitter.maxSpeedTexelsPerSecond;
+        Vector2f velocity = sampleSpeed * emitter.maxSpeedTexelsPerSecond;
         Vector2i spawnLocation;
         if ((emitter.settings & ParticleSetting::UpOnly) > 0) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
