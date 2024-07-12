@@ -7,7 +7,6 @@
 #include "ECS/Velocity.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -18,13 +17,6 @@ void ParticleEmitterSystem::update() {
     const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
 
     const Vector2f sampleSpeed = angleToUnit(360.0f * System::rng.uniform());
-
-    // if (System::frame.getFrame() == 0) {
-    //     f32 sample = System::rng.uniform();
-    //     auto thing = angleToUnit(360.0f * sample);
-    //     print(thing, "len: ", thing.len());
-    // }
-
     const f32 spawnSample = System::rng.uniform();
 
     for (auto [entityid, entity] : getEntitiesRef()) {

@@ -6,6 +6,7 @@
 #include "ECS/Callback.h"
 #include "ECS/Draw.h"
 #include "ECS/Name.h"
+#include "ECS/ParticleEmitter.h"
 #include "ECS/Relationships.h"
 #include "Events/Events.h"
 #include "Settings.h"
@@ -272,6 +273,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     constexpr f32 silLifetime = 1.5;
     if (entity.has<Draw>() && entity.get<Draw>().getTag() == Draw::DrawTag::Sprite) {
         u32 eventId = System::schedule.eventFlow({entity})
+                          .add([](ecs::Entity e) { e.add(ParticleEmitter(ORANGE, 0.5, ParticleSetting::Light, 50, 0)); }, entity)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
@@ -289,4 +291,7 @@ void RocketJumpingSystem::onRemove(const ecs::Entity entity) {
     const auto rocketJumpComponent = entity.get<RocketJumping>();
     rb.frictionMultiplier = rocketJumpComponent.prevFrictionMultiplier;  // restore saved value
     System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
+    if (entity.has<ParticleEmitter>()) {
+        System::schedule.eventFlow({entity}).add([](ecs::Entity e) { e.remove<ParticleEmitter>(); }, entity);
+    }
 }
