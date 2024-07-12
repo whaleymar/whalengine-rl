@@ -191,7 +191,7 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
     }
     sprite.shader = Shaders::Silhouette;
     sprite.depth = Depth::BehindPlayer;
-    sil.add(sprite);
+    sil.add(Draw(sprite));
 
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
@@ -216,7 +216,7 @@ Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, C
     }
     draw.shader = Shaders::Silhouette;
     draw.depth = Depth::BehindPlayer;
-    sil.add(draw);
+    sil.add(Draw(draw));
 
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
