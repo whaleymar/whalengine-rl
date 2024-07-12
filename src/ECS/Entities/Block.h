@@ -10,11 +10,11 @@ class Entity;
 }
 
 struct Transform2D;
-struct Draw;
+struct DrawRect;
 struct Sprite;
 
 Expected<ecs::Entity> createBlock(Transform2D transform);
-Expected<ecs::Entity> createBlock(Transform2D transform, Draw draw);
+Expected<ecs::Entity> createBlock(Transform2D transform, DrawRect draw);
 Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMaterial material = WorldMaterial::None);
 Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite);
 

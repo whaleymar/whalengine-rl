@@ -1,5 +1,6 @@
 #include "ECS/Draw.h"
 
+#include <cstring>
 #include <raylib.h>
 #include <sstream>
 
@@ -56,10 +57,110 @@ void Sprite::setFrame(Frame frame) {
     atlasPositionTexels = frame.atlasPositionTexels;
 }
 
-Draw::Draw(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
+DrawRect::DrawRect(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
 
 DrawText::DrawText(const char* string, Color color_, Vector2i frameSizeTexels_, bool centered)
     : text(string), color(color_), frameSizeTexels(frameSizeTexels_), isCentered(centered) {}
+
+// rect by default
+Draw::Draw(Depth depth, Vector2i frameSizeTexels, Shaders shader, Color color) : mRect(color, frameSizeTexels, depth, shader), mTag(DrawTag::Rect) {}
+
+Draw::Draw(DrawRect rect) : mRect(rect), mTag(DrawTag::Rect) {}
+
+Draw::Draw(Sprite sprite) : mSprite(sprite), mTag(DrawTag::Sprite) {}
+
+Draw::Draw(const Draw& other) {
+    std::memcpy(this, &other, sizeof(other));
+}
+
+Draw& Draw::operator=(const Draw& other) {
+    if (this == &other) {
+        return *this;
+    }
+    std::memcpy(this, &other, sizeof(other));
+    return *this;
+}
+
+DrawRect& Draw::getRect() {
+    assert(mTag == DrawTag::Rect && "trying to run Draw::getRect on a Sprite");
+    return mRect;
+}
+
+Sprite& Draw::getSprite() {
+    assert(mTag == DrawTag::Sprite && "trying to run Draw::getSprite on a Rectangle");
+    return mSprite;
+}
+
+Vector2i Draw::getFrameSizeTexels() const {
+    switch (mTag) {
+    case DrawTag::Rect:
+        return mRect.getFrameSizeTexels();
+    case DrawTag::Sprite:
+        return mSprite.getFrameSizeTexels();
+    }
+}
+
+Depth Draw::getDepth() const {
+    switch (mTag) {
+    case DrawTag::Rect:
+        return mRect.depth;
+    case DrawTag::Sprite:
+        return mSprite.depth;
+    }
+}
+
+Shaders Draw::getShader() const {
+    switch (mTag) {
+    case DrawTag::Rect:
+        return mRect.shader;
+    case DrawTag::Sprite:
+        return mSprite.shader;
+    }
+}
+
+void Draw::setAlpha(u8 alpha) {
+    switch (mTag) {
+    case DrawTag::Rect:
+        mRect.setAlpha(alpha);
+        break;
+    case DrawTag::Sprite:
+        mSprite.setAlpha(alpha);
+        break;
+    }
+}
+
+void Draw::setFrameSize(s32 x, s32 y) {
+    switch (mTag) {
+    case DrawTag::Rect:
+        mRect.setFrameSize(x, y);
+        break;
+    case DrawTag::Sprite:
+        mSprite.setFrameSize(x, y);
+        break;
+    }
+}
+
+void Draw::setFrameSize(Vector2i frameSize) {
+    switch (mTag) {
+    case DrawTag::Rect:
+        mRect.setFrameSize(frameSize);
+        break;
+    case DrawTag::Sprite:
+        mSprite.setFrameSize(frameSize);
+        break;
+    }
+}
+
+void Draw::setColor(Color color) {
+    switch (mTag) {
+    case DrawTag::Rect:
+        mRect.setColor(color);
+        break;
+    case DrawTag::Sprite:
+        mSprite.setColor(color);
+        break;
+    }
+}
 
 f32 FadeOut::getIntensity() const {
     f32 t = secondsRemaining / time;
@@ -84,7 +185,7 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
     auto _ = ecs::DeferActivate(sil);
 
     sil.add(entity.get<Transform2D>());
-    auto sprite = entity.get<Sprite>();
+    auto sprite = entity.get<Draw>().getSprite();
     if (color) {
         sprite.color = *color;
     }
@@ -109,7 +210,7 @@ Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, C
     auto _ = ecs::DeferActivate(sil);
 
     sil.add(entity.get<Transform2D>());
-    auto draw = entity.get<Draw>();
+    auto draw = entity.get<Draw>().getRect();
     if (color) {
         draw.color = *color;
     }

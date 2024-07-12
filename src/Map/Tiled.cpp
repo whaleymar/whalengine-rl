@@ -374,7 +374,7 @@ void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& lev
     Transform2D trans = getTransformFromMapPosition(position + offset, frame.dimensionsTexels, level, false);
     entity.add(trans);
 
-    entity.add(Sprite(layerData.depth, frame));
+    entity.add(Draw(Sprite(layerData.depth, frame)));
 }
 
 Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {

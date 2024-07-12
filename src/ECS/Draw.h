@@ -5,6 +5,7 @@
 #include "Gfx/Depth.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
+#include "Settings.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
@@ -54,8 +55,40 @@ struct Sprite : public IDraw {
     bool isRotateAboutCenter = false;
 };
 
-struct Draw : public IDraw {
-    Draw(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
+struct DrawRect : public IDraw {
+    DrawRect(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
+};
+
+class Draw {
+public:
+    enum class DrawTag { Rect, Sprite };  // text too?
+
+    Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,
+         Color color = WHITE);
+    Draw(DrawRect rect);
+    Draw(Sprite sprite);
+
+    Draw(const Draw& other);
+    Draw& operator=(const Draw& other);
+
+    DrawTag getTag() const { return mTag; }
+    DrawRect& getRect();
+    Sprite& getSprite();
+
+    Vector2i getFrameSizeTexels() const;
+    Depth getDepth() const;
+    Shaders getShader() const;
+    void setAlpha(u8 alpha);
+    void setFrameSize(s32 x, s32 y);
+    void setFrameSize(Vector2i frameSize);
+    void setColor(Color color_);
+
+private:
+    union {
+        DrawRect mRect;
+        Sprite mSprite;
+    };
+    DrawTag mTag;
 };
 
 struct DrawText {
@@ -68,7 +101,7 @@ struct DrawText {
     bool isCentered;
 };
 
-struct DrawDebug : public Draw {};
+struct DrawDebug : public DrawRect {};
 
 // component which lerps an entity's draw/sprite component's alpha from one value to another over time.
 struct FadeOut {

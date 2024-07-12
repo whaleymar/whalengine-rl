@@ -1,7 +1,6 @@
 # To Do 
 
 ## Current Goal: 
-- levels!
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -21,9 +20,6 @@
 
 ## Gfx
 - replace radiance with bloom?
-- combine draw and sprite components so depth works for draw
-    - tagged union; also add bezier draw component, text draw component
-
 
 ## Physics 
 - collider offset

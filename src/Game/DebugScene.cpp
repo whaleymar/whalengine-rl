@@ -103,7 +103,7 @@ Corrade::Containers::Optional<Error> loadDebugScene() {
                         Sprite(d, *TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("tile/dirtblock"), Colors::Emerald))
                 .value();
         invisBlock.remove<Collider>();
-        auto invisBlock2 = createBlock(Transform2D::tiles(i - 5, 2), Draw(Colors::Emerald, {8, 8}, d)).value();
+        auto invisBlock2 = createBlock(Transform2D::tiles(i - 5, 2), DrawRect(Colors::Emerald, {8, 8}, d)).value();
         invisBlock2.remove<Collider>();
     }
 
@@ -195,7 +195,7 @@ void createTestTrigger() {
 
 void createTestSemiSolid() {
     auto newEntity = System::world->entity().value();
-    newEntity.add(Draw(Color(90, 127, 224, 255)));
+    newEntity.add(Draw(DrawRect(Color(90, 127, 224, 255))));
     Transform2D trans = Transform2D::tiles(18, 10);
     // Transform2D trans = Transform2D::tiles(10, -14);
     // auto pathControl = RailsControl(64,
@@ -218,7 +218,7 @@ void createTestSemiSolid() {
     newEntity.add(collider);
 
     newEntity = System::world->entity().value();
-    newEntity.add(Draw(Color(255, 127, 225, 255)));
+    newEntity.add(Draw(DrawRect(Color(255, 127, 225, 255))));
     trans = Transform2D::tiles(18, 0);
     newEntity.add(trans);
     newEntity.add<Velocity>();
@@ -228,11 +228,11 @@ void createTestSemiSolid() {
 
 void createDepthTest() {
     auto newEntity = System::world->entity().value();
-    newEntity.add(Draw(Color(56, 56, 255, 255), {8, 8}, Depth::BackgroundNear));
+    newEntity.add(Draw(DrawRect(Color(56, 56, 255, 255), {8, 8}, Depth::BackgroundNear)));
     newEntity.add(Transform2D::tiles(7, -14));
 
     newEntity = System::world->entity().value();
-    newEntity.add(Draw(Color(56, 56, 200, 255), {8, 8}, Depth::Foreground1));
+    newEntity.add(Draw(DrawRect(Color(56, 56, 200, 255), {8, 8}, Depth::Foreground1)));
     newEntity.add(Transform2D::tiles(8, -14));
 }
 
@@ -252,7 +252,7 @@ void createPaletteTest() {
     if (frame) {
         auto sprite = Sprite(Depth::Level, *frame);
         sprite.scale = {1, 1};
-        newEntity.add(sprite);
+        newEntity.add(Draw(sprite));
         newEntity.add(Transform2D::tiles(7, -8));
 
     } else {

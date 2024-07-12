@@ -23,16 +23,17 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
-void SpriteSystem::onAdd(const ecs::Entity entity) {
+void GfxSystem::onAdd(const ecs::Entity entity) {
     // insert entities into sorted order, based on depth, then shader
-    f32 fDepth = depthToFloat(entity.get<Sprite>().depth);
-    s16 shaderIx = static_cast<s16>(entity.get<Sprite>().shader);
+    const auto draw = entity.get<Draw>();
+    f32 fDepth = depthToFloat(draw.getDepth());
+    s16 shaderIx = static_cast<s16>(draw.getShader());
 
     auto prev = mSorted.before_begin();
     for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-        Sprite sprite = it->get<Sprite>();
-        f32 curDepth = depthToFloat(sprite.depth);
-        s16 curShaderIx = static_cast<s16>(sprite.shader);
+        Draw draw = it->get<Draw>();
+        f32 curDepth = depthToFloat(draw.getDepth());
+        s16 curShaderIx = static_cast<s16>(draw.getShader());
         if (curDepth > fDepth || (curDepth == fDepth && curShaderIx >= shaderIx)) {
             mSorted.insert_after(prev, entity);
             return;
@@ -42,11 +43,11 @@ void SpriteSystem::onAdd(const ecs::Entity entity) {
     mSorted.insert_after(prev, entity);
 }
 
-void SpriteSystem::onRemove(const ecs::Entity entity) {
+void GfxSystem::onRemove(const ecs::Entity entity) {
     mSorted.remove_if([entity](const ecs::Entity& e) { return e.id() == entity.id(); });
 }
 
-void SpriteSystem::drawEntities() {
+void GfxSystem::drawEntities() {
     if (mSorted.empty()) {
         return;
     }
@@ -56,13 +57,13 @@ void SpriteSystem::drawEntities() {
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
-    Shaders prevShader = mSorted.begin()->get<Sprite>().shader;
+    Shaders prevShader = mSorted.begin()->get<Draw>().getShader();
     BeginShaderMode(ShaderManager::get(prevShader));
     for (auto const entity : mSorted) {
         if (entity.has<Invisible>()) {
             continue;
         }
-        Shaders newShader = entity.get<Sprite>().shader;
+        Shaders newShader = entity.get<Draw>().getShader();
         if (newShader != prevShader) {
             prevShader = newShader;
             EndShaderMode();
@@ -73,49 +74,41 @@ void SpriteSystem::drawEntities() {
     EndShaderMode();
 }
 
-void SpriteSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
+void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Transform2D trans = entity.get<Transform2D>();
     Vector2f posF = toFloatVec(trans.position);
-    const Sprite sprite = entity.get<Sprite>();
+    Draw draw = entity.get<Draw>();
 
-    const Vector2i frameSize = sprite.getFrameSizeTexels();
-    const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
-    const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
-
-    Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
-    Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
-
-    // rotate about center or transform
-    Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x() * 0.5, dstSize.y());
-    if (sprite.isRotateAboutCenter) {
-        dstPosition -= Vector2f(0, dstSize.y() / 2.0f);
-    }
-
-    Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
-    DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
-}
-
-void DrawSystem::drawEntities() {
-    auto cameraPosF = getCameraPositionPrecise();
-    // auto cameraPosF = toFloatVec(getCameraPosition());
-
-    // sorting not required since Draw components don't have transparency
-    for (auto const [entityid, entity] : getEntitiesRef()) {
-        if (entity.has<Invisible>()) {
-            continue;
-        }
-        const Transform2D trans = entity.get<Transform2D>();
-        const Draw draw = entity.get<Draw>();
-
-        auto frameSize = toFloatVec(draw.getFrameSizeTexels());
-        Vector2f dstSize = {frameSize.x() * draw.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * draw.scale.y() * FPIXELS_PER_TEXEL};
+    if (draw.getTag() == Draw::DrawTag::Rect) {
+        const DrawRect rect = draw.getRect();
+        auto frameSize = toFloatVec(rect.getFrameSizeTexels());
+        Vector2f dstSize = {frameSize.x() * rect.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * rect.scale.y() * FPIXELS_PER_TEXEL};
 
         // subtract size.y() so we draw from bottom left instead of top left
         Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
         // add halfX to pos to match the origin thingy done w/ sprites
         dstPosition -= {dstSize.x() * 0.5f, 0};
         Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
-        DrawRectangleRec(dstRect, draw.color);
+        DrawRectangleRec(dstRect, rect.color);
+
+    } else {
+        const Sprite sprite = draw.getSprite();
+        const Vector2i frameSize = sprite.getFrameSizeTexels();
+        const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
+        const Rectangle srcRect =
+            Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
+
+        Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
+        Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
+
+        // rotate about center or transform
+        Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x() * 0.5, dstSize.y());
+        if (sprite.isRotateAboutCenter) {
+            dstPosition -= Vector2f(0, dstSize.y() / 2.0f);
+        }
+
+        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
     }
 }
 
@@ -192,11 +185,7 @@ void FadeOutSystem::update() {
         fadeOutComponent.secondsRemaining -= dt;
         u8 alpha = fadeOutComponent.getAlpha();
 
-        if (entity.has<Sprite>()) {
-            entity.get<Sprite>().setAlpha(alpha);
-        } else if (entity.has<Draw>()) {
-            entity.get<Draw>().setAlpha(alpha);
-        }
+        entity.get<Draw>().setAlpha(alpha);
 
         if (fadeOutComponent.isDone()) {
             entity.remove<FadeOut>();

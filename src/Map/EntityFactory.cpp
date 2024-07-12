@@ -94,7 +94,7 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
     loadAnimations(animator, animInfo);
     animator.brain = &basicAnimation;
     entity.add(animator);
-    entity.add(Sprite(Depth::Level, animator.getFrame()));
+    entity.add(Draw(Sprite(Depth::Level, animator.getFrame())));
     // entity.add(Sprite(Depth::Level, animator.getFrame(), WHITE, Shaders::Bloom));
 
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
