@@ -69,7 +69,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     auto jumperOpt = entity.tryGet<Jumper>();
 
     auto& vel = entity.get<Velocity>();
-    auto& sprite = entity.get<Sprite>();
+    auto& sprite = entity.get<Draw>().getSprite();
 
     f32 unsquishStep = System::dt() * 1.50;
     sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
@@ -213,7 +213,7 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
 
     Frame frame = player.get<Animator>().getFrame();
     Sprite sprite(Depth::Player, frame);
-    player.add(sprite);
+    player.add(Draw(sprite));
 
     constexpr s32 width = 16;
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;

@@ -159,7 +159,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(animator);
     Sprite sprite = Sprite(Depth::Player, animator.getFrame());
     sprite.scale = {0.5, 0.5};
-    entity.add(sprite);
+    entity.add(Draw(sprite));
 
     entity.add(Collider(trans, Vector2i(halflenPixels, halflenPixels), CollisionLayer::Actor, WorldMaterial::None, &Explode));
 

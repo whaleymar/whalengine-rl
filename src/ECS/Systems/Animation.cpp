@@ -12,7 +12,7 @@ void AnimationSystem::update() {
         if (anim.brain == nullptr) {
             continue;
         }
-        auto& sprite = entity.get<Sprite>();
+        auto& sprite = entity.get<Draw>().getSprite();
 
         if ((*anim.brain)(anim, entity)) {
             // frame changed

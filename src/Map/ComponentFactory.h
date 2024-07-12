@@ -44,7 +44,7 @@ public:
     inline static RigidBody DefaultRigidBody;
     inline static PlayerControl DefaultPlayerControl;
     inline static Jumper DefaultJumper;
-    inline static Draw DefaultDraw;
+    inline static DrawRect DefaultDraw;
     inline static Sprite DefaultSprite;
     inline static FadeOut DefaultFadeout;
     inline static Follow DefaultFollow;

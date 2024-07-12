@@ -73,6 +73,8 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
         Velocity& vel = other.get<Velocity>();
         // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
         auto impulse = unitDelta * distanceMultiplier * cPushStrength.strength;
+
+        // for debugging stability:
         // if (other.has<Player>()) {
         //     print("circle center: ", circle.getPosition());
         //     print("player center: ", otherCollider.getPosition());
@@ -98,7 +100,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     entity.add(trigger);
 
     entity.add(animator);
-    entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
+    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
     entity.add(Lifetime(lifetime));
     entity.add(PointLight({TEXELS_PER_TILE * 5, halflen / PIXELS_PER_TEXEL}));

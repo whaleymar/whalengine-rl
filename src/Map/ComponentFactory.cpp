@@ -159,7 +159,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         }
 
     } else if (componentName == "Component_Draw") {
-        DefaultDraw = Draw();
+        DefaultDraw = DrawRect();
         for (auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
@@ -448,7 +448,7 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
 void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects,
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
-    Draw draw = entity.has<Draw>() ? entity.get<Draw>() : ComponentFactory::DefaultDraw;
+    DrawRect draw = entity.has<Draw>() ? entity.get<Draw>().getRect() : ComponentFactory::DefaultDraw;
     draw.depth = layerData.depth;
     draw.setFrameSize(entityData.dimensionsTexels);
 
@@ -460,13 +460,13 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
         draw.setColor(color);
     }
 
-    entity.add(draw);
+    entity.add(Draw(draw));
 }
 
 void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,
                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
-    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : ComponentFactory::DefaultSprite;
+    Sprite sprite = entity.has<Draw>() ? entity.get<Draw>().getSprite() : ComponentFactory::DefaultSprite;
 
     s32 rotationDegrees;
     if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
@@ -492,13 +492,13 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (frameOpt) {
         sprite.depth = layerData.depth;
         sprite.setFrame(*frameOpt);
-        entity.add(sprite);
+        entity.add(Draw(sprite));
     } else {
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
-        Draw draw = entity.has<Draw>() ? entity.get<Draw>() : ComponentFactory::DefaultDraw;
+        DrawRect draw = ComponentFactory::DefaultDraw;
         draw.setFrameSize(entityData.dimensionsTexels);
-        entity.add(draw);
+        entity.add(Draw(draw));
     }
 }
 

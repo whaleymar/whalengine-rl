@@ -7,13 +7,11 @@
 #include "ECS/Draw.h"
 #include "ECS/Name.h"
 #include "ECS/Relationships.h"
-#include "ECS/Tags.h"
 #include "Events/Events.h"
 #include "Settings.h"
 #include "Systems/Event.h"
 #include "Systems/InputHandler.h"
 #include "Systems/System.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/RigidBody.h"
@@ -41,10 +39,10 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
     Animator animator;
     loadAnimations(animator, animInfo);
 
-    entity.add(Sprite(Depth::Foreground1, animator.getFrame()));
+    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
     animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
-        auto& sprite = self.get<Sprite>();
+        auto& sprite = self.get<Draw>().getSprite();
         f32 unsquishStep = System::dt();
         sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
 
@@ -184,7 +182,7 @@ void ProjectileSystem::addAimReticles() {
             Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * aimDirection;
             Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
             child.add(Transform2D(position));
-            child.add(Draw(BROWN));
+            child.add(Draw(DrawRect(BROWN)));
         }
     }
 }
@@ -272,7 +270,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
 
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;
-    if (entity.has<Sprite>()) {
+    if (entity.has<Draw>() && entity.get<Draw>().getTag() == Draw::DrawTag::Sprite) {
         u32 eventId = System::schedule.eventFlow({entity})
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)

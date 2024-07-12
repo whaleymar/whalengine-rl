@@ -13,13 +13,12 @@ typedef struct Color Color;
 namespace whal {
 
 struct Transform2D;
-struct Sprite;
-struct Draw;
 struct DrawDebug;
+class Draw;
 struct FadeOut;
 struct DrawText;
 
-class SpriteSystem : public ecs::ISystem<Transform2D, Sprite>, public ecs::IMonitorSystem {
+class GfxSystem : public ecs::ISystem<Transform2D, Draw>, public ecs::IMonitorSystem {
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
@@ -29,11 +28,6 @@ public:
 
 private:
     std::forward_list<ecs::Entity> mSorted;
-};
-
-class DrawSystem : public ecs::ISystem<Transform2D, Draw> {
-public:
-    void drawEntities();
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {
@@ -47,7 +41,7 @@ public:
     void drawEntities();
 };
 
-class FadeOutSystem : public ecs::ISystem<Transform2D, FadeOut>, public ecs::IUpdate {
+class FadeOutSystem : public ecs::ISystem<Transform2D, Draw, FadeOut>, public ecs::IUpdate {
 public:
     void update() override;
 };

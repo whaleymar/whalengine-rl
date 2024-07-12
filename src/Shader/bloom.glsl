@@ -12,7 +12,7 @@ uniform vec4 colDiffuse;
 out vec4 finalColor;
 
 const vec2 size = vec2(320, 180);   // Framebuffer size
-const float samples = 7.;          // Pixels per axis; higher = bigger glow, worse performance. MIN 3
+const float samples = 14.;          // Pixels per axis; higher = bigger glow, worse performance. MIN 3
 const float quality = 1.;          // Defines size factor: Lower = smaller glow, better quality
 
 void main()

@@ -118,7 +118,7 @@ bool Game::startup() {
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()
-        .registerSystems<DrawSystem, SpriteSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
+        .registerSystems<GfxSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
                          RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
         .registerSystems<QuadTreeSystem>()
@@ -135,8 +135,7 @@ bool Game::startup() {
 
 void Game::mainloop() {
     // these are used for rendering, which still is run in this function but I might move it eventually
-    auto drawSystem = System::world->getSystem<DrawSystem>();
-    auto spriteSystem = System::world->getSystem<SpriteSystem>();
+    auto gfxSystem = System::world->getSystem<GfxSystem>();
     auto textSystem = System::world->getSystem<DrawTextSystem>();
     auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
@@ -244,8 +243,7 @@ void Game::mainloop() {
         ClearBackground(clearColorTransparent);  // don't overwrite background stuff
         BeginMode2D(*mWorldSpaceCamera);
 
-        spriteSystem->drawEntities();
-        drawSystem->drawEntities();
+        gfxSystem->drawEntities();
 
         EndMode2D();
 
