@@ -11,6 +11,7 @@
 #include "Util/Vector.h"
 
 namespace whal {
+constexpr f32 PERPENDICULAR_DAMPING = 0.33;
 
 void ParticleEmitterSystem::update() {
     // these are between -1 and 1
@@ -42,24 +43,28 @@ void ParticleEmitterSystem::update() {
         Vector2i spawnLocation;
         if ((emitter.settings & ParticleSetting::UpOnly) > 0) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
+            velocity.e[0] *= PERPENDICULAR_DAMPING;
             if (velocity.y() < 0) {
                 velocity.e[1] *= -1;
             }
 
         } else if ((emitter.settings & ParticleSetting::LeftOnly) > 0) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitLeft) + Vector2i(0, spawnOffsetY);
+            velocity.e[1] *= PERPENDICULAR_DAMPING;
             if (velocity.x() > 0) {
                 velocity.e[0] *= -1;
             }
 
         } else if ((emitter.settings & ParticleSetting::RightOnly) > 0) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitRight) + Vector2i(0, spawnOffsetY);
+            velocity.e[1] *= PERPENDICULAR_DAMPING;
             if (velocity.x() < 0) {
                 velocity.e[0] *= -1;
             }
 
         } else if ((emitter.settings & ParticleSetting::DownOnly) > 0) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitDown) + Vector2i(spawnOffsetX, 0);
+            velocity.e[0] *= PERPENDICULAR_DAMPING;
             if (velocity.y() > 0) {
                 velocity.e[1] *= -1;
             }
@@ -92,7 +97,7 @@ void ParticleEmitterSystem::update() {
             particle.add(Velocity(velocity));
 
             if ((emitter.settings & ParticleSetting::RigidBody) > 0) {
-                particle.add<RigidBody>();
+                particle.add(RigidBody({0.0f, 0.0f}));
             }
 
             if ((emitter.settings & ParticleSetting::Collider) > 0) {

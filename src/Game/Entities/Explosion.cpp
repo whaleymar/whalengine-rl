@@ -8,7 +8,6 @@
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
-#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -31,7 +30,7 @@
 using namespace whal;
 
 constexpr f32 RJ_DECAY = 0.95;
-constexpr f32 RJ_UP_AIRRES = 2.5f;
+constexpr f32 RJ_UP_AIRRES = 2.0f;
 constexpr f32 RJ_OTHER_AIRRES = 0.05f;
 
 struct PushStrength {
@@ -75,8 +74,8 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         Vector2f unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
 
         // slight knockback falloff based on distance
-        auto circle = trigger.shape.getCircle();
-        f32 distanceFromCenter = circle.getDistanceFromCenter(&otherShape);
+        // auto circle = trigger.shape.getCircle();
+        // f32 distanceFromCenter = circle.getDistanceFromCenter(&otherShape);
 
         // ok, what if instead of all this junk, i do uniform distance multiplier, and just set the other entity's transform to be on the trigger's
         // boundary in whatever direction they're being pushed?
@@ -117,20 +116,17 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         }
 
         // for debugging stability:
-        if (other.has<Player>()) {
-            print("circle center: ", circle.getPosition());
-            print("player center: ", otherShape.getPosition());
-            print("Distance from explosion center: ", distanceFromCenter);
-            // print("(rounded from): ", prevValue);
-            print("Distance Multiplier: ", distanceMultiplier);
-            print("Player Velocity before push: ", vel.stable);
-            // print("Player Velocity.impulse before push: ", vel.impulse);
-            // print("Player Velocity.residualimpulse before push: ", vel.residualImpulse);
-            print("unitDelta: ", unitDelta);
-            print("strength: ", cPushStrength.strength);
-            print("Impulse force: ", impulse);
-            print("");
-        }
+        // if (other.has<Player>()) {
+        // print("circle center: ", circle.getPosition());
+        // print("player center: ", otherShape.getPosition());
+        // print("Distance from explosion center: ", distanceFromCenter);
+        // print("Distance Multiplier: ", distanceMultiplier);
+        // print("Player Velocity before push: ", vel.stable);
+        // print("unitDelta: ", unitDelta);
+        // print("strength: ", cPushStrength.strength);
+        // print("Impulse force: ", impulse);
+        // print("");
+        // }
         vel.stable += impulse;
 
         // ----------------------------
