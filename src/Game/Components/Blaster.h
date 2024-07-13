@@ -58,11 +58,8 @@ public:
 
     static void addAimReticles();
     static void updateFacingDirections(bool isFacingRight);
-    static void setIsAiming(bool isAiming) { mIsAiming = isAiming; }
-    static bool getIsAiming() { return mIsAiming; }
 
 private:
-    inline static bool mIsAiming = false;
     inline static bool mIsAimUpdateNeeded = false;
 };
 

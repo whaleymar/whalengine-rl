@@ -13,6 +13,7 @@
 #include "Tiled.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
@@ -119,10 +120,9 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
 }
 
 Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
-    for (auto& active : loadedLevels) {
-        if (active == level) {
-            return &active;
-        }
+    auto it = ecs::whal_find(loadedLevels.begin(), loadedLevels.end(), level);
+    if (it != loadedLevels.end()) {
+        return &(*it);
     }
 
     // load it
@@ -157,7 +157,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
 
-    std::vector<std::vector<s32>> collisionGrid;
+    // std::vector<std::vector<s32>> collisionGrid;
     for (s32 x = 0; x < map.widthTiles; x++) {
         // std::vector<s32> collisionColumn;
         for (s32 y = 0; y < map.heightTiles; y++) {
@@ -290,7 +290,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     }
 }
 
-void makeCollisionMesh(std::vector<std::vector<s32>>& collisionGrid, ActiveLevel& lvl) {
+void makeCollisionMesh(const std::vector<std::vector<s32>>& collisionGrid, ActiveLevel& lvl) {
     // could be a LOT faster with std::vector<bool> + bitwise ops
     // timed @ 0.004 seconds for 1 level (quarter frame; can be asynch?)
 

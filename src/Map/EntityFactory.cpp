@@ -23,14 +23,14 @@
 
 namespace whal {
 
-static void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
-static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
+static void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
@@ -47,11 +47,11 @@ EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
     initFactory(S_ENTITY_ENTRIES);
 }
 
-void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Trigger>().onTriggerEnter = &onCheckpointEnter;
 }
 
-void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     auto collisionCallback = [](ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
         if (other.has<Particle>() || hitNormal.y() != 1) {
             return;
@@ -69,11 +69,11 @@ void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tile
     entity.get<RailsControl>().arrivalCallback = onMoveDone;
 }
 
-void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
 }
 
-void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
         auto flipSwitch = self.get<Switch>();
         ecs::EntityID targetID = flipSwitch.target;
@@ -93,7 +93,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
     });
 }
 
-void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     const AnimInfo animInfo = {{"actor/magichat", 0, 8, 0.2}};
     Animator animator;
     loadAnimations(animator, animInfo);
@@ -135,7 +135,7 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, Act
     };
 }
 
-void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
         if (!other.has<ProjectileInfo>()) {
             return;
@@ -202,7 +202,7 @@ void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, Activ
     });
 }
 
-void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;
@@ -214,7 +214,7 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
     };
 }
 
-static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     auto& trigger = entity.get<Trigger>();
     // trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
     trigger.shape = Shape(Circle(entity.get<Transform2D>(), 6));

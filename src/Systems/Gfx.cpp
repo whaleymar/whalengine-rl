@@ -31,9 +31,9 @@ void GfxSystem::onAdd(const ecs::Entity entity) {
 
     auto prev = mSorted.before_begin();
     for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-        Draw draw = it->get<Draw>();
-        f32 curDepth = depthToFloat(draw.getDepth());
-        s16 curShaderIx = static_cast<s16>(draw.getShader());
+        Draw curDraw = it->get<Draw>();
+        f32 curDepth = depthToFloat(curDraw.getDepth());
+        s16 curShaderIx = static_cast<s16>(curDraw.getShader());
         if (curDepth > fDepth || (curDepth == fDepth && curShaderIx >= shaderIx)) {
             mSorted.insert_after(prev, entity);
             return;
