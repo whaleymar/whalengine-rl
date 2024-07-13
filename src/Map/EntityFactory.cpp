@@ -9,13 +9,16 @@
 #include "ECS/RailsControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Tags.h"
+#include "ECS/Transform.h"
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
+#include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
+#include "Settings.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -27,6 +30,7 @@ static void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& til
 static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
+static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
@@ -36,6 +40,7 @@ static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"Magic Hat", createMagicHat},
     {"MultiSwitch", createSwitch},
     {"AppearTrigger", createAppearTrigger},
+    {"BlastCrystal", createBlastCrystal},
 };
 
 EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
@@ -206,6 +211,19 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
         if (target.has<Invisible>()) {
             target.remove<Invisible>();
         }
+    };
+}
+
+static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
+    auto& trigger = entity.get<Trigger>();
+    trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
+    trigger.onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
+        if (!other.has<Player>()) {
+            return;
+        }
+
+        const Vector2f explosionStrength(150, 150);
+        makeExplosionZone(self.get<Trigger>().shape.getPosition(), PIXELS_PER_TILE, explosionStrength);
     };
 }
 

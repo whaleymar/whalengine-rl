@@ -57,8 +57,10 @@ public:
     Vector2i getPosition() const { return mCenter; }
 
     s32 getRadius() const { return mRadius; }
+    // TODO pass by value
     f32 getDistanceFromCenter(const AABB* aabb) const;
     f32 getDistanceFromCenter(const Circle* other) const;
+    Vector2f getVecToClosestPoint(const AABB aabb) const;
 
     AABB getBoundingBox() const;
 

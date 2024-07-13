@@ -134,6 +134,15 @@ f32 Circle::getDistanceFromCenter(const Circle* other) const {
     return toFloatVec(getPosition() - other->getPosition()).len() - other->getRadius();
 }
 
+Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
+    const auto delta = getPosition() - aabb.getPosition();  // vector from AABB's center to circle's
+
+    // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
+    const auto half = aabb.getHalf();
+    const auto closestPoint = aabb.getPosition() + Vector2i(clamp(delta.x(), -half.x(), half.x()), clamp(delta.y(), -half.y(), half.y()));
+    return toFloatVec(closestPoint - getPosition());
+}
+
 AABB Circle::getBoundingBox() const {
     return AABB(mCenter, {mRadius, mRadius});
 }

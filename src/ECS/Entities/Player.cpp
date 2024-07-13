@@ -1,7 +1,6 @@
 #include "Player.h"
 
 #include "ECS/Light.h"
-#include "ECS/ParticleEmitter.h"
 #include "Game.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/Respawn.h"
@@ -190,6 +189,7 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<Jumper>();
     player.add<Wiggle>();
 
+    // if (true || EventFlags::check(EventFlags::HasMagicHat)) {
     if (EventFlags::check(EventFlags::HasMagicHat)) {
         player.add<Blaster>();
     }

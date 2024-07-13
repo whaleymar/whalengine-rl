@@ -5,11 +5,13 @@
 #include "ECS/PlayerControl.h"
 #include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
+#include "Game/Components/ProjectileInfo.h"
 #include "Game/MathUtil.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -24,6 +26,8 @@
 #include "ECS/Transform.h"
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
+
+constexpr f32 RJ_DECAY = 0.95;
 
 struct PushStrength {
     Vector2f strength;
@@ -41,7 +45,7 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     auto _ = ecs::DeferActivate(entity);
 
     // ANIMATOR
-    constexpr f32 lifetime = 0.5;
+    constexpr f32 lifetime = 0.25;
     constexpr s32 nFrames = 6;
     constexpr f32 frameTime = lifetime / static_cast<f32>(nFrames);
     static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};
@@ -56,37 +60,74 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
     entity.add(PushStrength(pushStrength));
 
     TriggerCallback pushEntityAway = [](ecs::Entity self, ecs::Entity other) {
-        const auto& otherCollider = other.get<Collider>().getShape();
+        if (other.has<ProjectileInfo>()) {
+            return;
+        }
+        auto& otherCollider = other.get<Collider>();
+        const auto& otherShape = otherCollider.getShape();
 
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();
-        Vector2f delta = toFloatVec(otherCollider.getPosition() - center);
-        auto unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
+        Vector2f delta = toFloatVec(otherShape.getPosition() - center);
+        Vector2f unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
 
         // slight knockback falloff based on distance
         auto circle = trigger.shape.getCircle();
-        auto distanceFromCenter = circle.getDistanceFromCenter(&otherCollider);
+        f32 distanceFromCenter = circle.getDistanceFromCenter(&otherShape);
 
-        f32 distanceMultiplier = 1 - std::pow(distanceFromCenter / circle.getRadius(), 2);
+        // ok, what if instead of all this junk, i do uniform distance multiplier, and just set the other entity's transform to be on the trigger's
+        // boundary in whatever direction they're being pushed?
+        // const Vector2f moveVec = unitDelta * (static_cast<f32>(circle.getRadius()) - distanceFromCenter);
+        // otherCollider.move(moveVec, nullptr, false, true);
+
+        // f32 distanceMultiplier = 1 - std::pow(distanceFromCenter / static_cast<f32>(circle.getRadius()), 3);
+        // f32 distanceMultiplier = 1 - distanceFromCenter / static_cast<f32>(circle.getRadius());
+        f32 distanceMultiplier = 1;
+
         PushStrength cPushStrength = self.get<PushStrength>();
 
         Velocity& vel = other.get<Velocity>();
         // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
+        const bool isRJStateOn = other.has<RocketJumping>();
         auto impulse = unitDelta * distanceMultiplier * cPushStrength.strength;
 
+        // changing direction, so zero X velocity
+        // for each axis we're boosting in, check if we're changing direction
+        // if we are, zero current velocity in that direction before applying force
+        // otherwise, check if we're already in an RJ state. If we are, reduce the additional force we're adding
+        if (impulse.x() != 0) {
+            if (sign(vel.stable.x()) != sign(impulse.x())) {
+                vel.stable.e[0] = 0;
+
+            } else if (isRJStateOn) {
+                impulse.e[0] *= RJ_DECAY;
+            }
+        }
+
+        if (impulse.y() != 0) {
+            if (sign(vel.stable.y()) != sign(impulse.y())) {
+                vel.stable.e[1] = 0;
+
+            } else if (isRJStateOn) {
+                impulse.e[1] *= RJ_DECAY;
+            }
+        }
+
         // for debugging stability:
-        // if (other.has<Player>()) {
-        //     print("circle center: ", circle.getPosition());
-        //     print("player center: ", otherCollider.getPosition());
-        //     print("Distance from explosion center: ", distanceFromCenter);
-        //     // print("(rounded from): ", prevValue);
-        //     print("Distance Multiplier: ", distanceMultiplier);
-        //     print("Player Velocity before push: ", vel.stable);
-        //     print("unitDelta: ", unitDelta);
-        //     print("strength: ", cPushStrength.strength);
-        //     print("Impulse force: ", impulse);
-        //     print("");
-        // }
+        if (other.has<Player>()) {
+            print("circle center: ", circle.getPosition());
+            print("player center: ", otherShape.getPosition());
+            print("Distance from explosion center: ", distanceFromCenter);
+            // print("(rounded from): ", prevValue);
+            print("Distance Multiplier: ", distanceMultiplier);
+            print("Player Velocity before push: ", vel.stable);
+            // print("Player Velocity.impulse before push: ", vel.impulse);
+            // print("Player Velocity.residualimpulse before push: ", vel.residualImpulse);
+            print("unitDelta: ", unitDelta);
+            print("strength: ", cPushStrength.strength);
+            print("Impulse force: ", impulse);
+            print("");
+        }
         vel.stable += impulse;
 
         // ----------------------------

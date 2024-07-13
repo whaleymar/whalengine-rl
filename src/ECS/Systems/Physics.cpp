@@ -202,38 +202,10 @@ void PhysicsSystem::update() {
         // ----------------------------------------------------------------
     }
 
-    // sync collider positions to transform components.
+    // sync other components with collider positions
     // done after all movement in case things get pushed by others
     for (auto entity : allColliderEntities) {
-        Transform2D& trans = entity.get<Transform2D>();
-        auto const shape = entity.get<Collider>().getShape();
-        auto const newPosition = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
-
-        // make sure player(s) can't go out of bounds
-        if (entity.has<Player>()) {
-            if (Game::instance().getScene().getLevelAt(newPosition)) {
-                trans.position = newPosition;
-            } else {
-                // tried to go out of bounds. simulate fake collision with world boundary
-                auto closestPointInBounds = Game::instance().getScene().getClosestPositionInBounds(newPosition);
-                trans.position = closestPointInBounds;
-                QuadTreeSystem::updatePosition(entity, &entity.get<Collider>().getShapeMutable(), trans);
-            }
-
-        } else {
-            trans.position = newPosition;
-        }
-
-        if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
-            (*precisePositionOpt)->position = toFloatVec(trans.position);
-        }
-
-        if (entity.has<Trigger>()) {
-            auto trigger = entity.get<Trigger>();
-            Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
-            trigger.shape.setPosition(adjustedTransform);
-            entity.set(trigger);
-        }
+        entity.get<Collider>().updateEntityPosition();
     }
 
     // do collision callbacks
