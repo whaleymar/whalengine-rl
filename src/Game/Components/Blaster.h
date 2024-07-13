@@ -21,7 +21,7 @@ struct Blaster {
     f32 shotKnockback = 0;
     f32 projectileLifetimeSeconds = 3.5;
     f32 explosionRadius = FPIXELS_PER_TILE * 2;
-    f32 cooldownSeconds = 0.25;
+    f32 cooldownSeconds = 0.2;
     Vector2i aimDirection;  // TODO enum
     s32 maxShots = 4;
     f32 pushStrength = 150;

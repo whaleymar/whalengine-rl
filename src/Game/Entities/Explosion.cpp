@@ -47,7 +47,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto _ = ecs::DeferActivate(entity);
 
     // ANIMATOR
-    constexpr f32 lifetime = 0.25;
+    constexpr f32 lifetime = 0.5;
     constexpr s32 nFrames = 6;
     constexpr f32 frameTime = lifetime / static_cast<f32>(nFrames);
     static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};

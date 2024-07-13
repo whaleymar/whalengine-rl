@@ -11,7 +11,7 @@
 - air current (propeller?) -> comes before propeller
 
 ## Polish
-- Particle emitter component on projectile
+- player leaning over ledge anim 
 
 ## Camera / Follow
 - pretty awful in general
@@ -53,7 +53,6 @@
 ## Misc
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
-- make component factory functions static 
 
 ## Bugs
 - cppcheck issues
@@ -79,7 +78,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - quad tree ray cast
 
 ## Other:
-- map: support tile rotations / flips? (leaning towards no)
 - should use 3rd party lib for Expected cause my impl sucks
 - triggers which have some constraint, like X>=50
 
