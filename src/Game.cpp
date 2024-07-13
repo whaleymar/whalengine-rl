@@ -4,7 +4,6 @@
 
 #include "ECS/Collision.h"
 #include "ECS/Entities/Camera.h"
-#include "ECS/Entities/Player.h"
 #include "ECS/Name.h"
 #include "ECS/PlayerControl.h"
 #include "ECS/RailsControl.h"
@@ -24,23 +23,27 @@
 #include "ECS/Systems/TriggerSystem.h"
 #include "ECS/Tags.h"
 #include "ECS/Transform.h"
-#include "Game/Components/Respawn.h"
 
 #include "Events/Events.h"
 #include "Events/Listeners.h"
 
 #include "Game/Components/Blaster.h"
+#include "Game/Components/Respawn.h"
+#include "Game/Entities/Player.h"
 #include "Game/Save/EventFlags.h"
 #include "Game/Systems/RespawnSystem.h"
+#include "Settings.h"
 
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
+
 #include "Map/Level.h"
 #include "Map/Tiled.h"
-#include "Settings.h"
+
 #include "Systems/InputHandler.h"
 #include "Systems/PauseMenu.h"
 #include "Systems/System.h"
+
 #include "Util/Print.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -172,9 +175,6 @@ void Game::mainloop() {
 #ifndef NDEBUG
     bool isCreativeMode = false;
 #endif
-
-    bool isd = false;
-    auto player = PlayerSystem::first();
 
     while (!WindowShouldClose() && !System::isQuit()) {
         System::Update();

@@ -94,11 +94,11 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
 static void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
 
+    const auto projectileInfo = self.get<ProjectileInfo>();
     const Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
-    const f32 explosionRadius = self.get<Circle>().getRadius();
-    if (explosionRadius > 0) {
+    if (projectileInfo.explosionRadius > 0) {
         const Vector2i pos = self.get<Transform2D>().position;
-        makeExplosionZone(pos, explosionRadius, pushStrength);
+        makeExplosionZone(pos, projectileInfo.explosionRadius, pushStrength);
         makeExplosionParticles(pos, {});
     }
 }
@@ -112,11 +112,11 @@ static void Explode(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
         return;
     }
 
-    const Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
-    const f32 explosionRadius = self.get<Circle>().getRadius();
-    if (explosionRadius > 0) {
+    const auto projectileInfo = self.get<ProjectileInfo>();
+    const Vector2f pushStrength = projectileInfo.pushStrength;
+    if (projectileInfo.explosionRadius > 0) {
         const Vector2i pos = selfCollider.getShape().getPositionEdge(moveNormal);
-        makeExplosionZone(pos, explosionRadius, pushStrength);
+        makeExplosionZone(pos, projectileInfo.explosionRadius, pushStrength);
         makeExplosionParticles(pos, moveNormal);
     }
     self.kill();
@@ -142,16 +142,15 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     Transform2D trans(position, angleRadians * RAD_TO_DEG);
 
     Velocity vel(velocity);
-    constexpr s32 len = 4;
+    constexpr s32 len = 6;
     constexpr s32 halflenPixels = len / 2 * PIXELS_PER_TEXEL;
 
     entity.add(trans);
     entity.add(vel);
     entity.add(Name("PROJECTILE"));
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
-    entity.add(Circle(Vector2i(), explosionRadius));  // TODO put this in projectileInfo
     entity.add(PointLight({TEXELS_PER_TILE * 2, halflenPixels}));
-    entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, pushStrength});
+    entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, explosionRadius, pushStrength});
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;
