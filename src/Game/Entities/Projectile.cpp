@@ -2,6 +2,7 @@
 
 #include "Components/Callback.h"
 #include "Components/Light.h"
+#include "Components/ParticleEmitter.h"
 #include "Components/RigidBody.h"
 #include "Entities/Particle.h"
 #include "Game/Components/ProjectileInfo.h"
@@ -44,7 +45,7 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     if (surfaceNormal.y() > 0) {
         center.e[1]--;  // so doesn't get stuck
     }
-    const s32 NPARTICLES = 5;
+    constexpr s32 NPARTICLES = 5;
     for (s32 i = 0; i < NPARTICLES; i++) {
         const f32 maxspeed = 80;
         const f32 baselifetime = 3;
@@ -151,6 +152,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
     entity.add(PointLight({TEXELS_PER_TILE * 2, halflenPixels}));
     entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, explosionRadius, pushStrength});
+    entity.add(ParticleEmitter(Colors::LightBlue, 1.0f, ParticleSetting::Light | ParticleSetting::RigidBody | ParticleSetting::Collider, 5, 15));
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;
