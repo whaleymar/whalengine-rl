@@ -7,7 +7,7 @@
 namespace whal {
 
 void AnimationSystem::update() {
-    for (auto& [entityid, entity] : getEntitiesRef()) {
+    for (auto& [entityid, entity] : getEntitiesMutable()) {
         auto& anim = entity.get<Animator>();
         if (anim.brain == nullptr) {
             continue;

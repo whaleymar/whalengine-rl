@@ -186,7 +186,7 @@ void Game::mainloop() {
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {
-            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesRef()) {
+            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesMutable()) {
                 entity.kill();
             }
         }
@@ -199,7 +199,7 @@ void Game::mainloop() {
         if (IsKeyPressed(KEY_P)) {
             if (isCreativeMode) {
                 isCreativeMode = false;
-                for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
+                for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
                     entity.remove<FreeControl>();
                     entity.add<RigidBody>();
                     constexpr s32 width = 16;
@@ -210,7 +210,7 @@ void Game::mainloop() {
                 }
             } else {
                 isCreativeMode = true;
-                for (auto [id, entity] : PlayerSystem::getEntitiesRef()) {
+                for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
                     entity.add<FreeControl>();
                     entity.remove<RigidBody>();
                     entity.remove<Collider>();
@@ -389,7 +389,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
 
     Vector2i startPos = eFirstLevel.value()->initialSpawnPoint;
 
-    if (resetPlayers || PlayerSystem::getEntitiesRef().empty()) {
+    if (resetPlayers || PlayerSystem::getEntitiesMutable().empty()) {
         createPlayer();
     }
 
@@ -401,7 +401,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
         Vector2i cameraFocus = eFirstLevel.value()->cameraFocalPoint;
 
         // but if the player exists, check the level they're in
-        if (!PlayerSystem::getEntitiesRef().empty()) {
+        if (!PlayerSystem::getEntitiesMutable().empty()) {
             auto levelOpt = mActiveScene.getLevelAt(PlayerSystem::first().get<Transform2D>().position);
             if (levelOpt) {
                 auto eActiveLvl = mActiveScene.getLoadedLevel(*levelOpt);
@@ -485,8 +485,8 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
 }
 
 void Game::checkIfInNewLevel(bool overrideCache) {
-    if (System::world->getSystem<PlayerSystem>()->getEntitiesRef().empty() || !mIsSceneLoaded ||
-        System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {
+    if (System::world->getSystem<PlayerSystem>()->getEntitiesMutable().empty() || !mIsSceneLoaded ||
+        System::world->getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
         return;
     }
     static std::string lastLevel = "default";

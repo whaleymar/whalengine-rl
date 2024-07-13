@@ -15,7 +15,7 @@ namespace whal {
 
 // removes entity from child list
 void EntityChildSystem::onEvent(DeathEvent, ecs::Entity entity) {
-    for (auto [entityid, parent] : getEntitiesRef()) {
+    for (auto [entityid, parent] : getEntitiesMutable()) {
         auto& children = parent.get<Children>();
         auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
         if (it != children.entityIDs.end()) {
@@ -40,7 +40,7 @@ void AttachSystem::onAdd(ecs::Entity entity) {
 }
 
 void AttachSystem::update() {
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         const Transform2D trans = entity.get<Transform2D>();
         Attach attach = entity.get<Attach>();
         ecs::Entity targetEntity(attach.targetEntityID);
@@ -64,7 +64,7 @@ void AttachSystem::update() {
 }
 
 void FollowSystem::update() {
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         Transform2D trans = entity.get<Transform2D>();
         auto& follow = entity.get<Follow>();
         if (!follow.isTargetInitialized) {
@@ -184,7 +184,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
 // if the target of an entity's Follow component dies, remove the follow component.
 void FollowSystem::onEvent(DeathEvent, ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
-    for (auto& [entityid, entity] : FollowSystem::getEntitiesRef()) {
+    for (auto& [entityid, entity] : FollowSystem::getEntitiesMutable()) {
         if (entity.get<Follow>().targetEntityID == killedEntity.id()) {
             toRemove.push_back(entity);
         }

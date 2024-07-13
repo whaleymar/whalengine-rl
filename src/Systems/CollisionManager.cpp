@@ -20,7 +20,7 @@ static qtree::QuadTree QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i
 void drawColliders() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
-    for (const auto [entityid, entity] : QuadTreeSystem::getEntitiesRef()) {
+    for (const auto [entityid, entity] : QuadTreeSystem::getEntitiesMutable()) {
         const auto collider = entity.get<Collider>();
         Color color;
         if (collider.isActor()) {
@@ -35,7 +35,7 @@ void drawColliders() {
         collider.getShape().draw(cameraPos, color);
     }
 
-    for (const auto& [entityid, entity] : TriggerSystem::getEntitiesRef()) {
+    for (const auto& [entityid, entity] : TriggerSystem::getEntitiesMutable()) {
         entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
     }
 }
@@ -73,7 +73,7 @@ std::vector<ecs::Entity> QuadTreeSystem::query(const AABB& aabb) {
 
 void QuadTreeSystem::rebuild(s32 width, s32 height) {
     QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(width / 2, height / 2)));
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         QUAD_TREE.add(entity);
     }
 }

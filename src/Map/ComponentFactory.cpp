@@ -774,7 +774,7 @@ Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& leve
     // Follow follow = entity.has<Follow>() ? entity.get<Follow>() : ComponentFactory::DefaultFollow;
     Follow follow = DefaultFollow;
     if (values.contains("FollowTarget")) {
-        if (auto pPlayerSystem = System::world->getSystem<PlayerSystem>(); !pPlayerSystem->getEntitiesRef().empty()) {
+        if (auto pPlayerSystem = System::world->getSystem<PlayerSystem>(); !pPlayerSystem->getEntitiesMutable().empty()) {
             follow.targetEntityID = pPlayerSystem->first().id();
         }
     }

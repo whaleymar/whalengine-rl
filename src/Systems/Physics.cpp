@@ -72,7 +72,7 @@ void PhysicsSystem::update() {
 
     // sync collider in case position changed in another system
     // is a little inefficient to do it this way (vs separating the systems)
-    for (auto& [entityid, entity] : getEntitiesRef()) {
+    for (auto& [entityid, entity] : getEntitiesMutable()) {
         Transform2D& trans = entity.get<Transform2D>();
         if (!trans.isManuallyMoved) {
             continue;
@@ -89,7 +89,7 @@ void PhysicsSystem::update() {
     }
 
     std::vector<ecs::Entity> allColliderEntities;
-    for (auto& [entityid, entity] : getEntitiesRef()) {
+    for (auto& [entityid, entity] : getEntitiesMutable()) {
         f32 dt;
         // camera move normally unless pause menu is active
         if (entity.has<Camera>()) {

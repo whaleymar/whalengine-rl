@@ -91,7 +91,7 @@ void shootProjectile() {
     // Vector2i moveNormali = System::input.getMoveNormal();
     // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormali);
 
-    for (auto& [entityid, entity] : ProjectileSystem::getEntitiesRef()) {
+    for (auto& [entityid, entity] : ProjectileSystem::getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
         if (blaster.cooldownRemaining > 0 || blaster.shotsRemaining == 0) {
             if (blaster.aimReticle) {
@@ -168,7 +168,7 @@ void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool 
 
 void ProjectileSystem::addAimReticles() {
     Vector2i aimDirection = System::input.getMoveNormal();
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
         // if (blaster.cooldownRemaining > 0) {
         //     continue;
@@ -198,7 +198,7 @@ void ProjectileSystem::addAimReticles() {
 void ProjectileSystem::update() {
     f32 dt = System::dt();
     Vector2i aimDirection = System::input.getMoveNormal();
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
 
         if (blaster.cooldownRemaining > 0) {
@@ -248,7 +248,7 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
     if (!IS_AIMING) {
         return;
     }
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         auto& trans = entity.get<Transform2D>();
         trans.facing = isFacingRight ? Facing::Right : Facing::Left;
     }
