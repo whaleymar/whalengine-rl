@@ -14,7 +14,6 @@
 #include "Systems/InputHandler.h"
 #include "Systems/System.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/RigidBody.h"
