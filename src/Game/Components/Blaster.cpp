@@ -84,7 +84,7 @@ void shootProjectile() {
     // slight delay for enabling movement so player can adjust arrow keys
     System::schedule.after([]() { System::input.enableMovement(); }, 0.2);
     // but allow jumping immediately
-    System::input.enableJumping();
+    // System::input.enableJumping();
 
     // Vector2i moveNormali = System::input.getMoveNormal();
     // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormali);
@@ -139,7 +139,7 @@ void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool 
 
             // deactivate movement controls; those keys are now for aiming
             System::input.disableMovement();
-            System::input.disableJumping();
+            // System::input.disableJumping();
 
         } else if (!isPress && ProjectileSystem::getIsAiming()) {
             shootProjectile();

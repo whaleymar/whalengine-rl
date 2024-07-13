@@ -31,7 +31,7 @@
 using namespace whal;
 
 constexpr f32 RJ_DECAY = 0.95;
-constexpr f32 RJ_UP_AIRRES = 1.0f;
+constexpr f32 RJ_UP_AIRRES = 2.5f;
 constexpr f32 RJ_OTHER_AIRRES = 0.05f;
 
 struct PushStrength {
@@ -136,6 +136,13 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT
         if (other.has<PlayerControl>()) {
+            auto& otherTrans = other.get<Transform2D>();
+            if (unitDelta.x() > 0) {
+                otherTrans.facing = Facing::Right;
+            } else if (unitDelta.x() < 0) {
+                otherTrans.facing = Facing::Left;
+            }
+
             const f32 newAirResistance = unitDelta == Vector2f::unitUp ? RJ_UP_AIRRES : RJ_OTHER_AIRRES;
             if (other.has<RocketJumping>()) {
                 auto& rjComponent = other.get<RocketJumping>();
