@@ -216,7 +216,8 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel) {
     auto& trigger = entity.get<Trigger>();
-    trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
+    // trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
+    trigger.shape = Shape(Circle(entity.get<Transform2D>(), 6));
     trigger.onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;

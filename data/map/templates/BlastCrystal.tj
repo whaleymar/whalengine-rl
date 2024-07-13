@@ -1,6 +1,6 @@
 { "object":
     {
-     "height":8,
+     "height":12,
      "id":32,
      "name":"BlastCrystal",
      "properties":[
@@ -19,7 +19,7 @@
              "type":"class",
              "value":
                 {
-                 "radiusTexels":4
+                 "radiusTexels":8
                 }
             }, 
             {
@@ -34,7 +34,7 @@
      "rotation":0,
      "type":"Entity",
      "visible":true,
-     "width":8
+     "width":12
     },
  "type":"template"
 }
