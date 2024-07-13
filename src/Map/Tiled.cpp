@@ -1,5 +1,6 @@
 #include "Tiled.h"
 
+#include "ECS/Draw.h"
 #include "ECS/Light.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"

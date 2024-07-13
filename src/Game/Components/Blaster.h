@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ECS/Systems/Physics.h"
 #include "Events/Events.h"
 #include "Settings.h"
 #include "Systems/InputHandler.h"
@@ -15,7 +16,7 @@ struct PlayerControl;
 }  // namespace whal
 
 struct Blaster {
-    f32 projectileSpeed = 160;  // same as terminal velocity
+    f32 projectileSpeed = abs(whal::TERMINAL_VELOCITY_Y);  // same as terminal velocity
     f32 shotKnockback = 0;
     f32 projectileLifetimeSeconds = 3.5;
     f32 explosionRadius = FPIXELS_PER_TILE * 2;

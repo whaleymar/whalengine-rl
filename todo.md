@@ -11,7 +11,6 @@
 - air current (propeller?) -> comes before propeller
 
 ## Polish
-- Particle emitter component on player hands/feet (?) while RJing
 - Particle emitter component on projectile
 
 ## Camera / Follow
@@ -24,6 +23,7 @@
 
 ## Gfx
 - replace radiance with bloom?
+    - also want to try adding some translucent circle instead to see if that helps
 
 ## Physics 
 - collider offset
