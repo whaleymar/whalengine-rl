@@ -44,7 +44,7 @@ void PointLightSystem::update() {
     BeginShaderMode(shader);
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
         }
@@ -97,7 +97,7 @@ void BoxLightSystem::update() {
     // BeginShaderMode(shader);
 
     Texture randomTexture = TextureManager::instance().getLightingTexture().texture;
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
         }
@@ -163,7 +163,7 @@ void RadianceLightSystem::update() {
     ClearBackground({0, 0, 0, 0});  // don't overwrite background stuff
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
-    for (auto [entityid, entity] : getEntitiesRef()) {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
         }

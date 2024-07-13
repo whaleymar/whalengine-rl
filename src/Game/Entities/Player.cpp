@@ -190,7 +190,7 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<Wiggle>();
 
     // if (true || EventFlags::check(EventFlags::HasMagicHat)) {
-    if (EventFlags::check(EventFlags::HasMagicHat)) {
+    if (true || EventFlags::check(EventFlags::HasMagicHat)) {
         player.add<Blaster>();
     }
 

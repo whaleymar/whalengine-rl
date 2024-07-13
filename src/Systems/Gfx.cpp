@@ -128,7 +128,7 @@ void DrawTextSystem::drawEntities(Color tint) {
     // const Font* font = Game::instance().getFont();
 
     // sorting not required since Draw components don't have transparency
-    for (auto const [entityid, entity] : getEntitiesRef()) {
+    for (auto const [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
         }
@@ -161,7 +161,7 @@ void DrawDebugSystem::drawEntities() {
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     // sorting not required since Draw components don't have transparency
-    for (auto const [entityid, entity] : getEntitiesRef()) {
+    for (auto const [entityid, entity] : getEntitiesMutable()) {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawDebug draw = entity.get<DrawDebug>();
 

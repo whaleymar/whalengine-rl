@@ -22,7 +22,7 @@ void RailsSystem::onAdd(const ecs::Entity entity) {
 }
 
 void RailsSystem::update() {
-    for (auto& [entityid, entity] : getEntitiesRef()) {
+    for (auto& [entityid, entity] : getEntitiesMutable()) {
         f32 dt;
         // camera moves normally unless pause menu is activated
         if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {

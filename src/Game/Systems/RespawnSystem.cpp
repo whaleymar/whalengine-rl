@@ -6,7 +6,7 @@
 #include "Sys/System.h"
 
 void RespawnListener::onEvent(whal::DeathEvent, whal::ecs::Entity entity) {
-    if (!RespawnListener::getEntitiesRef().contains(entity.id())) {
+    if (!RespawnListener::getEntitiesMutable().contains(entity.id())) {
         return;
     }
 

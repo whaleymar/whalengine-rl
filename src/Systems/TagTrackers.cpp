@@ -31,7 +31,7 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
 }
 
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (System::world->getSystem<CameraSystem>()->getEntitiesRef().empty()) {
+    if (System::world->getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
         return Corrade::Containers::NullOpt;
     }
     return System::world->getSystem<CameraSystem>()->first();
@@ -97,7 +97,7 @@ void setCameraPosition(Vector2i pos) {
 }
 
 void AudioListenerSystem::update() {
-    if (getEntitiesRef().empty()) {
+    if (getEntitiesMutable().empty()) {
         return;
     }
     auto listenerEntity = first();
