@@ -34,11 +34,11 @@ static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
 
 static Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
-static void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level);
-static void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level);
-static std::string getSpriteKeyFromPath(std::string& spritePath);
+static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
+static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
+static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
-static std::string getTypeFromTemplate(const std::string templateFile);
+static std::string getTypeFromTemplate(const std::string& templateFile);
 
 void clearMapCache() {
     TEMPLATE_MANAGER.clearCache();
@@ -72,9 +72,9 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         if (type == "tilelayer") {
             parseTileLayer(layer, map);
         } else if (type == "objectgroup") {
-            parseObjectLayer(layer, map, level);
+            parseObjectLayer(layer, level);
         } else if (type == "imagelayer") {
-            parseImageLayer(layer, map, level);
+            parseImageLayer(layer, level);
         } else {
             print("unrecognized layer: ", type, "\nSkipping for now");
         }
@@ -95,7 +95,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
 
     for (auto& property : data["properties"]) {
         std::string propName = readString(property, "name");
-        std::string propType = readString(property, "type");
+        // std::string propType = readString(property, "type");
         if (propName == "CameraFollowParams") {
             level.cameraFollow = loadFollowComponent(property["value"], level);
         }
@@ -145,7 +145,7 @@ void parseTileLayer(const nlohmann::json& layer, TileMap& map) {
 }
 
 // this will create entities and immediately add them to the level
-void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level) {
+void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     using json = nlohmann::json;
 
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -296,7 +296,7 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
     }
 }
 
-void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& level) {
+void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
     LayerData layerData = {layerDepth};
 
@@ -316,33 +316,28 @@ void parseImageLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& lev
     Vector2f parallax = {1.0, 1.0};
     tryReadVector2f(layer, "parallaxx", "parallaxy", &parallax);
 
-    std::string name = readString(layer, "name");
+    // std::string name = readString(layer, "name");
     std::string imgPath = readString(layer, "image");
     std::string spriteKey = getSpriteKeyFromPath(imgPath);
 
     if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
         // use background textures instead of an entity
         BGTexture bgEnum;
-        std::string bgName;
         switch (layerDepth) {
         case Depth::BackgroundStatic:
             bgEnum = BGTexture::STATIC;
-            bgName = "static";
             break;
 
         case Depth::BackgroundFar:
             bgEnum = BGTexture::FAR;
-            bgName = "far";
             break;
 
         case Depth::BackgroundMid:
             bgEnum = BGTexture::MID;
-            bgName = "mid";
             break;
 
         case Depth::BackgroundNear:
             bgEnum = BGTexture::NEAR;
-            bgName = "near";
             break;
 
         default:
@@ -489,7 +484,7 @@ static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
     json data = json::parse(jString.value());
 
     for (auto& property : data["properties"]) {
-        std::string propName = readString(property, "name");
+        // std::string propName = readString(property, "name");
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
@@ -570,14 +565,14 @@ Transform2D getTransformFromMapPosition(Vector2i positionTexels, Vector2i dimens
 
 // converts a relative sprite path to a valid GLResourceManager key
 // example: "../sprite/actor/player-run1.png" -> "actor/player-run1"
-std::string getSpriteKeyFromPath(std::string& spritePath) {
+std::string getSpriteKeyFromPath(const std::string& spritePath) {
     const char* spriteDir = "sprite/";
     constexpr s32 substrLen = 7;
-    auto ix = spritePath.find(spriteDir);
+    const auto ix = spritePath.find(spriteDir);
     if (ix == std::string::npos) {
         return "";
     }
-    auto extensionIx = spritePath.find(".", ix + substrLen);
+    const auto extensionIx = spritePath.find(".", ix + substrLen);
     return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
 }
 
@@ -588,7 +583,7 @@ const nlohmann::json& getTemplate(std::string_view templateFile) {
     return TEMPLATE_MANAGER.readData(fullPath.c_str())["object"];
 }
 
-std::string getTypeFromTemplate(const std::string templateFile) {
+std::string getTypeFromTemplate(const std::string& templateFile) {
     const auto prefabData = getTemplate(templateFile);
     std::string objType = "";
     tryReadString(prefabData, "type", &objType);

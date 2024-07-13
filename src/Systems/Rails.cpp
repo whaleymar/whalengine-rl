@@ -41,14 +41,14 @@ void RailsSystem::update() {
         f32 distance = delta.len();
 
         // scale checkpoint threshold with speed
-        f32 speed = [entity]() -> f32 {
+        f32 entitySpeed = [entity]() -> f32 {
             auto velOpt = entity.tryGet<Velocity>();
             if (!velOpt || ((*velOpt)->stable.x() == 0 && (*velOpt)->stable.y() == 0)) {
                 return 0;
             }
             return (*velOpt)->stable.len();
         }();
-        f32 epsilon = speed >= 50 ? speed * SPEED_DIVISOR + 1 : 0.95;
+        f32 epsilon = entitySpeed >= 50 ? entitySpeed * SPEED_DIVISOR + 1 : 0.95;
 
         if (rails.isWaiting) {
             // waiting at checkpoint

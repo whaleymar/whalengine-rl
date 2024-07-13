@@ -118,7 +118,7 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         mMusicChannel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
         mMusicChannel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
         FMOD_VECTOR vec = FMOD_VECTOR(position->x(), position->y(), 0);
-        auto result = mMusicChannel->set3DAttributes(&vec, nullptr);
+        result = mMusicChannel->set3DAttributes(&vec, nullptr);
         if (result != FMOD_OK) {
             print("Got error setting channel position: ", FMOD_ErrorString(result));
         }

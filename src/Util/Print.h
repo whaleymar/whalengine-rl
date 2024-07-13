@@ -27,14 +27,14 @@ std::string sprint(const T& first, const U&... rest) {
 // just need this to compile fast
 template <class T, class... U>
     requires(sizeof...(U) == 0)
-std::string whal_format(std::string fmt, const T& first_, const U&... rest) {
+std::string whal_format(const std::string& fmt, const T& first_, const U&... rest) {
     std::stringstream stream;
     stream << first_;
     std::string first = stream.str();
-    int curIx = 0;
     size_t ix = fmt.find("{}");
 
     if (ix != std::string::npos) {
+        int curIx = 0;
         std::string s = fmt.substr(curIx, ix - curIx);
         s += first;
         return s + std::string(fmt.substr(ix + 2));
@@ -44,14 +44,14 @@ std::string whal_format(std::string fmt, const T& first_, const U&... rest) {
 
 template <class T, class... U>
     requires(sizeof...(U) > 0)
-std::string whal_format(std::string fmt, const T& first_, const U&... rest) {
+std::string whal_format(const std::string& fmt, const T& first_, const U&... rest) {
     std::stringstream stream;
     stream << first_;
     std::string first = stream.str();
-    int curIx = 0;
     size_t ix = fmt.find("{}");
 
     if (ix != std::string::npos) {
+        int curIx = 0;
         std::string s = fmt.substr(curIx, ix - curIx);
         s += first;
         return s + whal_format(fmt.substr(ix + 2), rest...);

@@ -11,7 +11,7 @@ class Entity;
 
 struct ActiveLevel;
 
-using EntityBuilder = void (*)(ecs::Entity entity, const nlohmann::json& tiledTemplate, ActiveLevel& activeLevel);
+using EntityBuilder = void (*)(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 class EntityFactory : public Factory<EntityBuilder> {
 public:
     EntityFactory();

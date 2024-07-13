@@ -23,7 +23,7 @@ struct Attach {
 
     ecs::EntityID targetEntityID;
     Vector2i offsetTexels;
-    DirectionParam directionParam;
+    DirectionParam directionParam = DirectionParam::IgnoreFacing;
 };
 
 // in general, dead zone should be bigger than lookahead

@@ -51,7 +51,7 @@ public:
 
 private:
     Game();
-    ~Game();
+    ~Game() override;
 
     whal::Scene mActiveScene;
 
@@ -59,5 +59,5 @@ private:
     Font* mFont;
     Camera2D* mWorldSpaceCamera;
     Camera2D* mScreenSpaceCamera;
-    bool mIsSceneLoaded;
+    bool mIsSceneLoaded = false;
 };

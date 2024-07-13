@@ -175,7 +175,6 @@ void RadianceLightSystem::update() {
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
-        auto lifetimeOpt = entity.tryGet<Lifetime>();
         s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
             intensity = (*fadeoutOpt)->getIntensity();

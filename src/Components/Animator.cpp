@@ -11,7 +11,7 @@
 namespace whal {
 
 bool basicAnimation(Animator& animator, ecs::Entity entity) {
-    Animation& anim = animator.getAnimation();
+    const Animation& anim = animator.getAnimation();
 
     // play animations at normal speed if paused? Seems cute
     f32 dt = System::isPaused() ? System::dt.getUnmodified() : System::dt();

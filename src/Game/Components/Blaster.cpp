@@ -29,6 +29,8 @@
 // TODO should be in component
 const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
 
+static bool IS_AIMING = false;
+
 using namespace whal;
 
 ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
@@ -79,7 +81,7 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
 }
 
 void shootProjectile() {
-    ProjectileSystem::setIsAiming(false);
+    IS_AIMING = false;
 
     // slight delay for enabling movement so player can adjust arrow keys
     System::schedule.after([]() { System::input.enableMovement(); }, 0.2);
@@ -133,15 +135,15 @@ void shootProjectile() {
 
 void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool isPress) {
     if (input == InputType::AIM) {
-        if (isPress && !getIsAiming()) {
-            setIsAiming(true);
+        if (isPress && !IS_AIMING) {
+            IS_AIMING = true;
             addAimReticles();
 
             // deactivate movement controls; those keys are now for aiming
             System::input.disableMovement();
             // System::input.disableJumping();
 
-        } else if (!isPress && ProjectileSystem::getIsAiming()) {
+        } else if (!isPress && IS_AIMING) {
             shootProjectile();
         }
     } else if (isPress) {
@@ -194,9 +196,6 @@ void ProjectileSystem::addAimReticles() {
 }
 
 void ProjectileSystem::update() {
-    // if (!mIsAiming) {
-    //     return;
-    // }
     f32 dt = System::dt();
     Vector2i aimDirection = System::input.getMoveNormal();
     for (auto [entityid, entity] : getEntitiesRef()) {
@@ -240,13 +239,13 @@ void ProjectileSystem::onRemove(const ecs::Entity entity) {
 }
 
 void ProjectileSystem::onUnpause() {
-    if (getIsAiming() && !System::input.isOn(InputType::AIM)) {
+    if (IS_AIMING && !System::input.isOn(InputType::AIM)) {
         shootProjectile();
     }
 }
 
 void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
-    if (!mIsAiming) {
+    if (!IS_AIMING) {
         return;
     }
     for (auto [entityid, entity] : getEntitiesRef()) {

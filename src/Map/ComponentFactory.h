@@ -18,7 +18,7 @@ struct Follow;
 
 // there is no base component class, so I'll pass the entity to the creation function instead of returning a component
 using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, std::pair<s32, ecs::Entity>>&,
-                                EntityMapData, ActiveLevel&, ecs::Entity, LayerData layerData);
+                                EntityMapData, const ActiveLevel&, ecs::Entity, LayerData layerData);
 class ComponentFactory : public Factory<ComponentAdder> {
 public:
     ComponentFactory();
@@ -26,7 +26,7 @@ public:
     void makeDefaultComponent(const nlohmann::json& property);
 };
 
-Follow loadFollowComponent(const nlohmann::json& values, ActiveLevel& level);
+Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& level);
 
 // Utility Functions
 
