@@ -89,7 +89,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
             self.get<Draw>().setColor(Colors::LightBlue);
         }
         System::audio.playClip(Sfx::SWITCH_FLIP, 0.25);
-        self.add(OnFrameEnd([](ecs::Entity e) { e.remove<Trigger>(); }));
+        System::schedule.eventFlow({self}).add([](ecs::Entity e) { e.get<Collider>().setCollisionCallback(nullptr); }, self);
     });
 }
 
