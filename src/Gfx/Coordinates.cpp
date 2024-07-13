@@ -3,7 +3,7 @@
 #include "Settings.h"
 #include "Util/Vector.h"
 
-#include "ECS/Systems/TagTrackers.h"
+#include "Systems/TagTrackers.h"
 
 namespace whal {
 

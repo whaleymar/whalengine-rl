@@ -1,18 +1,18 @@
-#include "ECS/Draw.h"
+#include "Components/Draw.h"
 
 #include <cstring>
 #include <raylib.h>
 #include <sstream>
 
-#include "ECS/Lifetime.h"
-#include "ECS/Light.h"
-#include "ECS/Transform.h"
+#include "Components/Lifetime.h"
+#include "Components/Light.h"
+#include "Components/Transform.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
-#include "Systems/System.h"
+#include "Sys/System.h"
 
 namespace whal {
 

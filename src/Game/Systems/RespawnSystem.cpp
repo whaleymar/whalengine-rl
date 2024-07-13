@@ -1,9 +1,9 @@
 #include "RespawnSystem.h"
 
-#include "ECS/Draw.h"
-#include "ECS/Transform.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
 #include "Game/Components/Respawn.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 
 void RespawnListener::onEvent(whal::DeathEvent, whal::ecs::Entity entity) {
     if (!RespawnListener::getEntitiesRef().contains(entity.id())) {

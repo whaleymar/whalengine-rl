@@ -2,14 +2,14 @@
 
 #include "Settings.h"
 
-#include "ECS/Collision.h"
-#include "ECS/Draw.h"
-#include "ECS/Entities/Block.h"
-#include "ECS/Transform.h"
+#include "Components/Collision.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
+#include "Entities/Block.h"
 
 #include "Game.h"
 #include "Gfx/Texture.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "Tiled.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Events/Events.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 

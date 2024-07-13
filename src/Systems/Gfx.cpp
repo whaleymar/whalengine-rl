@@ -1,18 +1,18 @@
-#include "ECS/Systems/Gfx.h"
+#include "Gfx.h"
 
 #include <raylib.h>
 
-#include "ECS/Tags.h"
+#include "Components/Tags.h"
 #include "Game.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 
-#include "ECS/Systems/TagTrackers.h"
+#include "Systems/TagTrackers.h"
 #include "Util/Vector.h"
 
-#include "ECS/Draw.h"
-#include "ECS/Transform.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
 
 namespace whal {
 

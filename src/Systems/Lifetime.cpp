@@ -1,7 +1,7 @@
 #include "Lifetime.h"
 
-#include "ECS/Lifetime.h"
-#include "Systems/System.h"
+#include "Components/Lifetime.h"
+#include "Sys/System.h"
 
 namespace whal {
 

@@ -1,12 +1,12 @@
 #include "ControllerSystem.h"
 
-#include "ECS/PlayerControl.h"
-#include "ECS/RigidBody.h"
-#include "ECS/Transform.h"
-#include "ECS/Velocity.h"
+#include "Components/PlayerControl.h"
+#include "Components/RigidBody.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 
-#include "Systems/InputHandler.h"
-#include "Systems/System.h"
+#include "Sys/InputHandler.h"
+#include "Sys/System.h"
 #include "Util/MathUtil.h"
 
 namespace whal {

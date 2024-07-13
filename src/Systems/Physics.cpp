@@ -2,21 +2,21 @@
 
 #include <cmath>
 
-#include "ECS/PlayerControl.h"
-#include "ECS/Systems/CollisionManager.h"
-#include "ECS/TriggerZone.h"
+#include "Components/PlayerControl.h"
+#include "Components/TriggerZone.h"
 #include "Events/Events.h"
 #include "Game.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
+#include "Systems/CollisionManager.h"
 
-#include "ECS/Collision.h"
-#include "ECS/RigidBody.h"
-#include "ECS/Tags.h"
-#include "ECS/Transform.h"
-#include "ECS/Velocity.h"
+#include "Components/Collision.h"
+#include "Components/RigidBody.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
 

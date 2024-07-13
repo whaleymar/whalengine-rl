@@ -1,10 +1,10 @@
 #include "TagTrackers.h"
 
-#include "ECS/Entities/Camera.h"
-#include "ECS/RailsControl.h"
-#include "ECS/Transform.h"
+#include "Components/RailsControl.h"
+#include "Components/Transform.h"
+#include "Entities/Camera.h"
 #include "Map/Level.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 
 namespace whal {
 

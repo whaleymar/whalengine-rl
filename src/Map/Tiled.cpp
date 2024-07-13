@@ -1,7 +1,7 @@
 #include "Tiled.h"
 
-#include "ECS/Draw.h"
-#include "ECS/Light.h"
+#include "Components/Draw.h"
+#include "Components/Light.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"
 #include "Map/EntityFactory.h"
@@ -9,14 +9,14 @@
 
 #include "Settings.h"
 
-#include "ECS/Name.h"
-#include "ECS/Transform.h"
+#include "Components/Name.h"
+#include "Components/Transform.h"
 
 #include "Gfx/Texture.h"
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
 #include "Physics/Material.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"

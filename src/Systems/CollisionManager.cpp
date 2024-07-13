@@ -1,13 +1,13 @@
 #include "CollisionManager.h"
 #include <raylib.h>
 
-#include "ECS/Draw.h"
-#include "ECS/Systems/TagTrackers.h"
-#include "ECS/Systems/TriggerSystem.h"
-#include "ECS/Transform.h"
-#include "ECS/TriggerZone.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
+#include "Components/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/QuadTree/Quadtree.h"
+#include "Systems/TagTrackers.h"
+#include "Systems/TriggerSystem.h"
 #include "Util/Vector.h"
 
 namespace whal {

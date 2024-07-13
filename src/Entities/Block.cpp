@@ -1,12 +1,11 @@
 #include "Block.h"
 
 #include "Settings.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 
-#include "ECS/Collision.h"
-#include "ECS/Draw.h"
-#include "ECS/Transform.h"
-#include "Util/Vector.h"
+#include "Components/Collision.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

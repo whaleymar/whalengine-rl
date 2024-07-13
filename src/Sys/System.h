@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Systems/Audio.h"
-#include "Systems/Deltatime.h"
-#include "Systems/Event.h"
-#include "Systems/Frametracker.h"
-#include "Systems/InputHandler.h"
-#include "Systems/JobScheduler.h"
-#include "Systems/Random.h"
+#include "Audio.h"
+#include "Deltatime.h"
+#include "Event.h"
+#include "Frametracker.h"
+#include "InputHandler.h"
+#include "JobScheduler.h"
+#include "Random.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

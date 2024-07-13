@@ -1,9 +1,9 @@
 #include "TriggerSystem.h"
 
-#include "ECS/Collision.h"
-#include "ECS/Systems/CollisionManager.h"
-#include "ECS/TriggerZone.h"
+#include "Components/Collision.h"
+#include "Components/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
+#include "Systems/CollisionManager.h"
 
 namespace whal {
 

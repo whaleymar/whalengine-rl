@@ -1,13 +1,13 @@
 #include "Rails.h"
 
-#include "ECS/Collision.h"
-#include "ECS/RailsControl.h"
-#include "ECS/Tags.h"
-#include "ECS/Transform.h"
-#include "ECS/Velocity.h"
+#include "Components/Collision.h"
+#include "Components/RailsControl.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 
-#include "Systems/PauseMenu.h"
-#include "Systems/System.h"
+#include "Sys/PauseMenu.h"
+#include "Sys/System.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 

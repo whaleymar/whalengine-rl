@@ -1,6 +1,6 @@
 #include "CallbackSystem.h"
 
-#include "ECS/Callback.h"
+#include "Components/Callback.h"
 
 namespace whal {
 

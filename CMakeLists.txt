@@ -64,8 +64,8 @@ elseif(UNIX)
 
     target_precompile_headers(${PROJECT_NAME}
         PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS/src/ECS.h"
-        PUBLIC "${PROJECT_SOURCE_DIR}/src/Systems/System.h"
-        PUBLIC "${PROJECT_SOURCE_DIR}/src/Systems/Event.h"
+        PUBLIC "${PROJECT_SOURCE_DIR}/src/Sys/System.h"
+        PUBLIC "${PROJECT_SOURCE_DIR}/src/Sys/Event.h"
     )
 
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/libfmod.so")

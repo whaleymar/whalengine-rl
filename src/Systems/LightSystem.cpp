@@ -3,16 +3,16 @@
 #include <cmath>
 #include <raylib.h>
 
-#include "ECS/Draw.h"
-#include "ECS/Lifetime.h"
-#include "ECS/Light.h"
-#include "ECS/Systems/TagTrackers.h"
-#include "ECS/Tags.h"
-#include "ECS/Transform.h"
+#include "Components/Draw.h"
+#include "Components/Lifetime.h"
+#include "Components/Light.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "Game.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Systems/TagTrackers.h"
 
 namespace whal {
 

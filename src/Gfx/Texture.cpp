@@ -6,10 +6,10 @@
 #include <raylib.h>
 #include <string>
 
-#include "ECS/Collision.h"
-#include "ECS/Draw.h"
-#include "ECS/Systems/TagTrackers.h"
+#include "Components/Collision.h"
+#include "Components/Draw.h"
 #include "Settings.h"
+#include "Systems/TagTrackers.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"

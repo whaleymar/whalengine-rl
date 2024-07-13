@@ -1,6 +1,6 @@
 #include "Checkpoint.h"
 
-#include "ECS/Transform.h"
+#include "Components/Transform.h"
 #include "Game/Components/Respawn.h"
 #include "whalECS/src/ECS.h"
 

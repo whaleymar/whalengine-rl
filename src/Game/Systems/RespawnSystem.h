@@ -2,7 +2,7 @@
 
 #include "Events/Events.h"
 
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "whalECS/src/ECS.h"
 
 struct Respawn;
