@@ -29,6 +29,18 @@ Color getLightColor(LevelLighting lightLevel) {
     }
 }
 
+void ActiveLevel::activateObjects() {
+    for (auto entity : objects) {
+        entity.activate();
+    }
+}
+
+void ActiveLevel::deactivateObjects() {
+    for (auto entity : objects) {
+        entity.deactivate();
+    }
+}
+
 bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
@@ -141,7 +153,7 @@ Tile getTile(u32 tileMask) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x(), level.worldPosOriginTexels.y() - level.sizeTexels.y()).position;
-    ActiveLevel lvl = {level, {}, worldOffsetPixels, {}, {}, {}, {}};
+    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
 

@@ -173,6 +173,9 @@ void Game::mainloop() {
     bool isCreativeMode = false;
 #endif
 
+    bool isd = false;
+    auto player = PlayerSystem::first();
+
     while (!WindowShouldClose() && !System::isQuit()) {
         System::Update();
 
@@ -517,6 +520,7 @@ void Game::checkIfInNewLevel(bool overrideCache) {
             print("Couldn't load level. Got error:", activeOpt.error());
             // doDefaultCamera = true;
         } else {
+            (*activeOpt)->activateObjects();
             System::eventMgr.triggerEvent<EnteredLevelEvent>(player, *activeOpt.value());
         }
     }

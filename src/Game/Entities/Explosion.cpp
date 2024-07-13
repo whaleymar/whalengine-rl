@@ -27,15 +27,17 @@
 #include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
+using namespace whal;
+
 constexpr f32 RJ_DECAY = 0.95;
+constexpr f32 RJ_UP_AIRRES = 1.0f;
+constexpr f32 RJ_OTHER_AIRRES = 0.05f;
 
 struct PushStrength {
     Vector2f strength;
 };
 
-Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength) {
-    using namespace whal;
-
+Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength) {
     auto eEntity = System::world->entity(false);
     if (!eEntity.isExpected()) {
         return eEntity;
@@ -132,8 +134,16 @@ Expected<whal::ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vect
 
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT
-        if (!other.has<RocketJumping>() && other.has<PlayerControl>()) {
-            other.add<RocketJumping>();
+        if (other.has<PlayerControl>()) {
+            const f32 newAirResistance = unitDelta == Vector2f::unitUp ? RJ_UP_AIRRES : RJ_OTHER_AIRRES;
+            if (other.has<RocketJumping>()) {
+                auto& rjComponent = other.get<RocketJumping>();
+                rjComponent.newAirResistance = newAirResistance;
+            } else {
+                RocketJumping rjComponent;
+                rjComponent.newAirResistance = newAirResistance;
+                other.add(rjComponent);
+            }
         }
     };
     auto shape = Shape(Circle(center, halflen));

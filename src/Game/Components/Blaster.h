@@ -22,8 +22,11 @@ struct Blaster {
     f32 cooldownSeconds = 0.25;
     Vector2i aimDirection;  // TODO enum
     s32 maxShots = 4;
-    Vector2f pushStrengthDefault = {150, 150};
-    Vector2f pushStrengthDownAngle = {150, 150};
+    f32 pushStrength = 150;
+    f32 RJAirResistance = 0.25f;
+    f32 RJStraightUpAirResistance = 1.0f;
+    // Vector2f pushStrengthDefault = {150, 150};
+    // Vector2f pushStrengthDownAngle = {150, 150};
 
     Corrade::Containers::Optional<whal::ecs::Entity> aimReticle = Corrade::Containers::NullOpt;
     f32 cooldownRemaining = 0;
@@ -31,7 +34,9 @@ struct Blaster {
 };
 
 struct RocketJumping {
-    Vector2f prevFrictionMultiplier;
+    f32 newAirResistance;
+
+    f32 originalAirResistance;
     u32 silhouetteEventId = 0;
     f32 stateTime = 0.0f;
 };
