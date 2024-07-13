@@ -81,8 +81,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 151.83333333333331,
-                "y": 171.5
+                "x": -403.8333333333333,
+                "y": 275.8333333333333
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -144,8 +144,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 745.8333333333333,
-                "y": -10.5
+                "x": 160,
+                "y": 96.16666666666666
             }
         },
         "world1.tmj": {
@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_ParticleEmitter",
+    "property.type": "Component_Trigger",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",

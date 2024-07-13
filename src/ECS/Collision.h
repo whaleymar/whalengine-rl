@@ -13,6 +13,7 @@ namespace whal {
 
 class Collider;
 struct HitInfo;
+class PhysicsSystem;
 // namespace ecs {
 // class Entity;
 // }
@@ -22,6 +23,8 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 
 // currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
+    friend PhysicsSystem;
+
 public:
     Collider() = default;
     Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
@@ -52,8 +55,6 @@ public:
     void setSquishCallback(CollisionCallback callback) { mSquishCallback = callback; }
     WorldMaterial getMaterial() const { return mMaterial; }
     void setMaterial(WorldMaterial material) { mMaterial = material; }
-    ecs::Entity getEntity() const { return mSelf; }
-    void setEntity(ecs::Entity entity) { mSelf = entity; }
     bool isAlive() const { return mIsAlive; }
     void setIsDead() { mIsAlive = false; }
     bool isCollidable() const { return mIsCollidable; }
@@ -62,6 +63,9 @@ public:
     void setCollisionDir(CollisionDir dir) { mCollisionDir = dir; }
     CollisionLayer::Layer getCollisionLayer() const { return mCollisionLayer; }
     void setCollisionLayer(CollisionLayer::Layer layer) { mCollisionLayer = layer; }
+
+    ecs::Entity getEntity() const { return mSelf; }
+    void setEntity(ecs::Entity entity) { mSelf = entity; }
 
     bool isActor() const { return mCollisionLayer & CollisionLayer::Actor; }
     bool isSolid() const { return mCollisionLayer & CollisionLayer::Solid; }
@@ -100,6 +104,7 @@ public:
     Vector2f getMomentum() const { return mStoredMomentum; }
 
 protected:
+    void updateEntityPosition();
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
                        const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid);
 

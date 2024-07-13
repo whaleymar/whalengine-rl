@@ -16,14 +16,14 @@ struct PlayerControl;
 
 struct Blaster {
     f32 projectileSpeed = 160;  // same as terminal velocity
-    f32 shotKnockback = 52;
+    f32 shotKnockback = 0;
     f32 projectileLifetimeSeconds = 3.5;
-    f32 explosionRadius = FPIXELS_PER_TILE * 2.5;
+    f32 explosionRadius = FPIXELS_PER_TILE * 2;
     f32 cooldownSeconds = 0.25;
     Vector2i aimDirection;  // TODO enum
     s32 maxShots = 4;
-    Vector2f pushStrengthDefault = {100, 105};
-    Vector2f pushStrengthDownAngle = {100, 150};
+    Vector2f pushStrengthDefault = {150, 150};
+    Vector2f pushStrengthDownAngle = {150, 150};
 
     Corrade::Containers::Optional<whal::ecs::Entity> aimReticle = Corrade::Containers::NullOpt;
     f32 cooldownRemaining = 0;
@@ -33,6 +33,7 @@ struct Blaster {
 struct RocketJumping {
     Vector2f prevFrictionMultiplier;
     u32 silhouetteEventId = 0;
+    f32 stateTime = 0.0f;
 };
 
 class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster, whal::Transform2D>,
@@ -42,8 +43,8 @@ class ProjectileSystem : public whal::ecs::ISystem<whal::PlayerControl, Blaster,
                          public whal::IListen<whal::ButtonPressOrReleaseEvent, false, whal::InputType, bool> {
 public:
     void update() override;
-    void onAdd(whal::ecs::Entity entity) override;
-    void onRemove(whal::ecs::Entity entity) override;
+    void onAdd(const whal::ecs::Entity entity) override;
+    void onRemove(const whal::ecs::Entity entity) override;
     void onPause() override {}
     void onUnpause() override;
     void onEvent(whal::ButtonPressOrReleaseEvent, whal::InputType, bool) override;

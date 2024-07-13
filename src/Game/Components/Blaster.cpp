@@ -23,7 +23,10 @@
 #include "whalECS/src/ECS.h"
 
 // where a shot originates from, relative to shooter's transform
+// TODO should be in component
 const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
+
+constexpr f32 RJ_STATE_AIR_RESISTANCE = 0.25;
 
 using namespace whal;
 
@@ -222,12 +225,12 @@ void ProjectileSystem::update() {
     mIsAimUpdateNeeded = false;
 }
 
-void ProjectileSystem::onAdd(ecs::Entity entity) {
+void ProjectileSystem::onAdd(const ecs::Entity entity) {
     // cannot add/remove components in IMonitor methods
     System::schedule.eventFlow({entity}).add([](ecs::Entity entity) { createManaGauge(entity); }, entity);
 }
 
-void ProjectileSystem::onRemove(ecs::Entity entity) {
+void ProjectileSystem::onRemove(const ecs::Entity entity) {
     auto blaster = entity.get<Blaster>();
     if (blaster.aimReticle) {
         blaster.aimReticle->kill();
@@ -253,12 +256,15 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
 void RocketJumpingSystem::update() {
     using namespace whal;
 
+    const f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesCopy()) {
         const auto rb = entity.get<RigidBody>();
-        const auto rocketJumpComponent = entity.get<RocketJumping>();
+        auto& rocketJumpComponent = entity.get<RocketJumping>();
 
-        if (rb.isGrounded || rb.isLanding) {
+        if (rocketJumpComponent.stateTime > 0.5 && (rb.isGrounded || rb.isLanding)) {
             entity.remove<RocketJumping>();
+        } else {
+            rocketJumpComponent.stateTime += dt;
         }
     }
 }
@@ -267,7 +273,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     auto& rb = entity.get<RigidBody>();
     auto& rocketJumpComponent = entity.get<RocketJumping>();
     rocketJumpComponent.prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
-    rb.frictionMultiplier = {rb.frictionMultiplier.x(), 0};
+    rb.frictionMultiplier = {rb.frictionMultiplier.x(), RJ_STATE_AIR_RESISTANCE};
 
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;

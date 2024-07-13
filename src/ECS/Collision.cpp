@@ -5,10 +5,13 @@
 #include "ECS/PlayerControl.h"
 #include "ECS/RigidBody.h"
 #include "ECS/Systems/CollisionManager.h"
+#include "ECS/Tags.h"
 #include "ECS/Transform.h"
+#include "ECS/TriggerZone.h"
 #include "ECS/Velocity.h"
 
 #include "Events/Events.h"
+#include "Game.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
@@ -102,6 +105,39 @@ Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMater
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
+}
+
+// syncs other engine components (Transform2D, PrecisePosition, and Trigger) with collider position
+void Collider::updateEntityPosition() {
+    Transform2D& trans = mSelf.get<Transform2D>();
+    auto const shape = getShape();
+    auto const newPosition = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
+
+    // make sure player(s) can't go out of bounds
+    if (mSelf.has<Player>()) {
+        if (Game::instance().getScene().getLevelAt(newPosition)) {
+            trans.position = newPosition;
+        } else {
+            // tried to go out of bounds. simulate fake collision with world boundary
+            auto closestPointInBounds = Game::instance().getScene().getClosestPositionInBounds(newPosition);
+            trans.position = closestPointInBounds;
+            QuadTreeSystem::updatePosition(mSelf, &getShapeMutable(), trans);
+        }
+
+    } else {
+        trans.position = newPosition;
+    }
+
+    if (auto precisePositionOpt = mSelf.tryGet<PrecisePosition>(); precisePositionOpt) {
+        (*precisePositionOpt)->position = toFloatVec(trans.position);
+    }
+
+    if (mSelf.has<Trigger>()) {
+        auto trigger = mSelf.get<Trigger>();
+        Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
+        trigger.shape.setPosition(adjustedTransform);
+        mSelf.set(trigger);
+    }
 }
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {
@@ -265,6 +301,11 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
     }
     default:
         moveNoCollisionCheck(amount, toMoveRounded);
+    }
+
+    if (isManualMove) {
+        // if we moved outside of the physics system we can update other components immediately
+        updateEntityPosition();
     }
 
     return isHit;

@@ -94,10 +94,10 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
 static void makeDefaultExplosion(ecs::Entity self) {
     // lifetime's onDeath callback
 
-    Vector2f pushStrength = {100, 100};
-    f32 explosionRadius = self.get<Circle>().getRadius();
+    const Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
+    const f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
-        Vector2i pos = self.get<Transform2D>().position;
+        const Vector2i pos = self.get<Transform2D>().position;
         makeExplosionZone(pos, explosionRadius, pushStrength);
         makeExplosionParticles(pos, {});
     }
@@ -112,10 +112,10 @@ static void Explode(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
         return;
     }
 
-    Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
-    f32 explosionRadius = self.get<Circle>().getRadius();
+    const Vector2f pushStrength = self.get<ProjectileInfo>().pushStrength;
+    const f32 explosionRadius = self.get<Circle>().getRadius();
     if (explosionRadius > 0) {
-        Vector2i pos = selfCollider.getShape().getPositionEdge(moveNormal);
+        const Vector2i pos = selfCollider.getShape().getPositionEdge(moveNormal);
         makeExplosionZone(pos, explosionRadius, pushStrength);
         makeExplosionParticles(pos, moveNormal);
     }
@@ -149,7 +149,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(vel);
     entity.add(Name("PROJECTILE"));
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
-    entity.add(Circle(Vector2i(), explosionRadius));
+    entity.add(Circle(Vector2i(), explosionRadius));  // TODO put this in projectileInfo
     entity.add(PointLight({TEXELS_PER_TILE * 2, halflenPixels}));
     entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, pushStrength});
 
