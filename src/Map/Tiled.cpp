@@ -290,7 +290,8 @@ void parseObjectLayer(const nlohmann::json& layer, TileMap& map, ActiveLevel& le
         addComponents(entity, entityData, object);
 
         level.childEntities.insert(entity);
-        entity.activate();
+        level.objects.push_back(entity);
+        // entity.activate();
     }
 }
 

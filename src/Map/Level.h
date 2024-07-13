@@ -34,12 +34,16 @@ struct Level {
 
 struct ActiveLevel : public Level {
     std::set<ecs::Entity> childEntities;
+    std::vector<ecs::Entity> objects;
     Vector2i worldOffsetPixels;
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     Vector2i initialSpawnPoint;
     std::vector<Vector2i> spawnPoints;
+
+    void activateObjects();
+    void deactivateObjects();
 };
 
 struct Scene {

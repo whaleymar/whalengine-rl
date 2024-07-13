@@ -13,6 +13,8 @@
 #include "Systems/Event.h"
 #include "Systems/InputHandler.h"
 #include "Systems/System.h"
+#include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "ECS/RigidBody.h"
@@ -25,8 +27,6 @@
 // where a shot originates from, relative to shooter's transform
 // TODO should be in component
 const Vector2i SHOOT_OFFSET = {0, PIXELS_PER_TILE};
-
-constexpr f32 RJ_STATE_AIR_RESISTANCE = 0.25;
 
 using namespace whal;
 
@@ -110,8 +110,9 @@ void shootProjectile() {
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
         auto totalVelocity = velocity;
-        const bool isDownwardAngle = totalVelocity.x() != 0 && totalVelocity.y() < 0;
-        Vector2f pushStrength = isDownwardAngle ? blaster.pushStrengthDownAngle : blaster.pushStrengthDefault;
+        // const bool isDownwardAngle = totalVelocity.x() != 0 && totalVelocity.y() < 0;
+        // Vector2f pushStrength = isDownwardAngle ? blaster.pushStrengthDownAngle : blaster.pushStrengthDefault;
+        Vector2f pushStrength(blaster.pushStrength, blaster.pushStrength);
         makeProjectile(entityid, shotOrigin, totalVelocity, blaster.projectileLifetimeSeconds, blaster.explosionRadius, pushStrength);
 
         // push shooter in opposite direction of projectile
@@ -256,15 +257,22 @@ void ProjectileSystem::updateFacingDirections(bool isFacingRight) {
 void RocketJumpingSystem::update() {
     using namespace whal;
 
+    constexpr f32 AIRRES_STEP_MULTIPLIER = 0.5;
     const f32 dt = System::dt();
+    const f32 step = dt * AIRRES_STEP_MULTIPLIER;
+
     for (auto [entityid, entity] : getEntitiesCopy()) {
-        const auto rb = entity.get<RigidBody>();
+        auto rb = entity.get<RigidBody>();
         auto& rocketJumpComponent = entity.get<RocketJumping>();
 
         if (rocketJumpComponent.stateTime > 0.5 && (rb.isGrounded || rb.isLanding)) {
             entity.remove<RocketJumping>();
         } else {
             rocketJumpComponent.stateTime += dt;
+            f32 newAirResistanceValue = approach(rocketJumpComponent.newAirResistance, rocketJumpComponent.originalAirResistance, step);
+            rocketJumpComponent.newAirResistance = newAirResistanceValue;
+            rb.frictionMultiplier.e[1] = newAirResistanceValue;
+            entity.set(rb);
         }
     }
 }
@@ -272,8 +280,9 @@ void RocketJumpingSystem::update() {
 void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     auto& rb = entity.get<RigidBody>();
     auto& rocketJumpComponent = entity.get<RocketJumping>();
-    rocketJumpComponent.prevFrictionMultiplier = rb.frictionMultiplier;  // save for later
-    rb.frictionMultiplier = {rb.frictionMultiplier.x(), RJ_STATE_AIR_RESISTANCE};
+    const f32 newAirResistanceValue = rocketJumpComponent.newAirResistance;
+    rocketJumpComponent.originalAirResistance = rb.frictionMultiplier.y();  // save for later
+    rb.frictionMultiplier = {rb.frictionMultiplier.x(), newAirResistanceValue};
 
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;
@@ -295,7 +304,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
 void RocketJumpingSystem::onRemove(const ecs::Entity entity) {
     auto& rb = entity.get<RigidBody>();
     const auto rocketJumpComponent = entity.get<RocketJumping>();
-    rb.frictionMultiplier = rocketJumpComponent.prevFrictionMultiplier;  // restore saved value
+    rb.frictionMultiplier.e[1] = rocketJumpComponent.originalAirResistance;  // restore saved value
     System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
     if (entity.has<ParticleEmitter>()) {
         System::schedule.eventFlow({entity}).add([](ecs::Entity e) { e.remove<ParticleEmitter>(); }, entity);
