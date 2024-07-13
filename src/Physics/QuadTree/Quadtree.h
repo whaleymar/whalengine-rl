@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "ECS/Collision.h"
+#include "Components/Collision.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"

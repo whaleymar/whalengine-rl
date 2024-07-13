@@ -1,12 +1,9 @@
 #include "Explosion.h"
 
-#include "ECS/Callback.h"
-#include "ECS/Light.h"
-#include "ECS/PlayerControl.h"
-#include "ECS/Systems/TagTrackers.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/MathUtil.h"
+
 #include "Physics/CollisionLayer.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
@@ -15,17 +12,21 @@
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
-#include "Systems/System.h"
+#include "Sys/System.h"
 #include "Util/MathUtil.h"
 
-#include "ECS/AnimUtil.h"
-#include "ECS/Animator.h"
-#include "ECS/Collision.h"
-#include "ECS/Draw.h"
-#include "ECS/Lifetime.h"
-#include "ECS/Transform.h"
-#include "ECS/TriggerZone.h"
-#include "ECS/Velocity.h"
+#include "Components/AnimUtil.h"
+#include "Components/Animator.h"
+#include "Components/Callback.h"
+#include "Components/Collision.h"
+#include "Components/Draw.h"
+#include "Components/Lifetime.h"
+#include "Components/Light.h"
+#include "Components/PlayerControl.h"
+#include "Components/Transform.h"
+#include "Components/TriggerZone.h"
+#include "Components/Velocity.h"
+#include "Systems/TagTrackers.h"
 
 using namespace whal;
 

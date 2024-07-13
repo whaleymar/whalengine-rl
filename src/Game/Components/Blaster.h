@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ECS/Systems/Physics.h"
-#include "Events/Events.h"
 #include "Settings.h"
-#include "Systems/InputHandler.h"
-#include "Systems/System.h"
+#include "Sys/InputHandler.h"
+#include "Sys/System.h"
+#include "Systems/Physics.h"
+
+#include "Events/Events.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 

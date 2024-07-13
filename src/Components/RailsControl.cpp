@@ -1,6 +1,6 @@
 #include "RailsControl.h"
 
-#include "ECS/Transform.h"
+#include "Components/Transform.h"
 #include "Settings.h"
 #include "Util/MathUtil.h"
 

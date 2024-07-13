@@ -2,14 +2,15 @@
 
 #include "whalECS/src/ECS.h"
 
-#include "ECS/Callback.h"
-#include "ECS/Name.h"
-#include "ECS/RailsControl.h"
-#include "ECS/Relationships.h"
-#include "ECS/Tags.h"
-#include "ECS/Transform.h"
-#include "ECS/Velocity.h"
-#include "Systems/System.h"
+#include "Components/Callback.h"
+#include "Components/Name.h"
+#include "Components/RailsControl.h"
+#include "Components/Relationships.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
+
+#include "Sys/System.h"
 
 namespace whal {
 

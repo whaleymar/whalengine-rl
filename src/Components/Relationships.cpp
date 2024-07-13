@@ -1,7 +1,7 @@
 #include "Relationships.h"
 
-#include "ECS/Draw.h"
-#include "ECS/Transform.h"
+#include "Components/Draw.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

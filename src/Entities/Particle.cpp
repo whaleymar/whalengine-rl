@@ -1,14 +1,14 @@
 #include "Particle.h"
 
-#include "ECS/Draw.h"
-#include "ECS/Lifetime.h"
-#include "ECS/Light.h"
-#include "ECS/Name.h"
-#include "ECS/Tags.h"
-#include "ECS/Transform.h"
+#include "Components/Draw.h"
+#include "Components/Lifetime.h"
+#include "Components/Light.h"
+#include "Components/Name.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "Settings.h"
 
-#include "Systems/System.h"
+#include "Sys/System.h"
 
 namespace whal {
 

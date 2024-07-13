@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "ECS/Animator.h"
+#include "Components/Animator.h"
 #include "Gfx/Texture.h"
 #include "Util/Print.h"
 

@@ -7,7 +7,7 @@
 
 #include "whalECS/src/Expected.h"
 
-#include "ECS/Relationships.h"
+#include "Components/Relationships.h"
 #include "Util/Vector.h"
 
 typedef struct Color Color;

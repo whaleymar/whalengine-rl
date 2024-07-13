@@ -1,11 +1,11 @@
 #include "RelationshipManager.h"
 
-#include "ECS/Name.h"
+#include "Components/Name.h"
 #include "Settings.h"
 
-#include "ECS/Relationships.h"
-#include "ECS/Transform.h"
-#include "ECS/Velocity.h"
+#include "Components/Relationships.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 #include "Events/Events.h"
 #include "Util/MathUtil.h"
 #include "Util/Print.h"

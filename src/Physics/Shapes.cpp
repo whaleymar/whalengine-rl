@@ -4,7 +4,7 @@
 #include <cstring>
 #include <raylib.h>
 
-#include "ECS/Transform.h"
+#include "Components/Transform.h"
 #include "Physics/HitInfo.h"
 
 namespace whal {
