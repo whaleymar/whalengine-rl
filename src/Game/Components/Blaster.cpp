@@ -104,7 +104,7 @@ void shootProjectile() {
         // Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
 
         Vector2f velocity;
-        Vector2f moveNormal = toFloatVec(blaster.aimDirection);
+        Vector2f moveNormal = toFloatVec(blaster.aimDirection).norm();
         velocity = moveNormal * blaster.projectileSpeed;
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
