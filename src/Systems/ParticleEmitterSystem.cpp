@@ -19,13 +19,13 @@ void ParticleEmitterSystem::update() {
     const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
 
     const Vector2f sampleSpeed = angleToUnit(360.0f * System::rng.uniform());
-    const f32 spawnSample = System::rng.uniform();
 
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto trans = entity.get<Transform2D>();
         const auto emitter = entity.get<ParticleEmitter>();
 
         s32 nParticles = emitter.particlesPerSecond / 60;
+        const f32 spawnSample = System::rng.uniform();
         if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f > spawnSample) {
             nParticles++;
         }

@@ -45,7 +45,7 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     if (surfaceNormal.y() > 0) {
         center.e[1]--;  // so doesn't get stuck
     }
-    constexpr s32 NPARTICLES = 5;
+    constexpr s32 NPARTICLES = 35;
     for (s32 i = 0; i < NPARTICLES; i++) {
         const f32 maxspeed = 80;
         const f32 baselifetime = 3;
