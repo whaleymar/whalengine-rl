@@ -13,17 +13,26 @@
 
 namespace whal::qtree {
 
+AABB getShape(const ecs::Entity value);
+void setShape(const ecs::Entity value, const AABB shape);
+void removeShape(const ecs::Entity value);
+
 // TODO this is quite slow for moving entities, since they require multiple removals/adds per frame
 // but it's very fast for things that don't move.
 // should use this for entities without a velocity component, but a spatial grid for things with velocity,
 // and then a lookup would basically dispatch the correct data struct based on entity.has<Velocity>()
 class QuadTree {
+    struct Value {
+        ecs::Entity entity;
+        AABB shape;
+    };
+
 public:
     QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}
 
-    void add(const ecs::Entity value) { add(mRoot.get(), 0, mBoundingBox, value); }
+    void add(const ecs::Entity value) { add(mRoot.get(), 0, mBoundingBox, {value, value.get<Collider>().getShape()}); }
 
-    void remove(const ecs::Entity value) { remove(mRoot.get(), mBoundingBox, value); }
+    void remove(const ecs::Entity value) { remove(mRoot.get(), mBoundingBox, {value, value.get<Collider>().getShape()}); }
 
     std::vector<ecs::Entity> query(const AABB& box) const {
         auto values = std::vector<ecs::Entity>();
@@ -120,14 +129,15 @@ private:
             return -1;
     }
 
-    void add(Node* node, s32 depth, const AABB& parentBox, const ecs::Entity value) {
+    void add(Node* node, s32 depth, const AABB& parentBox, const Value value) {
         assert(node != nullptr);
-        assert(parentBox.contains(value.get<Collider>().getShape()));
+        assert(parentBox.contains(value.shape));
         if (isLeaf(node)) {
             // Insert the value in this node if possible
             if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD) {
                 // print("hit max depth");
-                node->values.push_back(value);
+                node->values.push_back(value.entity);
+                setShape(value.entity, value.shape);
             }
             // Otherwise, we split and we try again
             else {
@@ -135,13 +145,16 @@ private:
                 add(node, depth, parentBox, value);
             }
         } else {
-            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
+            auto i = getQuadrant(parentBox, value.shape);
             // Add the value in a child if the value is entirely contained in it
-            if (i != -1)
+            if (i != -1) {
                 add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, computeBox(parentBox, i), value);
+            }
             // Otherwise, we add the value in the current node
-            else
-                node->values.push_back(value);
+            else {
+                node->values.push_back(value.entity);
+                setShape(value.entity, value.shape);
+            }
         }
     }
 
@@ -154,7 +167,7 @@ private:
         // Assign values to children
         auto newValues = std::vector<ecs::Entity>();  // New values for this node
         for (const auto& value : node->values) {
-            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
+            auto i = getQuadrant(parentBox, getShape(value));
             if (i != -1)
                 node->children[static_cast<std::size_t>(i)]->values.push_back(value);
             else
@@ -163,23 +176,27 @@ private:
         node->values = std::move(newValues);
     }
 
-    bool remove(Node* node, const AABB& parentBox, const ecs::Entity value) {
+    bool remove(Node* node, const AABB& parentBox, const Value value) {
         assert(node != nullptr);
-        assert(parentBox.contains(value.get<Collider>().getShape()));
+        assert(parentBox.contains(value.shape));
         if (isLeaf(node)) {
             // Remove the value from node
-            removeValue(node, value);
+            removeValue(node, value.entity);
+            removeShape(value.entity);
             return true;
         } else {
             // Remove the value in a child if the value is entirely contained in it
-            auto i = getQuadrant(parentBox, value.get<Collider>().getShape());
+            auto i = getQuadrant(parentBox, value.shape);
             if (i != -1) {
                 if (remove(node->children[static_cast<std::size_t>(i)].get(), computeBox(parentBox, i), value))
                     return tryMerge(node);
             }
             // Otherwise, we remove the value from the current node
-            else
-                removeValue(node, value);
+            else {
+                removeValue(node, value.entity);
+                removeShape(value.entity);
+            }
+
             return false;
         }
     }
@@ -221,7 +238,7 @@ private:
         assert(node != nullptr);
         assert(queryBox.isOverlapping(box));
         for (const auto& value : node->values) {
-            if (queryBox.isOverlapping(value.get<Collider>().getShape()))
+            if (queryBox.isOverlapping(getShape(value)))
                 values.push_back(value);
         }
         if (!isLeaf(node)) {
@@ -238,7 +255,7 @@ private:
         // Make sure to not report the same intersection twice
         for (auto i = std::size_t(0); i < node->values.size(); ++i) {
             for (auto j = std::size_t(0); j < i; ++j) {
-                if (node->values[i].get<Collider>().getShape().isOverlapping(node->values[j].get<Collider>().getShape()))
+                if (getShape(node->values[i]).isOverlapping(getShape(node->values[j])))
                     intersections.emplace_back(node->values[i], node->values[j]);
             }
         }
@@ -257,7 +274,7 @@ private:
     void findIntersectionsInDescendants(Node* node, const ecs::Entity value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
         // Test against the values stored in this node
         for (const auto& other : node->values) {
-            if (value.get<Collider>().getShape().isOverlapping(other.get<Collider>().getShape()))
+            if (getShape(value).isOverlapping(getShape(other)))
                 intersections.emplace_back(value, other);
         }
         // Test against values stored into descendants of this node
