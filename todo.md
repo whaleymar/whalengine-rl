@@ -5,6 +5,9 @@
 - level loading optimizations
 - player controller improvements
     - rigidbody should have gravity multiplier. can try working that into RJ state
+    - idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
+    - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
+        - could be a jump with neutral/directional variants for a little more control over what happens next
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
