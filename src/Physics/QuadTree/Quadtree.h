@@ -13,10 +13,6 @@
 
 namespace whal::qtree {
 
-AABB getShape(const ecs::Entity value);
-void setShape(const ecs::Entity value, const AABB shape);
-void removeShape(const ecs::Entity value);
-
 // TODO this is quite slow for moving entities, since they require multiple removals/adds per frame
 // but it's very fast for things that don't move.
 // should use this for entities without a velocity component, but a spatial grid for things with velocity,
@@ -54,7 +50,7 @@ private:
 
     struct Node {
         std::array<std::unique_ptr<Node>, 4> children;
-        std::vector<ecs::Entity> values;
+        std::vector<Value> values;
     };
 
     AABB mBoundingBox;
@@ -136,8 +132,7 @@ private:
             // Insert the value in this node if possible
             if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD) {
                 // print("hit max depth");
-                node->values.push_back(value.entity);
-                setShape(value.entity, value.shape);
+                node->values.push_back(value);
             }
             // Otherwise, we split and we try again
             else {
@@ -152,8 +147,7 @@ private:
             }
             // Otherwise, we add the value in the current node
             else {
-                node->values.push_back(value.entity);
-                setShape(value.entity, value.shape);
+                node->values.push_back(value);
             }
         }
     }
@@ -165,9 +159,9 @@ private:
         for (auto& child : node->children)
             child = std::make_unique<Node>();
         // Assign values to children
-        auto newValues = std::vector<ecs::Entity>();  // New values for this node
+        auto newValues = std::vector<Value>();  // New values for this node
         for (const auto& value : node->values) {
-            auto i = getQuadrant(parentBox, getShape(value));
+            auto i = getQuadrant(parentBox, value.shape);
             if (i != -1)
                 node->children[static_cast<std::size_t>(i)]->values.push_back(value);
             else
@@ -181,8 +175,7 @@ private:
         assert(parentBox.contains(value.shape));
         if (isLeaf(node)) {
             // Remove the value from node
-            removeValue(node, value.entity);
-            removeShape(value.entity);
+            removeValue(node, value);
             return true;
         } else {
             // Remove the value in a child if the value is entirely contained in it
@@ -193,17 +186,16 @@ private:
             }
             // Otherwise, we remove the value from the current node
             else {
-                removeValue(node, value.entity);
-                removeShape(value.entity);
+                removeValue(node, value);
             }
 
             return false;
         }
     }
 
-    void removeValue(Node* node, const ecs::Entity value) {
+    void removeValue(Node* node, const Value value) {
         // Find the value in node->values
-        auto it = std::find_if(std::begin(node->values), std::end(node->values), [value](const ecs::Entity other) { return value == other; });
+        auto it = std::find_if(std::begin(node->values), std::end(node->values), [value](const Value other) { return value.entity == other.entity; });
         assert(it != std::end(node->values) && "Trying to remove a value that is not present in the node");
         // Swap with the last element and pop back
         *it = std::move(node->values.back());
@@ -235,11 +227,11 @@ private:
     }
 
     void query(Node* node, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const {
-        assert(node != nullptr);
-        assert(queryBox.isOverlapping(box));
+        // assert(node != nullptr);
+        // assert(queryBox.isOverlapping(box));
         for (const auto& value : node->values) {
-            if (queryBox.isOverlapping(getShape(value)))
-                values.push_back(value);
+            if (queryBox.isOverlapping(value.shape))
+                values.push_back(value.entity);
         }
         if (!isLeaf(node)) {
             for (auto i = std::size_t(0); i < node->children.size(); ++i) {
@@ -255,8 +247,8 @@ private:
         // Make sure to not report the same intersection twice
         for (auto i = std::size_t(0); i < node->values.size(); ++i) {
             for (auto j = std::size_t(0); j < i; ++j) {
-                if (getShape(node->values[i]).isOverlapping(getShape(node->values[j])))
-                    intersections.emplace_back(node->values[i], node->values[j]);
+                if (node->values[i].shape.isOverlapping(node->values[j].shape))
+                    intersections.emplace_back(node->values[i].entity, node->values[j].entity);
             }
         }
         if (!isLeaf(node)) {
@@ -271,11 +263,11 @@ private:
         }
     }
 
-    void findIntersectionsInDescendants(Node* node, const ecs::Entity value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
+    void findIntersectionsInDescendants(Node* node, const Value value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
         // Test against the values stored in this node
         for (const auto& other : node->values) {
-            if (getShape(value).isOverlapping(getShape(other)))
-                intersections.emplace_back(value, other);
+            if (value.shape.isOverlapping(other.shape))
+                intersections.emplace_back(value.entity, other.entity);
         }
         // Test against values stored into descendants of this node
         if (!isLeaf(node)) {
