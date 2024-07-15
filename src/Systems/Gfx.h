@@ -19,6 +19,12 @@ struct FadeOut;
 struct DrawText;
 
 class GfxSystem : public ecs::ISystem<Transform2D, Draw>, public ecs::IMonitorSystem {
+    struct DrawInfo {
+        ecs::Entity entity;
+        f32 depth;
+        s16 shaderIx;
+    };
+
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
@@ -27,7 +33,7 @@ public:
     void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
 private:
-    std::forward_list<ecs::Entity> mSorted;
+    std::forward_list<DrawInfo> mSorted;
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {

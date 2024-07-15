@@ -121,7 +121,7 @@ void Collider::updateEntityPosition() {
             // tried to go out of bounds. simulate fake collision with world boundary
             auto closestPointInBounds = Game::instance().getScene().getClosestPositionInBounds(newPosition);
             trans.position = closestPointInBounds;
-            QuadTreeSystem::updatePosition(mSelf, &getShapeMutable(), trans);
+            QuadTreeSystem::updatePosition(mSelf, getShapeMutable(), trans);
         }
 
     } else {
@@ -405,7 +405,9 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
 }
 
 void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
-    QuadTreeSystem::updatePosition(mSelf, &mShape, mShape.getPosition() + toMoveRounded);
+    const AABB previousShape = mShape;
+    mShape.setPosition(mShape.getPosition() + toMoveRounded);
+    QuadTreeSystem::updateShape(mSelf, previousShape, mShape);
 }
 
 void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove,
@@ -705,10 +707,6 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
     }
     const auto bigCollider = AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x())) / 2),
                                                                                                  std::ceil(static_cast<f32>(abs(toMove.y())) / 2)));
-    // if (System::frame.getFrame() == 0) {
-    //     print("aabb: ", mShape.getPosition(), mShape.getHalf(), "moving: ", toMove);
-    //     print("bigCollider: ", bigCollider.getPosition(), bigCollider.getHalf());
-    // }
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
     for (auto entity : QuadTreeSystem::query(bigCollider)) {
         const auto& other = entity.get<Collider>();
@@ -769,13 +767,14 @@ void Collider::resetMomentum() {
 
 // Try to wiggle out of collision if barely clipping another collider.
 // Returns true if successful.
+// Could be a lot faster if I do a broad pass QuadTree check like i do for normal movement
 bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2i moveNormal) {
     if (moveSignX >= 0) {
         // if we are on a half texel x coord, start at 0.5 texels of movement
         for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
-                QuadTreeSystem::updatePosition(mSelf, &mShape, nextPos);
+                mShape.setPosition(nextPos);
                 return true;
             }
         }
@@ -785,7 +784,7 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2
         for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(-i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
-                QuadTreeSystem::updatePosition(mSelf, &mShape, nextPos);
+                mShape.setPosition(nextPos);
                 return true;
             }
         }

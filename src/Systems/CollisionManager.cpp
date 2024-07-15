@@ -41,15 +41,9 @@ void drawColliders() {
 }
 #endif
 
-void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Vector2i nextPosition) {
+void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition) {
     QUAD_TREE.remove(entity);
-    colliderShape->setPosition(nextPosition);
-    QUAD_TREE.add(entity);
-}
-
-void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Transform2D nextPosition) {
-    QUAD_TREE.remove(entity);
-    colliderShape->setPosition(nextPosition);
+    colliderShape.setPosition(nextPosition);
     QUAD_TREE.add(entity);
 }
 

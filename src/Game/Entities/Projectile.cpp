@@ -45,7 +45,7 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     if (surfaceNormal.y() > 0) {
         center.e[1]--;  // so doesn't get stuck
     }
-    constexpr s32 NPARTICLES = 35;
+    constexpr s32 NPARTICLES = 8;
     for (s32 i = 0; i < NPARTICLES; i++) {
         const f32 maxspeed = 80;
         const f32 baselifetime = 3;
@@ -79,15 +79,6 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
                 e.add(Collider::Actor(AABB(e.get<Transform2D>(), {1, 1})));
                 e.get<Collider>().setMaterial(WorldMaterial::Rubber);
             }));
-
-            f32 waitBetweenSils = lifetime / 3;
-            f32 silLifetime = 0.25;
-            whal::System::schedule.eventFlow({particle})
-                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt)
-                .addWait(waitBetweenSils)
-                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt)
-                .addWait(waitBetweenSils)
-                .add(&whal::makeSilhouetteFromDraw, particle, silLifetime, Corrade::Containers::NullOpt);
         }
     }
 }
