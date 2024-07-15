@@ -4,6 +4,7 @@
 
 #include "Components/Tags.h"
 #include "Game.h"
+#include "Gfx/Depth.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
@@ -23,28 +24,25 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
+// RESEARCH should profile this VS removing IMonitor & doing insertion sort once per frame during draw entities call
 void GfxSystem::onAdd(const ecs::Entity entity) {
     // insert entities into sorted order, based on depth, then shader
     const auto draw = entity.get<Draw>();
-    f32 fDepth = depthToFloat(draw.getDepth());
-    s16 shaderIx = static_cast<s16>(draw.getShader());
+    const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), static_cast<s16>(draw.getShader()));
 
     auto prev = mSorted.before_begin();
     for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-        Draw curDraw = it->get<Draw>();
-        f32 curDepth = depthToFloat(curDraw.getDepth());
-        s16 curShaderIx = static_cast<s16>(curDraw.getShader());
-        if (curDepth > fDepth || (curDepth == fDepth && curShaderIx >= shaderIx)) {
-            mSorted.insert_after(prev, entity);
+        if (it->depth > drawInfo.depth || (it->depth == drawInfo.depth && it->shaderIx >= drawInfo.shaderIx)) {
+            mSorted.insert_after(prev, drawInfo);
             return;
         }
         prev = it;
     }
-    mSorted.insert_after(prev, entity);
+    mSorted.insert_after(prev, drawInfo);
 }
 
 void GfxSystem::onRemove(const ecs::Entity entity) {
-    mSorted.remove_if([entity](const ecs::Entity& e) { return e.id() == entity.id(); });
+    mSorted.remove_if([entity](const DrawInfo& drawInfo) { return drawInfo.entity.id() == entity.id(); });
 }
 
 void GfxSystem::drawEntities() {
@@ -57,19 +55,19 @@ void GfxSystem::drawEntities() {
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
-    Shaders prevShader = mSorted.begin()->get<Draw>().getShader();
+    Shaders prevShader = static_cast<Shaders>(mSorted.begin()->shaderIx);
     BeginShaderMode(ShaderManager::get(prevShader));
-    for (auto const entity : mSorted) {
-        if (entity.has<Invisible>()) {
+    for (auto const drawInfo : mSorted) {
+        if (drawInfo.entity.has<Invisible>()) {
             continue;
         }
-        Shaders newShader = entity.get<Draw>().getShader();
+        Shaders newShader = static_cast<Shaders>(drawInfo.shaderIx);
         if (newShader != prevShader) {
             prevShader = newShader;
             EndShaderMode();
             BeginShaderMode(ShaderManager::get(newShader));
         }
-        drawEntity(entity, spriteTexture, cameraPosF);
+        drawEntity(drawInfo.entity, spriteTexture, cameraPosF);
     }
     EndShaderMode();
 }
