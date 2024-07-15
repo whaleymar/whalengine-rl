@@ -42,29 +42,20 @@ void drawColliders() {
 #endif
 
 void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Vector2i nextPosition) {
-    // if we're at the world border, don't move
-    // idk if there's a point
-    // AABB nextShape(*colliderShape);
-    // nextShape.setPosition(nextPosition);
-    // if (!QUAD_TREE.getBoundingBox().contains(nextShape)) {
-    //     return;
-    // }
     QUAD_TREE.remove(entity);
     colliderShape->setPosition(nextPosition);
     QUAD_TREE.add(entity);
 }
 
 void QuadTreeSystem::updatePosition(ecs::Entity entity, AABB* colliderShape, Transform2D nextPosition) {
-    // if we're at the world border, don't move
-    // idk if there's a point
-    // AABB nextShape(*colliderShape);
-    // nextShape.setPosition(nextPosition);
-    // if (!QUAD_TREE.getBoundingBox().contains(nextShape)) {
-    //     return;
-    // }
     QUAD_TREE.remove(entity);
     colliderShape->setPosition(nextPosition);
     QUAD_TREE.add(entity);
+}
+
+void QuadTreeSystem::updateShape(ecs::Entity entity, const AABB& previousShape, const AABB& newShape) {
+    QUAD_TREE.remove(entity, previousShape);
+    QUAD_TREE.add(entity, newShape);
 }
 
 std::vector<ecs::Entity> QuadTreeSystem::query(const AABB& aabb) {
