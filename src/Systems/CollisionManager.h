@@ -1,8 +1,8 @@
 #pragma once
 
-#include "whalECS/src/ECS.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal {
 
@@ -19,6 +19,7 @@ class QuadTreeSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem
 public:
     static void updatePosition(ecs::Entity entity, AABB* colliderShape, Vector2i nextPosition);
     static void updatePosition(ecs::Entity entity, AABB* colliderShape, Transform2D nextPosition);
+    static void updateShape(ecs::Entity entity, const AABB& previousShape, const AABB& newShape);
     static std::vector<ecs::Entity> query(const AABB& aabb);
 
     // Rebuild QuadTree with new size. All entities in the system are added to the new tree.

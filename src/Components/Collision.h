@@ -74,8 +74,10 @@ public:
 
     bool move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
               bool isPushedBySolid = false, bool updateRigidBodyFlags = false);
-    HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback);
-    HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback, bool isGroundedCheckNeeded = false);
+    HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback,
+                  const std::vector<std::pair<ecs::Entity, Collider>>& others);
+    HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback,
+                  const std::vector<std::pair<ecs::Entity, Collider>>& others, bool isGroundedCheckNeeded = false);
 
     void moveNoCollisionCheck(Vector2f toMoveOriginal, Vector2i toMoveRounded);
     void pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
@@ -92,6 +94,7 @@ public:
 
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,
                              const bool triggerCollisionEvents = false) const;
+    std::vector<std::pair<ecs::Entity, Collider>> getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask = CollisionLayer::ALL) const;
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 
@@ -107,6 +110,8 @@ protected:
     void updateEntityPosition();
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
                        const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid);
+    HitInfo checkCollisionInMoveArea(const Vector2i position, const Vector2i moveNormal, const std::vector<std::pair<ecs::Entity, Collider>>& others,
+                                     const bool triggerCollisionEvents = false) const;
 
     // Shape mShape; // Maybe one day. Too much is hard coded to AABBs for me to bother rn
     AABB mShape;

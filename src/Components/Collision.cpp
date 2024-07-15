@@ -259,8 +259,11 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
     bool isHit = false;
     switch (mCollisionLayer) {
     case CollisionLayer::Actor: {
-        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback), true, false);
-        isHit = emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false, updateRigidBodyFlags) || isHit;
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe());
+        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
+        isHit =
+            emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags) ||
+            isHit;
         break;
     }
     case CollisionLayer::Solid: {
@@ -283,15 +286,17 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         const auto riding = getRidingCollidersQT();
 
         // moveX, then push/carry in that direction only
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe());
         auto originalPosition = getShape().getPosition();
-        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback), true, false);
+        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
         Vector2f moveUnrounded = isHit ? toFloatVec(moveAmount) : Vector2f(amount.x(), 0);
         pushAndCarry1D(moveUnrounded, moveAmount, riding, isManualMove, isPushedBySolid);
 
         // moveY, then push/carry in that direction only
         originalPosition = getShape().getPosition();
-        const bool isHitY = emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, isGroundedCheckNeeded), false, updateRigidBodyFlags);
+        const bool isHitY =
+            emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags);
         isHit = isHit || isHitY;
         moveAmount = getShape().getPosition() - originalPosition;
         moveUnrounded = isHitY ? toFloatVec(moveAmount) : Vector2f(0, amount.y());
@@ -311,23 +316,23 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
     return isHit;
 }
 
-HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback) {
+HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback,
+                        const std::vector<std::pair<ecs::Entity, Collider>>& others) {
     s32 toMove = amountRounded.x();
 
     if (toMove == 0) {
         return HitInfo();
     }
 
-    auto const canStopMe = getCollisionLayersThatCanStopMe();
-
+    const AABB originalShape = mShape;
     const s32 moveSign = sign(toMove);
     const auto moveNormal = Vector2i(moveSign, 0);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
-        auto hitInfo = checkCollisionQT(nextPos, moveNormal, canStopMe, true);
+        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, true);
 
         if (!hitInfo) {
-            QuadTreeSystem::updatePosition(mSelf, &mShape, nextPos);
+            mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
@@ -335,16 +340,20 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
                     continue;
                 }
             }
+
+            QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
             return hitInfo;
         }
     }
+    QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
     return HitInfo();
 }
 
-HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback, bool isGroundedCheckNeeded) {
+HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback,
+                        const std::vector<std::pair<ecs::Entity, Collider>>& others, bool isGroundedCheckNeeded) {
     // include fractional movement from previous calls
     s32 toMove = amountRounded.y();
 
@@ -363,16 +372,15 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
         return HitInfo();
     }
 
-    auto const canStopMe = getCollisionLayersThatCanStopMe();
-
+    const AABB originalShape = mShape;
     const s32 moveSign = sign(toMove);
     const auto moveNormal = Vector2i(0, moveSign);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
-        auto hitInfo = checkCollisionQT(nextPos, moveNormal, canStopMe, true);
+        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, true);
 
         if (!hitInfo) {
-            QuadTreeSystem::updatePosition(mSelf, &mShape, nextPos);
+            mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
@@ -380,12 +388,15 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
                     continue;
                 }
             }
+            QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
             return hitInfo;
         }
     }
+
+    QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
 
     if (isGroundedCheckNeeded) {
         return groundedCheck(amount.y());
@@ -617,6 +628,41 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     }
 }
 
+// collision layers should already have been checked by caller
+HitInfo Collider::checkCollisionInMoveArea(const Vector2i position, const Vector2i moveNormal,
+                                           const std::vector<std::pair<ecs::Entity, Collider>>& others, const bool triggerCollisionEvents) const {
+    const auto movedCollider = AABB(position, mShape.getHalf());
+    HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such. doesn't matter which specific collision is returned.
+
+    for (const auto& pair : others) {
+        const auto entity = pair.first;
+        const auto& otherCollider = pair.second;
+        if (!checkDirectionalCollision(mShape, otherCollider.mShape, moveNormal, otherCollider.getCollisionDir())) {
+            continue;
+        }
+
+        HitInfo hitInfo = movedCollider.collide(otherCollider.getShape());
+        if (hitInfo) {
+            hitInfo.setOther(entity);
+            hitInfo.otherLayer = otherCollider.getCollisionLayer();
+            hitInfo.otherMaterial = otherCollider.getMaterial();
+
+            // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
+            if (moveNormal.x() != 0) {
+                hitInfo.clearVerticalFlags();
+            } else {
+                hitInfo.clearHorizontalFlags();
+            }
+
+            hitInfoToReturn = hitInfo;
+            if (triggerCollisionEvents) {
+                System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitInfo);
+            }
+        }
+    }
+    return hitInfoToReturn;
+}
+
 HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask, const bool triggerCollisionEvents) const {
     if (!isCollidable()) {
         return HitInfo();
@@ -651,6 +697,31 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     }
 
     return hitInfoToReturn;
+}
+
+std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask) const {
+    if (!isCollidable()) {
+        return {};
+    }
+    const auto bigCollider = AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x())) / 2),
+                                                                                                 std::ceil(static_cast<f32>(abs(toMove.y())) / 2)));
+    // if (System::frame.getFrame() == 0) {
+    //     print("aabb: ", mShape.getPosition(), mShape.getHalf(), "moving: ", toMove);
+    //     print("bigCollider: ", bigCollider.getPosition(), bigCollider.getHalf());
+    // }
+    std::vector<std::pair<ecs::Entity, Collider>> toReturn;
+    for (auto entity : QuadTreeSystem::query(bigCollider)) {
+        const auto& other = entity.get<Collider>();
+        // quick and dirty check for collision layers; ignoring directional collision
+        bool isCollidable = other.mIsCollidable && this != &other && LAYER_MATRIX.isOn(mCollisionLayer, other.mCollisionLayer) &&
+                            (layerMask & other.mCollisionLayer) > 0;
+        if (!isCollidable) {
+            continue;
+        }
+        toReturn.push_back({entity, other});
+    }
+
+    return toReturn;
 }
 
 void Collider::squish(ecs::Entity other, Vector2i hitNormal) {

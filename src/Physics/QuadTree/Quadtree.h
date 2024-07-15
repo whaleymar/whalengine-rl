@@ -27,8 +27,10 @@ public:
     QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}
 
     void add(const ecs::Entity value) { add(mRoot.get(), 0, mBoundingBox, {value, value.get<Collider>().getShape()}); }
+    void add(const ecs::Entity value, const AABB& newShape) { add(mRoot.get(), 0, mBoundingBox, {value, newShape}); }
 
     void remove(const ecs::Entity value) { remove(mRoot.get(), mBoundingBox, {value, value.get<Collider>().getShape()}); }
+    void remove(const ecs::Entity value, const AABB& previousShape) { remove(mRoot.get(), mBoundingBox, {value, previousShape}); }
 
     std::vector<ecs::Entity> query(const AABB& box) const {
         auto values = std::vector<ecs::Entity>();
