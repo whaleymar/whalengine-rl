@@ -124,6 +124,7 @@ private:
 
     std::list<Job> mQueue;
     std::vector<evfl::EventFlow> mEventFlows;
+    std::vector<evfl::EventFlow> mEventFlowsToAdd;
     EventListener<ecs::Entity> mDeathListener;
 
     bool mIsTerminated = false;

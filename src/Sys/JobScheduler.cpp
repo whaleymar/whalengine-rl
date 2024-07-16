@@ -70,8 +70,8 @@ void JobScheduler::end() {
 }
 
 evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
-    mEventFlows.push_back(evfl::EventFlow(evfl::EVFL_ID++, requiredEntities));
-    return mEventFlows.back();
+    mEventFlowsToAdd.push_back(evfl::EventFlow(evfl::EVFL_ID++, requiredEntities));
+    return mEventFlowsToAdd.back();
 }
 
 void JobScheduler::cancelEventFlow(u32 id) {
@@ -84,6 +84,12 @@ void JobScheduler::cancelEventFlow(u32 id) {
             return;
         }
     }
+    for (auto it = mEventFlowsToAdd.begin(); it != mEventFlowsToAdd.end(); it++) {
+        if (it->getId() == id) {
+            mEventFlowsToAdd.erase(it);
+            return;
+        }
+    }
 }
 
 void JobScheduler::tick(f32 dt) {
@@ -91,6 +97,12 @@ void JobScheduler::tick(f32 dt) {
         it->second -= dt;
     }
     mCondition.notify_one();
+
+    // add queued event flows to main collection
+    for (auto& evflow : mEventFlowsToAdd) {
+        mEventFlows.push_back(std::move(evflow));
+    }
+    mEventFlowsToAdd.clear();
 
     auto it = mEventFlows.begin();
     while (it != mEventFlows.end()) {
