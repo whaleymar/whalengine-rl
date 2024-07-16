@@ -127,7 +127,9 @@ void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, con
             },
             target);
 
-        other.add<Blaster>();
+        if (!other.has<Blaster>()) {
+            other.add<Blaster>();
+        }
         EventFlags::set(EventFlags::HasMagicHat);
         System::audio.playClip(Sfx::MAJOR_ITEM_GET, 0.2);
 
