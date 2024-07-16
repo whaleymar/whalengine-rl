@@ -5,7 +5,7 @@
 - level loading optimizations
 - player controller improvements
     - try working gravity multiplier into RJ state?
-    - in air: shooting projectile does have pushback
+    - in air: shooting projectile does have pushback? Maybe only if you shoot in a downward direction
     - idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
     - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
         - could be a jump with neutral/directional variants for a little more control over what happens next
@@ -28,10 +28,6 @@
 ## Gfx
 - replace radiance with bloom?
     - also want to try adding some translucent circle instead to see if that helps
-
-## Physics 
-- collider offset
-    - replace AABB/Circle center ? don't need them if i have transform
 
 ## Map 
 - object layers

@@ -117,6 +117,8 @@ protected:
     AABB mShape;
     ecs::Entity mSelf;
     CollisionLayer::Layer mCollisionLayer;
+    bool mIsCollidable = true;
+    bool mIsAlive = true;
     CollisionCallback mOnCollisionEnter = nullptr;
     CollisionCallback mSquishCallback = &defaultSquish;
     f32 mXRemainder = 0.0;
@@ -125,8 +127,6 @@ protected:
     Vector2T<s16> mMomentumFramesLeft = {0, 0};  // so this class doesn't have padding
     WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
-    bool mIsCollidable = true;
-    bool mIsAlive = true;
 };
 
 using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
@@ -134,6 +134,10 @@ using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vec
 bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 struct Wiggle {
     WiggleCallback callback = &defaultWiggle;
+};
+
+struct ColliderOffset {
+    Vector2i offset;
 };
 
 }  // namespace whal

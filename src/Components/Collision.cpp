@@ -111,7 +111,8 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
 void Collider::updateEntityPosition() {
     Transform2D& trans = mSelf.get<Transform2D>();
     auto const shape = getShape();
-    auto const newPosition = centerToTrans(shape.getPosition(), shape.getHalf(), trans.rotationDegrees);
+    auto const offset = mSelf.has<ColliderOffset>() ? mSelf.get<ColliderOffset>().offset : Vector2i();
+    auto const newPosition = centerToTrans(shape.getPosition() - offset, shape.getHalf(), trans.rotationDegrees);
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {

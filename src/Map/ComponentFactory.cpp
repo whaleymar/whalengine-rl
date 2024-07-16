@@ -652,8 +652,21 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
 
     if (values.contains("Shape")) {
         s32 shapeId = readInt(values, "Shape");
-        Vector2i halflenTexels = readVector2i(allObjects[idToIndex.at(shapeId).first], "width", "height") / 2;
-        collider.setShape(AABB(entity.get<Transform2D>(), halflenTexels * PIXELS_PER_TEXEL));
+        // calc distance between this object and Shape for the offset
+        const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
+        const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
+        const Vector2i halflenTexels = otherDimsTexels / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+
+        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
+
+        const auto offset = otherTrans - thisTrans;
+        Transform2D transOffset = entity.get<Transform2D>();
+        if (!offset.isZero()) {
+            entity.add(ColliderOffset(offset));
+            transOffset.position += offset;
+        }
+        collider.setShape(AABB(transOffset, halflenTexels * PIXELS_PER_TEXEL));
     } else {
         // there's no default shape object. Instead use the entity's dimensions
         collider.setShape(AABB(entity.get<Transform2D>(), entityData.dimensionsTexels * PIXELS_PER_TEXEL / 2));
@@ -674,11 +687,11 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
     if (values.contains("Shape")) {
         s32 shapeId = readInt(values, "Shape");
         // calc distance between this object and Shape for the offset
-        Vector2i halflenTexels = readVector2i(allObjects[idToIndex.at(shapeId).first], "width", "height") / 2;
-        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
-
         const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
         const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
+        const Vector2i halflenTexels = otherDimsTexels / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+
         const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
 
         trigger.offset = otherTrans - thisTrans;
