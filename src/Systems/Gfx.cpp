@@ -44,7 +44,13 @@ void GfxSystem::onAdd(const ecs::Entity entity) {
 }
 
 void GfxSystem::onRemove(const ecs::Entity entity) {
-    mSorted.remove_if([entity](const DrawInfo& drawInfo) { return drawInfo.entity.id() == entity.id(); });
+    auto pred = [entity](const DrawInfo& drawInfo) { return drawInfo.entity.id() == entity.id(); };
+    auto numRemoved = mSorted.remove_if(pred);
+    if (numRemoved == 0) {
+        auto it = std::find_if(mAddedEntities.begin(), mAddedEntities.end(), pred);
+        assert(it != mAddedEntities.end() && "tried to remove entity from GfxSystem, but couldn't find it in mSorted or mAddedEntities collections");
+        mAddedEntities.erase(it);
+    }
 }
 
 void GfxSystem::drawEntities() {
