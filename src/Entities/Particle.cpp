@@ -29,7 +29,7 @@ static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color col
     return particle;
 }
 
-Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lifetime) {
+Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lifetime, Depth depth) {
     auto expected = createParticleBase(transform, color, lifetime);
     if (!expected.isExpected()) {
         return expected;
@@ -37,12 +37,12 @@ Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lif
     auto _ = ecs::DeferActivate(expected.value());
     auto particle = expected.value();
 
-    particle.add(Draw(DrawRect(color, Vector2i(1, 1), Depth::Level)));
+    particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
 
     return particle;
 }
 
-Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f32 lifetime, bool fullRadiance) {
+Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f32 lifetime, bool fullRadiance, Depth depth) {
     auto expected = createParticleBase(transform, color, lifetime);
     if (!expected.isExpected()) {
         return expected;
@@ -50,7 +50,7 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
     auto _ = ecs::DeferActivate(expected.value());
     auto particle = expected.value();
 
-    particle.add(Draw(DrawRect(color, Vector2i(1, 1), Depth::Level)));
+    particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
 
     s32 radius = TEXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});
@@ -64,7 +64,7 @@ Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f3
     return particle;
 }
 
-Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime, bool fullRadiance) {
+Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime, bool fullRadiance, Depth depth) {
     auto expected = createParticleBase(transform, color, lifetime);
     if (!expected.isExpected()) {
         return expected;
@@ -73,7 +73,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     auto particle = expected.value();
 
     auto frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
-    particle.add(Draw(Sprite(Depth::Level, *frame)));
+    particle.add(Draw(Sprite(depth, *frame)));
 
     s32 radius = TEXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});

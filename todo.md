@@ -4,7 +4,8 @@
 - refactor game stuff into a separate directory from the engine
 - level loading optimizations
 - player controller improvements
-    - rigidbody should have gravity multiplier. can try working that into RJ state
+    - try working gravity multiplier into RJ state?
+    - in air: shooting projectile does have pushback
     - idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
     - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
         - could be a jump with neutral/directional variants for a little more control over what happens next

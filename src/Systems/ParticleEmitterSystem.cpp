@@ -79,14 +79,15 @@ void ParticleEmitterSystem::update() {
         for (s32 i = 0; i < nParticles; i++) {
             ecs::Entity particle;
             if ((emitter.settings & ParticleSetting::Light) > 0) {
-                auto eParticle = createParticleLight(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds, false);
+                auto eParticle =
+                    createParticleLight(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds, false, Depth::BackgroundNear);
                 if (eParticle.isExpected()) {
                     particle = eParticle.value();
                 } else {
                     continue;
                 }
             } else {
-                auto eParticle = createParticle(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds);
+                auto eParticle = createParticle(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds, Depth::BackgroundNear);
                 if (eParticle.isExpected()) {
                     particle = eParticle.value();
                 } else {

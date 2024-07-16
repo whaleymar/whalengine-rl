@@ -119,8 +119,8 @@ void shootProjectile() {
         makeProjectile(entityid, shotOrigin, totalVelocity, blaster.projectileLifetimeSeconds, blaster.explosionRadius, pushStrength);
 
         // push shooter in opposite direction of projectile
-        if (auto velOpt = entity.tryGet<Velocity>(); velOpt) {
-            (*velOpt)->stable += moveNormal * -1 * blaster.shotKnockback;
+        if (entity.has<RocketJumping>() && entity.has<Velocity>()) {
+            entity.get<Velocity>().stable += moveNormal * -1 * blaster.shotKnockback;
         }
 
         System::audio.playClip(Sfx::SHOTFIRED, 0.2);
