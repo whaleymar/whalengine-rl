@@ -80,7 +80,11 @@ void PhysicsSystem::update() {
 
         trans.isManuallyMoved = false;
         if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-            QuadTreeSystem::updatePosition(entity, (*colliderOpt)->getShapeMutable(), trans);
+            Transform2D transOffset = trans;
+            if (entity.has<ColliderOffset>()) {
+                transOffset.position += entity.get<ColliderOffset>().offset;
+            }
+            QuadTreeSystem::updatePosition(entity, (*colliderOpt)->getShapeMutable(), transOffset);
         }
 
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {

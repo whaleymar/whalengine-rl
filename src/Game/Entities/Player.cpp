@@ -219,6 +219,7 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
     constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
     player.add(Collider::Actor(transform, Vector2i(halfLenX, halfLenY)));
+    // player.add(ColliderOffset(Vector2i(8, 4)));
     // player.get<Collider>().setMaterial(WorldMaterial::Soft);
     // player.add(Collider::SemiSolid(transform, Vector2i(halfLenX, halfLenY)));
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
