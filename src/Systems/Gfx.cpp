@@ -1,5 +1,6 @@
 #include "Gfx.h"
 
+#include <algorithm>
 #include <raylib.h>
 
 #include "Components/Tags.h"
@@ -29,16 +30,17 @@ void GfxSystem::onAdd(const ecs::Entity entity) {
     // insert entities into sorted order, based on depth, then shader
     const auto draw = entity.get<Draw>();
     const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), static_cast<s16>(draw.getShader()));
+    mAddedEntities.push_back(drawInfo);
 
-    auto prev = mSorted.before_begin();
-    for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-        if (it->depth > drawInfo.depth || (it->depth == drawInfo.depth && it->shaderIx >= drawInfo.shaderIx)) {
-            mSorted.insert_after(prev, drawInfo);
-            return;
-        }
-        prev = it;
-    }
-    mSorted.insert_after(prev, drawInfo);
+    // auto prev = mSorted.before_begin();
+    // for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
+    //     if (it->depth > drawInfo.depth || (it->depth == drawInfo.depth && it->shaderIx >= drawInfo.shaderIx)) {
+    //         mSorted.insert_after(prev, drawInfo);
+    //         return;
+    //     }
+    //     prev = it;
+    // }
+    // mSorted.insert_after(prev, drawInfo);
 }
 
 void GfxSystem::onRemove(const ecs::Entity entity) {
@@ -46,14 +48,36 @@ void GfxSystem::onRemove(const ecs::Entity entity) {
 }
 
 void GfxSystem::drawEntities() {
-    if (mSorted.empty()) {
-        return;
-    }
-
     auto cameraPosF = getCameraPositionPrecise();
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
+
+    auto isBelow = [](const DrawInfo& first, const DrawInfo& second) {
+        return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
+    };
+    std::sort(mAddedEntities.begin(), mAddedEntities.end(), isBelow);
+
+    auto it = mSorted.before_begin();
+    auto current = mSorted.begin();
+    auto insertIt = mAddedEntities.begin();
+
+    // insert new elements in sorted order:
+    while (current != mSorted.end()) {
+        while (insertIt != mAddedEntities.end() && isBelow(*insertIt, *current)) {
+            it = mSorted.insert_after(it, *insertIt);
+            ++insertIt;
+        }
+        ++it;
+        ++current;
+    }
+    // insert remaining elements in vec:
+    while (insertIt != mAddedEntities.end()) {
+        it = mSorted.insert_after(it, *insertIt);
+        ++insertIt;
+    }
+
+    mAddedEntities.clear();
 
     Shaders prevShader = static_cast<Shaders>(mSorted.begin()->shaderIx);
     BeginShaderMode(ShaderManager::get(prevShader));
