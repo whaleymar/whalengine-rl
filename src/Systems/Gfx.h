@@ -34,6 +34,7 @@ public:
 
 private:
     std::forward_list<DrawInfo> mSorted;
+    std::vector<DrawInfo> mAddedEntities;
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {
