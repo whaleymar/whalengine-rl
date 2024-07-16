@@ -25,22 +25,10 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
-// RESEARCH should profile this VS removing IMonitor & doing insertion sort once per frame during draw entities call
 void GfxSystem::onAdd(const ecs::Entity entity) {
-    // insert entities into sorted order, based on depth, then shader
     const auto draw = entity.get<Draw>();
     const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), static_cast<s16>(draw.getShader()));
     mAddedEntities.push_back(drawInfo);
-
-    // auto prev = mSorted.before_begin();
-    // for (auto it = mSorted.begin(); it != mSorted.end(); ++it) {
-    //     if (it->depth > drawInfo.depth || (it->depth == drawInfo.depth && it->shaderIx >= drawInfo.shaderIx)) {
-    //         mSorted.insert_after(prev, drawInfo);
-    //         return;
-    //     }
-    //     prev = it;
-    // }
-    // mSorted.insert_after(prev, drawInfo);
 }
 
 void GfxSystem::onRemove(const ecs::Entity entity) {
@@ -53,16 +41,19 @@ void GfxSystem::onRemove(const ecs::Entity entity) {
     }
 }
 
+// returns true if `first` should be drawn before `seccond`
+// based on depth, then shader
+bool GfxSystem::isBelow(const DrawInfo& first, const DrawInfo& second) {
+    return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
+}
+
 void GfxSystem::drawEntities() {
     auto cameraPosF = getCameraPositionPrecise();
     // auto cameraPosF = toFloatVec(getCameraPosition());
 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
-    auto isBelow = [](const DrawInfo& first, const DrawInfo& second) {
-        return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
-    };
-    std::sort(mAddedEntities.begin(), mAddedEntities.end(), isBelow);
+    std::sort(mAddedEntities.begin(), mAddedEntities.end(), &isBelow);
 
     auto it = mSorted.before_begin();
     auto current = mSorted.begin();

@@ -29,6 +29,7 @@ public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
 
+    static bool isBelow(const DrawInfo& first, const DrawInfo& second);
     void drawEntities();
     void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
