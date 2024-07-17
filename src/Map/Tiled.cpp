@@ -199,7 +199,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
     };
 
-    for (auto& object : objects) {
+    for (const auto& object : objects) {
         bool isVisible = true;
         if (tryReadBool(object, "visible", &isVisible) && !isVisible) {
             continue;

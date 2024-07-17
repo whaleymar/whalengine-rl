@@ -24,6 +24,7 @@
 
 ## Components
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
+- FadeIn
 
 ## Gfx
 - replace radiance with bloom?
@@ -54,9 +55,6 @@
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
 
-## Bugs
-- cppcheck issues
-
 ---------------------------------------------------------------------------------------------------------------------------
 
 # Research & Ideas
@@ -69,7 +67,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 ## Map:
 - bake tile data into a mesh & use that for lighting
 - serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
-- a metadata tag to say an entity shouldn't active until the player enters its level -- esp useful for something with a lifetime
 
 ## Physics:
 - a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this?
