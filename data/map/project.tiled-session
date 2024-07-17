@@ -119,11 +119,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2.8678125,
+            "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.0523046747303,
-                "y": 96.06625258799173
+                "x": -1114.1666666666665,
+                "y": 304.8333333333333
             }
         },
         "world1-rockettutorial.tmj": {
@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Trigger",
+    "property.type": "Component_Sprite_NoAnim",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",

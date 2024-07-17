@@ -14,11 +14,13 @@
 #include "Components/Velocity.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
+#include "Game/Components/Respawn.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
 #include "Settings.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -217,6 +219,8 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 }
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    // i need a respawn function for a tiled object... shit
+    // entity.add(Respawn{1.0f, });
     auto& trigger = entity.get<Trigger>();
     // trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
     trigger.shape = Shape(Circle(entity.get<Transform2D>(), 6));
@@ -227,6 +231,12 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
 
         const Vector2f explosionStrength(150, 150);
         makeExplosionZone(self.get<Trigger>().shape.getPosition(), PIXELS_PER_TILE, explosionStrength);
+        auto selfCopy = self.copy(false);
+        if (selfCopy.isExpected()) {
+            // TODO needs some sort of respawn animation
+            System::schedule.after([](ecs::Entity e) { e.activate(); }, 0.5, selfCopy.value());
+        }
+        self.kill();
     };
 }
 

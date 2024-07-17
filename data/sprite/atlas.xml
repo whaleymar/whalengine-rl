@@ -58,23 +58,24 @@
 		<img n="effect/bluefire3" x="1675" y="0" w="15" h="20" />
 		<img n="effect/bluefire2" x="1691" y="0" w="15" h="20" />
 		<img n="effect/bluefire1" x="1707" y="0" w="15" h="20" />
-		<img n="actor/magichat8" x="1723" y="0" w="16" h="9" />
-		<img n="actor/magichat7" x="1740" y="0" w="16" h="9" />
-		<img n="actor/magichat6" x="1757" y="0" w="16" h="9" />
-		<img n="actor/magichat5" x="1774" y="0" w="16" h="9" />
-		<img n="actor/magichat4" x="1791" y="0" w="16" h="9" />
-		<img n="actor/magichat3" x="1808" y="0" w="16" h="9" />
-		<img n="actor/magichat2" x="1825" y="0" w="16" h="9" />
-		<img n="actor/magichat1" x="1842" y="0" w="16" h="9" />
+		<img n="actor/blast-crystal" x="1723" y="0" w="12" h="12" />
+		<img n="actor/magichat8" x="1736" y="0" w="16" h="9" />
+		<img n="actor/magichat7" x="1753" y="0" w="16" h="9" />
+		<img n="actor/magichat6" x="1770" y="0" w="16" h="9" />
+		<img n="actor/magichat5" x="1787" y="0" w="16" h="9" />
+		<img n="actor/magichat4" x="1804" y="0" w="16" h="9" />
+		<img n="actor/magichat3" x="1821" y="0" w="16" h="9" />
+		<img n="actor/magichat2" x="1838" y="0" w="16" h="9" />
+		<img n="actor/magichat1" x="1855" y="0" w="16" h="9" />
 		<img n="tile/testgrass" x="1211" y="17" w="8" h="8" />
 		<img n="tile/translucent" x="1211" y="26" w="8" h="8" />
 		<img n="tile/dirtblock" x="1211" y="35" w="8" h="8" />
 		<img n="tile/purpledirt" x="1211" y="44" w="8" h="8" />
 		<img n="actor/arrow" x="1184" y="50" w="8" h="8" />
-		<img n="actor/mana-gauge5" x="1859" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge4" x="1868" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge3" x="1877" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge2" x="1886" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge1" x="1895" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge5" x="1872" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge4" x="1881" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge3" x="1890" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge2" x="1899" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge1" x="1908" y="0" w="8" h="8" />
 	</tex>
 </atlas>
