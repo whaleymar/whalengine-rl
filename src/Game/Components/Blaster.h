@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Components/Transform.h"
 #include "Settings.h"
 #include "Sys/InputHandler.h"
 #include "Sys/System.h"
 #include "Systems/Physics.h"
 
 #include "Events/Events.h"
-#include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -22,7 +22,7 @@ struct Blaster {
     f32 projectileLifetimeSeconds = 3.5;
     f32 explosionRadius = FPIXELS_PER_TILE * 2;
     f32 cooldownSeconds = 0.2;
-    Vector2i aimDirection = {1, 0};  // TODO enum
+    whal::Direction aimDirection = whal::Direction::E;
     s32 maxShots = 4;
     f32 pushStrength = 150;
     f32 RJAirResistance = 0.25f;

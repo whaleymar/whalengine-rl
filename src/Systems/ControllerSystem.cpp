@@ -5,6 +5,7 @@
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
 
+#include "Entities/Particle.h"
 #include "Sys/InputHandler.h"
 #include "Sys/System.h"
 #include "Util/MathUtil.h"
@@ -107,6 +108,7 @@ void JumpSystem::update() {
         // || entity.has<AIControl>() && AIControl.isJumping()
         if (entity.has<PlayerControl>() && System::input.isOn(InputType::JUMP)) {
             if ((rb.isGrounded || jumpControl.coyoteSecondsRemaining > 0) && jumpControl.canJump()) {
+                // jump happens
                 jumpControl.buffer.consume();
                 jumpControl.isJumping = true;
 
@@ -116,7 +118,10 @@ void JumpSystem::update() {
 
                 impulseY += jumpControl.jumpInitialVelocity;
                 jumpControl.jumpSecondsRemaining = jumpControl.jumpSecondsMax;
+                particleBurst(entity.get<Transform2D>(), Direction::N, rb.groundMaterial, 8);
+
             } else if (jumpControl.isTryingJump() && jumpControl.isJumping) {
+                // jump button pressed and entity still in jump state
                 f32 damping = jumpControl.jumpSecondsRemaining / jumpControl.jumpSecondsMax;
                 damping *= damping;
                 impulseY += jumpControl.jumpInitialVelocity * damping;
@@ -127,6 +132,7 @@ void JumpSystem::update() {
                     jumpControl.isJumping = false;
                 }
             } else if (jumpControl.canJump()) {
+                // can jump, but didn't
                 jumpControl.buffer.notUsed();
             }
         } else {

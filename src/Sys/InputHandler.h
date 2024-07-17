@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include "Components/Transform.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -40,6 +41,7 @@ public:
     void useJump();
     bool isOn(InputType input) const;
     Vector2i getMoveNormal() const;
+    Direction getDirection() const;
 
     void disableInputs(u64 mask);
     void enableInputs(u64 mask);
