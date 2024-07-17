@@ -151,6 +151,32 @@ Vector2i InputHandler::getMoveNormal() const {
     return moveNormal;
 }
 
+Direction InputHandler::getDirection() const {
+    if (isOn(InputType::UP)) {
+        if (isOn(InputType::RIGHT)) {
+            return Direction::NE;
+        } else if (isOn(InputType::LEFT)) {
+            return Direction::NW;
+        } else {
+            return Direction::N;
+        }
+    } else if (isOn(InputType::DOWN)) {
+        if (isOn(InputType::RIGHT)) {
+            return Direction::SE;
+        } else if (isOn(InputType::LEFT)) {
+            return Direction::SW;
+        } else {
+            return Direction::S;
+        }
+    } else if (isOn(InputType::RIGHT)) {
+        return Direction::E;
+    } else if (isOn(InputType::LEFT)) {
+        return Direction::W;
+    } else {
+        return Direction::Neutral;
+    }
+}
+
 void InputHandler::disableInputs(u64 mask) {
     mDeactivationFlags |= mask;
 }

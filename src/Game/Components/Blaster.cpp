@@ -108,7 +108,7 @@ void shootProjectile() {
         // Vector2f moveNormal = closestOrdinalDirection(toFloatVec(target - shotOrigin).norm());
 
         Vector2f velocity;
-        Vector2f moveNormal = toFloatVec(blaster.aimDirection).norm();
+        Vector2f moveNormal = directionToVector<f32>(blaster.aimDirection).norm();
         velocity = moveNormal * blaster.projectileSpeed;
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
@@ -167,7 +167,8 @@ void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool 
 }
 
 void ProjectileSystem::addAimReticles() {
-    Vector2i aimDirection = System::input.getMoveNormal();
+    // Vector2i aimDirection = System::input.getMoveNormal();
+    Direction aimDirection = System::input.getDirection();
     for (auto [entityid, entity] : getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
         // if (blaster.cooldownRemaining > 0) {
@@ -182,12 +183,12 @@ void ProjectileSystem::addAimReticles() {
 
             // if not holding any direction, start with facing direction
             Transform2D parentTrans = entity.get<Transform2D>();
-            if (aimDirection.isZero()) {
-                aimDirection.e[0] = parentTrans.facing == Facing::Left ? -1 : 1;
+            if (aimDirection == Direction::Neutral) {
+                aimDirection = parentTrans.facing == Facing::Left ? Direction::W : Direction::E;
             }
             blaster.aimDirection = aimDirection;
 
-            Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * aimDirection;
+            Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * directionToVector<s32>(aimDirection);
             Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
             child.add(Transform2D(position));
             child.add(Draw(DrawRect(BROWN)));
@@ -197,7 +198,7 @@ void ProjectileSystem::addAimReticles() {
 
 void ProjectileSystem::update() {
     f32 dt = System::dt();
-    Vector2i aimDirection = System::input.getMoveNormal();
+    Direction aimDirection = System::input.getDirection();
     for (auto [entityid, entity] : getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
 
@@ -215,11 +216,11 @@ void ProjectileSystem::update() {
             continue;
         }
         Transform2D parentTrans = entity.get<Transform2D>();
-        if (!aimDirection.isZero() && mIsAimUpdateNeeded) {
+        if (aimDirection != Direction::Neutral && mIsAimUpdateNeeded) {
             blaster.aimDirection = aimDirection;
         }
 
-        Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * blaster.aimDirection;
+        Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * directionToVector<s32>(blaster.aimDirection);
         Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
         blaster.aimReticle->set(Transform2D(position));
     }
