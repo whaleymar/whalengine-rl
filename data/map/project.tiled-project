@@ -265,40 +265,21 @@
             "id": 44,
             "members": [
                 {
-                    "name": "Collider",
-                    "type": "bool",
-                    "value": false
-                },
-                {
-                    "name": "Color",
-                    "type": "color",
-                    "value": "#ffffffff"
-                },
-                {
                     "name": "Direction",
                     "propertyType": "CollisionDir",
                     "type": "int",
                     "value": 0
                 },
                 {
-                    "name": "Light",
-                    "type": "bool",
-                    "value": false
-                },
-                {
-                    "name": "RigidBody",
-                    "type": "bool",
-                    "value": false
+                    "name": "Material",
+                    "propertyType": "Material",
+                    "type": "int",
+                    "value": 0
                 },
                 {
                     "name": "Shape",
                     "type": "object",
                     "value": 0
-                },
-                {
-                    "name": "lifetimeSeconds",
-                    "type": "float",
-                    "value": 1
                 },
                 {
                     "name": "maxSpeed",
@@ -768,7 +749,10 @@
                 "Grass",
                 "Water",
                 "Metal",
-                "Rubber"
+                "Rubber",
+                "Dust",
+                "Fire",
+                "Ember"
             ],
             "valuesAsFlags": false
         },

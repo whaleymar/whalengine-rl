@@ -214,7 +214,9 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         // RESEARCH - using relative velocity instead of the mover's velocity would also be more accurate
 
         // average bounciness of both colliders
-        f32 bounciness = (WhalMaterial::bounciness(mMaterial) + WhalMaterial::bounciness(hitinfo.otherMaterial)) / 2.0f;
+        const f32 selfBounciness = MaterialData::get(mMaterial).bounciness;
+        const f32 otherBounciness = MaterialData::get(hitinfo.otherMaterial).bounciness;
+        const f32 bounciness = (selfBounciness + otherBounciness) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
             auto& velocity = mSelf.get<Velocity>();
             if ((isX && abs(velocity.total.x()) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y()) >= BOUNCE_THRESHOLD)) {
