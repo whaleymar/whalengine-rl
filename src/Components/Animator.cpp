@@ -31,7 +31,7 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     if (draw.getTag() == Draw::DrawTag::Sprite) {
         Sprite& sprite = draw.getSprite();
         const f32 unsquishStep = System::dt();
-        sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
+        sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
     }
     return basicAnimation(animator, entity);
 }

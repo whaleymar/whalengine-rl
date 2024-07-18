@@ -17,16 +17,16 @@ Vector2f closestOrdinalDirection(Vector2f vecf) {
         }
     };
 
-    if (vecf.x() == 0) {
-        if (vecf.y() == 0) {
+    if (vecf.x == 0) {
+        if (vecf.y == 0) {
             return {1.0, 0.0};
         } else {
-            return Vector2f(0.0, sign(vecf.y()));
+            return Vector2f(0.0, sign(vecf.y));
         }
-    } else if (vecf.x() < 0) {
-        if (vecf.y() == 0) {
+    } else if (vecf.x < 0) {
+        if (vecf.y == 0) {
             return {-1.0, 0};
-        } else if (vecf.y() < 0) {
+        } else if (vecf.y < 0) {
             // SW quadrant
             Vector2f closest = Vector2f::unitLeft;
             f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));
@@ -45,9 +45,9 @@ Vector2f closestOrdinalDirection(Vector2f vecf) {
         }
 
     } else {
-        if (vecf.y() == 0) {
+        if (vecf.y == 0) {
             return {1.0, 0};
-        } else if (vecf.y() < 0) {
+        } else if (vecf.y < 0) {
             // SE quadrant
             Vector2f closest = Vector2f::unitRight;
             f32 degreesAway = std::abs(std::acos(vecf.dot(closest)));

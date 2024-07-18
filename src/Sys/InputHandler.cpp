@@ -137,15 +137,15 @@ bool InputHandler::isOn(InputType input) const {
 Vector2i InputHandler::getMoveNormal() const {
     Vector2i moveNormal{};
     if (isOn(InputType::UP)) {
-        moveNormal.e[1] = 1;
+        moveNormal.y = 1;
     } else if (isOn(InputType::DOWN)) {
-        moveNormal.e[1] = -1;
+        moveNormal.y = -1;
     }
 
     if (isOn(InputType::RIGHT)) {
-        moveNormal.e[0] = 1;
+        moveNormal.x = 1;
     } else if (isOn(InputType::LEFT)) {
-        moveNormal.e[0] = -1;
+        moveNormal.x = -1;
     }
 
     return moveNormal;

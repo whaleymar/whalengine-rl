@@ -14,7 +14,7 @@ Vector2i screenToWorldCoords(Vector2i screenCoords) {
     f32 multY = static_cast<f32>(WINDOW_HEIGHT_PIXELS) / static_cast<f32>(WINDOW_HEIGHT_ACTUAL);
     auto middleOffset = Vector2i(WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2);
 
-    Vector2i yAtTop = Vector2i(screenCoords.x() * multX, (static_cast<s32>(WINDOW_HEIGHT_ACTUAL) - screenCoords.y()) * multY);
+    Vector2i yAtTop = Vector2i(screenCoords.x * multX, (static_cast<s32>(WINDOW_HEIGHT_ACTUAL) - screenCoords.y) * multY);
     return yAtTop + cameraPos - middleOffset;
 }
 

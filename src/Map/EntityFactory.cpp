@@ -53,7 +53,7 @@ void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledT
 
 void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     auto collisionCallback = [](ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
-        if (other.has<Particle>() || hitNormal.y() != 1) {
+        if (other.has<Particle>() || hitNormal.y != 1) {
             return;
         }
         auto& rails = callbackEntity.get<RailsControl>();

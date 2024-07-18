@@ -36,14 +36,13 @@ using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::E
 static CallbackMap S_CALLBACK_QUEUE;
 
 void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {
-    bool isInJumpPeak = isJumping && isBetween(velocity.total.y(), JUMP_PEAK_SPEED_MAX, 0.0f);
+    bool isInJumpPeak = isJumping && isBetween(velocity.total.y, JUMP_PEAK_SPEED_MAX, 0.0f);
     f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - JUMP_PEAK_GRAVITY_MULT);
-    velocity.stable.e[1] =
-        approach(velocity.stable.y(), gravityMultiplier * TERMINAL_VELOCITY_Y, abs(gravityMultiplier) * GRAVITY * peakMultiplier * dt);
+    velocity.stable.y = approach(velocity.stable.y, gravityMultiplier * TERMINAL_VELOCITY_Y, abs(gravityMultiplier) * GRAVITY * peakMultiplier * dt);
 }
 
 void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
-    velocity.e[0] = approach(velocity.x(), 0, frictionMultiplier);
+    velocity.x = approach(velocity.x, 0, frictionMultiplier);
 }
 
 // Any type of collision (regular, push, carry) is emitted as an event and received here.
@@ -89,7 +88,7 @@ void PhysicsSystem::update() {
         }
 
         if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
-            (*precisePositionOpt)->position = toFloatVec(trans.position);
+            (*precisePositionOpt)->position = trans.position.as<f32>();
         }
     }
 
@@ -109,25 +108,25 @@ void PhysicsSystem::update() {
             frictionMultiplier = (*rbOpt)->frictionMultiplier;
         }
 
-        const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x();
-        const f32 frictionStepAir = dt * FRICTION_AIR * frictionMultiplier.y();
+        const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x;
+        const f32 frictionStepAir = dt * FRICTION_AIR * frictionMultiplier.y;
         const f32 gravityStep = dt * GRAVITY * 3;
         Transform2D& trans = entity.get<Transform2D>();
         Velocity& vel = entity.get<Velocity>();
 
         // if impulse ends, use residual
         Vector2f impulse = vel.impulse;
-        if (!impulse.x() && !isNearZero(vel.residualImpulse.x(), MOVE_EPSILON)) {
-            impulse.e[0] += vel.residualImpulse.x();
+        if (!impulse.x && !isNearZero(vel.residualImpulse.x, MOVE_EPSILON)) {
+            impulse.x += vel.residualImpulse.x;
         }
-        if (!impulse.y() && !isNearZero(vel.residualImpulse.y(), MOVE_EPSILON)) {
-            impulse.e[1] += vel.residualImpulse.y();
+        if (!impulse.y && !isNearZero(vel.residualImpulse.y, MOVE_EPSILON)) {
+            impulse.y += vel.residualImpulse.y;
         }
 
         const Vector2f totalVelocity = vel.stable + impulse;
-        const Vector2f move = {totalVelocity.x() * dt * PIXELS_PER_TEXEL, totalVelocity.y() * dt * PIXELS_PER_TEXEL};
+        const Vector2f move = {totalVelocity.x * dt * PIXELS_PER_TEXEL, totalVelocity.y * dt * PIXELS_PER_TEXEL};
 
-        vel.residualImpulse = {approach(impulse.x(), 0, frictionStepGround), approach(impulse.y(), 0, gravityStep)};
+        vel.residualImpulse = {approach(impulse.x, 0, frictionStepGround), approach(impulse.y, 0, gravityStep)};
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
@@ -142,15 +141,15 @@ void PhysicsSystem::update() {
         } else {
             if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
                 (*precisePositionOpt)->position += move;
-                trans.position = Vector2i(std::round((*precisePositionOpt)->position.x()), std::round((*precisePositionOpt)->position.y()));
+                trans.position = Vector2i(std::round((*precisePositionOpt)->position.x), std::round((*precisePositionOpt)->position.y));
                 // if (move.len() < 0.1) {
                 // clamp precise position to integer coordinates if we're not moving
                 // (*precisePositionOpt)->position = toFloatVec(trans.position);
                 // }
             } else {
                 // store remainder for stuff that moves less than 1px per frame. This is done in collider.move for colliders.
-                Vector2i moveRounded = Vector2i(std::round(move.x()), std::round(move.y()));
-                auto remainder = move - toFloatVec(moveRounded);
+                Vector2i moveRounded = Vector2i(std::round(move.x), std::round(move.y));
+                auto remainder = move - moveRounded.as<f32>();
                 vel.residualImpulse += remainder;
                 trans.position += moveRounded;
             }
@@ -168,23 +167,23 @@ void PhysicsSystem::update() {
         // UPDATE VELOCITY
         if (rbOpt) {
             // friction
-            if (vel.stable.x()) {
+            if (vel.stable.x) {
                 if ((*rbOpt)->isGrounded) {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
-                    vel.residualImpulse.e[0] = approach(impulse.x(), 0, frictionStepAir);  // recalced
+                    vel.residualImpulse.x = approach(impulse.x, 0, frictionStepAir);  // recalced
                 }
             }
 
             // gravity
             if (!(*rbOpt)->isGrounded) {
-                if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX && jumpControl) {
+                if (totalVelocity.y < JUMP_PEAK_SPEED_MAX && jumpControl) {
                     (*jumpControl)->isJumping = false;
                 }
 
                 if (jumpControl) {
-                    if (totalVelocity.y() < JUMP_PEAK_SPEED_MAX) {
+                    if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
                         // falling == not jumping
                         // a little lower than 0 while applying reduced gravity
                         (*jumpControl)->isJumping = false;
@@ -197,9 +196,9 @@ void PhysicsSystem::update() {
                 (*rbOpt)->isLanding = false;
 
                 // } else {
-                //     if (totalVelocity.y() < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
+                //     if (totalVelocity.y < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
                 //         // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off
-                //         platform vel.stable.e[1] = 0;
+                //         platform vel.stable.y = 0;
                 //     }
             }
         }

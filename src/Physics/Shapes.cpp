@@ -15,7 +15,7 @@ Vector2i getRotationCorrection(Vector2i half, f32 rotationDegrees) {
     // 0deg is down
     // 90 deg is left
     f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
-    return toIntVecRounded(Vector2f(-0.5, -1.0) * toFloatVec(half) * Vector2f(std::cos(correctRadians), std::sin(correctRadians)));
+    return (Vector2f(-0.5, -1.0) * half.as<f32>() * Vector2f(std::cos(correctRadians), std::sin(correctRadians))).round();
 }
 
 Vector2i transToCenter(Transform2D trans, Vector2i half) {
@@ -53,11 +53,11 @@ bool AABB::contains(const AABB& other) const {
 #ifndef NDEBUG
 void AABB::draw(Vector2f cameraPos, Color color) const {
     Vector2f position(left(), bottom());
-    Vector2f size = Vector2f(mHalf.x(), mHalf.y()) * 2;
+    Vector2f size = Vector2f(mHalf.x, mHalf.y) * 2;
 
-    // subtract size.y() so we draw from bottom left instead of top left
-    Vector2f dstPosition = {position.x() - cameraPos.x(), -1 * position.y() + cameraPos.y() - size.y()};
-    DrawRectangleLines(dstPosition.x(), dstPosition.y(), size.x(), size.y(), color);
+    // subtract size.y so we draw from bottom left instead of top left
+    Vector2f dstPosition = {position.x - cameraPos.x, -1 * position.y + cameraPos.y - size.y};
+    DrawRectangleLines(dstPosition.x, dstPosition.y, size.x, size.y, color);
 }
 #endif
 
@@ -65,33 +65,33 @@ HitInfo AABB::collide(const AABB& other) const {
     const auto delta = other.mCenter - mCenter;
     const auto overlap = mHalf + other.mHalf;
 
-    const s32 px = overlap.x() - abs(delta.x());
+    const s32 px = overlap.x - abs(delta.x);
     if (px <= 0) {
         return HitInfo();
     }
 
-    const s32 py = overlap.y() - abs(delta.y());
+    const s32 py = overlap.y - abs(delta.y);
     if (py <= 0) {
         return HitInfo();
     }
 
     if (px == py) {
-        const s32 signX = sign(delta.x());
-        const s32 signY = sign(delta.y());
-        // Vector2i hitPos(center.x() + half.x() * signX, center.y() + half.y() * signY);
+        const s32 signX = sign(delta.x);
+        const s32 signY = sign(delta.y);
+        // Vector2i hitPos(center.x + half.x * signX, center.y + half.y * signY);
         // Vector2i hitDelta(px * signX, py * signY);
         Vector2i hitNormal(signX, signY);
         return HitInfo(hitNormal, true);
     }
     if (px < py) {
-        const s32 signX = sign(delta.x());
-        // Vector2i hitPos(center.x() + half.x() * signX, other.center.y());
+        const s32 signX = sign(delta.x);
+        // Vector2i hitPos(center.x + half.x * signX, other.center.y);
         // Vector2i hitDelta(px * signX, 0);
         Vector2i hitNormal(signX, 0);
         return HitInfo(hitNormal, true);
     } else {
-        const s32 signY = sign(delta.y());
-        // Vector2i hitPos(other.center.x(), center.y() + half.y() * signY);
+        const s32 signY = sign(delta.y);
+        // Vector2i hitPos(other.center.x, center.y + half.y * signY);
         // Vector2i hitDelta(0, py * signY);
         Vector2i hitNormal(0, signY);
         return HitInfo(hitNormal, true);
@@ -104,20 +104,20 @@ Vector2i AABB::getPositionEdge(Vector2i unitDir) const {
 
 Circle::Circle(Vector2i center, s32 radius) : mCenter(center), mRadius(radius) {}
 
-Circle::Circle(Transform2D transform, s32 radius) : mCenter(transform.position.x(), transform.position.y() + radius), mRadius(radius) {}
+Circle::Circle(Transform2D transform, s32 radius) : mCenter(transform.position.x, transform.position.y + radius), mRadius(radius) {}
 
 void Circle::setPosition(Vector2i center) {
     mCenter = center;
 }
 
 void Circle::setPosition(Transform2D transform) {
-    mCenter = Vector2i(transform.position.x(), transform.position.y() + mRadius);
+    mCenter = Vector2i(transform.position.x, transform.position.y + mRadius);
 }
 
 #ifndef NDEBUG
 void Circle::draw(Vector2f cameraPos, Color color) const {
-    Vector2f dstPosition = {mCenter.x() - cameraPos.x(), -1 * mCenter.y() + cameraPos.y()};
-    DrawCircleLines(dstPosition.x(), dstPosition.y(), mRadius, color);
+    Vector2f dstPosition = {mCenter.x - cameraPos.x, -1 * mCenter.y + cameraPos.y};
+    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius, color);
 }
 #endif
 
@@ -126,12 +126,12 @@ f32 Circle::getDistanceFromCenter(const AABB* aabb) const {
 
     // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
     const auto half = aabb->getHalf();
-    const auto closestPoint = aabb->getPosition() + Vector2i(clamp(delta.x(), -half.x(), half.x()), clamp(delta.y(), -half.y(), half.y()));
-    return toFloatVec(getPosition() - closestPoint).len();
+    const auto closestPoint = aabb->getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
+    return (getPosition() - closestPoint).as<f32>().len();
 }
 
 f32 Circle::getDistanceFromCenter(const Circle* other) const {
-    return toFloatVec(getPosition() - other->getPosition()).len() - other->getRadius();
+    return (getPosition() - other->getPosition()).as<f32>().len() - other->getRadius();
 }
 
 Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
@@ -139,8 +139,8 @@ Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
 
     // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
     const auto half = aabb.getHalf();
-    const auto closestPoint = aabb.getPosition() + Vector2i(clamp(delta.x(), -half.x(), half.x()), clamp(delta.y(), -half.y(), half.y()));
-    return toFloatVec(closestPoint - getPosition());
+    const auto closestPoint = aabb.getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
+    return (closestPoint - getPosition()).as<f32>();
 }
 
 AABB Circle::getBoundingBox() const {
@@ -150,7 +150,7 @@ AABB Circle::getBoundingBox() const {
 bool isIntersectAABBvsAABB(const AABB* first, const AABB* other) {
     const auto delta = other->getPosition() - first->getPosition();
     const auto overlap = first->getHalf() + other->getHalf();
-    return overlap.x() > abs(delta.x()) && overlap.y() > abs(delta.y());
+    return overlap.x > abs(delta.x) && overlap.y > abs(delta.y);
 }
 
 bool isIntersectCirclevsCircle(const Circle* first, const Circle* other) {

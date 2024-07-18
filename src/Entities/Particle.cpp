@@ -129,8 +129,8 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
     for (s32 i = 0; i < count; i++) {
         const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
         const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
-        const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x() * locationSampleX));
-        const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y() * locationSampleY));
+        const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
+        const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
         const Vector2i spawnLocation = spawnZone.getPosition() + Vector2i(spawnOffsetX, spawnOffsetY);
         const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((System::rng.uniform() - 0.5) * 2);
         const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, System::rng.uniform());

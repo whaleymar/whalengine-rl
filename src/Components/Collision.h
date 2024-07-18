@@ -101,7 +101,7 @@ public:
     // momentum:
     void setMomentum(const f32 momentum, const bool isXDirection);
     void maintainMomentum(const bool isXDirection);
-    bool isMomentumStored() const { return mMomentumFramesLeft.x() > 0 || mMomentumFramesLeft.y() > 0; }
+    bool isMomentumStored() const { return mMomentumFramesLeft.x > 0 || mMomentumFramesLeft.y > 0; }
     void onMomentumNotUsed();
     void resetMomentum();
     Vector2f getMomentum() const { return mStoredMomentum; }

@@ -51,7 +51,7 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
     animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
         auto& sprite = self.get<Draw>().getSprite();
         const f32 unsquishStep = System::dt();
-        sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
+        sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
 
         ecs::Entity owner = ecs::Entity(self.get<Attach>().targetEntityID);
         auto blaster = owner.get<Blaster>();
@@ -69,7 +69,7 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
                 self.remove<FadeOut>();
             }
             return true;
-        } else if (targetFrameIx == 0 && sprite.scale.x() == 1.0f && sprite.color.a == 255 && !self.has<FadeOut>()) {
+        } else if (targetFrameIx == 0 && sprite.scale.x == 1.0f && sprite.color.a == 255 && !self.has<FadeOut>()) {
             self.add(FadeOut(0.2, 1.0, 0.5));
         }
         return false;
@@ -113,7 +113,7 @@ void shootProjectile() {
 
         // auto totalVel = velocity + entity.get<Velocity>().total;
         auto totalVelocity = velocity;
-        // const bool isDownwardAngle = totalVelocity.x() != 0 && totalVelocity.y() < 0;
+        // const bool isDownwardAngle = totalVelocity.x != 0 && totalVelocity.y < 0;
         // Vector2f pushStrength = isDownwardAngle ? blaster.pushStrengthDownAngle : blaster.pushStrengthDefault;
         Vector2f pushStrength(blaster.pushStrength, blaster.pushStrength);
         makeProjectile(entityid, shotOrigin, totalVelocity, blaster.projectileLifetimeSeconds, blaster.explosionRadius, pushStrength);
@@ -272,7 +272,7 @@ void RocketJumpingSystem::update() {
             rocketJumpComponent.stateTime += dt;
             f32 newAirResistanceValue = approach(rocketJumpComponent.newAirResistance, rocketJumpComponent.originalAirResistance, step);
             rocketJumpComponent.newAirResistance = newAirResistanceValue;
-            rb.frictionMultiplier.e[1] = newAirResistanceValue;
+            rb.frictionMultiplier.y = newAirResistanceValue;
             entity.set(rb);
         }
     }
@@ -282,8 +282,8 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     auto& rb = entity.get<RigidBody>();
     auto& rocketJumpComponent = entity.get<RocketJumping>();
     const f32 newAirResistanceValue = rocketJumpComponent.newAirResistance;
-    rocketJumpComponent.originalAirResistance = rb.frictionMultiplier.y();  // save for later
-    rb.frictionMultiplier = {rb.frictionMultiplier.x(), newAirResistanceValue};
+    rocketJumpComponent.originalAirResistance = rb.frictionMultiplier.y;  // save for later
+    rb.frictionMultiplier = {rb.frictionMultiplier.x, newAirResistanceValue};
 
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;
@@ -305,7 +305,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
 void RocketJumpingSystem::onRemove(const ecs::Entity entity) {
     auto& rb = entity.get<RigidBody>();
     const auto rocketJumpComponent = entity.get<RocketJumping>();
-    rb.frictionMultiplier.e[1] = rocketJumpComponent.originalAirResistance;  // restore saved value
+    rb.frictionMultiplier.y = rocketJumpComponent.originalAirResistance;  // restore saved value
     System::schedule.cancelEventFlow(rocketJumpComponent.silhouetteEventId);
     if (entity.has<ParticleEmitter>()) {
         System::schedule.eventFlow({entity}).add([](ecs::Entity e) { e.remove<ParticleEmitter>(); }, entity);

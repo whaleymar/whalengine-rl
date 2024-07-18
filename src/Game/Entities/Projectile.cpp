@@ -42,8 +42,8 @@ static bool skipParentCollision(ecs::Entity self, ecs::Entity other) {
 }
 
 static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
-    if (surfaceNormal.y() > 0) {
-        center.e[1]--;  // so doesn't get stuck
+    if (surfaceNormal.y > 0) {
+        center.y--;  // so doesn't get stuck
     }
     constexpr s32 NPARTICLES = 8;
     for (s32 i = 0; i < NPARTICLES; i++) {
@@ -54,11 +54,11 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
         f32 velY = System::rng.uniform() * maxspeed - maxspeed / 4;
         // f32 velY = System::rng.uniform() * maxspeed;
 
-        if (sign(velX) == surfaceNormal.x()) {
+        if (sign(velX) == surfaceNormal.x) {
             velX *= -1;
         }
 
-        if (sign(velY) == surfaceNormal.y()) {
+        if (sign(velY) == surfaceNormal.y) {
             velY *= -1;
         }
 

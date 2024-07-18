@@ -322,13 +322,13 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "momentumMultiplierX") {
-                DefaultRigidBody.momentumMultiplier.e[0] = member[KEY_VALUE];
+                DefaultRigidBody.momentumMultiplier.x = member[KEY_VALUE];
             } else if (memberName == "momentumMultiplierY") {
-                DefaultRigidBody.momentumMultiplier.e[1] = member[KEY_VALUE];
+                DefaultRigidBody.momentumMultiplier.y = member[KEY_VALUE];
             } else if (memberName == "frictionGround") {
-                DefaultRigidBody.frictionMultiplier.e[0] = member[KEY_VALUE];
+                DefaultRigidBody.frictionMultiplier.x = member[KEY_VALUE];
             } else if (memberName == "frictionAir") {
-                DefaultRigidBody.frictionMultiplier.e[1] = member[KEY_VALUE];
+                DefaultRigidBody.frictionMultiplier.y = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -352,9 +352,9 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "velX") {
-                DefaultVelocity.stable.e[0] = member[KEY_VALUE];
+                DefaultVelocity.stable.x = member[KEY_VALUE];
             } else if (memberName == "velY") {
-                DefaultVelocity.stable.e[1] = member[KEY_VALUE];
+                DefaultVelocity.stable.y = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -364,17 +364,17 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "lookAheadX") {
-                DefaultFollow.lookAheadTexels.e[0] = member[KEY_VALUE];
+                DefaultFollow.lookAheadTexels.x = member[KEY_VALUE];
             } else if (memberName == "lookAheadY") {
-                DefaultFollow.lookAheadTexels.e[1] = member[KEY_VALUE];
+                DefaultFollow.lookAheadTexels.y = member[KEY_VALUE];
             } else if (memberName == "deadZoneX") {
-                DefaultFollow.deadZoneTexels.e[0] = member[KEY_VALUE];
+                DefaultFollow.deadZoneTexels.x = member[KEY_VALUE];
             } else if (memberName == "deadZoneY") {
-                DefaultFollow.deadZoneTexels.e[1] = member[KEY_VALUE];
+                DefaultFollow.deadZoneTexels.y = member[KEY_VALUE];
             } else if (memberName == "dampingX") {
-                DefaultFollow.damping.e[0] = member[KEY_VALUE];
+                DefaultFollow.damping.x = member[KEY_VALUE];
             } else if (memberName == "dampingY") {
-                DefaultFollow.damping.e[1] = member[KEY_VALUE];
+                DefaultFollow.damping.y = member[KEY_VALUE];
             } else if (memberName == "FollowTarget") {
                 // do nothing
             } else if (memberName == "boundsHalflenX") {
@@ -576,11 +576,11 @@ void addComponentLight(const nlohmann::json& values, const nlohmann::json& allOb
     PointLight light = entity.has<PointLight>() ? entity.get<PointLight>() : DefaultPointLight;
     if (!tryReadVal(values, "radiusTexels", &light.radiusTexels)) {
         // by default, use bigger dimension
-        light.radiusTexels = std::max(entityData.dimensionsTexels.x(), entityData.dimensionsTexels.y());
+        light.radiusTexels = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y);
     }
     if (!tryReadVal(values, "heightTexels", &light.heightTexels)) {
         // by default, use half of entity height
-        light.heightTexels = entityData.dimensionsTexels.y() / 2;
+        light.heightTexels = entityData.dimensionsTexels.y / 2;
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
@@ -595,11 +595,11 @@ void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& al
     Radiance light = entity.has<Radiance>() ? entity.get<Radiance>() : DefaultRadiance;
     if (!tryReadVal(values, "radiusTexels", &light.radiusTexels)) {
         // by default, use bigger dimension
-        light.radiusTexels = std::max(entityData.dimensionsTexels.x(), entityData.dimensionsTexels.y());
+        light.radiusTexels = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y);
     }
     if (!tryReadVal(values, "heightTexels", &light.heightTexels)) {
         // by default, use half of entity height
-        light.heightTexels = entityData.dimensionsTexels.y() / 2;
+        light.heightTexels = entityData.dimensionsTexels.y / 2;
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
@@ -682,16 +682,16 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
         trigger.offset = otherTrans - thisTrans;
 
         if (shapeObj.contains("ellipse")) {
-            const s32 radius = std::max(halflenTexels.x(), halflenTexels.y()) * PIXELS_PER_TEXEL;
-            trigger.shape = Circle(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y() * PIXELS_PER_TEXEL), radius);
+            const s32 radius = std::max(halflenTexels.x, halflenTexels.y) * PIXELS_PER_TEXEL;
+            trigger.shape = Circle(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y * PIXELS_PER_TEXEL), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y() * PIXELS_PER_TEXEL),
+            trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y * PIXELS_PER_TEXEL),
                                  halflenTexels * PIXELS_PER_TEXEL);
         }
     } else {
         if (allObjects[idToIndex.at(entityData.id).first].contains("ellipse")) {
-            const s32 radius = std::max(entityData.dimensionsTexels.x(), entityData.dimensionsTexels.y()) * PIXELS_PER_TEXEL / 2;
+            const s32 radius = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y) * PIXELS_PER_TEXEL / 2;
             trigger.shape = Circle(entity.get<Transform2D>(), radius);
 
         } else {
@@ -784,10 +784,10 @@ Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& leve
     tryReadVector2i(values, "boundsHalflenY", "boundsHalflenY", &follow.boundsYTexels);
 
     // convert bounds from local half length to world coords
-    Vector2i levelPosTexels = Vector2i(level.worldOffsetPixels.x() / PIXELS_PER_TEXEL, level.worldOffsetPixels.y() / PIXELS_PER_TEXEL) +
-                              Vector2i(level.sizeTexels.x() / 2, level.sizeTexels.y() / 2);
-    follow.boundsXTexels = {levelPosTexels.x() - follow.boundsXTexels.x(), levelPosTexels.x() + follow.boundsXTexels.x()};
-    follow.boundsYTexels = {levelPosTexels.y() - follow.boundsYTexels.y(), levelPosTexels.y() + follow.boundsYTexels.y()};
+    Vector2i levelPosTexels = Vector2i(level.worldOffsetPixels.x / PIXELS_PER_TEXEL, level.worldOffsetPixels.y / PIXELS_PER_TEXEL) +
+                              Vector2i(level.sizeTexels.x / 2, level.sizeTexels.y / 2);
+    follow.boundsXTexels = {levelPosTexels.x - follow.boundsXTexels.x, levelPosTexels.x + follow.boundsXTexels.x};
+    follow.boundsYTexels = {levelPosTexels.y - follow.boundsYTexels.y, levelPosTexels.y + follow.boundsYTexels.y};
     return follow;
 }
 
@@ -936,10 +936,10 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
         const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
         const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
 
-        emitter.offsetTexels = otherTrans - thisTrans + Vector2i(0, halflenTexels.y());
+        emitter.offsetTexels = otherTrans - thisTrans + Vector2i(0, halflenTexels.y);
         emitter.aabbHalfTexels = halflenTexels;
     } else {
-        // emitter.offsetTexels = Vector2i(0, entityData.dimensionsTexels.y() / 2);
+        // emitter.offsetTexels = Vector2i(0, entityData.dimensionsTexels.y / 2);
         emitter.aabbHalfTexels = entityData.dimensionsTexels / 2;
     }
 
@@ -996,11 +996,11 @@ bool tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst) {
 bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst) {
     bool foundOne = false;
     if (data.contains(xKey)) {
-        dst->e[0] = data[xKey];
+        dst->x = data[xKey];
         foundOne = true;
     }
     if (data.contains(yKey)) {
-        dst->e[1] = data[yKey];
+        dst->y = data[yKey];
         foundOne = true;
     }
     return foundOne;
@@ -1009,11 +1009,11 @@ bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::str
 bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
     bool foundOne = false;
     if (data.contains(xKey)) {
-        dst->e[0] = data[xKey];
+        dst->x = data[xKey];
         foundOne = true;
     }
     if (data.contains(yKey)) {
-        dst->e[1] = data[yKey];
+        dst->y = data[yKey];
         foundOne = true;
     }
     return foundOne;

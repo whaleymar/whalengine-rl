@@ -95,39 +95,38 @@ void GfxSystem::drawEntities() {
 
 void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Transform2D trans = entity.get<Transform2D>();
-    Vector2f posF = toFloatVec(trans.position);
+    Vector2f posF = trans.position.as<f32>();
     Draw draw = entity.get<Draw>();
 
     if (draw.getTag() == Draw::DrawTag::Rect) {
         const DrawRect rect = draw.getRect();
-        auto frameSize = toFloatVec(rect.getFrameSizeTexels());
-        Vector2f dstSize = {frameSize.x() * rect.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * rect.scale.y() * FPIXELS_PER_TEXEL};
+        auto frameSize = rect.getFrameSizeTexels().as<f32>();
+        Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
 
-        // subtract size.y() so we draw from bottom left instead of top left
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
+        // subtract size.y so we draw from bottom left instead of top left
+        Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y - dstSize.y};
         // add halfX to pos to match the origin thingy done w/ sprites
-        dstPosition -= {dstSize.x() * 0.5f, 0};
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        dstPosition -= {dstSize.x * 0.5f, 0};
+        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
         DrawRectangleRec(dstRect, rect.color);
 
     } else {
         const Sprite sprite = draw.getSprite();
         const Vector2i frameSize = sprite.getFrameSizeTexels();
         const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
-        const Rectangle srcRect =
-            Rectangle(sprite.atlasPositionTexels.x(), sprite.atlasPositionTexels.y(), flipModifier * frameSize.x(), frameSize.y());
+        const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
 
-        Vector2f dstSize = {frameSize.x() * sprite.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * sprite.scale.y() * FPIXELS_PER_TEXEL};
-        Vector2f dstPosition = {posF.x() - cameraPosF.x(), -1.0f * posF.y() + cameraPosF.y()};
+        Vector2f dstSize = {frameSize.x * sprite.scale.x * FPIXELS_PER_TEXEL, frameSize.y * sprite.scale.y * FPIXELS_PER_TEXEL};
+        Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
 
         // rotate about center or transform
-        Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x() * 0.5, dstSize.y());
+        Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x * 0.5, dstSize.y);
         if (sprite.isRotateAboutCenter) {
-            dstPosition -= Vector2f(0, dstSize.y() / 2.0f);
+            dstPosition -= Vector2f(0, dstSize.y / 2.0f);
         }
 
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
-        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x(), origin.y()}, trans.rotationDegrees, sprite.color);
+        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
+        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x, origin.y}, trans.rotationDegrees, sprite.color);
     }
 }
 
@@ -154,23 +153,23 @@ void DrawTextSystem::drawEntities(Color tint) {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawText draw = entity.get<DrawText>();
 
-        Vector2f frameSize = toFloatVec(draw.frameSizeTexels) * FPIXELS_PER_TEXEL * VIRTUAL_SCREEN_RATIO * draw.scale;
+        Vector2f frameSize = draw.frameSizeTexels.as<f32>() * FPIXELS_PER_TEXEL * VIRTUAL_SCREEN_RATIO * draw.scale;
 
         // text is drawn at full resolution
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y()};
+        Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y};
         dstPosition *= VIRTUAL_SCREEN_RATIO;
         dstPosition += Vector2f(WINDOW_WIDTH_ACTUAL / 2, WINDOW_HEIGHT_ACTUAL / 2);
 
         // drawing one line:
         // Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, draw.text, FONT_SIZE, spacing);
         // dstPosition -= Vector2f(textDimensions.x / 2, textDimensions.y);
-        // DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x(), dstPosition.y()), FONT_SIZE, spacing, ColorTint(draw.color, tint));
+        // DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x, dstPosition.y), FONT_SIZE, spacing, ColorTint(draw.color, tint));
 
         // drawing wrapped:
         dstPosition -= frameSize * Vector2f(0.5, 1);
         dstPosition +=
             Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);  // needs half tile offset for some reason; might be an issue with map data
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), frameSize.x(), frameSize.y());
+        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
         DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), dstRect, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint));
     }
 }
@@ -184,14 +183,14 @@ void DrawDebugSystem::drawEntities() {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawDebug draw = entity.get<DrawDebug>();
 
-        auto frameSize = toFloatVec(draw.getFrameSizeTexels());
-        Vector2f dstSize = {frameSize.x() * draw.scale.x() * FPIXELS_PER_TEXEL, frameSize.y() * draw.scale.y() * FPIXELS_PER_TEXEL};
+        auto frameSize = draw.getFrameSizeTexels().as<f32>();
+        Vector2f dstSize = {frameSize.x * draw.scale.x * FPIXELS_PER_TEXEL, frameSize.y * draw.scale.y * FPIXELS_PER_TEXEL};
 
-        // subtract size.y() so we draw from bottom left instead of top left
-        Vector2f dstPosition = {trans.position.x() - cameraPosF.x(), -1 * trans.position.y() + cameraPosF.y() - dstSize.y()};
+        // subtract size.y so we draw from bottom left instead of top left
+        Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y - dstSize.y};
         // add halfX to pos to match the origin thingy done w/ sprites
-        dstPosition -= {dstSize.x() * 0.5f, 0};
-        Rectangle dstRect = Rectangle(dstPosition.x(), dstPosition.y(), dstSize.x(), dstSize.y());
+        dstPosition -= {dstSize.x * 0.5f, 0};
+        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
         DrawRectangleRec(dstRect, draw.color);
     }
 }

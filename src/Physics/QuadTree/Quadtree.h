@@ -64,8 +64,8 @@ private:
         assert(i >= 0 && i <= 3 && "i not between 0-3");
 
         auto center = box.getPosition();
-        const Vector2f exactHalf = toFloatVec(box.getHalf()) / 2;
-        const Vector2i biggerHalf(std::round(exactHalf.x()), std::round(exactHalf.y()));
+        const Vector2f exactHalf = box.getHalf().as<f32>() / 2;
+        const Vector2i biggerHalf(std::round(exactHalf.x), std::round(exactHalf.y));
 
         // if the current quadrant's half is an odd number on either axis, give the extra pixel to the West/South halves.
         const Vector2i smallerHalf = box.getHalf() - biggerHalf;
@@ -73,23 +73,23 @@ private:
         switch (i) {
         // North West
         case 0: {
-            Vector2i halflen(biggerHalf.x(), smallerHalf.y());
-            return AABB(center + Vector2i(-halflen.x(), halflen.y()), halflen);
+            Vector2i halflen(biggerHalf.x, smallerHalf.y);
+            return AABB(center + Vector2i(-halflen.x, halflen.y), halflen);
         }
         // North East
         case 1: {
-            Vector2i halflen(smallerHalf.x(), smallerHalf.y());
-            return AABB(center + Vector2i(halflen.x(), halflen.y()), halflen);
+            Vector2i halflen(smallerHalf.x, smallerHalf.y);
+            return AABB(center + Vector2i(halflen.x, halflen.y), halflen);
         }
         // South West
         case 2: {
-            Vector2i halflen(biggerHalf.x(), biggerHalf.y());
-            return AABB(center + Vector2i(-halflen.x(), -halflen.y()), halflen);
+            Vector2i halflen(biggerHalf.x, biggerHalf.y);
+            return AABB(center + Vector2i(-halflen.x, -halflen.y), halflen);
         }
         // South East
         case 3: {
-            Vector2i halflen(smallerHalf.x(), biggerHalf.y());
-            return AABB(center + Vector2i(halflen.x(), -halflen.y()), halflen);
+            Vector2i halflen(smallerHalf.x, biggerHalf.y);
+            return AABB(center + Vector2i(halflen.x, -halflen.y), halflen);
         }
         default:
             return AABB();  // should never run due to assert
@@ -99,24 +99,24 @@ private:
     s32 getQuadrant(const AABB& nodeBox, const AABB& valueBox) const {
         auto center = nodeBox.getPosition();
         // West
-        if (valueBox.right() < center.x()) {
+        if (valueBox.right() < center.x) {
             // South West
-            if (valueBox.top() < center.y())
+            if (valueBox.top() < center.y)
                 return 2;
             // North West
-            else if (valueBox.bottom() >= center.y())
+            else if (valueBox.bottom() >= center.y)
                 return 0;
             // Not contained in any quadrant
             else
                 return -1;
         }
         // East
-        else if (valueBox.left() >= center.x()) {
+        else if (valueBox.left() >= center.x) {
             // South East
-            if (valueBox.top() < center.y())
+            if (valueBox.top() < center.y)
                 return 3;
             // North East
-            else if (valueBox.bottom() >= center.y())
+            else if (valueBox.bottom() >= center.y)
                 return 1;
             // Not contained in any quadrant
             else

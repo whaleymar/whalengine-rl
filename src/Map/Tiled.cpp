@@ -108,9 +108,9 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
         lightEntity.add(Transform2D(level.worldOffsetPixels +
-                                    toIntVec(level.sizeTexels * 0.5 + Vector2f(-FTEXELS_PER_TILE / 2, FTEXELS_PER_TILE)) * PIXELS_PER_TEXEL));
+                                    (level.sizeTexels * 0.5 + Vector2f(-FTEXELS_PER_TILE / 2, FTEXELS_PER_TILE)).as<s32>() * PIXELS_PER_TEXEL));
 
-        BoxLight boxLight = {{3 * TEXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, toIntVec(level.sizeTexels * 0.5)};
+        BoxLight boxLight = {{3 * TEXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, (level.sizeTexels * 0.5).as<s32>()};
         lightEntity.add(boxLight);
 
         level.childEntities.insert(lightEntity);
@@ -306,7 +306,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     Vector2i offset;
     tryReadVector2i(layer, "offsetx", "offsety", &offset);
 
-    position += offset + toIntVec(level.worldPosOriginTexels);
+    position += offset + level.worldPosOriginTexels.as<s32>();
 
     bool isRepeatX = false;
     tryReadBool(layer, "repeatx", &isRepeatX);
@@ -451,7 +451,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 
     Frame fullFrame = *tsetFrameOpt;
     Frame newFrame = {
-        {fullFrame.atlasPositionTexels.x() + colIx * tset->tileWidthTexels, fullFrame.atlasPositionTexels.y() + rowIx * tset->tileHeightTexels},
+        {fullFrame.atlasPositionTexels.x + colIx * tset->tileWidthTexels, fullFrame.atlasPositionTexels.y + rowIx * tset->tileHeightTexels},
         {tset->tileWidthTexels, tset->tileHeightTexels}};
     return newFrame;
 }
@@ -556,10 +556,10 @@ Transform2D getTransformFromMapPosition(Vector2i positionTexels, Vector2i dimens
     // heights to match tiles, but points need manual adjustment
 
     if (isPoint) {
-        positionTexels.e[1] += TEXELS_PER_TILE / 2;
+        positionTexels.y += TEXELS_PER_TILE / 2;
     }
-    Transform2D trans = Transform2D::texels(positionTexels.x() + dimensionsTexels.x() * 0.5 - TEXELS_PER_TILE / 2,
-                                            level.sizeTexels.y() - positionTexels.y() - dimensionsTexels.y() + TEXELS_PER_TILE);
+    Transform2D trans = Transform2D::texels(positionTexels.x + dimensionsTexels.x * 0.5 - TEXELS_PER_TILE / 2,
+                                            level.sizeTexels.y - positionTexels.y - dimensionsTexels.y + TEXELS_PER_TILE);
     trans.position += level.worldOffsetPixels;
     return trans;
 }

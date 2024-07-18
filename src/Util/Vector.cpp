@@ -7,19 +7,7 @@ using std::ostream;
 
 template <typename T>
 std::ostream& operator<<(std::ostream& out, Vector2T<T> const& self) {
-    return out << "(" << self.e[0] << ", " << self.e[1] << ")";
-}
-
-Vector2f toFloatVec(const Vector2i intVec) {
-    return Vector2f(static_cast<f32>(intVec.x()), static_cast<f32>(intVec.y()));
-}
-
-Vector2i toIntVec(const Vector2f floatVec) {
-    return Vector2i(static_cast<s32>(floatVec.x()), static_cast<s32>(floatVec.y()));
-}
-
-Vector2i toIntVecRounded(const Vector2f floatVec) {
-    return Vector2i(std::roundf(floatVec.x()), std::roundf(floatVec.y()));
+    return out << "(" << self.x << ", " << self.y << ")";
 }
 
 Vector2f fromRaylib(Vector2 rlVec) {

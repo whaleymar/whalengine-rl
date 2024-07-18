@@ -72,7 +72,7 @@ struct Transform2D {
 struct PrecisePosition {
     Vector2f position;
 
-    static PrecisePosition fromTrans(Transform2D trans) { return PrecisePosition{toFloatVec(trans.position)}; }
+    static PrecisePosition fromTrans(Transform2D trans) { return PrecisePosition{trans.position.as<f32>()}; }
 };
 
 }  // namespace whal
