@@ -81,8 +81,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 96.16666666666666
+                "x": -404.3333333333333,
+                "y": 226.16666666666666
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -112,7 +112,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160,
-                "y": 96.16666666666666
+                "y": 95.83333333333333
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -123,7 +123,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160,
-                "y": 96.16666666666666
+                "y": 95.83333333333333
             }
         },
         "world1-rockettutorial.tmj": {
@@ -134,7 +134,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160,
-                "y": 96.16666666666666
+                "y": 95.83333333333333
             }
         },
         "world1-start.tmj": {
@@ -144,8 +144,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 259.6666666666667,
-                "y": 72.83333333333334
+                "x": 753.6666666666666,
+                "y": -95.16666666666666
             }
         },
         "world1.tmj": {
@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Material",
+    "property.type": "float",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",

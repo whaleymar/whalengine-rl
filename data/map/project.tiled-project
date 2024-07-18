@@ -265,10 +265,21 @@
             "id": 44,
             "members": [
                 {
+                    "name": "Depth",
+                    "propertyType": "Depth",
+                    "type": "int",
+                    "value": 4
+                },
+                {
                     "name": "Direction",
                     "propertyType": "CollisionDir",
                     "type": "int",
                     "value": 0
+                },
+                {
+                    "name": "LifetimeMultiplier",
+                    "type": "float",
+                    "value": 1
                 },
                 {
                     "name": "Material",
@@ -752,7 +763,8 @@
                 "Rubber",
                 "Dust",
                 "Fire",
-                "Ember"
+                "Ember",
+                "Poison"
             ],
             "valuesAsFlags": false
         },

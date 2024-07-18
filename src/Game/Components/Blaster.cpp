@@ -50,7 +50,7 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
 
     animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
         auto& sprite = self.get<Draw>().getSprite();
-        f32 unsquishStep = System::dt();
+        const f32 unsquishStep = System::dt();
         sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
 
         ecs::Entity owner = ecs::Entity(self.get<Attach>().targetEntityID);
@@ -289,7 +289,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     constexpr f32 silLifetime = 1.5;
     if (entity.has<Draw>() && entity.get<Draw>().getTag() == Draw::DrawTag::Sprite) {
         u32 eventId = System::schedule.eventFlow({entity})
-                          .add([](ecs::Entity e) { e.add(ParticleEmitter(WorldMaterial::Fire, CollisionDir::ALL, 50, 0)); }, entity)
+                          .add([](ecs::Entity e) { e.add(ParticleEmitter(WorldMaterial::Fire, CollisionDir::ALL, Depth::Level, 50, 0)); }, entity)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)

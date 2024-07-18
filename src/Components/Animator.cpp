@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "Components/Draw.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Texture.h"
@@ -22,6 +23,17 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
         return true;
     }
     return false;
+}
+
+bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
+    Draw& draw = entity.get<Draw>();
+
+    if (draw.getTag() == Draw::DrawTag::Sprite) {
+        Sprite& sprite = draw.getSprite();
+        const f32 unsquishStep = System::dt();
+        sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
+    }
+    return basicAnimation(animator, entity);
 }
 
 Animator::Animator(std::vector<Animation> animations_, AnimBrain brain_) : animations(animations_), brain(brain_) {}

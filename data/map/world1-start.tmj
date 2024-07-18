@@ -326,11 +326,10 @@
                  "y":112
                 }, 
                 {
-                 "id":32,
+                 "id":34,
                  "template":"templates\/BlastCrystal.tj",
-                 "type":"Entity",
-                 "x":90,
-                 "y":108
+                 "x":82,
+                 "y":102
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -339,7 +338,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":33,
+ "nextobjectid":36,
  "orientation":"orthogonal",
  "properties":[
         {

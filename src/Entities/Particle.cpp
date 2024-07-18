@@ -52,7 +52,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lif
     return particle;
 }
 
-Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth) {
+Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();
 
@@ -67,7 +67,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add(PrecisePosition::fromTrans(transform));
     particle.add<Particle>();
     particle.add<Velocity>();
-    materialData.addComponents(particle, 1, color);
+    materialData.addComponents(particle, 1, color, lifetimeMultiplier);
 
     auto _ = ecs::DeferActivate(particle);
 

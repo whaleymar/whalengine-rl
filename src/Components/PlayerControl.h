@@ -32,7 +32,7 @@ struct Jumper {
     bool canJump() const;
 
     // RESEARCH jumpHeight param instead?
-    f32 jumpInitialVelocity = 124;
+    f32 jumpInitialVelocity = 130;
     f32 jumpSecondsMax = 1.25;
     f32 coyoteTimeSecondsMax = 0.1;
 
