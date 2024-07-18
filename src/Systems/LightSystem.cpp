@@ -50,7 +50,7 @@ void PointLightSystem::update() {
         }
         PointLight light = entity.get<PointLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
-        Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
+        Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
@@ -68,11 +68,11 @@ void PointLightSystem::update() {
         color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
         radius = std::lerp(radius / 2, radius, intensity);
 
-        Vector2 screenPosV(screenPosition.x(), screenPosition.y());
+        Vector2 screenPosV(screenPosition.x, screenPosition.y);
         SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
+        Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
 
@@ -108,7 +108,7 @@ void BoxLightSystem::update() {
 
         BoxLight light = entity.get<BoxLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
-        Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
+        Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
@@ -129,16 +129,16 @@ void BoxLightSystem::update() {
         color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
         radius = std::lerp(radius / 2, radius, intensity);
 
-        Vector2 screenPosV(screenPosition.x(), screenPosition.y());
-        Vector2 halfLenV(light.halfLenTexels.x() * PIXELS_PER_TEXEL, light.halfLenTexels.y() * PIXELS_PER_TEXEL);
+        Vector2 screenPosV(screenPosition.x, screenPosition.y);
+        Vector2 halfLenV(light.halfLenTexels.x * PIXELS_PER_TEXEL, light.halfLenTexels.y * PIXELS_PER_TEXEL);
         f32 fRadius = static_cast<f32>(radius);
         SetShaderValue(shader, mPositionUniform, &screenPosV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mHalflenUniform, &halfLenV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mRadiusUniform, &fRadius, SHADER_UNIFORM_FLOAT);
 
-        Vector2i lightBounds(radius + light.halfLenTexels.x() * PIXELS_PER_TEXEL, radius + light.halfLenTexels.y() * PIXELS_PER_TEXEL);
+        Vector2i lightBounds(radius + light.halfLenTexels.x * PIXELS_PER_TEXEL, radius + light.halfLenTexels.y * PIXELS_PER_TEXEL);
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x() - lightBounds.x(), screenPosition.y() - lightBounds.y(), lightBounds.x() * 2, lightBounds.y() * 2);
+        Rectangle dstRect(screenPosition.x - lightBounds.x, screenPosition.y - lightBounds.y, lightBounds.x * 2, lightBounds.y * 2);
 
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
         EndShaderMode();
@@ -170,7 +170,7 @@ void RadianceLightSystem::update() {
 
         Radiance light = entity.get<Radiance>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
-        Vector2i screenPosition(worldPosition.x() - cameraPos.x(), -1 * worldPosition.y() + cameraPos.y());
+        Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
@@ -185,11 +185,11 @@ void RadianceLightSystem::update() {
         }
         radius = std::lerp(0, radius, intensity);
 
-        Vector2 screenPosV(screenPosition.x(), screenPosition.y());
+        Vector2 screenPosV(screenPosition.x, screenPosition.y);
         SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
         Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x() - radius, screenPosition.y() - radius, radius * 2, radius * 2);
+        Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
 

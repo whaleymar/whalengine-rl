@@ -75,7 +75,7 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture
         Vector2i dimensions = {std::stoi(spriteNode->first_attribute("w")->value()), std::stoi(spriteNode->first_attribute("h")->value())};
 
         // ignoring trim and rotate unless i need them
-        Rectangle frame = Rectangle(atlasPosition.x(), atlasPosition.y(), dimensions.x(), dimensions.y());
+        Rectangle frame = Rectangle(atlasPosition.x, atlasPosition.y, dimensions.x, dimensions.y);
         mTable.insert({name, frame});
     }
 
@@ -271,25 +271,25 @@ void TextureManager::drawBackgroundTextures() {
     Rectangle screenSourceRec;
 
     // const Vector2f cameraPos = getCameraPositionPrecise();
-    const Vector2f cameraPos = toFloatVec(getCameraPosition());
+    const Vector2f cameraPos = getCameraPosition().as<f32>();
 
     auto checkWrapping = [](const Vector2f cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
-        f32 distance = cameraPos.x() - (bgdata.worldPosTopLeftTexels.x() * FPIXELS_PER_TEXEL);
-        s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x());
-        s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x()));
+        f32 distance = cameraPos.x - (bgdata.worldPosTopLeftTexels.x * FPIXELS_PER_TEXEL);
+        s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x);
+        s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x));
         if (bgdata.isRepeatX) {
-            scrollVar.e[0] = (texWidth - (effectiveDistance % texWidth) - offset) % texWidth;
+            scrollVar.x = (texWidth - (effectiveDistance % texWidth) - offset) % texWidth;
         } else {
-            scrollVar.e[0] = texWidth - effectiveDistance - offset;
+            scrollVar.x = texWidth - effectiveDistance - offset;
         }
 
-        distance = cameraPos.y() + texHeight - (bgdata.worldPosTopLeftTexels.y() * FPIXELS_PER_TEXEL);
-        offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y());
-        effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y()));
+        distance = cameraPos.y + texHeight - (bgdata.worldPosTopLeftTexels.y * FPIXELS_PER_TEXEL);
+        offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y);
+        effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y));
         if (bgdata.isRepeatY) {
-            scrollVar.e[1] = (texHeight - (effectiveDistance % texHeight) - offset) % texHeight;
+            scrollVar.y = (texHeight - (effectiveDistance % texHeight) - offset) % texHeight;
         } else {
-            scrollVar.e[1] = texHeight - effectiveDistance - offset;
+            scrollVar.y = texHeight - effectiveDistance - offset;
         }
     };
 
@@ -307,51 +307,51 @@ void TextureManager::drawBackgroundTextures() {
     screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
     auto drawBG = [](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset, Color color = WHITE) -> void {
         DrawTexturePro(texture, screenSourceRec,
-                       {offset.x() - PIXELS_PER_TILE / 2, offset.y() + PIXELS_PER_TILE / 2, (f32)texture.width, (f32)texture.height}, {0.0f, 0.0f},
-                       0.0f, color);
+                       {offset.x - PIXELS_PER_TILE / 2, offset.y + PIXELS_PER_TILE / 2, (f32)texture.width, (f32)texture.height}, {0.0f, 0.0f}, 0.0f,
+                       color);
     };
 
     auto drawBackgrounds = [drawBG](RenderTexture2D tex, Rectangle screenSourceRec, const BGData bgdata, Vector2f& scrollVar) {
         screenSourceRec = {0.0f, 0.0f, static_cast<f32>(tex.texture.width), -1 * static_cast<f32>(tex.texture.height)};
 
-        drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -scrollVar.y()});
+        drawBG(tex.texture, screenSourceRec, {scrollVar.x, -scrollVar.y});
         if (bgdata.isRepeatX && bgdata.isRepeatY) {
             // repeat right:
-            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x, -scrollVar.y});
 
             // repeat left:
-            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x, -scrollVar.y});
 
             // repeat up:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x, tex.texture.height - scrollVar.y});
 
             // repeat down:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x, -tex.texture.height - scrollVar.y});
 
             // repeat top right
-            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x, tex.texture.height - scrollVar.y});
 
             // repeat top left
-            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x, tex.texture.height - scrollVar.y});
 
             // repeat bottom right
-            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x, -tex.texture.height - scrollVar.y});
 
             // repeat bottom left
-            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x, -tex.texture.height - scrollVar.y});
 
         } else if (bgdata.isRepeatX) {
             // repeat right:
-            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {tex.texture.width + scrollVar.x, -scrollVar.y});
 
             // repeat left:
-            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x(), -scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {-tex.texture.width + scrollVar.x, -scrollVar.y});
         } else if (bgdata.isRepeatY) {
             // repeat up:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x, tex.texture.height - scrollVar.y});
 
             // repeat down:
-            drawBG(tex.texture, screenSourceRec, {scrollVar.x(), -tex.texture.height - scrollVar.y()});
+            drawBG(tex.texture, screenSourceRec, {scrollVar.x, -tex.texture.height - scrollVar.y});
         }
     };
 

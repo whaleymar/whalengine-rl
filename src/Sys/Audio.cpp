@@ -117,7 +117,7 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         // 1 = 100% 3D, 0 = 100% 2D
         mMusicChannel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
         mMusicChannel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
-        FMOD_VECTOR vec = FMOD_VECTOR(position->x(), position->y(), 0);
+        FMOD_VECTOR vec = FMOD_VECTOR(position->x, position->y, 0);
         result = mMusicChannel->set3DAttributes(&vec, nullptr);
         if (result != FMOD_OK) {
             print("Got error setting channel position: ", FMOD_ErrorString(result));
@@ -216,7 +216,7 @@ void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* chan
         // 1 = 100% 3D, 0 = 100% 2D
         channel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
         channel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
-        FMOD_VECTOR vec = FMOD_VECTOR(position->x(), position->y(), 0);
+        FMOD_VECTOR vec = FMOD_VECTOR(position->x, position->y, 0);
         auto result = channel->set3DAttributes(&vec, nullptr);
         if (result != FMOD_OK) {
             print("Got error setting channel position: ", FMOD_ErrorString(result));
@@ -264,7 +264,7 @@ void AudioPlayer::setMusicVolume(f32 volume) {
 }
 
 void AudioPlayer::setListenerPosition(Vector2i worldPosition) {
-    FMOD_VECTOR position = FMOD_VECTOR(worldPosition.x(), worldPosition.y(), 0);
+    FMOD_VECTOR position = FMOD_VECTOR(worldPosition.x, worldPosition.y, 0);
     auto result = mSystem->set3DListenerAttributes(0, &position, nullptr, nullptr, nullptr);
     if (result != FMOD_OK) {
         print("Error setting AudioListener position: ", FMOD_ErrorString(result));

@@ -55,7 +55,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     animator.setLooping(false);
     // ----
 
-    Transform2D trans = Transform2D(center - Vector2i(0, animator.getFrame().dimensionsTexels.y() * PIXELS_PER_TEXEL / 2));
+    Transform2D trans = Transform2D(center - Vector2i(0, animator.getFrame().dimensionsTexels.y * PIXELS_PER_TEXEL / 2));
     entity.add(trans);
 
     entity.add(PushStrength(pushStrength));
@@ -69,7 +69,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
 
         Trigger& trigger = self.get<Trigger>();
         Vector2i center = trigger.shape.getPosition();
-        Vector2f delta = toFloatVec(otherShape.getPosition() - center);
+        Vector2f delta = (otherShape.getPosition() - center).as<f32>();
         Vector2f unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
 
         // slight knockback falloff based on distance
@@ -96,21 +96,21 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         // for each axis we're boosting in, check if we're changing direction
         // if we are, zero current velocity in that direction before applying force
         // otherwise, check if we're already in an RJ state. If we are, reduce the additional force we're adding
-        if (impulse.x() != 0) {
-            if (sign(vel.stable.x()) != sign(impulse.x())) {
-                vel.stable.e[0] = 0;
+        if (impulse.x != 0) {
+            if (sign(vel.stable.x) != sign(impulse.x)) {
+                vel.stable.x = 0;
 
             } else if (isRJStateOn) {
-                impulse.e[0] *= RJ_DECAY;
+                impulse.x *= RJ_DECAY;
             }
         }
 
-        if (impulse.y() != 0) {
-            if (sign(vel.stable.y()) != sign(impulse.y())) {
-                vel.stable.e[1] = 0;
+        if (impulse.y != 0) {
+            if (sign(vel.stable.y) != sign(impulse.y)) {
+                vel.stable.y = 0;
 
             } else if (isRJStateOn) {
-                impulse.e[1] *= RJ_DECAY;
+                impulse.y *= RJ_DECAY;
             }
         }
 
@@ -132,9 +132,9 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         // ADD ROCKET JUMPING COMPONENT
         if (other.has<PlayerControl>()) {
             auto& otherTrans = other.get<Transform2D>();
-            if (unitDelta.x() > 0) {
+            if (unitDelta.x > 0) {
                 otherTrans.facing = Facing::Right;
-            } else if (unitDelta.x() < 0) {
+            } else if (unitDelta.x < 0) {
                 otherTrans.facing = Facing::Left;
             }
 
@@ -160,7 +160,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     entity.add(PointLight({TEXELS_PER_TILE * 5, halflen / PIXELS_PER_TEXEL}));
 
     // scale volume with distance from camera
-    f32 distance = toFloatVec(getCameraPosition() - trans.position).len();
+    f32 distance = (getCameraPosition() - trans.position).as<f32>().len();
     f32 maxVolume = 0.2f;
     f32 maxDistance = 1500.0f;
     f32 volume = easeOutQuad(maxVolume, 0.0f, distance / maxDistance);

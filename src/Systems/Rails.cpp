@@ -37,13 +37,13 @@ void RailsSystem::update() {
         }
         auto& transform = entity.get<Transform2D>();
 
-        const Vector2f delta = toFloatVec(rails.getTarget().position - transform.position);
+        const Vector2f delta = (rails.getTarget().position - transform.position).as<f32>();
         f32 distance = delta.len();
 
         // scale checkpoint threshold with speed
         f32 entitySpeed = [entity]() -> f32 {
             auto velOpt = entity.tryGet<Velocity>();
-            if (!velOpt || ((*velOpt)->stable.x() == 0 && (*velOpt)->stable.y() == 0)) {
+            if (!velOpt || ((*velOpt)->stable.x == 0 && (*velOpt)->stable.y == 0)) {
                 return 0;
             }
             return (*velOpt)->stable.len();
@@ -68,7 +68,7 @@ void RailsSystem::update() {
                         entity.add<Velocity>();
                         rails.curActionTime = rails.waitTime;
                     } else {
-                        Velocity velToAdd = Velocity(toFloatVec(newDelta).norm() * rails.getSpeed(transform.position));
+                        Velocity velToAdd = Velocity(newDelta.as<f32>().norm() * rails.getSpeed(transform.position));
                         entity.add<Velocity>(velToAdd);
                     }
 

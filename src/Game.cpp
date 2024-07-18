@@ -412,7 +412,7 @@ Corrade::Containers::Optional<Error> Game::loadScene(const char* filename, bool 
         }
         setCameraPosition(cameraFocus);
     }
-    updateLoadedLevels(toFloatVec(startPos));
+    updateLoadedLevels(startPos.as<f32>());
 
     mIsSceneLoaded = true;
     return NULLOPT;
@@ -497,7 +497,7 @@ void Game::checkIfInNewLevel(bool overrideCache) {
     Vector2i playerPosition = player.get<Transform2D>().position;
     if (player.has<Collider>()) {
         // add halfX so visually the middle of the player has to enter the new level for it to change
-        playerPosition += Vector2i(player.get<Collider>().getShape().getHalf().x(), 0);
+        playerPosition += Vector2i(player.get<Collider>().getShape().getHalf().x, 0);
     }
     auto levelOpt = mActiveScene.getLevelAt(playerPosition);
 

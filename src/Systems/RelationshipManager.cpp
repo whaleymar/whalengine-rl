@@ -74,14 +74,14 @@ void FollowSystem::update() {
         ecs::Entity targetEntity(follow.targetEntityID);
         Transform2D targetTrans = targetEntity.get<Transform2D>();
         // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
-        f32 lookAheadX = follow.lookAheadTexels.x();
-        f32 lookAheadY = follow.lookAheadTexels.y();
+        f32 lookAheadX = follow.lookAheadTexels.x;
+        f32 lookAheadY = follow.lookAheadTexels.y;
         bool isTargetMovingX = false;
         bool isTargetMovingY = false;
         bool isMovingUp = false;
         if (auto velOpt = targetEntity.tryGet<Velocity>(); velOpt) {
-            f32 velx = (*velOpt)->total.x();
-            f32 vely = (*velOpt)->total.y();
+            f32 velx = (*velOpt)->total.x;
+            f32 vely = (*velOpt)->total.y;
             lookAheadX *= clamp(abs(velx) * 0.1f, 0.0f, 1.0f);
             lookAheadY *= clamp(abs(vely) * 0.1f, 0.0f, 1.0f);
             isTargetMovingX = abs(velx) > 1;
@@ -92,53 +92,53 @@ void FollowSystem::update() {
         s32 target;
         if (follow.isMovingX && isTargetMovingX) {
             s32 direction = targetTrans.facing == Facing::Right ? 1 : -1;
-            target = targetTrans.position.x() + direction * lookAheadX * PIXELS_PER_TEXEL;
+            target = targetTrans.position.x + direction * lookAheadX * PIXELS_PER_TEXEL;
         } else {
-            target = targetTrans.position.x();
+            target = targetTrans.position.x;
         }
-        s32 min = follow.boundsXTexels.e[0] * PIXELS_PER_TEXEL;
-        s32 max = follow.boundsXTexels.e[1] * PIXELS_PER_TEXEL;
+        s32 min = follow.boundsXTexels.x * PIXELS_PER_TEXEL;
+        s32 max = follow.boundsXTexels.y * PIXELS_PER_TEXEL;
         s32 currentTarget = clamp(target, min, max);
-        s32 distanceFromTarget = abs(currentTarget - trans.position.x()) * PIXELS_PER_TEXEL;
+        s32 distanceFromTarget = abs(currentTarget - trans.position.x) * PIXELS_PER_TEXEL;
 
         // if the target is not moving, we shouldn't move away from it
         if (follow.isMovingX && !isTargetMovingX &&
-            ((targetTrans.position.x() <= trans.position.x() && trans.position.x() <= follow.currentTarget.x()) ||
-             (targetTrans.position.x() >= trans.position.x() && trans.position.x() >= follow.currentTarget.x()))) {
-            follow.currentTarget.e[0] = trans.position.x();
+            ((targetTrans.position.x <= trans.position.x && trans.position.x <= follow.currentTarget.x) ||
+             (targetTrans.position.x >= trans.position.x && trans.position.x >= follow.currentTarget.x))) {
+            follow.currentTarget.x = trans.position.x;
             follow.isMovingX = false;
-        } else if (distanceFromTarget > follow.deadZoneTexels.x()) {
-            follow.currentTarget.e[0] = currentTarget;
+        } else if (distanceFromTarget > follow.deadZoneTexels.x) {
+            follow.currentTarget.x = currentTarget;
             follow.isMovingX = true;
         }
 
         if (follow.isMovingY && isTargetMovingY) {
             s32 direction = isMovingUp ? 1 : -1;
-            target = targetTrans.position.y() + direction * lookAheadY * PIXELS_PER_TEXEL;
+            target = targetTrans.position.y + direction * lookAheadY * PIXELS_PER_TEXEL;
         } else {
-            target = targetTrans.position.y();
+            target = targetTrans.position.y;
         }
-        min = follow.boundsYTexels.e[0] * PIXELS_PER_TEXEL;
-        max = follow.boundsYTexels.e[1] * PIXELS_PER_TEXEL;
+        min = follow.boundsYTexels.x * PIXELS_PER_TEXEL;
+        max = follow.boundsYTexels.y * PIXELS_PER_TEXEL;
         currentTarget = clamp(target, min, max);
-        distanceFromTarget = abs(currentTarget - trans.position.y()) * PIXELS_PER_TEXEL;
+        distanceFromTarget = abs(currentTarget - trans.position.y) * PIXELS_PER_TEXEL;
 
-        if (distanceFromTarget > follow.deadZoneTexels.y()) {
-            follow.currentTarget.e[1] = currentTarget;
+        if (distanceFromTarget > follow.deadZoneTexels.y) {
+            follow.currentTarget.y = currentTarget;
             follow.isMovingY = true;
         }
 
         // TEMP
         Velocity& vel = entity.get<Velocity>();
         // Velocity vel = entity.get<Velocity>();
-        f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x() - trans.position.x())) * FTEXELS_PER_PIXEL;
-        f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y() - trans.position.y()) * FTEXELS_PER_PIXEL;
+        f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x - trans.position.x)) * FTEXELS_PER_PIXEL;
+        f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y - trans.position.y) * FTEXELS_PER_PIXEL;
 
-        if (abs(targetSpeedX) > abs(vel.stable.x())) {
-            targetSpeedX = myLerp(vel.stable.x(), targetSpeedX, follow.damping.x());
+        if (abs(targetSpeedX) > abs(vel.stable.x)) {
+            targetSpeedX = myLerp(vel.stable.x, targetSpeedX, follow.damping.x);
         }
-        if (abs(targetSpeedY) > abs(vel.stable.y())) {
-            targetSpeedY = myLerp(vel.stable.y(), targetSpeedY, follow.damping.y());
+        if (abs(targetSpeedY) > abs(vel.stable.y)) {
+            targetSpeedY = myLerp(vel.stable.y, targetSpeedY, follow.damping.y);
         }
 
         vel.stable = {targetSpeedX, targetSpeedY};
@@ -146,21 +146,21 @@ void FollowSystem::update() {
 
         // don't go too slow
         f32 minspeed = 1.91;  // min speed for rounding to not zero at 60fps
-        if (vel.stable.x() > 0 && vel.stable.x() < minspeed) {
-            vel.stable.e[0] = minspeed;
-        } else if (vel.stable.x() < 0 && vel.stable.x() > -minspeed) {
-            vel.stable.e[0] = -minspeed;
+        if (vel.stable.x > 0 && vel.stable.x < minspeed) {
+            vel.stable.x = minspeed;
+        } else if (vel.stable.x < 0 && vel.stable.x > -minspeed) {
+            vel.stable.x = -minspeed;
         }
 
-        if (vel.stable.x() == 0 || !isTargetMovingX) {
+        if (vel.stable.x == 0 || !isTargetMovingX) {
             follow.isMovingX = false;
         }
 
-        if (vel.stable.y() > 0 && vel.stable.y() < minspeed) {
-            vel.stable.e[1] = minspeed;
-        } else if (vel.stable.y() < 0 && vel.stable.y() > -minspeed) {
-            vel.stable.e[1] = -minspeed;
-        } else if (vel.stable.y() == 0) {
+        if (vel.stable.y > 0 && vel.stable.y < minspeed) {
+            vel.stable.y = minspeed;
+        } else if (vel.stable.y < 0 && vel.stable.y > -minspeed) {
+            vel.stable.y = -minspeed;
+        } else if (vel.stable.y == 0) {
             follow.isMovingY = false;
         }
 

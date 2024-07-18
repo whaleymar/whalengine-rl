@@ -28,7 +28,7 @@ void RailsControl::startManually() {
 }
 
 void RailsControl::step() {
-    startPosition = toFloatVec(getTarget().position);
+    startPosition = getTarget().position.as<f32>();
 
     if (isForward) {
         curTarget++;
@@ -63,7 +63,7 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
 
     // TODO use derivates of easein/out functions
 
-    const Vector2f targetPosf = toFloatVec(getTarget().position);
+    const Vector2f targetPosf = getTarget().position.as<f32>();
 
     const f32 segmentDistance = (targetPosf - startPosition).len();
     const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in texels/sec, but pos is in pixels
@@ -108,13 +108,13 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
         isVelocityUpdateNeeded = false;
     }
     const Vector2f newPos = lerp(startPosition, targetPosf, progress);
-    return (newPos - toFloatVec(currentPosition)).len() * TEXELS_PER_TILE;  // idfk why this works
+    return (newPos - currentPosition.as<f32>()).len() * TEXELS_PER_TILE;  // idfk why this works
 }
 
 f32 RailsControl::getSpeedNew() {
     // this isn't working for some reason
     // these can be calced once per segment
-    const Vector2f targetPosf = toFloatVec(getTarget().position);
+    const Vector2f targetPosf = getTarget().position.as<f32>();
     const f32 segmentDistance = (targetPosf - startPosition).len();
     const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in tiles/sec, but pos is in pixels
 
@@ -171,11 +171,11 @@ void RailsControl::prepareForFirstStep(Transform2D& trans) {
     if (isValid()) {
         // set transform to match starting checkpoint
         Vector2i target = getTarget().position;
-        startPosition = toFloatVec(target);
+        startPosition = target.as<f32>();
         trans.position = target;
     } else {
         // o.w., make sure start position matches transform
-        startPosition = toFloatVec(trans.position);
+        startPosition = trans.position.as<f32>();
     }
 }
 

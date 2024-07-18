@@ -33,38 +33,38 @@ void ParticleEmitterSystem::update() {
         }
 
         const AABB spawnZone(trans, emitter.aabbHalfTexels * PIXELS_PER_TEXEL);
-        const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x() * locationSampleX));
-        const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y() * locationSampleY));
+        const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
+        const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
 
         // Vector2f velocity = speedSample * emitter.maxSpeedTexelsPerSecond;
         Vector2f velocity = sampleSpeed * emitter.maxSpeedTexelsPerSecond;
         Vector2i spawnLocation;
         if (emitter.direction == CollisionDir::UP) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
-            velocity.e[0] *= PERPENDICULAR_DAMPING;
-            if (velocity.y() < 0) {
-                velocity.e[1] *= -1;
+            velocity.x *= PERPENDICULAR_DAMPING;
+            if (velocity.y < 0) {
+                velocity.y *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::LEFT) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitLeft) + Vector2i(0, spawnOffsetY);
-            velocity.e[1] *= PERPENDICULAR_DAMPING;
-            if (velocity.x() > 0) {
-                velocity.e[0] *= -1;
+            velocity.y *= PERPENDICULAR_DAMPING;
+            if (velocity.x > 0) {
+                velocity.x *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::RIGHT) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitRight) + Vector2i(0, spawnOffsetY);
-            velocity.e[1] *= PERPENDICULAR_DAMPING;
-            if (velocity.x() < 0) {
-                velocity.e[0] *= -1;
+            velocity.y *= PERPENDICULAR_DAMPING;
+            if (velocity.x < 0) {
+                velocity.x *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::DOWN) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitDown) + Vector2i(spawnOffsetX, 0);
-            velocity.e[0] *= PERPENDICULAR_DAMPING;
-            if (velocity.y() > 0) {
-                velocity.e[1] *= -1;
+            velocity.x *= PERPENDICULAR_DAMPING;
+            if (velocity.y > 0) {
+                velocity.y *= -1;
             }
 
         } else {

@@ -36,17 +36,17 @@ void ControllerSystem::update() {
         const f32 approachSpeed = APPROACH_SPEED_X * System::dt() * control.moveSpeed;
         if (impulseX != 0) {
             f32 approachFrom;
-            approachFrom = vel.stable.x();
-            if (sign(impulseX) == sign(vel.stable.x())) {
+            approachFrom = vel.stable.x;
+            if (sign(impulseX) == sign(vel.stable.x)) {
                 if (abs(approachFrom) < control.moveSpeed) {
                     // approach max move speed
                     impulseX = approach(approachFrom, impulseX, approachSpeed);
-                    vel.stable.e[0] = impulseX;
+                    vel.stable.x = impulseX;
                 }
             } else {
                 approachFrom = 0;
                 impulseX = approach(approachFrom, impulseX, approachSpeed);
-                vel.stable.e[0] += impulseX;
+                vel.stable.x += impulseX;
             }
         }
 
@@ -112,17 +112,17 @@ void JumpSystem::update() {
                 jumpControl.buffer.consume();
                 jumpControl.isJumping = true;
 
-                if (vel.stable.y() < 0) {
-                    vel.stable.e[1] = 0;
+                if (vel.stable.y < 0) {
+                    vel.stable.y = 0;
                 }
 
                 impulseY += jumpControl.jumpInitialVelocity;
                 jumpControl.jumpSecondsRemaining = jumpControl.jumpSecondsMax;
 
                 Direction direction = Direction::N;
-                if (vel.total.x() > 0) {
+                if (vel.total.x > 0) {
                     direction = Direction::NE;
-                } else if (vel.total.x() < 0) {
+                } else if (vel.total.x < 0) {
                     direction = Direction::NW;
                 }
                 particleBurst(entity.get<Transform2D>(), direction, rb.groundMaterial, 8, Depth::Foreground1);

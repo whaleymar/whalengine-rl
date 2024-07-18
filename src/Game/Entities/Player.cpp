@@ -70,15 +70,15 @@ bool brain(Animator& animator, ecs::Entity entity) {
     auto& sprite = entity.get<Draw>().getSprite();
 
     f32 unsquishStep = System::dt() * 1.50;
-    sprite.scale = {approach(sprite.scale.x(), 1.0, unsquishStep), approach(sprite.scale.y(), 1.0, unsquishStep)};
+    sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
     if (rb.isGrounded) {
         if (rb.isLanding) {
-            f32 squishAmount = std::min(abs(vel.total.y()) / abs(TERMINAL_VELOCITY_Y), 1.0f);
+            f32 squishAmount = std::min(abs(vel.total.y) / abs(TERMINAL_VELOCITY_Y), 1.0f);
             sprite.scale = {myLerp(1, 1.25, squishAmount), myLerp(1, 0.8, squishAmount)};
             System::audio.playClip(Sfx::LAND, 0.0375 * squishAmount);
             particleBurst(entity.get<Transform2D>(), Direction::N, rb.groundMaterial, 8 * squishAmount, Depth::Foreground1);
         }
-        if (vel.total.x() != 0) {
+        if (vel.total.x != 0) {
             if (animator.setAnimation(RUN)) {
                 System::audio.playClip(Sfx::FOOTSTEPTEST, 0.075);
                 return true;
@@ -105,7 +105,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
                 return false;
             }(animator.getAnimation().id);
 
-            const auto jumpType = abs(vel.total.x()) < 0.1 ? JUMP : JUMP_FORWARD;
+            const auto jumpType = abs(vel.total.x) < 0.1 ? JUMP : JUMP_FORWARD;
             if (!isJumping && animator.setAnimation(jumpType)) {
                 sprite.scale = {0.8, 1.25};
                 System::audio.playClip(Sfx::JUMP, 0.35);
@@ -115,7 +115,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             // falling, switch to peak or fall anim depending on current state
             switch (animator.getAnimation().id) {
             case IDLE: {
-                const auto fallType = abs(vel.total.x()) < 0.1 ? FALL : FALL_FORWARD;
+                const auto fallType = abs(vel.total.x) < 0.1 ? FALL : FALL_FORWARD;
                 return animator.setAnimation(fallType);
             }
             case RUN:

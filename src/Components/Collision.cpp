@@ -40,10 +40,10 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 
 // try wiggling out of upward collision.
 bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount) {
-    const s32 moveSign = moveNormal.x() != 0 ? sign(moveNormal.x()) : sign(moveNormal.y());
+    const s32 moveSign = moveNormal.x != 0 ? sign(moveNormal.x) : sign(moveNormal.y);
     auto nextPos = callbackCollider->getShape().getPosition() + moveNormal;
     if (hitinfo.isUp() && moveSign == 1 && (hitinfo.otherLayer & (callbackCollider->getCollisionLayersThatCanStopMe())) > 0) {
-        return callbackCollider->tryCornerCorrection(nextPos, fullMoveAmount.x(), moveNormal);
+        return callbackCollider->tryCornerCorrection(nextPos, fullMoveAmount.x, moveNormal);
     }
     return false;
 }
@@ -130,7 +130,7 @@ void Collider::updateEntityPosition() {
     }
 
     if (auto precisePositionOpt = mSelf.tryGet<PrecisePosition>(); precisePositionOpt) {
-        (*precisePositionOpt)->position = toFloatVec(trans.position);
+        (*precisePositionOpt)->position = trans.position.as<f32>();
     }
 
     if (mSelf.has<Trigger>()) {
@@ -153,7 +153,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 
         if (hitinfo && hitinfo.isVertical()) {
             // update states for grounded, jumping, and reset impulses
-            if (amount.y() <= 0 && hitinfo.isDown()) {
+            if (amount.y <= 0 && hitinfo.isDown()) {
                 rigidbody.setGrounded(hitinfo.otherMaterial);
             } else {
                 rigidbody.setNotGrounded();
@@ -162,7 +162,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             if (jumpControlOpt) {
                 (*jumpControlOpt)->isJumping = false;
             }
-            velocity.residualImpulse.e[1] = 0;
+            velocity.residualImpulse.y = 0;
         } else if (!hitinfo) {
             rigidbody.setNotGrounded();
         }
@@ -179,10 +179,10 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 onMomentumNotUsed();
             }
 
-            if (velocity.total.y() < 0 && wasGrounded && (!jumpControlOpt || !(*jumpControlOpt)->isJumping)) {
+            if (velocity.total.y < 0 && wasGrounded && (!jumpControlOpt || !(*jumpControlOpt)->isJumping)) {
                 // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
                 // do this on second frame on the ground
-                velocity.stable.e[1] = 0;
+                velocity.stable.y = 0;
                 skipBounceStep = true;
             }
 
@@ -219,17 +219,30 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         const f32 bounciness = (selfBounciness + otherBounciness) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
             auto& velocity = mSelf.get<Velocity>();
-            if ((isX && abs(velocity.total.x()) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y()) >= BOUNCE_THRESHOLD)) {
-                s32 ix = isX ? 0 : 1;
+            if ((isX && abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
                 // stable can be negative (like for gravity) when impulse makes total velocity positive.
                 // in that case we don't want to do anything
-                if (sign(velocity.stable.e[ix]) == sign(velocity.total.e[ix])) {
-                    velocity.stable.e[ix] = velocity.stable.e[ix] * -bounciness;
+                if (isX) {
+                    if (sign(velocity.stable.x) == sign(velocity.total.x)) {
+                        velocity.stable.x = velocity.stable.x * -bounciness;
+                    }
+
+                } else {
+                    if (sign(velocity.stable.y) == sign(velocity.total.y)) {
+                        velocity.stable.y = velocity.stable.y * -bounciness;
+                    }
                 }
 
                 // do a post check in case an external force like gravity makes the first check always pass
-                if (abs(velocity.stable.e[ix]) < BOUNCE_THRESHOLD) {
-                    velocity.stable.e[ix] = 0;
+                if (isX) {
+                    if (abs(velocity.stable.x) < BOUNCE_THRESHOLD) {
+                        velocity.stable.x = 0;
+                    }
+
+                } else {
+                    if (abs(velocity.stable.y) < BOUNCE_THRESHOLD) {
+                        velocity.stable.y = 0;
+                    }
                 }
             }
         }
@@ -248,16 +261,16 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 bool Collider::move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded, bool isManualMove, bool isPushedBySolid,
                     bool updateRigidBodyFlags) {
     // round to nearest pixel
-    mXRemainder += amount.x();
-    mYRemainder += amount.y();
+    mXRemainder += amount.x;
+    mYRemainder += amount.y;
 
     Vector2i toMoveRounded = Vector2i(std::round(mXRemainder), std::round(mYRemainder));
     // only return early if we don't need a grounded check (solids can never be grounded)
-    if (toMoveRounded.x() == 0 && toMoveRounded.y() == 0 && (!isGroundedCheckNeeded || isSolid())) {
+    if (toMoveRounded.x == 0 && toMoveRounded.y == 0 && (!isGroundedCheckNeeded || isSolid())) {
         return false;
     }
-    mXRemainder -= toMoveRounded.x();
-    mYRemainder -= toMoveRounded.y();
+    mXRemainder -= toMoveRounded.x;
+    mYRemainder -= toMoveRounded.y;
 
     bool isHit = false;
     switch (mCollisionLayer) {
@@ -275,11 +288,11 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
         // nothing can stop solids, so do full movement immediately and emit nothing
         // need to move+push on one axis before moving on the other
-        auto moveVec = Vector2i(toMoveRounded.x(), 0);
+        auto moveVec = Vector2i(toMoveRounded.x, 0);
         moveNoCollisionCheck(amount, moveVec);
         pushAndCarry1D(amount, moveVec, riding, isManualMove);
 
-        moveVec = Vector2i(0, toMoveRounded.y());
+        moveVec = Vector2i(0, toMoveRounded.y);
         moveNoCollisionCheck(amount, moveVec);
         pushAndCarry1D(amount, moveVec, riding, isManualMove);
         break;
@@ -293,7 +306,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         auto originalPosition = getShape().getPosition();
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
-        Vector2f moveUnrounded = isHit ? toFloatVec(moveAmount) : Vector2f(amount.x(), 0);
+        Vector2f moveUnrounded = isHit ? moveAmount.as<f32>() : Vector2f(amount.x, 0);
         pushAndCarry1D(moveUnrounded, moveAmount, riding, isManualMove, isPushedBySolid);
 
         // moveY, then push/carry in that direction only
@@ -302,7 +315,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
             emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags);
         isHit = isHit || isHitY;
         moveAmount = getShape().getPosition() - originalPosition;
-        moveUnrounded = isHitY ? toFloatVec(moveAmount) : Vector2f(0, amount.y());
+        moveUnrounded = isHitY ? moveAmount.as<f32>() : Vector2f(0, amount.y);
         pushAndCarry1D(moveUnrounded, moveAmount, riding, isManualMove, isPushedBySolid);
 
         break;
@@ -321,7 +334,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
 HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback,
                         const std::vector<std::pair<ecs::Entity, Collider>>& others) {
-    s32 toMove = amountRounded.x();
+    s32 toMove = amountRounded.x;
 
     if (toMove == 0) {
         return HitInfo();
@@ -358,7 +371,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
 HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, const CollisionCallback callback,
                         const std::vector<std::pair<ecs::Entity, Collider>>& others, bool isGroundedCheckNeeded) {
     // include fractional movement from previous calls
-    s32 toMove = amountRounded.y();
+    s32 toMove = amountRounded.y;
 
     auto groundedCheck = [this](f32 amountY) -> HitInfo {
         if (amountY > 0) {
@@ -370,7 +383,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
 
     if (toMove == 0) {
         if (isGroundedCheckNeeded) {
-            return groundedCheck(amount.y());
+            return groundedCheck(amount.y);
         }
         return HitInfo();
     }
@@ -402,7 +415,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
 
     if (isGroundedCheckNeeded) {
-        return groundedCheck(amount.y());
+        return groundedCheck(amount.y);
     }
     return HitInfo();
 }
@@ -420,14 +433,14 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
     mIsCollidable = false;
 
     // Caller should only have moved on one dimension before calling this, so only push/carry on that dimension
-    if (move1D.x() > 0) {
-        _pushAndCarry(move1D.x(), moveOriginal.x(), true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid);
-    } else if (move1D.x() < 0) {
-        _pushAndCarry(move1D.x(), moveOriginal.x(), true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid);
-    } else if (move1D.y() > 0) {
-        _pushAndCarry(move1D.y(), moveOriginal.y(), false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid);
-    } else if (move1D.y() < 0) {
-        _pushAndCarry(move1D.y(), moveOriginal.y(), false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid);
+    if (move1D.x > 0) {
+        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.x < 0) {
+        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.y > 0) {
+        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid);
+    } else if (move1D.y < 0) {
+        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid);
     }
 
     mIsCollidable = wasCollidable;
@@ -552,18 +565,18 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             if (!isPushedBySolid && isSemiSolid()) {
                 Vector2i originalPosition = other->getShape().getPosition();
                 bool hitSolid = false;
-                hitSolid = other->move(toFloatVec(otherMoveVec), &squishEntityPushedBySemiSolid);
+                hitSolid = other->move(otherMoveVec.as<f32>(), &squishEntityPushedBySemiSolid);
 
                 Vector2i newPosition = other->getShape().getPosition();
                 // Calculate difference between newPosition and expected position.
                 // If we didn't hit something, but delta is nonzero, then something that `other` pushed hit a solid.
                 auto delta = ((originalPosition + otherMoveVec) - newPosition) * -1;
-                if (other->mIsAlive && other->isSemiSolid() && (hitSolid || delta.x() != 0 || delta.y() != 0)) {
+                if (other->mIsAlive && other->isSemiSolid() && (hitSolid || delta.x != 0 || delta.y != 0)) {
                     // if other didn't move the full amount, it must have hit a solid, so push *this* back by the difference
                     // using &squishCollider as the callback because we're effectively being pushed by the solid that `other` hit
                     mIsCollidable = true;
                     other->mIsCollidable = false;
-                    move(toFloatVec(delta), &squishEntity, false, false, true);
+                    move(delta.as<f32>(), &squishEntity, false, false, true);
                     mIsCollidable = false;
                     other->mIsCollidable = true;
 
@@ -577,16 +590,16 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                     moveVec += delta;
                     if (isXDirection) {
                         solidEdge = toMoveRounded > 0 ? mShape.right() : mShape.left();
-                        toMoveRounded = moveVec.x();
-                        toMoveUnrounded += delta.x();
+                        toMoveRounded = moveVec.x;
+                        toMoveUnrounded += delta.x;
                     } else {
                         solidEdge = toMoveRounded > 0 ? mShape.top() : mShape.bottom();
-                        toMoveRounded = moveVec.y();
-                        toMoveUnrounded += delta.y();
+                        toMoveRounded = moveVec.y;
+                        toMoveUnrounded += delta.y;
                     }
                 }
             } else {
-                other->move(toFloatVec(otherMoveVec), &squishEntity, false, false, true);
+                other->move(otherMoveVec.as<f32>(), &squishEntity, false, false, true);
             }
 
             // emit push event
@@ -653,7 +666,7 @@ HitInfo Collider::checkCollisionInMoveArea(const Vector2i position, const Vector
             hitInfo.otherMaterial = otherCollider.getMaterial();
 
             // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
-            if (moveNormal.x() != 0) {
+            if (moveNormal.x != 0) {
                 hitInfo.clearVerticalFlags();
             } else {
                 hitInfo.clearHorizontalFlags();
@@ -688,7 +701,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
             hitInfo.otherMaterial = collider.getMaterial();
 
             // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
-            if (moveNormal.x() != 0) {
+            if (moveNormal.x != 0) {
                 hitInfo.clearVerticalFlags();
             } else {
                 hitInfo.clearHorizontalFlags();
@@ -708,8 +721,8 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
     if (!isCollidable()) {
         return {};
     }
-    const auto bigCollider = AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x())) / 2),
-                                                                                                 std::ceil(static_cast<f32>(abs(toMove.y())) / 2)));
+    const auto bigCollider = AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x)) / 2),
+                                                                                                 std::ceil(static_cast<f32>(abs(toMove.y)) / 2)));
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
     for (auto entity : QuadTreeSystem::query(bigCollider)) {
         const auto& other = entity.get<Collider>();
@@ -735,31 +748,31 @@ void Collider::setMomentum(const f32 momentum, const bool isXDirection) {
         return;
     }
     if (isXDirection) {
-        mStoredMomentum.e[0] = momentum * (*eRB)->momentumMultiplier.x();
-        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
+        mStoredMomentum.x = momentum * (*eRB)->momentumMultiplier.x;
+        mMomentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
     } else {
-        mStoredMomentum.e[1] = momentum * (*eRB)->momentumMultiplier.y();
-        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
+        mStoredMomentum.y = momentum * (*eRB)->momentumMultiplier.y;
+        mMomentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
     }
 }
 
 void Collider::maintainMomentum(const bool isXDirection) {
     if (isXDirection) {
-        mMomentumFramesLeft.e[0] = MOMENTUM_LIFETIME_FRAMES;
+        mMomentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
     } else {
-        mMomentumFramesLeft.e[1] = MOMENTUM_LIFETIME_FRAMES;
+        mMomentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
     }
 }
 
 void Collider::onMomentumNotUsed() {
     mMomentumFramesLeft -= {1, 1};
-    if (!mMomentumFramesLeft.x()) {
-        mStoredMomentum.e[0] = 0;
-        mMomentumFramesLeft.e[0] = 0;
+    if (!mMomentumFramesLeft.x) {
+        mStoredMomentum.x = 0;
+        mMomentumFramesLeft.x = 0;
     }
-    if (!mMomentumFramesLeft.y()) {
-        mStoredMomentum.e[1] = 0;
-        mMomentumFramesLeft.e[1] = 0;
+    if (!mMomentumFramesLeft.y) {
+        mStoredMomentum.y = 0;
+        mMomentumFramesLeft.y = 0;
     }
 }
 
@@ -774,7 +787,7 @@ void Collider::resetMomentum() {
 bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2i moveNormal) {
     if (moveSignX >= 0) {
         // if we are on a half texel x coord, start at 0.5 texels of movement
-        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
                 mShape.setPosition(nextPos);
@@ -784,7 +797,7 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2
     }
     if (moveSignX <= 0) {
         // if we are on a half texel x coord, start at 0.5 texels of movement
-        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x() % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
+        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
             Vector2i nextPos = nextPosition + Vector2i(-i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
                 mShape.setPosition(nextPos);

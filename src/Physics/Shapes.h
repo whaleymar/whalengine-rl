@@ -34,10 +34,10 @@ public:
     void draw(Vector2f cameraPos, Color color) const;
 #endif
 
-    s32 top() const { return mCenter.y() + mHalf.y(); }
-    s32 bottom() const { return mCenter.y() - mHalf.y(); }
-    s32 right() const { return mCenter.x() + mHalf.x(); }
-    s32 left() const { return mCenter.x() - mHalf.x(); }
+    s32 top() const { return mCenter.y + mHalf.y; }
+    s32 bottom() const { return mCenter.y - mHalf.y; }
+    s32 right() const { return mCenter.x + mHalf.x; }
+    s32 left() const { return mCenter.x - mHalf.x; }
 
 private:
     Vector2i mCenter;
