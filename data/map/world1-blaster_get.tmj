@@ -1018,6 +1018,29 @@
                  "width":4,
                  "x":150,
                  "y":171
+                },
+            
+                {
+                 "height":144,
+                 "id":49,
+                 "properties":[
+                        {
+                         "name":"ParticleEmitter",
+                         "propertytype":"Component_ParticleEmitter",
+                         "type":"class",
+                         "value":
+                            {
+                             "Depth":2,
+                             "LifetimeMultiplier":3,
+                             "Material":9,
+                             "maxSpeed":2,
+                             "particlesPerSecond":10
+                            }
+                        }],
+                 "template":"templates\/BackgroundParticles.tj",
+                 "width":304,
+                 "x":16,
+                 "y":0
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1026,7 +1049,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":49,
+ "nextobjectid":50,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -1039,7 +1062,7 @@
             }
         }],
  "renderorder":"right-down",
- "tiledversion":"1.10.2",
+ "tiledversion":"1.11.0",
  "tileheight":8,
  "tilesets":[
         {

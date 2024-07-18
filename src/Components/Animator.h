@@ -18,6 +18,7 @@ struct Animation;
 using AnimBrain = bool (*)(Animator& animator, ecs::Entity entity);
 
 bool basicAnimation(Animator& animator, ecs::Entity entity);
+bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
 
 /*
  * the animator controls which animation an entity is using and handles frame-advancing

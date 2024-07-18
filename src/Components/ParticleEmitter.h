@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "Gfx/Depth.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
 #include "Util/Vector.h"
@@ -11,10 +12,12 @@ namespace whal {
 struct ParticleEmitter {
     WorldMaterial material;
     CollisionDir direction;
+    Depth depth;
     s32 particlesPerSecond;
     f32 maxSpeedTexelsPerSecond;
     Vector2i aabbHalfTexels = {1, 1};
     Vector2i offsetTexels = {0, 0};
+    f32 lifetimeMultiplier = 1.0;
 
     void setDirection(CollisionDir dir) { direction = dir; }
 };

@@ -26,8 +26,8 @@ Color MaterialData::getColor() const {
     return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
 }
 
-void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color) const {
-    const f32 lifetime = getDecayTime();
+void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier) const {
+    const f32 lifetime = getDecayTime() * lifetimeMultiplier;
     entity.add(Lifetime(lifetime));
 
     if (isFlagSet(Collision)) {
@@ -171,6 +171,17 @@ static const MaterialData S_MATERIAL_EMBER = {.name = "Ember",
                                               .frictionCoefs = {0.25, 0.0},
                                               .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
 
+static const MaterialData S_MATERIAL_POISON = {
+    .name = "Ember",
+    .id = WorldMaterial::Ember,
+    .colorRange = {Color(Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 125), Color(Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 40)},
+    .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
+             MaterialData::Collision,
+    .bounciness = 1.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {0.25, 0.0},
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+
 MaterialData getMaterialData(WorldMaterial material) {
     switch (material) {
     case WorldMaterial::None:
@@ -197,6 +208,8 @@ MaterialData getMaterialData(WorldMaterial material) {
         return S_MATERIAL_FIRE;
     case WorldMaterial::Ember:
         return S_MATERIAL_EMBER;
+    case WorldMaterial::Poison:
+        return S_MATERIAL_POISON;
     }
 }
 

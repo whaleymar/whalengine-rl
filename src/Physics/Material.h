@@ -7,7 +7,7 @@
 
 namespace whal {
 
-enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal, Rubber, Dust, Fire, Ember };
+enum class WorldMaterial : u8 { None, Dirt, Rock, Soft, Wood, Grass, Water, Metal, Rubber, Dust, Fire, Ember, Poison };
 
 namespace ecs {
 class Entity;
@@ -40,7 +40,7 @@ struct MaterialData {
     bool isFlagSet(Flags flag) const { return (flags & flag) > 0; }
     f32 getDecayTime() const;
     Color getColor() const;
-    void addComponents(ecs::Entity entity, s32 halfLenTexels, Color color) const;
+    void addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier = 1.0) const;
 
     const char* name;
     WorldMaterial id;

@@ -23,7 +23,7 @@
                  "Color":"#ffffaaff",
                  "Direction":4,
                  "Light":true,
-                 "Material":11,
+                 "Material":12,
                  "RigidBody":true,
                  "lifetimeSeconds":2,
                  "maxSpeed":80,

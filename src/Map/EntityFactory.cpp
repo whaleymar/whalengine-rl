@@ -19,7 +19,6 @@
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
-#include "Settings.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -221,25 +220,36 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 }
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    // i need a respawn function for a tiled object... shit
-    // entity.add(Respawn{1.0f, });
+    AnimInfo animInfo = {{"actor/blast-crystal", 0, 2, 0.0}};
+    Animator animator;
+    loadAnimations(animator, animInfo);
+    animator.brain = &basicAnimationUnsquish;
+    entity.add(animator);
+
     auto& trigger = entity.get<Trigger>();
-    // trigger.shape = Shape(Circle(entity.get<Transform2D>(), PIXELS_PER_TILE / 2));
-    trigger.shape = Shape(Circle(entity.get<Transform2D>(), 6));
+    trigger.shape = Shape(Circle(entity.get<Transform2D>(), 9));
     trigger.onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;
         }
 
         const Vector2f explosionStrength(150, 150);
-        makeExplosionZone(self.get<Trigger>().shape.getPosition(), PIXELS_PER_TILE, explosionStrength);
-        auto selfCopy = self.copy(false);
-        if (selfCopy.isExpected()) {
-            // TODO needs some sort of respawn animation
-            // TODO copy is not a child of activeLevel
-            System::schedule.after([](ecs::Entity e) { e.activate(); }, 0.5, selfCopy.value());
-        }
-        self.kill();
+        auto& trigger = self.get<Trigger>();
+        const auto shape = trigger.shape;
+
+        constexpr f32 inactiveTime = 0.5;
+        makeExplosionZone(shape.getPosition(), shape.getCircle().getRadius(), explosionStrength, inactiveTime + 0.05);
+
+        self.add(FadeOut(inactiveTime, 0.0, 1.0));
+        System::schedule.eventFlow({self})
+            .addWait(inactiveTime)
+            .add(
+                [](ecs::Entity e, TriggerCallback tcb) {
+                    e.get<Trigger>().onTriggerEnter = tcb;
+                    e.get<Draw>().setScale({1.2, 1.2});
+                },
+                self, trigger.onTriggerEnter);
+        trigger.onTriggerEnter = nullptr;
     };
 }
 

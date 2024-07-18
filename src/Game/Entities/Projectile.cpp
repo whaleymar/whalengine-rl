@@ -143,7 +143,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(Lifetime(lifetimeSeconds, &makeDefaultExplosion));
     entity.add(PointLight({TEXELS_PER_TILE * 2, halflenPixels}));
     entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, explosionRadius, pushStrength});
-    entity.add(ParticleEmitter(WorldMaterial::Ember, CollisionDir::ALL, 5, 15));
+    entity.add(ParticleEmitter(WorldMaterial::Ember, CollisionDir::ALL, Depth::Level, 5, 15));
 
     static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
     Animator animator;

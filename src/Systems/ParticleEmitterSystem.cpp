@@ -73,7 +73,7 @@ void ParticleEmitterSystem::update() {
 
         spawnLocation += emitter.offsetTexels * PIXELS_PER_TEXEL;
         for (s32 i = 0; i < nParticles; i++) {
-            auto eParticle = createParticle(Transform2D(spawnLocation), emitter.material, Depth::BackgroundNear);
+            auto eParticle = createParticle(Transform2D(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
             if (!eParticle.isExpected()) {
                 continue;
             }

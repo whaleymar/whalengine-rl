@@ -162,6 +162,26 @@ void Draw::setColor(Color color) {
     }
 }
 
+void Draw::setScale(Vector2f scale) {
+    switch (mTag) {
+    case DrawTag::Rect:
+        mRect.scale = scale;
+        break;
+    case DrawTag::Sprite:
+        mSprite.scale = scale;
+        break;
+    }
+}
+
+Vector2f Draw::getScale() const {
+    switch (mTag) {
+    case DrawTag::Rect:
+        return mRect.scale;
+    case DrawTag::Sprite:
+        return mSprite.scale;
+    }
+}
+
 f32 FadeOut::getIntensity() const {
     f32 t = secondsRemaining / time;
     if (secondsRemaining <= 0) {

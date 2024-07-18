@@ -37,7 +37,7 @@ struct PushStrength {
     Vector2f strength;
 };
 
-Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength) {
+Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength, f32 lifetimeSeconds) {
     auto eEntity = System::world->entity(false);
     if (!eEntity.isExpected()) {
         return eEntity;
@@ -47,9 +47,8 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto _ = ecs::DeferActivate(entity);
 
     // ANIMATOR
-    constexpr f32 lifetime = 0.5;
     constexpr s32 nFrames = 6;
-    constexpr f32 frameTime = lifetime / static_cast<f32>(nFrames);
+    const f32 frameTime = lifetimeSeconds / static_cast<f32>(nFrames);
     static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};
     Animator animator;
     loadAnimations(animator, animInfo);
@@ -157,7 +156,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
-    entity.add(Lifetime(lifetime));
+    entity.add(Lifetime(lifetimeSeconds));
     entity.add(PointLight({TEXELS_PER_TILE * 5, halflen / PIXELS_PER_TEXEL}));
 
     // scale volume with distance from camera

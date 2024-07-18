@@ -89,6 +89,8 @@ public:
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
     void setColor(Color color_);
+    void setScale(Vector2f scale);
+    Vector2f getScale() const;
 
 private:
     union {
