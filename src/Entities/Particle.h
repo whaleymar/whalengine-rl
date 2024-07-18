@@ -19,6 +19,7 @@ enum class WorldMaterial : u8;
 
 // convenience functions to create 1x1 texel particles
 
+// TODO all these should be consolidated to the WorldMaterial one
 Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lifetime = 1.0, Depth depth = Depth::Level);
 Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth = Depth::Level, f32 lifetimeMultiplier = 1.0);
 Expected<ecs::Entity> createParticleLight(Transform2D transform, Color color, f32 lifetime, bool fullRadiance = true, Depth depth = Depth::Level);

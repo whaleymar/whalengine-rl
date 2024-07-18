@@ -5,8 +5,8 @@
     },
     "activeFile": "world1-start.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -144,8 +144,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 753.6666666666666,
-                "y": -95.16666666666666
+                "x": 163.66666666666669,
+                "y": 34.16666666666667
             }
         },
         "world1.tmj": {
