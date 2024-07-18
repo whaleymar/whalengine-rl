@@ -289,7 +289,7 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     constexpr f32 silLifetime = 1.5;
     if (entity.has<Draw>() && entity.get<Draw>().getTag() == Draw::DrawTag::Sprite) {
         u32 eventId = System::schedule.eventFlow({entity})
-                          .add([](ecs::Entity e) { e.add(ParticleEmitter(ORANGE, 0.5, ParticleSetting::Light, 50, 0)); }, entity)
+                          .add([](ecs::Entity e) { e.add(ParticleEmitter(WorldMaterial::Fire, CollisionDir::ALL, 50, 0)); }, entity)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
                           .addWait(waitBetweenSils)
                           .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)

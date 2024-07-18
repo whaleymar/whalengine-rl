@@ -31,6 +31,7 @@ inline const char* TSET_SPRITE_DIR = "data/sprite/map";
 static ComponentFactory COMPONENT_FACTORY;
 static EntityFactory PREFAB_FACTORY;
 static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
+// TODO MAPRESOURCE_MANAGER
 
 static Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);

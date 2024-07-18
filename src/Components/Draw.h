@@ -27,6 +27,13 @@ inline static Color Purple = {198, 51, 242, 255};
 inline static Color Pink = {255, 170, 255, 255};
 inline static Color LightBlue = {85, 255, 255, 255};
 
+inline Color lerp(Color first, Color second, f32 t) {
+    return Color{static_cast<u8>(myLerp(static_cast<f32>(first.r), static_cast<f32>(second.r), t)),
+                 static_cast<u8>(myLerp(static_cast<f32>(first.g), static_cast<f32>(second.g), t)),
+                 static_cast<u8>(myLerp(static_cast<f32>(first.b), static_cast<f32>(second.b), t)),
+                 static_cast<u8>(myLerp(static_cast<f32>(first.a), static_cast<f32>(second.a), t))};
+}
+
 }  // namespace Colors
 
 // hard coded as rectangles until I need something else

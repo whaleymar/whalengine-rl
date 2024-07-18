@@ -406,20 +406,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         DefaultParticleEmitter = ParticleEmitter();
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
-            if (memberName == "Collider") {
-                bool isCollider = member[KEY_VALUE];
-                if (isCollider) {
-                    DefaultParticleEmitter.settings |= ParticleSetting::Collider;
-                }
-
-            } else if (memberName == "Color") {
-                std::string hexString = member[KEY_VALUE];
-                DefaultParticleEmitter.color = hexStringARGBToColor(hexString);
-
-            } else if (memberName == "lifetimeSeconds") {
-                DefaultParticleEmitter.lifetimeSeconds = member[KEY_VALUE];
-
-            } else if (memberName == "maxSpeed") {
+            if (memberName == "maxSpeed") {
                 DefaultParticleEmitter.maxSpeedTexelsPerSecond = member[KEY_VALUE];
 
             } else if (memberName == "particlesPerSecond") {
@@ -429,17 +416,9 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 CollisionDir dir = member[KEY_VALUE];
                 DefaultParticleEmitter.setDirection(dir);
 
-            } else if (memberName == "RigidBody") {
-                bool isRigidBody = member[KEY_VALUE];
-                if (isRigidBody) {
-                    DefaultParticleEmitter.settings |= ParticleSetting::RigidBody;
-                }
-
-            } else if (memberName == "Light") {
-                bool isLight = member[KEY_VALUE];
-                if (isLight) {
-                    DefaultParticleEmitter.settings |= ParticleSetting::Light;
-                }
+            } else if (memberName == "Material") {
+                WorldMaterial material = member[KEY_VALUE];
+                DefaultParticleEmitter.material = material;
 
             } else if (memberName == "Shape") {
                 // do nothing
@@ -933,36 +912,10 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     ParticleEmitter emitter = entity.has<ParticleEmitter>() ? entity.get<ParticleEmitter>() : DefaultParticleEmitter;
 
-    // ARGB
-    if (values.contains("Color")) {
-        std::string hexcode = "#ffffffff";
-        hexcode = values["Color"];
-        Color color = hexStringARGBToColor(hexcode);
-        emitter.color = color;
-    }
-
-    tryReadFloat(values, "lifetimeSeconds", &emitter.lifetimeSeconds);
     tryReadFloat(values, "maxSpeed", &emitter.maxSpeedTexelsPerSecond);
     tryReadInt(values, "particlesPerSecond", &emitter.particlesPerSecond);
-
-    bool hasFlag = false;
-    if (tryReadBool(values, "Collider", &hasFlag) && hasFlag) {
-        emitter.settings |= ParticleSetting::Collider;
-        hasFlag = false;
-    }
-    if (tryReadBool(values, "Light", &hasFlag) && hasFlag) {
-        emitter.settings |= ParticleSetting::Light;
-        hasFlag = false;
-    }
-    if (tryReadBool(values, "RigidBody", &hasFlag) && hasFlag) {
-        emitter.settings |= ParticleSetting::RigidBody;
-        hasFlag = false;
-    }
-
-    CollisionDir collisionDir;
-    if (tryReadVal(values, "Direction", &collisionDir)) {
-        emitter.setDirection(collisionDir);
-    }
+    tryReadVal(values, "Direction", &emitter.direction);
+    tryReadVal(values, "Material", &emitter.material);
 
     if (values.contains("Shape")) {
         s32 shapeId = readInt(values, "Shape");

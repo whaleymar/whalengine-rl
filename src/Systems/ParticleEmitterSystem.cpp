@@ -1,8 +1,6 @@
 #include "ParticleEmitterSystem.h"
 
-#include "Components/Collision.h"
 #include "Components/ParticleEmitter.h"
-#include "Components/RigidBody.h"
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
 #include "Entities/Particle.h"
@@ -41,28 +39,28 @@ void ParticleEmitterSystem::update() {
         // Vector2f velocity = speedSample * emitter.maxSpeedTexelsPerSecond;
         Vector2f velocity = sampleSpeed * emitter.maxSpeedTexelsPerSecond;
         Vector2i spawnLocation;
-        if ((emitter.settings & ParticleSetting::UpOnly) > 0) {
+        if (emitter.direction == CollisionDir::UP) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
             velocity.e[0] *= PERPENDICULAR_DAMPING;
             if (velocity.y() < 0) {
                 velocity.e[1] *= -1;
             }
 
-        } else if ((emitter.settings & ParticleSetting::LeftOnly) > 0) {
+        } else if (emitter.direction == CollisionDir::LEFT) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitLeft) + Vector2i(0, spawnOffsetY);
             velocity.e[1] *= PERPENDICULAR_DAMPING;
             if (velocity.x() > 0) {
                 velocity.e[0] *= -1;
             }
 
-        } else if ((emitter.settings & ParticleSetting::RightOnly) > 0) {
+        } else if (emitter.direction == CollisionDir::RIGHT) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitRight) + Vector2i(0, spawnOffsetY);
             velocity.e[1] *= PERPENDICULAR_DAMPING;
             if (velocity.x() < 0) {
                 velocity.e[0] *= -1;
             }
 
-        } else if ((emitter.settings & ParticleSetting::DownOnly) > 0) {
+        } else if (emitter.direction == CollisionDir::DOWN) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitDown) + Vector2i(spawnOffsetX, 0);
             velocity.e[0] *= PERPENDICULAR_DAMPING;
             if (velocity.y() > 0) {
@@ -74,37 +72,14 @@ void ParticleEmitterSystem::update() {
         }
 
         spawnLocation += emitter.offsetTexels * PIXELS_PER_TEXEL;
-        // print("spawnLocation is", spawnLocation, "with trans", trans.position, "and half", emitter.aabbHalfTexels, "and velocity", velocity);
-
         for (s32 i = 0; i < nParticles; i++) {
-            ecs::Entity particle;
-            if ((emitter.settings & ParticleSetting::Light) > 0) {
-                auto eParticle =
-                    createParticleLight(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds, false, Depth::BackgroundNear);
-                if (eParticle.isExpected()) {
-                    particle = eParticle.value();
-                } else {
-                    continue;
-                }
-            } else {
-                auto eParticle = createParticle(Transform2D(spawnLocation), emitter.color, emitter.lifetimeSeconds, Depth::BackgroundNear);
-                if (eParticle.isExpected()) {
-                    particle = eParticle.value();
-                } else {
-                    continue;
-                }
+            auto eParticle = createParticle(Transform2D(spawnLocation), emitter.material, Depth::BackgroundNear);
+            if (!eParticle.isExpected()) {
+                continue;
             }
+            auto particle = eParticle.value();
 
             particle.add(Velocity(velocity));
-
-            if ((emitter.settings & ParticleSetting::RigidBody) > 0) {
-                particle.add(RigidBody({0.0f, 0.0f}));
-            }
-
-            if ((emitter.settings & ParticleSetting::Collider) > 0) {
-                particle.add(Collider::Actor(AABB(spawnLocation, {1, 1})));
-                particle.get<Collider>().setMaterial(WorldMaterial::Rubber);
-            }
         }
     }
 }

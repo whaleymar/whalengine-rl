@@ -31,6 +31,7 @@
     - also want to try adding some translucent circle instead to see if that helps
 
 ## Map 
+- respawn map objects
 - object layers
     - special metadata
         - camera strat (might want to rework)

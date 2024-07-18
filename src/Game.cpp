@@ -117,7 +117,7 @@ bool Game::startup() {
         .sequential<PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem>()
         .parallel<ParticleEmitterSystem, ProjectileSystem>()
-        .parallel<RocketJumpingSystem>(2)
+        .parallel<RocketJumpingSystem, SlowEntityKillerSystem>(2)
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()

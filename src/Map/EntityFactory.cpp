@@ -20,7 +20,6 @@
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
 #include "Settings.h"
-#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -77,6 +76,9 @@ void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTempla
 
 void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
+        if (!other.has<Player>()) {
+            return;
+        }
         auto flipSwitch = self.get<Switch>();
         ecs::EntityID targetID = flipSwitch.target;
 
@@ -234,6 +236,7 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
         auto selfCopy = self.copy(false);
         if (selfCopy.isExpected()) {
             // TODO needs some sort of respawn animation
+            // TODO copy is not a child of activeLevel
             System::schedule.after([](ecs::Entity e) { e.activate(); }, 0.5, selfCopy.value());
         }
         self.kill();
