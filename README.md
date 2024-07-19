@@ -1,5 +1,11 @@
+# Installation Requirements (Windows and Linux)
+- CMake 
+- Clang (any version that supports C++20)
+- Ninja
+
 # Building for Linux
-Installation requires C++20 and raylib 3.0+
+In addition to the above requirements, the current configuration requires Raylib 3.0+ to be installed via your package manager.
+
 ```
 git clone https://github.com/whaleymar/whalengine-rl.git
 cd whalengine-rl 
@@ -8,7 +14,9 @@ make
 ```
 
 # Building for Windows
-Requires Microsoft Visual C++ (MSVC) compiler and a Clang version that supports C++20. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. Next, confirm you have clang by running `clang-cl -v` (should see similar output). From here you have a couple options:
+Requires Microsoft Visual C++ (MSVC) compiler. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. Next, confirm you have clang by running `clang-cl -v` (should see similar output). 
+
+*From here you have a couple options:*
 
 ## VSCode 
 From the `x64 Native Tools Command Prompt` type `code .` and hit enter. This should open VSCode. Now, open the project. Make sure you have the following extensions:
