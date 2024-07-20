@@ -24,15 +24,13 @@ void LifetimeSystem::update() {
 
 void SlowEntityKillerSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        const auto yeah = entity.get<DieWhenSpeedBelow>();
-        const f32 minSpeed = yeah.minSpeed;
+        const auto speedBelowComponent = entity.get<DieWhenSpeedBelow>();
+        const f32 minSpeed = speedBelowComponent.minSpeed;
         const f32 speed = entity.get<Velocity>().total.len();
-        if (speed < minSpeed) {
-            if (yeah.delaySeconds > 0.0f) {
-                entity.add(Lifetime(yeah.delaySeconds));
-                if (yeah.fadeOut) {
-                    entity.add(FadeOut(yeah.delaySeconds));
-                }
+        if (speed <= minSpeed) {
+            if (!speedBelowComponent.colorFade.isDone()) {
+                entity.add(Lifetime(speedBelowComponent.colorFade.duration));
+                entity.add(speedBelowComponent.colorFade);
             }
             entity.add(OnFrameEnd([](ecs::Entity e) { e.remove<DieWhenSpeedBelow>(); }));
         }

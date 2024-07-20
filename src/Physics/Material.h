@@ -32,8 +32,8 @@ struct MaterialData {
     };
 
     struct DecaySpeedParams {
-        f32 minSpeedTPS = 0.1;
-        f32 decaySeconds = 1.0;
+        f32 minSpeedTPS = 0.01;
+        f32 decaySeconds = 0.25;
     };
 
     static MaterialData get(WorldMaterial material);
@@ -49,6 +49,7 @@ struct MaterialData {
     f32 bounciness = 0.0;
     f32 gravityCoef = 1.0;
     Vector2f frictionCoefs = {1.0, 1.0};
+    Color fadeColor = Color(255, 255, 255, 0);
     union {
         DecayTimeParams decayTime;
         DecaySpeedParams decaySpeed;

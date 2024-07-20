@@ -39,19 +39,6 @@ static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color col
     return particle;
 }
 
-Expected<ecs::Entity> createParticle(Transform2D transform, Color color, f32 lifetime, Depth depth) {
-    auto expected = createParticleBase(transform, color, lifetime);
-    if (!expected.isExpected()) {
-        return expected;
-    }
-    auto _ = ecs::DeferActivate(expected.value());
-    auto particle = expected.value();
-
-    particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
-
-    return particle;
-}
-
 Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();

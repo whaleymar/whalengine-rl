@@ -24,14 +24,12 @@
 
 ## Components
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
-- FadeIn
 - Rotational Velocity
 - Drawline primitive (for particles?)
-- convert fadeout component to colorLerp component?
 - Grow/Shrink component?
 
 ## Vector2T
-- simd optimizations (need profiling)
+- simd optimizations? (need profiling)
 
 ## Gfx
 - replace radiance with bloom?

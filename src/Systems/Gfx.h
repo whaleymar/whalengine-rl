@@ -15,6 +15,7 @@ namespace whal {
 struct Transform2D;
 struct DrawDebug;
 class Draw;
+struct ColorLerp;
 struct FadeOut;
 struct DrawText;
 
@@ -50,6 +51,11 @@ public:
 };
 
 class FadeOutSystem : public ecs::ISystem<Transform2D, Draw, FadeOut>, public ecs::IUpdate {
+public:
+    void update() override;
+};
+
+class ColorLerpSystem : public ecs::ISystem<Draw, ColorLerp>, public ecs::IUpdate {
 public:
     void update() override;
 };

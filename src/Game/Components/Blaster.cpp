@@ -65,12 +65,12 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
                 sprite.scale = {1.2, 0.8};
             }
             sprite.color.a = 255;
-            if (self.has<FadeOut>()) {
-                self.remove<FadeOut>();
+            if (self.has<ColorLerp>()) {
+                self.remove<ColorLerp>();
             }
             return true;
-        } else if (targetFrameIx == 0 && sprite.scale.x == 1.0f && sprite.color.a == 255 && !self.has<FadeOut>()) {
-            self.add(FadeOut(0.2, 1.0, 0.5));
+        } else if (targetFrameIx == 0 && sprite.scale.x == 1.0f && sprite.color.a == 255 && !self.has<ColorLerp>()) {
+            self.add(ColorLerp(Color(255, 255, 255, 255), Color(255, 255, 255, 127), 0.2));
         }
         return false;
     };
@@ -288,16 +288,17 @@ void RocketJumpingSystem::onAdd(const ecs::Entity entity) {
     constexpr f32 waitBetweenSils = 0.1;
     constexpr f32 silLifetime = 1.5;
     if (entity.has<Draw>() && entity.get<Draw>().getTag() == Draw::DrawTag::Sprite) {
-        u32 eventId = System::schedule.eventFlow({entity})
-                          .add([](ecs::Entity e) { e.add(ParticleEmitter(WorldMaterial::Fire, CollisionDir::ALL, Depth::Level, 50, 0)); }, entity)
-                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
-                          .addWait(waitBetweenSils)
-                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
-                          .addWait(waitBetweenSils)
-                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
-                          .addWait(waitBetweenSils)
-                          .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
-                          .getId();
+        u32 eventId =
+            System::schedule.eventFlow({entity})
+                .add([](ecs::Entity e) { e.add(ParticleEmitter(WorldMaterial::Fire, CollisionDir::ALL, Depth::Level, 50, 0, 0.75)); }, entity)
+                .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
+                .addWait(waitBetweenSils)
+                .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
+                .addWait(waitBetweenSils)
+                .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
+                .addWait(waitBetweenSils)
+                .add(&makeSilhouetteFromSprite, entity, silLifetime, RED)
+                .getId();
         rocketJumpComponent.silhouetteEventId = eventId;
     }
 }
