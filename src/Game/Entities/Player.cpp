@@ -76,7 +76,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             f32 squishAmount = std::min(abs(vel.total.y) / abs(TERMINAL_VELOCITY_Y), 1.0f);
             sprite.scale = {myLerp(1, 1.25, squishAmount), myLerp(1, 0.8, squishAmount)};
             System::audio.playClip(Sfx::LAND, 0.0375 * squishAmount);
-            particleBurst(entity.get<Transform2D>(), Direction::N, rb.groundMaterial, 8 * squishAmount, Depth::Foreground1);
+            particleBurst(entity.get<Transform2D>(), Direction::N, rb.groundMaterial, 8 * squishAmount, Depth::Foreground1, 0.5);
         }
         if (vel.total.x != 0) {
             if (animator.setAnimation(RUN)) {
@@ -190,6 +190,9 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<PlayerControl>();
     player.add<Jumper>();
     player.add<Wiggle>();
+
+    // DrawBezierQuad bezier(Vector2i(TEXELS_PER_TILE * 3, TEXELS_PER_TILE), Vector2i(TEXELS_PER_TILE * 3, 0), RED);
+    // player.add(Draw(bezier));
 
     // if (true) {
     if (EventFlags::check(EventFlags::HasMagicHat)) {

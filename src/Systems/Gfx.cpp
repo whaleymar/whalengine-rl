@@ -25,6 +25,10 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
+static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
+    return Vector2(worldCoord.x - cameraPos.x, cameraPos.y - worldCoord.y);
+}
+
 void GfxSystem::onAdd(const ecs::Entity entity) {
     const auto draw = entity.get<Draw>();
     const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), static_cast<s16>(draw.getShader()));
@@ -97,8 +101,10 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
     const Transform2D trans = entity.get<Transform2D>();
     Vector2f posF = trans.position.as<f32>();
     Draw draw = entity.get<Draw>();
+    const Vector2i cameraPos = cameraPosF.round();
 
-    if (draw.getTag() == Draw::DrawTag::Rect) {
+    switch (draw.getTag()) {
+    case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
         auto frameSize = rect.getFrameSizeTexels().as<f32>();
         Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
@@ -109,8 +115,9 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
         dstPosition -= {dstSize.x * 0.5f, 0};
         Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
         DrawRectangleRec(dstRect, rect.color);
-
-    } else {
+        break;
+    }
+    case Draw::DrawTag::Sprite: {
         const Sprite sprite = draw.getSprite();
         const Vector2i frameSize = sprite.getFrameSizeTexels();
         const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
@@ -127,6 +134,16 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
 
         Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x, origin.y}, trans.rotationDegrees, sprite.color);
+        break;
+    }
+    case Draw::DrawTag::BezierQuad: {
+        const DrawBezierQuad bezier = draw.getBezierQuad();
+
+        DrawSplineSegmentBezierQuadratic(toScreenCoord(trans.position, cameraPos),
+                                         toScreenCoord(trans.position + bezier.controlPointOffset, cameraPos),
+                                         toScreenCoord(trans.position + bezier.endPointOffset, cameraPos), bezier.thickness, bezier.color);
+        break;
+    }
     }
 }
 

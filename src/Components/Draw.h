@@ -66,14 +66,23 @@ struct DrawRect : public IDraw {
     DrawRect(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
 };
 
+struct DrawBezierQuad {
+    Vector2i controlPointOffset;
+    Vector2i endPointOffset;
+    Color color;
+    f32 thickness = 1.0;
+    Depth depth = Depth::Level;
+};
+
 class Draw {
 public:
-    enum class DrawTag { Rect, Sprite };  // text too?
+    enum class DrawTag { Rect, Sprite, BezierQuad };  // text too?
 
     Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,
          Color color = WHITE);
     Draw(DrawRect rect);
     Draw(Sprite sprite);
+    Draw(DrawBezierQuad bezier);
 
     Draw(const Draw& other);
     Draw& operator=(const Draw& other);
@@ -81,6 +90,7 @@ public:
     DrawTag getTag() const { return mTag; }
     DrawRect& getRect();
     Sprite& getSprite();
+    DrawBezierQuad& getBezierQuad();
 
     Vector2i getFrameSizeTexels() const;
     Depth getDepth() const;
@@ -96,6 +106,7 @@ private:
     union {
         DrawRect mRect;
         Sprite mSprite;
+        DrawBezierQuad mBezierQuad;
     };
     DrawTag mTag;
 };
