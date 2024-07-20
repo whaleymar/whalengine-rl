@@ -224,7 +224,9 @@ void RotationPhysicsSystem::update() {
     const f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto angularVelocity = entity.get<AngularVelocity>();
-        f32 toAdd = 360.0f * angularVelocity.rotationsPerSecond * dt;
+
+        // multiply by -1 so rotations are clockwise by default
+        const f32 toAdd = -1.0f * 360.0f * angularVelocity.rotationsPerSecond * dt;
         auto& trans = entity.get<Transform2D>();
         trans.rotationDegrees += toAdd;
         trans.isManuallyMoved = true;

@@ -17,7 +17,7 @@ struct Velocity {
     Vector2f residualImpulse;
 };
 
-// positive is ?, negative is ? TODO
+// positive is clockwise, negative is counterclockwise
 struct AngularVelocity {
     f32 rotationsPerSecond;
     static AngularVelocity fromSecondsPerRotation(f32 secondsPerRotation) { return AngularVelocity{1.0f / secondsPerRotation}; }

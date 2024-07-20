@@ -215,9 +215,9 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // DrawBezierQuad bezier(Vector2i(TEXELS_PER_TILE * 3, TEXELS_PER_TILE), Vector2i(TEXELS_PER_TILE * 3, 0), RED);
     // player.add(Draw(bezier));
 
-    // DrawStraightLine line{TEXELS_PER_TILE * 5, RED, 2, Depth::Player};
+    // DrawStraightLine line{8, RED, 1, Depth::Player, true};
     // player.add(Draw(line));
-    // player.add(AngularVelocity::fromSecondsPerRotation(2));
+    // player.add(AngularVelocity::fromSecondsPerRotation(1));
 
     // graphics
     player.add(PlayerAnim::getAnimator());
