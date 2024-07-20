@@ -11,6 +11,7 @@
 #include "Settings.h"
 
 #include "Systems/TagTrackers.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "Components/Draw.h"
@@ -142,6 +143,13 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
         DrawSplineSegmentBezierQuadratic(toScreenCoord(trans.position, cameraPos),
                                          toScreenCoord(trans.position + bezier.controlPointOffset, cameraPos),
                                          toScreenCoord(trans.position + bezier.endPointOffset, cameraPos), bezier.thickness, bezier.color);
+        break;
+    }
+    case Draw::DrawTag::Line: {
+        const DrawStraightLine line = draw.getLine();
+        const Vector2i endPos = trans.position + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
+
+        DrawLineEx(toScreenCoord(trans.position, cameraPos), toScreenCoord(endPos, cameraPos), line.thickness, line.color);
         break;
     }
     }

@@ -17,4 +17,13 @@ void OnFrameEndSystem::update() {
     }
 }
 
+void CustomUpdateSystem::update() {
+    for (auto [entityid, entity] : getEntitiesMutable()) {
+        // not bothering with a null check
+
+        const auto onFrameEnd = entity.get<CustomUpdate>();
+        onFrameEnd.callback(entity);
+    }
+}
+
 }  // namespace whal
