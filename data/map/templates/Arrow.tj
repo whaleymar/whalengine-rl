@@ -10,7 +10,7 @@
              "type":"class",
              "value":
                 {
-                 "Sprite":"actor\/arrow",
+                 "Sprite":"ui\/arrow",
                  "rotateAboutCenter":true
                 }
             }],

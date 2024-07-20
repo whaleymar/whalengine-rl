@@ -159,7 +159,7 @@
                          "value":
                             {
                              "Color":"#ffaaaaff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":0
                             }
@@ -178,7 +178,7 @@
                          "value":
                             {
                              "Color":"#ffaaaaff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":180
                             }

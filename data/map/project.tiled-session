@@ -78,11 +78,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 95.83333333333331
+                "x": -345.5,
+                "y": 264.5
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -144,7 +144,7 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 671.5,
+                "x": 742.5,
                 "y": -167.5
             }
         },

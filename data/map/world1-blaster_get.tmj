@@ -762,7 +762,7 @@
                          "value":
                             {
                              "Color":"#ffffffff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":90
                             }
@@ -790,7 +790,7 @@
                          "value":
                             {
                              "Color":"#ffffffff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":0
                             }
@@ -818,7 +818,7 @@
                          "value":
                             {
                              "Color":"#ffffffff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":180
                             }
@@ -846,7 +846,7 @@
                          "value":
                             {
                              "Color":"#ffffffff",
-                             "Sprite":"actor\/arrow",
+                             "Sprite":"ui\/arrow",
                              "rotateAboutCenter":true,
                              "rotationDegrees":270
                             }
