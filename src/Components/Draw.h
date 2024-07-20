@@ -157,6 +157,20 @@ private:
     f32 mTimeRemaining = duration;
 };
 
+struct ScaleLerp {
+    Vector2f startScale;
+    Vector2f endScale;
+    f32 duration;
+
+    ScaleLerp(Vector2f start = {1.0, 1.0}, Vector2f end = {0.0, 0.0}, f32 time = 1.0) : startScale(start), endScale(end), duration(time) {}
+    Vector2f getScale() const { return lerp(endScale, startScale, mTimeRemaining / duration); }
+    void tick(f32 dt) { mTimeRemaining -= dt; }
+    bool isDone() const { return mTimeRemaining <= 0; }
+
+private:
+    f32 mTimeRemaining = duration;
+};
+
 Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
                                                Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
 Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,

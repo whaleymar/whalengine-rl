@@ -232,12 +232,26 @@ void ColorLerpSystem::update() {
     f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesCopy()) {
         auto colorLerp = entity.get<ColorLerp>();
-        entity.get<Draw>().setColor(colorLerp.getColor());
         colorLerp.tick(dt);
+        entity.get<Draw>().setColor(colorLerp.getColor());
         if (colorLerp.isDone()) {
             entity.remove<ColorLerp>();
         } else {
             entity.set(colorLerp);
+        }
+    }
+}
+
+void ScaleLerpSystem::update() {
+    f32 dt = System::dt();
+    for (auto [entityid, entity] : getEntitiesCopy()) {
+        auto scaleLerp = entity.get<ScaleLerp>();
+        scaleLerp.tick(dt);
+        entity.get<Draw>().setScale(scaleLerp.getScale());
+        if (scaleLerp.isDone()) {
+            entity.remove<ScaleLerp>();
+        } else {
+            entity.set(scaleLerp);
         }
     }
 }

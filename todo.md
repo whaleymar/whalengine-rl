@@ -27,6 +27,7 @@
 - Rotational Velocity
 - Drawline primitive (for particles?)
 - Grow/Shrink component?
+    - working for particles, but should move startscale out of particle functions and make them material-specific
 
 ## Vector2T
 - simd optimizations? (need profiling)

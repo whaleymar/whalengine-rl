@@ -26,7 +26,7 @@ Color MaterialData::getColor() const {
     return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
 }
 
-void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier) const {
+void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier, s32 startScale) const {
     const f32 lifetime = getDecayTime() * lifetimeMultiplier;
     entity.add(Lifetime(lifetime));
 
@@ -58,6 +58,10 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
     if (isFlagSet(FadeOutFlag)) {
         // entity.add(FadeOut(lifetime));
         entity.add(ColorLerp(color, fadeColor, lifetime));
+    }
+
+    if (startScale != 1) {
+        entity.add(ScaleLerp(Vector2f(1.0, 1.0) * static_cast<f32>(startScale), {1.0, 1.0}, lifetime / 2));
     }
 }
 
