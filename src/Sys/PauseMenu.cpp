@@ -5,10 +5,11 @@
 #include "Game.h"
 #include "Settings.h"
 #include "System.h"
+#include "Util/Print.h"
 
 namespace whal {
 
-static const char* S_BUTTON_TO_NAME[] = {"Resume", "Restart", "Exit"};
+static const char* S_BUTTON_TO_NAME[] = {"Resume", "Restart", "Fullscreen: {}", "Exit"};
 
 s32 pythonMod(s32 a, s32 b) {
     // behaves like a % b in python (different from c++ for negative #s)
@@ -37,6 +38,13 @@ void PauseMenu::onEvent(whal::ButtonPressEvent, InputType input) {
         deactivate();
         System::audio.playMenuClip(Sfx::MENU_CLOSE, 0.33);
         break;
+    case InputType::LEFT:
+    case InputType::RIGHT:
+        if (mCursorOption == Button::FullScreenToggle) {
+            doCursorAction();
+            System::audio.playMenuClip(Sfx::MENU_SELECT, 0.33);
+        }
+        break;
     case InputType::OK:
         doCursorAction();
         System::audio.playMenuClip(Sfx::MENU_SELECT, 0.33);
@@ -59,7 +67,8 @@ void PauseMenu::draw(Font* font) const {
     constexpr s32 startHeight = WINDOW_HEIGHT_ACTUAL / 2 - menuHeight / 2;
 
     for (s32 i = 0; i < N_BUTTONS; i++) {
-        const char* buttonText = S_BUTTON_TO_NAME[i];
+        std::string fullScreenText = whal_format(S_BUTTON_TO_NAME[i], IsWindowFullscreen() ? "On" : "Off");
+        const char* buttonText = i != static_cast<s32>(FullScreenToggle) ? S_BUTTON_TO_NAME[i] : fullScreenText.c_str();
         Color color = static_cast<Button>(i) == mCursorOption ? RED : WHITE;
         Vector2 textDimensions = MeasureTextEx(*font, buttonText, fontSize, spacingX);
         DrawTextEx(*font, buttonText, Vector2(WINDOW_WIDTH_ACTUAL / 2 - textDimensions.x / 2, startHeight + lineheight * i), fontSize, spacingX,
@@ -75,6 +84,10 @@ void PauseMenu::doCursorAction() {
     case Button::Restart: {
         deactivate();
         Game::instance().reloadScene(true);
+        break;
+    }
+    case Button::FullScreenToggle: {
+        ToggleFullscreen();
         break;
     }
     case Button::Exit:
