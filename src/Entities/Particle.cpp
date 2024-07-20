@@ -109,7 +109,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     return particle;
 }
 
-void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth) {
+void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier) {
     const f32 angle = directionToAngle(direction);
     const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1});
 
@@ -123,7 +123,7 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
         const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, System::rng.uniform());
 
         ecs::Entity particle;
-        auto eParticle = createParticle(Transform2D(spawnLocation), material, depth);
+        auto eParticle = createParticle(Transform2D(spawnLocation), material, depth, lifetimeMultiplier);
         if (eParticle.isExpected()) {
             particle = eParticle.value();
         } else {

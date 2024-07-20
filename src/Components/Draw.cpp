@@ -31,7 +31,7 @@ constexpr f32 getPixelSize(const s32 frameSize, const f32 scale) {
 }
 
 IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_)
-    : color(color_), depth(depth_), shader(shader_), mFrameSizeTexels(frameSizeTexels){};
+    : color(color_), depth(depth_), shader(shader_), mFrameSizeTexels(frameSizeTexels) {};
 
 void IDraw::setAlpha(u8 alpha) {
     color.a = alpha;
@@ -69,6 +69,8 @@ Draw::Draw(DrawRect rect) : mRect(rect), mTag(DrawTag::Rect) {}
 
 Draw::Draw(Sprite sprite) : mSprite(sprite), mTag(DrawTag::Sprite) {}
 
+Draw::Draw(DrawBezierQuad bezier) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad) {}
+
 Draw::Draw(const Draw& other) {
     std::memcpy(this, &other, sizeof(other));
 }
@@ -82,13 +84,18 @@ Draw& Draw::operator=(const Draw& other) {
 }
 
 DrawRect& Draw::getRect() {
-    assert(mTag == DrawTag::Rect && "trying to run Draw::getRect on a Sprite");
+    assert(mTag == DrawTag::Rect && "trying to run Draw::getRect on something else");
     return mRect;
 }
 
 Sprite& Draw::getSprite() {
-    assert(mTag == DrawTag::Sprite && "trying to run Draw::getSprite on a Rectangle");
+    assert(mTag == DrawTag::Sprite && "trying to run Draw::getSprite on something else");
     return mSprite;
+}
+
+DrawBezierQuad& Draw::getBezierQuad() {
+    assert(mTag == DrawTag::BezierQuad && "trying to run Draw::getBezierQuad on something else");
+    return mBezierQuad;
 }
 
 Vector2i Draw::getFrameSizeTexels() const {
@@ -97,6 +104,8 @@ Vector2i Draw::getFrameSizeTexels() const {
         return mRect.getFrameSizeTexels();
     case DrawTag::Sprite:
         return mSprite.getFrameSizeTexels();
+    case DrawTag::BezierQuad:
+        return Vector2i();  // unused so idc that it's inaccurate
     }
 }
 
@@ -106,6 +115,8 @@ Depth Draw::getDepth() const {
         return mRect.depth;
     case DrawTag::Sprite:
         return mSprite.depth;
+    case DrawTag::BezierQuad:
+        return mBezierQuad.depth;
     }
 }
 
@@ -115,6 +126,8 @@ Shaders Draw::getShader() const {
         return mRect.shader;
     case DrawTag::Sprite:
         return mSprite.shader;
+    case DrawTag::BezierQuad:
+        return Shaders::Default;  // RESEARCH pretty sure i have to use this one?
     }
 }
 
@@ -125,6 +138,9 @@ void Draw::setAlpha(u8 alpha) {
         break;
     case DrawTag::Sprite:
         mSprite.setAlpha(alpha);
+        break;
+    case DrawTag::BezierQuad:
+        mBezierQuad.color.a = alpha;
         break;
     }
 }
@@ -137,6 +153,8 @@ void Draw::setFrameSize(s32 x, s32 y) {
     case DrawTag::Sprite:
         mSprite.setFrameSize(x, y);
         break;
+    case DrawTag::BezierQuad:
+        break;
     }
 }
 
@@ -147,6 +165,8 @@ void Draw::setFrameSize(Vector2i frameSize) {
         break;
     case DrawTag::Sprite:
         mSprite.setFrameSize(frameSize);
+        break;
+    case DrawTag::BezierQuad:
         break;
     }
 }
@@ -159,6 +179,9 @@ void Draw::setColor(Color color) {
     case DrawTag::Sprite:
         mSprite.setColor(color);
         break;
+    case DrawTag::BezierQuad:
+        mBezierQuad.color = color;
+        break;
     }
 }
 
@@ -170,6 +193,8 @@ void Draw::setScale(Vector2f scale) {
     case DrawTag::Sprite:
         mSprite.scale = scale;
         break;
+    case DrawTag::BezierQuad:
+        break;
     }
 }
 
@@ -179,6 +204,8 @@ Vector2f Draw::getScale() const {
         return mRect.scale;
     case DrawTag::Sprite:
         return mSprite.scale;
+    case DrawTag::BezierQuad:
+        return Vector2f(1.0, 1.0);
     }
 }
 
