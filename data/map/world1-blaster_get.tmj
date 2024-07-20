@@ -1032,7 +1032,7 @@
                             {
                              "Depth":2,
                              "LifetimeMultiplier":3,
-                             "Material":9,
+                             "Material":13,
                              "maxSpeed":2,
                              "particlesPerSecond":10
                             }

@@ -39,7 +39,7 @@ static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color col
     return particle;
 }
 
-Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier, s32 startScale) {
+Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();
 
@@ -54,7 +54,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add(PrecisePosition::fromTrans(transform));
     particle.add<Particle>();
     particle.add<Velocity>();
-    materialData.addComponents(particle, 1, color, lifetimeMultiplier, startScale);
+    materialData.addComponents(particle, 1, color, lifetimeMultiplier);
 
     auto _ = ecs::DeferActivate(particle);
 
@@ -87,7 +87,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
 }
 
 void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier,
-                   s32 startScale) {
+                   f32 speedMultiplier) {
     const f32 angle = directionToAngle(direction);
     const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1});
 
@@ -98,10 +98,10 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
         const Vector2i spawnLocation = spawnZone.getPosition() + Vector2i(spawnOffsetX, spawnOffsetY);
         const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((System::rng.uniform() - 0.5) * 2);
-        const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, System::rng.uniform());
+        const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, System::rng.uniform()) * speedMultiplier;
 
         ecs::Entity particle;
-        auto eParticle = createParticle(Transform2D(spawnLocation), material, depth, lifetimeMultiplier, startScale);
+        auto eParticle = createParticle(Transform2D(spawnLocation), material, depth, lifetimeMultiplier);
         if (eParticle.isExpected()) {
             particle = eParticle.value();
         } else {

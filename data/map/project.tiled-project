@@ -764,7 +764,8 @@
                 "Dust",
                 "Fire",
                 "Ember",
-                "Poison"
+                "Poison",
+                "TinyDust"
             ],
             "valuesAsFlags": false
         },
