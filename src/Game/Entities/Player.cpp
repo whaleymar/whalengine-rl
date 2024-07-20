@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include "Components/Callback.h"
 #include "Components/Light.h"
 #include "Entities/Particle.h"
 #include "Game.h"
@@ -191,9 +192,6 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<Jumper>();
     player.add<Wiggle>();
 
-    // DrawBezierQuad bezier(Vector2i(TEXELS_PER_TILE * 3, TEXELS_PER_TILE), Vector2i(TEXELS_PER_TILE * 3, 0), RED);
-    // player.add(Draw(bezier));
-
     // if (true) {
     if (EventFlags::check(EventFlags::HasMagicHat)) {
         player.add<Blaster>();
@@ -212,6 +210,14 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     if (followPlayer) {
         setCameraTarget(player);
     }
+
+    // testing
+    // DrawBezierQuad bezier(Vector2i(TEXELS_PER_TILE * 3, TEXELS_PER_TILE), Vector2i(TEXELS_PER_TILE * 3, 0), RED);
+    // player.add(Draw(bezier));
+
+    // DrawStraightLine line{TEXELS_PER_TILE * 5, RED, 2, Depth::Player};
+    // player.add(Draw(line));
+    // player.add(AngularVelocity::fromSecondsPerRotation(2));
 
     // graphics
     player.add(PlayerAnim::getAnimator());

@@ -71,6 +71,8 @@ Draw::Draw(Sprite sprite) : mSprite(sprite), mTag(DrawTag::Sprite) {}
 
 Draw::Draw(DrawBezierQuad bezier) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad) {}
 
+Draw::Draw(DrawStraightLine line) : mLine(line), mTag(DrawTag::Line) {}
+
 Draw::Draw(const Draw& other) {
     std::memcpy(this, &other, sizeof(other));
 }
@@ -98,6 +100,11 @@ DrawBezierQuad& Draw::getBezierQuad() {
     return mBezierQuad;
 }
 
+DrawStraightLine& Draw::getLine() {
+    assert(mTag == DrawTag::Line && "trying to run Draw::getLine on something else");
+    return mLine;
+}
+
 Vector2i Draw::getFrameSizeTexels() const {
     switch (mTag) {
     case DrawTag::Rect:
@@ -105,6 +112,8 @@ Vector2i Draw::getFrameSizeTexels() const {
     case DrawTag::Sprite:
         return mSprite.getFrameSizeTexels();
     case DrawTag::BezierQuad:
+        return Vector2i();  // unused so idc that it's inaccurate
+    case DrawTag::Line:
         return Vector2i();  // unused so idc that it's inaccurate
     }
 }
@@ -117,6 +126,8 @@ Depth Draw::getDepth() const {
         return mSprite.depth;
     case DrawTag::BezierQuad:
         return mBezierQuad.depth;
+    case DrawTag::Line:
+        return mLine.depth;
     }
 }
 
@@ -127,7 +138,9 @@ Shaders Draw::getShader() const {
     case DrawTag::Sprite:
         return mSprite.shader;
     case DrawTag::BezierQuad:
-        return Shaders::Default;  // RESEARCH pretty sure i have to use this one?
+        return mBezierQuad.shader;
+    case DrawTag::Line:
+        return mLine.shader;
     }
 }
 
@@ -142,6 +155,9 @@ void Draw::setAlpha(u8 alpha) {
     case DrawTag::BezierQuad:
         mBezierQuad.color.a = alpha;
         break;
+    case DrawTag::Line:
+        mLine.color.a = alpha;
+        break;
     }
 }
 
@@ -155,6 +171,8 @@ void Draw::setFrameSize(s32 x, s32 y) {
         break;
     case DrawTag::BezierQuad:
         break;
+    case DrawTag::Line:
+        break;
     }
 }
 
@@ -167,6 +185,8 @@ void Draw::setFrameSize(Vector2i frameSize) {
         mSprite.setFrameSize(frameSize);
         break;
     case DrawTag::BezierQuad:
+        break;
+    case DrawTag::Line:
         break;
     }
 }
@@ -182,6 +202,9 @@ void Draw::setColor(Color color) {
     case DrawTag::BezierQuad:
         mBezierQuad.color = color;
         break;
+    case DrawTag::Line:
+        mLine.color = color;
+        break;
     }
 }
 
@@ -195,6 +218,8 @@ void Draw::setScale(Vector2f scale) {
         break;
     case DrawTag::BezierQuad:
         break;
+    case DrawTag::Line:
+        break;
     }
 }
 
@@ -205,6 +230,7 @@ Vector2f Draw::getScale() const {
     case DrawTag::Sprite:
         return mSprite.scale;
     case DrawTag::BezierQuad:
+    case DrawTag::Line:
         return Vector2f(1.0, 1.0);
     }
 }

@@ -13,4 +13,8 @@ struct OnFrameEnd {
     bool removeSelf = true;
 };
 
+struct CustomUpdate {
+    Callback callback;
+};
+
 }  // namespace whal
