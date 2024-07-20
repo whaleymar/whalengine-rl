@@ -16,6 +16,7 @@ struct Transform2D;
 struct DrawDebug;
 class Draw;
 struct ColorLerp;
+struct ScaleLerp;
 struct FadeOut;
 struct DrawText;
 
@@ -56,6 +57,11 @@ public:
 };
 
 class ColorLerpSystem : public ecs::ISystem<Draw, ColorLerp>, public ecs::IUpdate {
+public:
+    void update() override;
+};
+
+class ScaleLerpSystem : public ecs::ISystem<Draw, ScaleLerp>, public ecs::IUpdate {
 public:
     void update() override;
 };
