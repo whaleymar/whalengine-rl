@@ -57,6 +57,12 @@ const char* SCENE_FILE = "world1.world";
 
 // /GAME SETTINGS
 
+// STATIC VARS
+
+static Image S_ICON_IMAGE;
+
+// /STATIC VARS
+
 using namespace whal;
 
 Game::Game() {
@@ -76,6 +82,9 @@ Game::~Game() {
 bool Game::startup() {
     InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
     SetExitKey(KEY_NULL);  // Escape quits by default
+
+    S_ICON_IMAGE = LoadImage("data/icon-hat.png");
+    SetWindowIcon(S_ICON_IMAGE);
 
     // do this before any font/texture stuff or the settings seem to get fucked
     mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
@@ -189,12 +198,6 @@ void Game::mainloop() {
             for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesMutable()) {
                 entity.kill();
             }
-        }
-        if (IsKeyPressed(KEY_R)) {
-            reloadScene();
-        }
-        if (IsKeyPressed(KEY_F)) {
-            ToggleFullscreen();
         }
         if (IsKeyPressed(KEY_P)) {
             if (isCreativeMode) {
@@ -344,6 +347,7 @@ void Game::end() {
     // raylib stuff:
     TextureManager::instance().unloadAll();
     UnloadFont(*mFont);
+    UnloadImage(S_ICON_IMAGE);
     CloseWindow();
 }
 
