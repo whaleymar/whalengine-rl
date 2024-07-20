@@ -5,8 +5,8 @@
     },
     "activeFile": "world1-start.tmj",
     "expandedProjectPaths": [
-        "templates",
-        "."
+        ".",
+        "templates"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -81,8 +81,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -404.3333333333333,
-                "y": 226.16666666666666
+                "x": 160.16666666666666,
+                "y": 96
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -111,8 +111,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 160.16666666666666,
+                "y": 96
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -122,8 +122,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 160.16666666666666,
+                "y": 96
             }
         },
         "world1-rockettutorial.tmj": {
@@ -133,8 +133,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333333
+                "x": 160.16666666666666,
+                "y": 96
             }
         },
         "world1-start.tmj": {
@@ -144,8 +144,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 163.66666666666669,
-                "y": 34.16666666666667
+                "x": 162.33333333333334,
+                "y": 63.5
             }
         },
         "world1.tmj": {

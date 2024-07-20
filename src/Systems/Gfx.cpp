@@ -211,6 +211,20 @@ void FadeOutSystem::update() {
     }
 }
 
+void ColorLerpSystem::update() {
+    f32 dt = System::dt();
+    for (auto [entityid, entity] : getEntitiesCopy()) {
+        auto colorLerp = entity.get<ColorLerp>();
+        entity.get<Draw>().setColor(colorLerp.getColor());
+        colorLerp.tick(dt);
+        if (colorLerp.isDone()) {
+            entity.remove<ColorLerp>();
+        } else {
+            entity.set(colorLerp);
+        }
+    }
+}
+
 // // Draw text using font inside rectangle limits
 static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint) {
     DrawTextBoxedSelectable(font, text, rec, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, WHITE);

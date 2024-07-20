@@ -112,7 +112,8 @@ struct DrawText {
 
 struct DrawDebug : public DrawRect {};
 
-// component which lerps an entity's draw/sprite component's alpha from one value to another over time.
+// component which lerps an entity's draw component's alpha from one value to another over time.
+// If an entity also has a light/radiance component, this affects their radius values as well
 struct FadeOut {
     FadeOut(f32 time_ = 1.0, f32 startAlpha_ = 1.0, f32 endAlpha_ = 0.0)
         : time(time_), startAlpha(startAlpha_), endAlpha(endAlpha_), secondsRemaining(time_) {}
@@ -127,6 +128,22 @@ struct FadeOut {
 
     // managed:
     f32 secondsRemaining;
+};
+
+// component which lerps an entity's draw component's color from one value to another over time.
+struct ColorLerp {
+    Color startColor;
+    Color endColor;
+    f32 duration;
+
+    ColorLerp(Color startColor_ = WHITE, Color endColor_ = Color(255, 255, 255, 0), f32 duration_ = 1.0)
+        : startColor(startColor_), endColor(endColor_), duration(duration_) {}
+    Color getColor() const { return Colors::lerp(endColor, startColor, mTimeRemaining / duration); }
+    void tick(f32 dt) { mTimeRemaining -= dt; }
+    bool isDone() const { return mTimeRemaining <= 0; }
+
+private:
+    f32 mTimeRemaining = duration;
 };
 
 Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,

@@ -47,8 +47,7 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
     }
     constexpr s32 NPARTICLES = 8;
     for (s32 i = 0; i < NPARTICLES; i++) {
-        const f32 maxspeed = 80;
-        const f32 baselifetime = 3;
+        constexpr f32 maxspeed = 80;
         f32 velX = System::rng.uniform() * maxspeed - maxspeed / 2;
         // upward bias
         f32 velY = System::rng.uniform() * maxspeed - maxspeed / 4;
@@ -63,23 +62,28 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
         }
 
         Vector2f particleVel(velX, velY);
-
-        // faster particles last longer
-        const f32 lifetime = baselifetime * particleVel.len() / maxspeed;
-        auto particle = createParticleLight(Transform2D(center), RED, lifetime).value();
-        particle.add(Velocity({velX, velY}));
-        particle.add(FadeOut(lifetime));
-
-        // make sure we're not dead when this runs.
-        if (lifetime > 0.1) {
-            // give some time to move away from the solid we collided with before adding collider.
-            particle.add(OnFrameEnd([](ecs::Entity e) {
-                e.add(RigidBody({0, 0}));
-
-                e.add(Collider::Actor(AABB(e.get<Transform2D>(), {1, 1})));
-                e.get<Collider>().setMaterial(WorldMaterial::Rubber);
-            }));
+        auto particle = createParticle(Transform2D(center), WorldMaterial::Ember, Depth::Level, 2.0);
+        if (!particle.isExpected()) {
+            break;
         }
+        particle.value().set(Velocity(particleVel));
+
+        // // faster particles last longer
+        // const f32 lifetime = baselifetime * particleVel.len() / maxspeed;
+        // auto particle = createParticleLight(Transform2D(center), RED, lifetime).value();
+        // particle.add(Velocity({velX, velY}));
+        // particle.add(FadeOut(lifetime));
+        //
+        // // make sure we're not dead when this runs.
+        // if (lifetime > 0.1) {
+        //     // give some time to move away from the solid we collided with before adding collider.
+        //     particle.add(OnFrameEnd([](ecs::Entity e) {
+        //         e.add(RigidBody({0, 0}));
+        //
+        //         e.add(Collider::Actor(AABB(e.get<Transform2D>(), {1, 1})));
+        //         e.get<Collider>().setMaterial(WorldMaterial::Rubber);
+        //     }));
+        // }
     }
 }
 

@@ -52,11 +52,12 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
     }
 
     if (isFlagSet(DecaySpeed)) {
-        entity.add(DieWhenSpeedBelow(decayParams.decaySpeed.minSpeedTPS, decayParams.decaySpeed.decaySeconds, isFlagSet(FadeOutFlag)));
+        entity.add(DieWhenSpeedBelow(decayParams.decaySpeed.minSpeedTPS, ColorLerp(color, fadeColor, decayParams.decaySpeed.decaySeconds)));
     }
 
     if (isFlagSet(FadeOutFlag)) {
-        entity.add(FadeOut(lifetime));
+        // entity.add(FadeOut(lifetime));
+        entity.add(ColorLerp(color, fadeColor, lifetime));
     }
 }
 
@@ -159,28 +160,31 @@ static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .bounciness = 0.0,
                                              .gravityCoef = -0.5,
                                              .frictionCoefs = {0.0, 0.0},
+                                             .fadeColor = BLACK,
                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.2, 0.5)}};
 
-static const MaterialData S_MATERIAL_EMBER = {.name = "Ember",
-                                              .id = WorldMaterial::Ember,
-                                              .colorRange = {ORANGE, RED},
-                                              .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed |
-                                                       MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
-                                              .bounciness = 1.0,
-                                              .gravityCoef = 1.0,
-                                              .frictionCoefs = {0.25, 0.0},
-                                              .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
-
-static const MaterialData S_MATERIAL_POISON = {
+static const MaterialData S_MATERIAL_EMBER = {
     .name = "Ember",
     .id = WorldMaterial::Ember,
-    .colorRange = {Color(Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 125), Color(Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 40)},
+    .colorRange = {ORANGE, RED},
     .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
              MaterialData::Collision,
     .bounciness = 1.0,
     .gravityCoef = 1.0,
     .frictionCoefs = {0.25, 0.0},
-    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+    .fadeColor = Color(ORANGE.r, ORANGE.g, ORANGE.b, 100),
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+};
+
+static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
+                                               .id = WorldMaterial::Ember,
+                                               .colorRange = {RED, {Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 200}},
+                                               .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed |
+                                                        MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
+                                               .bounciness = 1.0,
+                                               .gravityCoef = 1.0,
+                                               .frictionCoefs = {0.25, 0.0},
+                                               .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
 
 MaterialData getMaterialData(WorldMaterial material) {
     switch (material) {

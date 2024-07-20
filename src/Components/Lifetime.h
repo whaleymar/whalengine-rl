@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/Draw.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -16,8 +17,7 @@ struct Lifetime {
 
 struct DieWhenSpeedBelow {
     f32 minSpeed;
-    f32 delaySeconds;
-    bool fadeOut;
+    ColorLerp colorFade;
 };
 
 }  // namespace whal
