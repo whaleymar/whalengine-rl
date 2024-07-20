@@ -82,7 +82,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160.16666666666666,
-                "y": 96
+                "y": 95.83333333333331
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -112,7 +112,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160.16666666666666,
-                "y": 96
+                "y": 95.83333333333331
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -123,7 +123,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160.16666666666666,
-                "y": 96
+                "y": 95.83333333333331
             }
         },
         "world1-rockettutorial.tmj": {
@@ -134,18 +134,18 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 160.16666666666666,
-                "y": 96
+                "y": 95.83333333333331
             }
         },
         "world1-start.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 162.33333333333334,
-                "y": 63.5
+                "x": 671.5,
+                "y": -167.5
             }
         },
         "world1.tmj": {

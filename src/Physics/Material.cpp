@@ -26,7 +26,7 @@ Color MaterialData::getColor() const {
     return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
 }
 
-void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier, s32 startScale) const {
+void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier) const {
     const f32 lifetime = getDecayTime() * lifetimeMultiplier;
     entity.add(Lifetime(lifetime));
 
@@ -60,19 +60,10 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
         entity.add(ColorLerp(color, fadeColor, lifetime));
     }
 
-    if (startScale != 1) {
-        entity.add(ScaleLerp(Vector2f(1.0, 1.0) * static_cast<f32>(startScale), {1.0, 1.0}, lifetime / 2));
+    if (startScale != 1.0) {
+        entity.add(ScaleLerp(Vector2f(1.0, 1.0) * startScale, {1.0, 1.0}, lifetime / 2));
     }
 }
-
-static const MaterialData S_MATERIAL_DEFAULT = {.name = "Default",
-                                                .id = WorldMaterial::None,
-                                                .colorRange = {WHITE, WHITE},
-                                                .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                                .bounciness = 0.0,
-                                                .gravityCoef = 0.0,
-                                                .frictionCoefs = {0.0, 0.0},
-                                                .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
 
 static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",
                                              .id = WorldMaterial::Dirt,
@@ -116,7 +107,7 @@ static const MaterialData S_MATERIAL_GRASS = {.name = "Grass",
                                               .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
                                               .bounciness = 0.0,
                                               .gravityCoef = 0.0,
-                                              .frictionCoefs = {0.0, 0.0},
+                                              .frictionCoefs = {0.0, 0.5},
                                               .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",
@@ -147,14 +138,17 @@ static const MaterialData S_MATERIAL_RUBBER = {.name = "Rubber",
                                                .frictionCoefs = {1.0, 1.0},
                                                .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
 
-static const MaterialData S_MATERIAL_DUST = {.name = "Dust",
-                                             .id = WorldMaterial::Dust,
-                                             .colorRange = {BEIGE, WHITE},
-                                             .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                             .bounciness = 0.0,
-                                             .gravityCoef = 0.0,
-                                             .frictionCoefs = {0.0, 0.0},
-                                             .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_DUST = {
+    .name = "Dust",
+    .id = WorldMaterial::Dust,
+    .colorRange = {BEIGE, WHITE},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 0.0,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+    .startScale = 2.0,
+};
 
 static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .id = WorldMaterial::Fire,
@@ -166,6 +160,8 @@ static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .frictionCoefs = {0.0, 0.0},
                                              .fadeColor = BLACK,
                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.2, 0.5)}};
+
+static const MaterialData S_MATERIAL_DEFAULT = S_MATERIAL_DUST;
 
 static const MaterialData S_MATERIAL_EMBER = {
     .name = "Ember",
@@ -189,6 +185,17 @@ static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
                                                .gravityCoef = 1.0,
                                                .frictionCoefs = {0.25, 0.0},
                                                .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+
+static const MaterialData S_MATERIAL_TINYDUST = {
+    .name = "Dust",
+    .id = WorldMaterial::TinyDust,
+    .colorRange = {BEIGE, WHITE},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 0.0,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+};
 
 MaterialData getMaterialData(WorldMaterial material) {
     switch (material) {
@@ -218,6 +225,8 @@ MaterialData getMaterialData(WorldMaterial material) {
         return S_MATERIAL_EMBER;
     case WorldMaterial::Poison:
         return S_MATERIAL_POISON;
+    case WorldMaterial::TinyDust:
+        return S_MATERIAL_TINYDUST;
     }
 }
 

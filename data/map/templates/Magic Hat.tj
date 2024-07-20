@@ -13,6 +13,7 @@
                  "Color":"#05ffffff",
                  "Depth":3,
                  "LifetimeMultiplier":0.5,
+                 "Material":13,
                  "lifetimeSeconds":0.75,
                  "maxSpeed":10,
                  "particlesPerSecond":10

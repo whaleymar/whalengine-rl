@@ -1,8 +1,6 @@
 # To Do 
 
 ## Current Goal: 
-- refactor game stuff into a separate directory from the engine
-- level loading optimizations
 - player controller improvements
     - try working gravity multiplier into RJ state?
     - in air: shooting projectile does have pushback? Maybe only if you shoot in a downward direction
@@ -26,8 +24,6 @@
 - UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
 - Rotational Velocity
 - Drawline primitive (for particles?)
-- Grow/Shrink component?
-    - working for particles, but should move startscale out of particle functions and make them material-specific
 
 ## Vector2T
 - simd optimizations? (need profiling)

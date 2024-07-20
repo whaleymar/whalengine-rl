@@ -125,7 +125,7 @@ void JumpSystem::update() {
                 } else if (vel.total.x < 0) {
                     direction = Direction::NW;
                 }
-                particleBurst(entity.get<Transform2D>(), direction, rb.groundMaterial, 8, Depth::Foreground1, 0.5, 2);
+                particleBurst(entity.get<Transform2D>(), direction, rb.groundMaterial, 8, Depth::Foreground1, 0.5, 0.5);
 
             } else if (jumpControl.isTryingJump() && jumpControl.isJumping) {
                 // jump button pressed and entity still in jump state
