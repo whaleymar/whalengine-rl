@@ -11,7 +11,6 @@
 #include "Settings.h"
 
 #include "Systems/TagTrackers.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "Components/Draw.h"
@@ -147,9 +146,20 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
     }
     case Draw::DrawTag::Line: {
         const DrawStraightLine line = draw.getLine();
-        const Vector2i endPos = trans.position + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
 
-        DrawLineEx(toScreenCoord(trans.position, cameraPos), toScreenCoord(endPos, cameraPos), line.thickness, line.color);
+        Vector2i startPos;
+        Vector2i endPos;
+        if (line.isRotateAboutCenter) {
+            Vector2f halfLine = angleToUnit(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
+            startPos = (trans.position.as<f32>() - halfLine).round();
+            endPos = (trans.position.as<f32>() + halfLine).round();
+
+        } else {
+            startPos = trans.position;
+            endPos = trans.position + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
+        }
+
+        DrawLineEx(toScreenCoord(startPos, cameraPos), toScreenCoord(endPos, cameraPos), line.thickness, line.color);
         break;
     }
     }

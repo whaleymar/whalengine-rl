@@ -20,11 +20,6 @@
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
-## Components
-- UpdateEntity component - stores a function pointer for a custom update method that is entity-specific and doesn't fit in a specific system
-- Rotational Velocity
-- Drawline primitive (for particles?)
-
 ## Vector2T
 - simd optimizations? (need profiling)
 
