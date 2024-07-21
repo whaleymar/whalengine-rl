@@ -1,6 +1,6 @@
 #pragma once
 
-#include <raylib.h>
+#include "Components/Draw.h"
 
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -55,6 +55,7 @@ struct MaterialData {
         DecaySpeedParams decaySpeed;
     } decayParams;
     f32 startScale = 1.0;
+    Draw::DrawTag particleShape = Draw::DrawTag::Rect;
 };
 
 }  // namespace whal

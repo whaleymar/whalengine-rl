@@ -101,14 +101,17 @@ static const MaterialData S_MATERIAL_WOOD = {.name = "Wood",
                                              .frictionCoefs = {1.0, 1.0},
                                              .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
 
-static const MaterialData S_MATERIAL_GRASS = {.name = "Grass",
-                                              .id = WorldMaterial::Grass,
-                                              .colorRange = {DARKGREEN, GREEN},
-                                              .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                              .bounciness = 0.0,
-                                              .gravityCoef = 0.0,
-                                              .frictionCoefs = {0.0, 0.5},
-                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_GRASS = {
+    .name = "Grass",
+    .id = WorldMaterial::Grass,
+    .colorRange = {DARKGREEN, GREEN},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 0.0,
+    .frictionCoefs = {0.0, 0.5},
+    .decayParams = {.decayTime = {.decaySecondsMin = 5.0, .decaySecondsMax = 10.0}},
+    .particleShape = Draw::DrawTag::Line,
+};
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",
                                               .id = WorldMaterial::Water,

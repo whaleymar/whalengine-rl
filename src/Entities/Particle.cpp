@@ -58,7 +58,12 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
 
     auto _ = ecs::DeferActivate(particle);
 
-    particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
+    if (materialData.particleShape == Draw::DrawTag::Line) {
+        particle.add(Draw(DrawStraightLine(3, color, 1.0, 1.0, 1.0, depth, true)));
+        particle.add<AngularVelocity>();
+    } else {
+        particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
+    }
 
     return particle;
 }
@@ -91,6 +96,10 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
     const f32 angle = directionToAngle(direction);
     const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1});
 
+    if (material == WorldMaterial::Grass) {
+        count /= 2;
+    }
+
     for (s32 i = 0; i < count; i++) {
         const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
         const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
@@ -109,6 +118,9 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
         }
 
         particle.set(Velocity(angleToUnit(finalAngle) * finalSpeed));
+        if (particle.has<AngularVelocity>()) {
+            particle.set(AngularVelocity::fromSecondsPerRotation(System::rng.range(1.5f, 2.5f)));
+        }
     }
 }
 

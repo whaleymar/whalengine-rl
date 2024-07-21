@@ -79,6 +79,8 @@ struct DrawStraightLine {
     s32 length;
     Color color;
     f32 thickness = 1.0;
+    f32 scaleLength = 1.0;
+    f32 scaleWidth = 1.0;
     Depth depth = Depth::Level;
     bool isRotateAboutCenter = false;
     Shaders shader = Shaders::Default;

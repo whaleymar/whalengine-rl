@@ -219,6 +219,8 @@ void Draw::setScale(Vector2f scale) {
     case DrawTag::BezierQuad:
         break;
     case DrawTag::Line:
+        mLine.scaleLength = scale.x;
+        mLine.scaleWidth = scale.y;
         break;
     }
 }
@@ -231,7 +233,7 @@ Vector2f Draw::getScale() const {
         return mSprite.scale;
     case DrawTag::BezierQuad:
     case DrawTag::Line:
-        return Vector2f(1.0, 1.0);
+        return Vector2f(mLine.scaleLength, mLine.scaleWidth);
     }
 }
 

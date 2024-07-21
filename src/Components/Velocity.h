@@ -19,7 +19,7 @@ struct Velocity {
 
 // positive is clockwise, negative is counterclockwise
 struct AngularVelocity {
-    f32 rotationsPerSecond;
+    f32 rotationsPerSecond = 0;
     static AngularVelocity fromSecondsPerRotation(f32 secondsPerRotation) { return AngularVelocity{1.0f / secondsPerRotation}; }
 };
 

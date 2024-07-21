@@ -229,7 +229,6 @@ void RotationPhysicsSystem::update() {
         const f32 toAdd = -1.0f * 360.0f * angularVelocity.rotationsPerSecond * dt;
         auto& trans = entity.get<Transform2D>();
         trans.rotationDegrees += toAdd;
-        trans.isManuallyMoved = true;
     }
 }
 
