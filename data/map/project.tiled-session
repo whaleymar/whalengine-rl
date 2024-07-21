@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-start.tmj",
+    "activeFile": "world1-blaster_get.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -78,11 +78,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2,
+            "scale": 8,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -345.5,
-                "y": 264.5
+                "x": 195.5,
+                "y": 91.375
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -184,11 +184,11 @@
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
-        "world1-blaster_get.tmj",
-        "world1-momentumtutorial.tmj",
-        "world1-rockettutorial.tmj",
-        "world1-jumptutorial.tmj",
         "world1-start.tmj",
+        "world1-jumptutorial.tmj",
+        "world1-rockettutorial.tmj",
+        "world1-momentumtutorial.tmj",
+        "world1-blaster_get.tmj",
         "world1-blasterplatformtest.tmj",
         "world1.tmj",
         "testmap2.tmj",
