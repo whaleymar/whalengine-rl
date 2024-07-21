@@ -10,12 +10,30 @@ Attach::Attach(ecs::Entity target_, Vector2i offset_, DirectionParam directionPa
     : targetEntityID(target_.id()), offsetTexels(offset_), directionParam(directionParam_) {}
 
 void Attach::initTarget(ecs::Entity self) {
+    // adds self as child of target
     ecs::Entity targetEntity(targetEntityID);
     if (targetEntity.has<Children>()) {
         targetEntity.get<Children>().add(self);
     } else {
         targetEntity.add(Children({self.id()}));
     }
+}
+
+Orbit::Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i targetOffset_)
+    : targetID(target.id()), radius(radius_), rotationsPerSecond(rotationsPerSecond_), targetOffset(targetOffset_) {}
+
+void Orbit::initTarget(ecs::Entity self) {
+    // adds self as child of target
+    ecs::Entity targetEntity(targetID);
+    if (targetEntity.has<Children>()) {
+        targetEntity.get<Children>().add(self);
+    } else {
+        targetEntity.add(Children({self.id()}));
+    }
+
+    // initialize current angle
+    const Vector2i delta = self.get<Transform2D>().position - targetEntity.get<Transform2D>().position;
+    currentAngle = delta.isZero() ? 0.0f : getAngle(delta.as<f32>());
 }
 
 Follow::Follow(ecs::Entity target_) : targetEntityID(target_.id()) {}

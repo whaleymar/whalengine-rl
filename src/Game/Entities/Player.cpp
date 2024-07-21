@@ -2,6 +2,7 @@
 
 #include "Components/Callback.h"
 #include "Components/Light.h"
+#include "Entities/Block.h"
 #include "Entities/Particle.h"
 #include "Game.h"
 #include "Game/Components/Blaster.h"
@@ -257,6 +258,15 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
                            System::audio.setFilterMusic(AudioPlayer::Filter::None);
                        }});
     player.add<IUseCheckpoints>();
+
+    // orbit component testing:
+    // auto eSprite = Sprite::fromPath("actor/magichat1");
+    // if (eSprite.isExpected()) {
+    //     auto decal = createDecal(transform, eSprite.value()).value();
+    //     decal.add(Orbit(player, 3 * PIXELS_PER_TILE, 0.5, {0, 6}));
+    // } else {
+    //     print(eSprite.error());
+    // }
 
     return player;
 }

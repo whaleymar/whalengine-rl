@@ -56,6 +56,7 @@ protected:
 
 struct Sprite : public IDraw {
     Sprite(Depth depth_ = Depth::Player, Frame frame = {}, Color color_ = WHITE, Shaders shader_ = Shaders::Default);
+    static Expected<Sprite> fromPath(const char* spritePath, Depth depth_ = Depth::Player, Color color_ = WHITE, Shaders shader_ = Shaders::Default);
     void setFrame(Frame frame);
 
     Vector2i atlasPositionTexels;

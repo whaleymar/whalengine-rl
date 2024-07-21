@@ -9,6 +9,7 @@
 #include "Components/Transform.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -51,6 +52,15 @@ void IDraw::setColor(Color rgb) {
 
 Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
     : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
+
+Expected<Sprite> Sprite::fromPath(const char* spritePath, Depth depth_, Color color_, Shaders shader_) {
+    const auto& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE);
+    auto frame = spriteTexture.getFrame(spritePath);
+    if (frame) {
+        return Sprite(depth_, *frame, color_, shader_);
+    }
+    return Error(whal_format("Couldn't find {} in texture atlas", spritePath));
+}
 
 void Sprite::setFrame(Frame frame) {
     setFrameSize(frame.dimensionsTexels);

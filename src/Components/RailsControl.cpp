@@ -51,6 +51,7 @@ void RailsControl::step() {
     curActionTime = 0;
 }
 
+// TODO consolidate with other easing enum
 f32 RailsControl::getSpeed(Vector2i currentPosition) {
     // this is super hacky
     // because my easeIn/easeOut functions describe 2nd order functions

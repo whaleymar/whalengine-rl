@@ -42,9 +42,9 @@ void AttachSystem::onAdd(ecs::Entity entity) {
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const Transform2D trans = entity.get<Transform2D>();
-        Attach attach = entity.get<Attach>();
-        ecs::Entity targetEntity(attach.targetEntityID);
-        auto targetTrans = targetEntity.get<Transform2D>();
+        const Attach attach = entity.get<Attach>();
+        const ecs::Entity targetEntity(attach.targetEntityID);
+        const auto targetTrans = targetEntity.get<Transform2D>();
         const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
                                          attach.directionParam == Attach::DirectionParam::UseFacingForOffset) &&
                                                 targetTrans.facing == Facing::Left ?
@@ -60,6 +60,33 @@ void AttachSystem::update() {
         } else {
             entity.set(Transform2D(targetPosition));
         }
+    }
+}
+
+void OrbitSystem::onAdd(ecs::Entity entity) {
+    entity.get<Orbit>().initTarget(entity);
+}
+
+// RESEARCH use collider.move if the entity has a collider? Seems like it would be glitchy if a collision does happen
+void OrbitSystem::update() {
+    const f32 dt = System::dt();
+    for (auto [entityid, entity] : getEntitiesMutable()) {
+        auto& trans = entity.get<Transform2D>();
+        Orbit& orbit = entity.get<Orbit>();
+        const ecs::Entity targetEntity(orbit.targetID);
+        const Vector2i orbitTarget = targetEntity.get<Transform2D>().position + orbit.targetOffset;
+
+        // if we get the current angle and add to that, it has this cool "follow if target moving, orbit if target is still" effect, but not sure if
+        // that's useful for anything
+        // const auto delta = trans.position - orbitTarget;
+        // f32 angle = delta.isZero() ? 0.0f : getAngle(delta.as<f32>());
+
+        // multiply by -1 so rotations are clockwise by default
+        const f32 toAdd = -1.0f * 360.0f * orbit.rotationsPerSecond * dt;
+        orbit.currentAngle += toAdd;
+
+        // RESEARCH bool param so that entity rotates in sync with orbit? (tidal lock)
+        trans.position = (angleToUnit(orbit.currentAngle) * static_cast<f32>(orbit.radius)).round() + orbitTarget;
     }
 }
 

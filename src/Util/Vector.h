@@ -101,6 +101,12 @@ Vector2 toRaylib(Vector2i vec);
 
 Vector2f angleToUnit(f32 angle);
 
+// inputs do not need to be normalized
+f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::unitRight);
+
+// counter clockwise (like unit circle)
+f32 getAngle(Vector2f vec, Vector2f reference = Vector2f::unitRight);
+
 inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
     return Vector2f(myLerp(vec1.x, vec2.x, t), myLerp(vec1.y, vec2.y, t));
 }

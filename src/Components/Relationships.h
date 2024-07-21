@@ -26,6 +26,22 @@ struct Attach {
     DirectionParam directionParam = DirectionParam::IgnoreFacing;
 };
 
+struct Orbit {
+    Orbit() = default;
+    Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i targetOffset_ = {0, 0});
+
+    void initTarget(ecs::Entity self);
+    ecs::Entity getTarget() const;
+
+    ecs::EntityID targetID;
+    s32 radius;
+    f32 rotationsPerSecond;
+    Vector2i targetOffset;
+
+    // managed:
+    f32 currentAngle;
+};
+
 // in general, dead zone should be bigger than lookahead
 struct Follow {
     Follow() = default;

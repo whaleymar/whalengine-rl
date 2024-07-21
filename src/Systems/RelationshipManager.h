@@ -8,6 +8,7 @@ namespace whal {
 
 struct Children;
 struct Attach;
+struct Orbit;
 struct Follow;
 struct Velocity;
 struct Transform2D;
@@ -20,6 +21,13 @@ public:
 };
 
 class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
+public:
+    void update() override;
+    void onAdd(ecs::Entity entity) override;
+    void onRemove(ecs::Entity entity) override {}
+};
+
+class OrbitSystem : public ecs::ISystem<Orbit, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:
     void update() override;
     void onAdd(ecs::Entity entity) override;

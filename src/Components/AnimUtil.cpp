@@ -9,7 +9,7 @@
 namespace whal {
 
 void loadAnimations(Animator& animator, const AnimInfo& animInfo) {
-    auto& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE);
+    const auto& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE);
 
     for (auto [animBaseName, id, count, secsPerFrame] : animInfo) {
         std::vector<Frame> frames;

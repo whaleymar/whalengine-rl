@@ -123,7 +123,8 @@ bool Game::startup() {
     // note: nothing is actually running in parallel yet
     System::world->BeginSystemRegistration()
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
-        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
+        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem>()  // all entity movement happens here
+        // .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem, ColorLerpSystem, ScaleLerpSystem>()
         .parallel<ParticleEmitterSystem, ProjectileSystem, CustomUpdateSystem>()
         .parallel<RocketJumpingSystem, SlowEntityKillerSystem>(2)
