@@ -161,12 +161,6 @@ void Game::mainloop() {
         return;
     }
 
-    // experimenting with adding some extra pixels on border
-    RenderTexture2D targetTexture =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw objects to
-    RenderTexture2D targetTextureBackground =
-        LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);  // where we'll draw the background to
-    RenderTexture2D postProcessTexture = LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE);
     // Color clearColor = {73, 77, 126, 255};
     Color clearColor = {58, 57, 106, 255};
     // Color clearColor = {5, 5, 5, 255};
@@ -241,12 +235,12 @@ void Game::mainloop() {
         radianceSystem->update();  // this gets drawn to its own texture
 
         // do backgrounds on their own texture so lighting doesn't affect them
-        BeginTextureMode(targetTextureBackground);
+        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Background));
         ClearBackground(clearColor);
         TextureManager::instance().drawBackgroundTextures();
         EndTextureMode();
 
-        BeginTextureMode(targetTexture);
+        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         ClearBackground(clearColorTransparent);  // don't overwrite background stuff
         BeginMode2D(*mWorldSpaceCamera);
 
@@ -276,7 +270,7 @@ void Game::mainloop() {
         // POST PROCESSING EFFECTS START
         // -----------------------------------------------------------------------
 
-        BeginTextureMode(postProcessTexture);
+        BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
         ClearBackground(clearColor);
 
         if (IsKeyPressed(KEY_Q)) {
@@ -284,8 +278,8 @@ void Game::mainloop() {
         }
 
         // this unflips the y axis for some reason
-        DrawTexture(targetTextureBackground.texture, 0, 0, WHITE);
-        DrawTexture(targetTexture.texture, 0, 0, WHITE);
+        DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
+        DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
 
         TextureManager::instance().drawBloomTexture();
 
@@ -311,7 +305,7 @@ void Game::mainloop() {
 
         // looks cool, but is too much to apply it to the whole scene
         // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
-        DrawTexturePro(postProcessTexture.texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
+        DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
         // EndShaderMode();
 
         if (isQuantizeOn) {
@@ -335,10 +329,6 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         // DRAW END
     }
-
-    UnloadRenderTexture(targetTexture);
-    UnloadRenderTexture(targetTextureBackground);
-    UnloadRenderTexture(postProcessTexture);
 }
 
 void Game::end() {

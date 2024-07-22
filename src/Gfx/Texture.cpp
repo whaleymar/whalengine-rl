@@ -6,7 +6,6 @@
 #include <raylib.h>
 #include <string>
 
-#include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Settings.h"
 #include "Systems/TagTrackers.h"
@@ -30,6 +29,8 @@ void parse_error_handler(const char* what, void* where) {
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
+
+static std::array<RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
 Frame::Frame(Rectangle rect) : atlasPositionTexels(rect.x, rect.y), dimensionsTexels(rect.width, rect.height) {}
 
@@ -120,10 +121,32 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     return texture;
 }
 
-TextureManager::TextureManager()
-    : mLightingTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)),
-      mBloomTexture(LoadRenderTexture(WINDOW_WIDTH_PIXELS + BLEED_SIZE, WINDOW_HEIGHT_PIXELS + BLEED_SIZE)), mBGTextureStatic(RenderTexture2D()),
-      mBGTextureFar(RenderTexture2D()), mBGTextureMid(RenderTexture2D()), mBGTextureNear(RenderTexture2D()) {}
+TextureManager::TextureManager() {
+    struct RenderTextureInfo {
+        TextureID id;
+        s32 width;
+        s32 height;
+        bool isUseBleedBuffer;
+    };
+
+    static const RenderTextureInfo sRenderTexInfo[] = {
+        {TextureID::Main, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::Background, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::PostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+    };
+
+    constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
+    for (size_t i = 0; i < len; i++) {
+        const auto rtInfo = sRenderTexInfo[i];
+        s32 buffer = rtInfo.isUseBleedBuffer ? BLEED_SIZE : 0;
+        RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width + buffer, rtInfo.height + buffer);
+        s32 ix = static_cast<s32>(rtInfo.id);
+        S_RENDER_TEXTURES[ix] = renderTexture;
+        setIsRenderTextureUsed(ix);
+    }
+}
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
@@ -169,6 +192,35 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const 
     return registerTextureAtlas(texture, atlasDataPath, name);
 }
 
+RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {
+    s32 ix = static_cast<s32>(id);
+    assert(isRenderTextureUsed(ix));
+    return S_RENDER_TEXTURES[ix];
+}
+
+void TextureManager::setRenderTexture(TextureID id, RenderTexture2D rTexture) {
+    s32 texIx = static_cast<s32>(TextureID::BackgroundStatic);
+    if (isRenderTextureUsed(texIx)) {
+        UnloadRenderTexture(_getRenderTexture(id));
+    }
+    S_RENDER_TEXTURES[texIx] = rTexture;
+}
+
+bool TextureManager::isRenderTextureUsed(s32 ix) const {
+    return (mRTUsageMask & (1 << ix)) > 0;
+}
+
+void TextureManager::setIsRenderTextureUsed(s32 ix) {
+    mRTUsageMask |= (1 << ix);
+}
+
+void TextureManager::unloadRenderTexture(TextureID id) {
+    s32 ix = static_cast<s32>(id);
+    assert(isRenderTextureUsed(ix) && "trying to unload RenderTexture that is already unloaded");
+    UnloadRenderTexture(_getRenderTexture(id));
+    mRTUsageMask &= ~(1 << ix);
+}
+
 s32 TextureManager::getTextureIndex(std::string name) const {
     for (size_t i = 0; i < mTextureNames.size(); i++) {
         std::string texName = mTextureNames[i];
@@ -202,51 +254,50 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
                                                                                   bool isRepeatY) {
     std::string texname;
     switch (dstBG) {
-    case BGTexture::STATIC:
-        if (mBGTextureStatic) {
-            UnloadRenderTexture(*mBGTextureStatic);
-        }
-        mBGTextureStatic = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!mBGTextureStatic) {
+    case BGTexture::STATIC: {
+        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+        if (!rTexOpt) {
             return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
+        setRenderTexture(TextureID::BackgroundStatic, *rTexOpt);
+
         texname = "static";
         break;
+    }
 
-    case BGTexture::FAR:
-        if (mBGTextureFar) {
-            UnloadRenderTexture(*mBGTextureFar);
-        }
-        mBGTextureFar = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!mBGTextureFar) {
+    case BGTexture::FAR: {
+        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+        if (!rTexOpt) {
             return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
+        setRenderTexture(TextureID::BackgroundFar, *rTexOpt);
+
         mScrollFar = {};
         texname = "far";
         mBGDataFar = {parallax, offset, isRepeatX, isRepeatY};
         break;
+    }
 
-    case BGTexture::MID:
-        if (mBGTextureMid) {
-            UnloadRenderTexture(*mBGTextureMid);
-        }
-        mBGTextureMid = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!mBGTextureMid) {
+    case BGTexture::MID: {
+        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+        if (!rTexOpt) {
             return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
+        setRenderTexture(TextureID::BackgroundMid, *rTexOpt);
+
         mScrollMid = {};
         texname = "mid";
         mBGDataMid = {parallax, offset, isRepeatX, isRepeatY};
         break;
+    }
 
     case BGTexture::NEAR:
-        if (mBGTextureNear) {
-            UnloadRenderTexture(*mBGTextureNear);
-        }
-        mBGTextureNear = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!mBGTextureNear) {
+        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+        if (!rTexOpt) {
             return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
         }
+        setRenderTexture(TextureID::BackgroundNear, *rTexOpt);
+
         mScrollNear = {};
         texname = "near";
         mBGDataNear = {parallax, offset, isRepeatX, isRepeatY};
@@ -294,17 +345,19 @@ void TextureManager::drawBackgroundTextures() {
     };
 
     // check if we need to wrap
-    if (mBGTextureFar) {
-        checkWrapping(cameraPos, mBGDataFar, mBGTextureFar->texture.width, mBGTextureFar->texture.height, mScrollFar);
+    if (isRenderTextureUsed(TextureID::BackgroundFar)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundFar);
+        checkWrapping(cameraPos, mBGDataFar, bgTex.texture.width, bgTex.texture.height, mScrollFar);
     }
-    if (mBGTextureMid) {
-        checkWrapping(cameraPos, mBGDataMid, mBGTextureMid->texture.width, mBGTextureMid->texture.height, mScrollMid);
+    if (isRenderTextureUsed(TextureID::BackgroundMid)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundMid);
+        checkWrapping(cameraPos, mBGDataMid, bgTex.texture.width, bgTex.texture.height, mScrollMid);
     }
-    if (mBGTextureNear) {
-        checkWrapping(cameraPos, mBGDataNear, mBGTextureNear->texture.width, mBGTextureNear->texture.height, mScrollNear);
+    if (isRenderTextureUsed(TextureID::BackgroundNear)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundNear);
+        checkWrapping(cameraPos, mBGDataNear, bgTex.texture.width, bgTex.texture.height, mScrollNear);
     }
 
-    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureStatic->texture.width), -1 * static_cast<f32>(mBGTextureStatic->texture.height)};
     auto drawBG = [](Texture2D& texture, Rectangle screenSourceRec, Vector2f offset, Color color = WHITE) -> void {
         DrawTexturePro(texture, screenSourceRec,
                        {offset.x - PIXELS_PER_TILE / 2, offset.y + PIXELS_PER_TILE / 2, (f32)texture.width, (f32)texture.height}, {0.0f, 0.0f}, 0.0f,
@@ -355,48 +408,57 @@ void TextureManager::drawBackgroundTextures() {
         }
     };
 
-    drawBG(mBGTextureStatic->texture, screenSourceRec, {});
+    // STATIC BG
+    if (isRenderTextureUsed(TextureID::BackgroundStatic)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundStatic);
+        screenSourceRec = {0.0f, 0.0f, static_cast<f32>(bgTex.texture.width), -1 * static_cast<f32>(bgTex.texture.height)};
+        drawBG(bgTex.texture, screenSourceRec, {});
+    }
 
     // FAR BG:
-    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureFar->texture.width), -1 * static_cast<f32>(mBGTextureFar->texture.height)};
-
-    if (mBGTextureFar) {
-        drawBackgrounds(*mBGTextureFar, screenSourceRec, mBGDataFar, mScrollFar);
+    if (isRenderTextureUsed(TextureID::BackgroundFar)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundFar);
+        screenSourceRec = {0.0f, 0.0f, static_cast<f32>(bgTex.texture.width), -1 * static_cast<f32>(bgTex.texture.height)};
+        drawBackgrounds(bgTex, screenSourceRec, mBGDataFar, mScrollFar);
     }
 
     // MID BG:
-    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureMid->texture.width), -1 * static_cast<f32>(mBGTextureMid->texture.height)};
-    if (mBGTextureMid) {
-        drawBackgrounds(*mBGTextureMid, screenSourceRec, mBGDataMid, mScrollMid);
+    if (isRenderTextureUsed(TextureID::BackgroundMid)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundMid);
+        screenSourceRec = {0.0f, 0.0f, static_cast<f32>(bgTex.texture.width), -1 * static_cast<f32>(bgTex.texture.height)};
+        drawBackgrounds(bgTex, screenSourceRec, mBGDataMid, mScrollMid);
     }
 
     // NEAR BG:
-    screenSourceRec = {0.0f, 0.0f, static_cast<f32>(mBGTextureNear->texture.width), -1 * static_cast<f32>(mBGTextureNear->texture.height)};
-    if (mBGTextureNear) {
-        drawBackgrounds(*mBGTextureNear, screenSourceRec, mBGDataNear, mScrollNear);
+    if (isRenderTextureUsed(TextureID::BackgroundNear)) {
+        auto& bgTex = getRenderTexture(TextureID::BackgroundNear);
+        screenSourceRec = {0.0f, 0.0f, static_cast<f32>(bgTex.texture.width), -1 * static_cast<f32>(bgTex.texture.height)};
+        drawBackgrounds(bgTex, screenSourceRec, mBGDataNear, mScrollNear);
     }
 }
 
 void TextureManager::drawLightingTexture() {
+    RenderTexture2D lightingTexture = getRenderTexture(TextureID::Lighting);
     Rectangle screenSourceRec =
-        Rectangle(0.0f, 0.0f, static_cast<f32>(mLightingTexture.texture.width), -1 * static_cast<f32>(mLightingTexture.texture.height));
-    Rectangle dstRect(0, 0, mLightingTexture.texture.width, mLightingTexture.texture.height);
+        Rectangle(0.0f, 0.0f, static_cast<f32>(lightingTexture.texture.width), -1 * static_cast<f32>(lightingTexture.texture.height));
+    Rectangle dstRect(0, 0, lightingTexture.texture.width, lightingTexture.texture.height);
 
     BeginBlendMode(BLEND_MULTIPLIED);
     // doesnt look good, just makes everything look way brighter
     // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
-    DrawTexturePro(mLightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
+    DrawTexturePro(lightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
     // EndShaderMode();
     EndBlendMode();
 }
 
 void TextureManager::drawBloomTexture() {
     BeginBlendMode(BLEND_ADDITIVE);
+    RenderTexture2D radianceTexture = getRenderTexture(TextureID::Radiance);
     // way too bright
     // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
-    // DrawTexture(mBloomTexture.texture, 0, 0, WHITE);
+    // DrawTexture(raidanceTexture.texture, 0, 0, WHITE);
     // EndShaderMode();
-    DrawTexture(mBloomTexture.texture, 0, 0, WHITE);
+    DrawTexture(radianceTexture.texture, 0, 0, WHITE);
     EndBlendMode();
 }
 
@@ -408,21 +470,12 @@ void TextureManager::unloadAll() {
         UnloadTexture(atlas.getTexture());
     }
 
-    if (mBGTextureStatic) {
-        UnloadRenderTexture(*mBGTextureStatic);
+    constexpr s32 rtLen = static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME);
+    for (size_t i = 0; i < rtLen; i++) {
+        if (isRenderTextureUsed(i)) {
+            UnloadRenderTexture(S_RENDER_TEXTURES[i]);
+        }
     }
-    if (mBGTextureFar) {
-        UnloadRenderTexture(*mBGTextureFar);
-    }
-    if (mBGTextureMid) {
-        UnloadRenderTexture(*mBGTextureMid);
-    }
-    if (mBGTextureNear) {
-        UnloadRenderTexture(*mBGTextureNear);
-    }
-
-    UnloadRenderTexture(mLightingTexture);
-    UnloadRenderTexture(mBloomTexture);
 }
 
 }  // namespace whal

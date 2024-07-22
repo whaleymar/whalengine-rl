@@ -89,6 +89,8 @@ struct DrawStraightLine {
 
 class Draw {
 public:
+    // TODO text can go here once I have a font that matches the target resolution
+    // probably won't get rid of other version, because I can use that for dialogue system?
     enum class DrawTag { Rect, Sprite, BezierQuad, Line };  // text too?
 
     Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,

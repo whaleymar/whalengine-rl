@@ -34,6 +34,7 @@
             - if depth changes and bloom texture is not empty, then draw texture (w/ bloom shader on) && clear it for next depth value, otherwise do nothing
 
         - this makes me think bloom should be a tag, not a Draw shader? Since an entity could have a custom shader AND bloom & it would work
+        - UPDATE: first implementation did not go well. Too messy w/ having to switch back to the target texture. Need a general-purpose draw-layer-to-texture-then-draw-layer-to-targettexture pipeline working before i try this
 
 ## Map 
 - respawn map objects

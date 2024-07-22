@@ -45,6 +45,21 @@ private:
     bool mIsValid = false;
 };
 
+enum class TextureID {
+    Main,
+    Background,  // any repeating backgrounds use this
+    PostProcess,
+    // ColorGrade,  // this is a regular texture, not rendertexture, might remove
+    Lighting,
+    Radiance,
+    // Bloom,
+    BackgroundStatic,
+    BackgroundFar,
+    BackgroundMid,
+    BackgroundNear,
+    _COUNT_DO_NOT_USE_ME,
+};
+
 class TextureManager {
     struct BGData {
         Vector2f parallax;
@@ -64,12 +79,13 @@ public:
     Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);
     Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
 
+    // TODO static getters
     const Texture2D& getTexture(const char* name);
     const TextureAtlas& getTextureAtlas(const char* name);
     std::vector<Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
-    RenderTexture2D& getLightingTexture() { return mLightingTexture; }
-    RenderTexture2D& getBloomTexture() { return mBloomTexture; }
+
+    static RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
 
     Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
@@ -86,24 +102,26 @@ private:
 
     s32 getTextureIndex(std::string name) const;
     s32 getTextureAtlasIndex(std::string name) const;
+    RenderTexture2D& _getRenderTexture(TextureID id);
+    void setRenderTexture(TextureID id, RenderTexture2D rTexture);
+    bool isRenderTextureUsed(s32 ix) const;
+    bool isRenderTextureUsed(TextureID id) const { return isRenderTextureUsed(static_cast<s32>(id)); }
+    void setIsRenderTextureUsed(s32 ix);
+    void unloadRenderTexture(TextureID id);
 
     std::vector<TextureAtlas> mTextureAtlases;
     std::vector<std::string> mTextureAtlasNames;
     std::vector<Texture2D> mTextures;
     std::vector<std::string> mTextureNames;
 
-    RenderTexture2D mLightingTexture;
-    RenderTexture2D mBloomTexture;
-    Corrade::Containers::Optional<RenderTexture2D> mBGTextureStatic;
-    Corrade::Containers::Optional<RenderTexture2D> mBGTextureFar;
-    Corrade::Containers::Optional<RenderTexture2D> mBGTextureMid;
-    Corrade::Containers::Optional<RenderTexture2D> mBGTextureNear;
     Vector2f mScrollFar;
     Vector2f mScrollMid;
     Vector2f mScrollNear;
     BGData mBGDataFar;
     BGData mBGDataMid;
     BGData mBGDataNear;
+
+    u32 mRTUsageMask;
 };
 
 }  // namespace whal
