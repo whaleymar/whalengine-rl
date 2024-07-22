@@ -19,7 +19,7 @@ namespace whal {
 const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 void drawLights() {
-    BeginTextureMode(TextureManager::instance().getLightingTexture());
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Lighting));
     BeginMode2D(*Game::instance().getWorldCamera());
     ClearBackground(COLOR_AMBIENT);
 
@@ -96,7 +96,7 @@ void BoxLightSystem::update() {
     Shader shader = ShaderManager::get(Shaders::BoxLight);
     // BeginShaderMode(shader);
 
-    Texture randomTexture = TextureManager::instance().getLightingTexture().texture;
+    Texture randomTexture = TextureManager::getRenderTexture(TextureID::Lighting).texture;
     for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
@@ -157,7 +157,7 @@ void RadianceLightSystem::update() {
 
     Shader shader = ShaderManager::get(Shaders::Radiance);
     BeginShaderMode(shader);
-    BeginTextureMode(TextureManager::instance().getBloomTexture());
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Radiance));
     BeginMode2D(*Game::instance().getWorldCamera());
 
     ClearBackground({0, 0, 0, 0});  // don't overwrite background stuff
