@@ -26,6 +26,14 @@
 ## Gfx
 - replace radiance with bloom?
     - also want to try adding some translucent circle instead to see if that helps
+    - anything w/ bloom would need to be drawn to its own texture, since it looks weird if bloom is constrained to only part of a canvas,
+    but would need one texture per depth value? which would complicate things
+        - better idea: draw loop goes like this:
+            - create blank bloom texture 
+            - while depth unchanged: if entity has bloom shader: draw to bloom texture (w/out bloom obviously)
+            - if depth changes and bloom texture is not empty, then draw texture (w/ bloom shader on) && clear it for next depth value, otherwise do nothing
+
+        - this makes me think bloom should be a tag, not a Draw shader? Since an entity could have a custom shader AND bloom & it would work
 
 ## Map 
 - respawn map objects
@@ -52,6 +60,9 @@
 ## Misc
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
+- controller support (low priority)
+- input remapping (saved to file too) (low priority)
+- dialogue system (low priority)
 
 ---------------------------------------------------------------------------------------------------------------------------
 
