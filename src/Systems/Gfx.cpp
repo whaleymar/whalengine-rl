@@ -8,6 +8,7 @@
 #include "Gfx/Depth.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
+#include "Physics/Shapes.h"
 #include "Settings.h"
 
 #include "Systems/TagTrackers.h"
@@ -102,12 +103,19 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
     Vector2f posF = trans.position.as<f32>();
     Draw draw = entity.get<Draw>();
     const Vector2i cameraPos = cameraPosF.round();
+    const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
 
     switch (draw.getTag()) {
     case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
         auto frameSize = rect.getFrameSizeTexels().as<f32>();
         Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
+
+        // skip if entity is off screen
+        // use generous 2x'd half len so we don't have to worry about rotations
+        if (AABB drawBox = AABB(trans.position, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
+            return;
+        }
 
         // subtract size.y so we draw from bottom left instead of top left
         Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y - dstSize.y};
@@ -124,6 +132,13 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
         const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
 
         Vector2f dstSize = {frameSize.x * sprite.scale.x * FPIXELS_PER_TEXEL, frameSize.y * sprite.scale.y * FPIXELS_PER_TEXEL};
+
+        // skip if entity is off screen
+        // use generous 2x'd half len so we don't have to worry about rotations
+        if (AABB drawBox = AABB(trans.position, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
+            return;
+        }
+
         Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
 
         // rotate about center or transform

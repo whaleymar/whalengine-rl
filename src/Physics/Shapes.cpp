@@ -14,7 +14,12 @@ Vector2i getRotationCorrection(Vector2i half, f32 rotationDegrees) {
     // -90deg is right
     // 0deg is down
     // 90 deg is left
-    f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
+
+    // optimize for most common case
+    if (rotationDegrees == 0.0) {
+        return {0, half.y};
+    }
+    const f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
     return (Vector2f(-0.5, -1.0) * half.as<f32>() * Vector2f(std::cos(correctRadians), std::sin(correctRadians))).round();
 }
 
