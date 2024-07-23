@@ -15,7 +15,6 @@ out vec4 finalColor;
 
 // hard coded vars: 
 const float glow_size = .5;
-const vec3 glow_colour = vec3(255, 0, 0);
 const float glow_intensity = 1;
 const float glow_threshold = .5;
 
@@ -43,6 +42,6 @@ void main() {
             sum += h_sum / 9.0;
         }
 
-        finalColor = vec4(glow_colour, (sum / 9.0) * glow_intensity);
+        finalColor = vec4(vec3(fragColor.r, fragColor.g, fragColor.b), (sum / 9.0) * glow_intensity);
     }
 }

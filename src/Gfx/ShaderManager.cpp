@@ -25,6 +25,7 @@ ShaderManager::ShaderManager() {
         {Shaders::Outline, 0, "src/Shader/outline.glsl"},
         {Shaders::Bloom, 0, "src/Shader/bloom.glsl"},
         {Shaders::Glow, 0, "src/Shader/glow.glsl"},
+        {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);

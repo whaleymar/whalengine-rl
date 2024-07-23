@@ -56,6 +56,7 @@ enum class TextureID {
     Radiance,
     LayerNormal,
     LayerBloom,
+    LayerGlow,
     BackgroundStatic,
     BackgroundFar,
     BackgroundMid,

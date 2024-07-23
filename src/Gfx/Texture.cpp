@@ -7,6 +7,7 @@
 #include <string>
 
 #include "Components/Draw.h"
+#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 #include "Systems/TagTrackers.h"
 #include "Util/FileUtils.h"
@@ -137,6 +138,7 @@ TextureManager::TextureManager() {
         {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerNormal, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerBloom, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::LayerGlow, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
@@ -459,10 +461,27 @@ void TextureManager::drawLightingTexture() {
 }
 
 void TextureManager::drawRadianceTexture() {
+    // static int exposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
+    // static float exposure = 1.0;
+    //
+    // if (IsKeyPressed(KEY_UP)) {
+    //     exposure += 0.1;
+    //     print("exposure: ", exposure);
+    // } else if (IsKeyPressed(KEY_DOWN)) {
+    //     exposure -= 0.1;
+    //     print("exposure: ", exposure);
+    // }
+
     BeginBlendMode(BLEND_ADDITIVE);
     RenderTexture2D radianceTexture = getRenderTexture(TextureID::Radiance);
     DrawTexture(radianceTexture.texture, 0, 0, WHITE);
     EndBlendMode();
+
+    // auto shader = ShaderManager::get(Shaders::ToneMap);
+    // BeginShaderMode(shader);
+    // SetShaderValue(shader, exposureUniform, &exposure, SHADER_UNIFORM_FLOAT);
+    // DrawTexture(getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
+    // EndShaderMode();
 }
 
 void TextureManager::unloadAll() {
