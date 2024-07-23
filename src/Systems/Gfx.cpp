@@ -28,6 +28,11 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
+static const std::array<TextureID, 2> S_LAYER_TEXTURES = {
+    TextureID::LayerNormal,
+    TextureID::LayerBloom,
+};
+
 static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
     return Vector2(worldCoord.x - cameraPos.x, cameraPos.y - worldCoord.y);
 }
@@ -68,6 +73,9 @@ void GfxSystem::Layer::update() {
     }
 
     toSort.clear();
+
+    // reset iterator
+    iter = sorted.begin();
 }
 
 void GfxSystem::onAdd(const ecs::Entity entity) {
@@ -93,53 +101,48 @@ bool GfxSystem::isBelow(const DrawInfo& first, const DrawInfo& second) {
     return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
 }
 
+static void drawTextureFlipped(const Texture& tex) {
+    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
+}
+
 // this is really messy and will be a pain to add more layers to it
 void GfxSystem::drawEntities() {
-    const RenderTexture2D& layerNormalTexture = TextureManager::getRenderTexture(TextureID::LayerNormal);
-    const RenderTexture2D& layerBloomTexture = TextureManager::getRenderTexture(TextureID::LayerBloom);
-
-    static const auto drawTextureFlipped = [](const Texture& tex) {
-        DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
-    };
-
     // update layers with new entities
-    mLayerNormal.update();
-    mLayerBloom.update();
+    for (auto texID : S_LAYER_TEXTURES) {
+        getLayer(texID).update();
+    }
 
     bool isFirstDrawToMain = true;
 
     // draw one layer at a time to minimize FBO swaps
-    auto iterLayerNormal = mLayerNormal.sorted.begin();
-    auto iterLayerBloom = mLayerBloom.sorted.begin();
     const auto camera = *Game::instance().getWorldCamera();
     while (true) {
-        const Depth currentDepth = iterLayerNormal != mLayerNormal.sorted.end() &&
-                                           (iterLayerBloom == mLayerBloom.sorted.end() || iterLayerNormal->depthId == iterLayerBloom->depthId ||
-                                            iterLayerNormal->depth < iterLayerBloom->depth) ?
-                                       iterLayerNormal->depthId :
-                                       iterLayerBloom->depthId;
+        Depth currentDepth = Depth::Debug;
+        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
+            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
+            if (layer.iter == layer.sorted.end() || layer.iter->depthId == currentDepth) {
+                continue;
+            }
 
-        bool isDrewToNormal = false;
-        bool isDrewToBloom = false;
-
-        if (iterLayerNormal != mLayerNormal.sorted.end() && currentDepth == iterLayerNormal->depthId) {
-            isDrewToNormal = true;
-            BeginTextureMode(layerNormalTexture);
-            ClearBackground(Colors::Clear);
-            BeginMode2D(camera);
-            iterLayerNormal = drawEntities(mLayerNormal, iterLayerNormal);
-            EndMode2D();
-            EndTextureMode();
+            if (layer.iter->depth < depthToFloat(currentDepth)) {
+                currentDepth = layer.iter->depthId;
+            }
         }
 
-        if (iterLayerBloom != mLayerBloom.sorted.end() && currentDepth == iterLayerBloom->depthId) {
-            isDrewToBloom = true;
-            BeginTextureMode(layerBloomTexture);
-            ClearBackground(Colors::Clear);
-            BeginMode2D(camera);
-            iterLayerBloom = drawEntities(mLayerBloom, iterLayerBloom);
-            EndMode2D();
-            EndTextureMode();
+        std::bitset<S_LAYER_TEXTURES.size()> drawMask;
+        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
+            const auto texID = S_LAYER_TEXTURES[i];
+            auto& layer = getLayer(texID);
+
+            if (layer.iter != layer.sorted.end() && currentDepth == layer.iter->depthId) {
+                drawMask.set(i);
+                BeginTextureMode(TextureManager::getRenderTexture(texID));
+                ClearBackground(Colors::Clear);
+                BeginMode2D(camera);
+                layer.iter = drawEntities(layer, layer.iter);
+                EndMode2D();
+                EndTextureMode();
+            }
         }
 
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
@@ -148,17 +151,26 @@ void GfxSystem::drawEntities() {
             isFirstDrawToMain = false;
         }
 
-        if (isDrewToNormal) {
-            drawTextureFlipped(layerNormalTexture.texture);
+        bool isDone = true;
+        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
+            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
+            if (!isDone || layer.iter != layer.sorted.end()) {
+                isDone = false;
+            }
+
+            if (!drawMask[i]) {
+                continue;
+            }
+            if (layer.shader == Shaders::Default) {
+                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+            } else {
+                BeginShaderMode(ShaderManager::get(layer.shader));
+                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                EndShaderMode();
+            }
         }
 
-        if (isDrewToBloom) {
-            BeginShaderMode(ShaderManager::get(Shaders::Bloom));
-            drawTextureFlipped(layerBloomTexture.texture);
-            EndShaderMode();
-        }
-
-        if (iterLayerNormal == mLayerNormal.sorted.end() && iterLayerBloom == mLayerBloom.sorted.end()) {
+        if (isDone) {
             break;
         } else {
             EndTextureMode();

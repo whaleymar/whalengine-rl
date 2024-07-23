@@ -231,23 +231,11 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         drawLights();
         radianceSystem->update();  // this gets drawn to its own texture
-
-        // todo move begin/endTextureMode functions and background functions that only call one function to the called function
-
-        // do backgrounds on their own texture so lighting doesn't affect them
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Background));
-        ClearBackground(clearColor);
         TextureManager::instance().drawBackgroundTextures();
-        EndTextureMode();
-
         gfxSystem->drawEntities();
 
         // -----------------------------------------------------------------------
         // ECS DRAW END
-        // Vector2f cameraPosf = getCameraPositionPrecise();
-        // auto filename = sprint(cameraPosf, "_.png");
-        // Image img = LoadImageFromTexture(targetTexture.texture);
-        // ExportImage(img, filename.c_str());
 
         // POST PROCESSING EFFECTS START
         // -----------------------------------------------------------------------

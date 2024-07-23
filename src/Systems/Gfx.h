@@ -3,6 +3,7 @@
 #include <forward_list>
 
 #include "Gfx/Depth.h"
+#include "Gfx/ShaderManager.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -32,8 +33,13 @@ class GfxSystem : public ecs::ISystem<Transform2D, Draw>, public ecs::IMonitorSy
 
     // separate entity lists for each target texture
     struct Layer {
+        Layer(Shaders shader_) : shader(shader_) {}
+
         std::forward_list<DrawInfo> sorted;
         std::vector<DrawInfo> toSort;
+        std::forward_list<DrawInfo>::iterator iter;
+
+        Shaders shader;
 
         void update();
     };
@@ -50,8 +56,8 @@ private:
     void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
     Layer& getLayer(TextureID texId);
 
-    Layer mLayerNormal;
-    Layer mLayerBloom;
+    Layer mLayerNormal = Layer(Shaders::Default);
+    Layer mLayerBloom = Layer(Shaders::Bloom);
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {
