@@ -45,6 +45,8 @@ private:
     bool mIsValid = false;
 };
 
+// RESEARCH other LayerXYZs I might want to do in the future:
+// - Outline
 enum class TextureID {
     Main,
     Background,  // any repeating backgrounds use this
@@ -52,7 +54,8 @@ enum class TextureID {
     // ColorGrade,  // this is a regular texture, not rendertexture, might remove
     Lighting,
     Radiance,
-    // Bloom,
+    LayerNormal,
+    LayerBloom,
     BackgroundStatic,
     BackgroundFar,
     BackgroundMid,
@@ -91,7 +94,7 @@ public:
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
     void drawBackgroundTextures();
     void drawLightingTexture();
-    void drawBloomTexture();
+    void drawRadianceTexture();
 
     void unloadAll();
 

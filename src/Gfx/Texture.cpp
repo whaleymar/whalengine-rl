@@ -135,6 +135,8 @@ TextureManager::TextureManager() {
         {TextureID::PostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::LayerNormal, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::LayerBloom, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
@@ -451,14 +453,10 @@ void TextureManager::drawLightingTexture() {
     EndBlendMode();
 }
 
-void TextureManager::drawBloomTexture() {
+void TextureManager::drawRadianceTexture() {
     BeginBlendMode(BLEND_ADDITIVE);
     RenderTexture2D radianceTexture = getRenderTexture(TextureID::Radiance);
-    // way too bright
-    // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
-    // DrawTexture(raidanceTexture.texture, 0, 0, WHITE);
-    // EndShaderMode();
-    DrawTexture(radianceTexture.texture, 0, 0, WHITE);
+    DrawTexture(radianceTexture.texture, 0, 0, WHITE);  // TODO instead of white try (255, 255, 255, 125) or something
     EndBlendMode();
 }
 

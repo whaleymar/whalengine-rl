@@ -75,13 +75,13 @@ DrawText::DrawText(const char* string, Color color_, Vector2i frameSizeTexels_, 
 // rect by default
 Draw::Draw(Depth depth, Vector2i frameSizeTexels, Shaders shader, Color color) : mRect(color, frameSizeTexels, depth, shader), mTag(DrawTag::Rect) {}
 
-Draw::Draw(DrawRect rect) : mRect(rect), mTag(DrawTag::Rect) {}
+Draw::Draw(DrawRect rect, TextureID texLayer) : mRect(rect), mTag(DrawTag::Rect), mLayerTexture(texLayer) {}
 
-Draw::Draw(Sprite sprite) : mSprite(sprite), mTag(DrawTag::Sprite) {}
+Draw::Draw(Sprite sprite, TextureID texLayer) : mSprite(sprite), mTag(DrawTag::Sprite), mLayerTexture(texLayer) {}
 
-Draw::Draw(DrawBezierQuad bezier) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad) {}
+Draw::Draw(DrawBezierQuad bezier, TextureID texLayer) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad), mLayerTexture(texLayer) {}
 
-Draw::Draw(DrawStraightLine line) : mLine(line), mTag(DrawTag::Line) {}
+Draw::Draw(DrawStraightLine line, TextureID texLayer) : mLine(line), mTag(DrawTag::Line), mLayerTexture(texLayer) {}
 
 Draw::Draw(const Draw& other) {
     std::memcpy(this, &other, sizeof(other));

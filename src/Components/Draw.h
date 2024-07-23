@@ -87,6 +87,7 @@ struct DrawStraightLine {
     Shaders shader = Shaders::Default;
 };
 
+// NOTE: modifying Depth or Target Texture requires the component to be removed and re-added
 class Draw {
 public:
     // TODO text can go here once I have a font that matches the target resolution
@@ -95,10 +96,10 @@ public:
 
     Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,
          Color color = WHITE);
-    Draw(DrawRect rect);
-    Draw(Sprite sprite);
-    Draw(DrawBezierQuad bezier);
-    Draw(DrawStraightLine line);
+    Draw(DrawRect rect, TextureID texLayer = TextureID::LayerNormal);
+    Draw(Sprite sprite, TextureID texLayer = TextureID::LayerNormal);
+    Draw(DrawBezierQuad bezier, TextureID texLayer = TextureID::LayerNormal);
+    Draw(DrawStraightLine line, TextureID texLayer = TextureID::LayerNormal);
 
     Draw(const Draw& other);
     Draw& operator=(const Draw& other);
@@ -112,6 +113,7 @@ public:
     Vector2i getFrameSizeTexels() const;
     Depth getDepth() const;
     Shaders getShader() const;
+    TextureID getTexLayer() const { return mLayerTexture; }
     void setAlpha(u8 alpha);
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
@@ -127,6 +129,7 @@ private:
         DrawStraightLine mLine;
     };
     DrawTag mTag;
+    TextureID mLayerTexture = TextureID::LayerNormal;
 };
 
 struct DrawText {
