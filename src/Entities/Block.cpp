@@ -74,6 +74,7 @@ Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
 
     decal.add(transform);
     decal.add(Draw(sprite));
+    // decal.add(Draw(sprite, TextureID::LayerBloom));
     return decal;
 }
 

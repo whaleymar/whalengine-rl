@@ -11,7 +11,9 @@
 #include "Physics/Shapes.h"
 #include "Settings.h"
 
+#include "Systems/CollisionManager.h"
 #include "Systems/TagTrackers.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "Components/Draw.h"
@@ -30,19 +32,58 @@ static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
     return Vector2(worldCoord.x - cameraPos.x, cameraPos.y - worldCoord.y);
 }
 
+GfxSystem::Layer& GfxSystem::getLayer(TextureID texId) {
+    switch (texId) {
+    case TextureID::LayerNormal:
+        return mLayerNormal;
+    case TextureID::LayerBloom:
+        return mLayerBloom;
+    default:
+        print("GfxSystem does not handle layer for TextureID: ", static_cast<s32>(texId));
+        return mLayerNormal;
+    }
+}
+
+// sorts new entities
+void GfxSystem::Layer::update() {
+    std::sort(toSort.begin(), toSort.end(), &isBelow);
+
+    auto it = sorted.before_begin();
+    auto current = sorted.begin();
+    auto insertIt = toSort.begin();
+
+    // insert new elements in sorted order:
+    while (current != sorted.end()) {
+        while (insertIt != toSort.end() && isBelow(*insertIt, *current)) {
+            it = sorted.insert_after(it, *insertIt);
+            ++insertIt;
+        }
+        ++it;
+        ++current;
+    }
+    // insert remaining elements in vec:
+    while (insertIt != toSort.end()) {
+        it = sorted.insert_after(it, *insertIt);
+        ++insertIt;
+    }
+
+    toSort.clear();
+}
+
 void GfxSystem::onAdd(const ecs::Entity entity) {
     const auto draw = entity.get<Draw>();
-    const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), static_cast<s16>(draw.getShader()));
-    mAddedEntities.push_back(drawInfo);
+    const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), draw.getDepth(), static_cast<s16>(draw.getShader()));
+    getLayer(draw.getTexLayer()).toSort.push_back(drawInfo);
 }
 
 void GfxSystem::onRemove(const ecs::Entity entity) {
     auto pred = [entity](const DrawInfo& drawInfo) { return drawInfo.entity.id() == entity.id(); };
-    auto numRemoved = mSorted.remove_if(pred);
+    auto& layer = getLayer(entity.get<Draw>().getTexLayer());
+    auto numRemoved = layer.sorted.remove_if(pred);
     if (numRemoved == 0) {
-        auto it = std::find_if(mAddedEntities.begin(), mAddedEntities.end(), pred);
-        assert(it != mAddedEntities.end() && "tried to remove entity from GfxSystem, but couldn't find it in mSorted or mAddedEntities collections");
-        mAddedEntities.erase(it);
+        auto it = std::find_if(layer.toSort.begin(), layer.toSort.end(), pred);
+        assert(it != layer.toSort.end() && "tried to remove entity from GfxSystem, but couldn't find it in layer.sorted or layer.toSort collections");
+        layer.toSort.erase(it);
     }
 }
 
@@ -52,38 +93,103 @@ bool GfxSystem::isBelow(const DrawInfo& first, const DrawInfo& second) {
     return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
 }
 
+// this is really messy and will be a pain to add more layers to it
 void GfxSystem::drawEntities() {
+    const RenderTexture2D& layerNormalTexture = TextureManager::getRenderTexture(TextureID::LayerNormal);
+    const RenderTexture2D& layerBloomTexture = TextureManager::getRenderTexture(TextureID::LayerBloom);
+
+    static const auto drawTextureFlipped = [](const Texture& tex) {
+        DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
+    };
+
+    // update layers with new entities
+    mLayerNormal.update();
+    mLayerBloom.update();
+
+    bool isFirstDrawToMain = true;
+
+    // draw one layer at a time to minimize FBO swaps
+    auto iterLayerNormal = mLayerNormal.sorted.begin();
+    auto iterLayerBloom = mLayerBloom.sorted.begin();
+    const auto camera = *Game::instance().getWorldCamera();
+    while (true) {
+        const Depth currentDepth = iterLayerNormal != mLayerNormal.sorted.end() &&
+                                           (iterLayerBloom == mLayerBloom.sorted.end() || iterLayerNormal->depthId == iterLayerBloom->depthId ||
+                                            iterLayerNormal->depth < iterLayerBloom->depth) ?
+                                       iterLayerNormal->depthId :
+                                       iterLayerBloom->depthId;
+
+        bool isDrewToNormal = false;
+        bool isDrewToBloom = false;
+
+        if (iterLayerNormal != mLayerNormal.sorted.end() && currentDepth == iterLayerNormal->depthId) {
+            isDrewToNormal = true;
+            BeginTextureMode(layerNormalTexture);
+            ClearBackground(Colors::Clear);
+            BeginMode2D(camera);
+            iterLayerNormal = drawEntities(mLayerNormal, iterLayerNormal);
+            EndMode2D();
+            EndTextureMode();
+        }
+
+        if (iterLayerBloom != mLayerBloom.sorted.end() && currentDepth == iterLayerBloom->depthId) {
+            isDrewToBloom = true;
+            BeginTextureMode(layerBloomTexture);
+            ClearBackground(Colors::Clear);
+            BeginMode2D(camera);
+            iterLayerBloom = drawEntities(mLayerBloom, iterLayerBloom);
+            EndMode2D();
+            EndTextureMode();
+        }
+
+        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+        if (isFirstDrawToMain) {
+            ClearBackground(Colors::Clear);
+            isFirstDrawToMain = false;
+        }
+
+        if (isDrewToNormal) {
+            drawTextureFlipped(layerNormalTexture.texture);
+        }
+
+        if (isDrewToBloom) {
+            BeginShaderMode(ShaderManager::get(Shaders::Bloom));
+            drawTextureFlipped(layerBloomTexture.texture);
+            EndShaderMode();
+        }
+
+        if (iterLayerNormal == mLayerNormal.sorted.end() && iterLayerBloom == mLayerBloom.sorted.end()) {
+            break;
+        } else {
+            EndTextureMode();
+        }
+    }
+
+    TextureManager::instance().drawLightingTexture();
+
+#ifndef NDEBUG
+    BeginMode2D(*Game::instance().getWorldCamera());
+    if (System::input.isOn(InputType::DEBUG)) {
+        System::world->getSystem<DrawDebugSystem>()->drawEntities();
+        drawColliders();
+    }
+    EndMode2D();
+#endif
+
+    EndTextureMode();
+}
+
+// draw entities in layer starting at the passed iterator. Stops when the next entity has a new depth value
+std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& layer, std::forward_list<DrawInfo>::iterator startIt) {
     auto cameraPosF = getCameraPositionPrecise();
     // auto cameraPosF = toFloatVec(getCameraPosition());
-
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
-    std::sort(mAddedEntities.begin(), mAddedEntities.end(), &isBelow);
-
-    auto it = mSorted.before_begin();
-    auto current = mSorted.begin();
-    auto insertIt = mAddedEntities.begin();
-
-    // insert new elements in sorted order:
-    while (current != mSorted.end()) {
-        while (insertIt != mAddedEntities.end() && isBelow(*insertIt, *current)) {
-            it = mSorted.insert_after(it, *insertIt);
-            ++insertIt;
-        }
-        ++it;
-        ++current;
-    }
-    // insert remaining elements in vec:
-    while (insertIt != mAddedEntities.end()) {
-        it = mSorted.insert_after(it, *insertIt);
-        ++insertIt;
-    }
-
-    mAddedEntities.clear();
-
-    Shaders prevShader = static_cast<Shaders>(mSorted.begin()->shaderIx);
+    Shaders prevShader = static_cast<Shaders>(layer.sorted.begin()->shaderIx);
     BeginShaderMode(ShaderManager::get(prevShader));
-    for (auto const drawInfo : mSorted) {
+    std::forward_list<DrawInfo>::iterator it;
+    for (it = startIt; it != layer.sorted.end() && it->depthId == startIt->depthId; ++it) {
+        const auto drawInfo = *it;
         if (drawInfo.entity.has<Invisible>()) {
             continue;
         }
@@ -96,6 +202,7 @@ void GfxSystem::drawEntities() {
         drawEntity(drawInfo.entity, spriteTexture, cameraPosF);
     }
     EndShaderMode();
+    return it;
 }
 
 void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {

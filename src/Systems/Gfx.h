@@ -2,6 +2,7 @@
 
 #include <forward_list>
 
+#include "Gfx/Depth.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -19,25 +20,38 @@ struct ColorLerp;
 struct ScaleLerp;
 struct FadeOut;
 struct DrawText;
+enum class TextureID;
 
 class GfxSystem : public ecs::ISystem<Transform2D, Draw>, public ecs::IMonitorSystem {
     struct DrawInfo {
         ecs::Entity entity;
         f32 depth;
+        Depth depthId;
         s16 shaderIx;
+    };
+
+    // separate entity lists for each target texture
+    struct Layer {
+        std::forward_list<DrawInfo> sorted;
+        std::vector<DrawInfo> toSort;
+
+        void update();
     };
 
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
 
-    static bool isBelow(const DrawInfo& first, const DrawInfo& second);
     void drawEntities();
-    void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
 private:
-    std::forward_list<DrawInfo> mSorted;
-    std::vector<DrawInfo> mAddedEntities;
+    static bool isBelow(const DrawInfo& first, const DrawInfo& second);
+    std::forward_list<GfxSystem::DrawInfo>::iterator drawEntities(Layer& layer, std::forward_list<DrawInfo>::iterator startIt);
+    void drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF);
+    Layer& getLayer(TextureID texId);
+
+    Layer mLayerNormal;
+    Layer mLayerBloom;
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {

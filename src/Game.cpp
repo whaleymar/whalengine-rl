@@ -150,7 +150,6 @@ void Game::mainloop() {
     // these are used for rendering, which still is run in this function but I might move it eventually
     auto gfxSystem = System::world->getSystem<GfxSystem>();
     auto textSystem = System::world->getSystem<DrawTextSystem>();
-    auto drawDebugSystem = System::world->getSystem<DrawDebugSystem>();
     auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
 
     // load scene
@@ -164,7 +163,6 @@ void Game::mainloop() {
     // Color clearColor = {73, 77, 126, 255};
     Color clearColor = {58, 57, 106, 255};
     // Color clearColor = {5, 5, 5, 255};
-    Color clearColorTransparent = {0, 0, 0, 0};
 
     Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
@@ -234,32 +232,16 @@ void Game::mainloop() {
         drawLights();
         radianceSystem->update();  // this gets drawn to its own texture
 
+        // todo move begin/endTextureMode functions and background functions that only call one function to the called function
+
         // do backgrounds on their own texture so lighting doesn't affect them
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Background));
         ClearBackground(clearColor);
         TextureManager::instance().drawBackgroundTextures();
         EndTextureMode();
 
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-        ClearBackground(clearColorTransparent);  // don't overwrite background stuff
-        BeginMode2D(*mWorldSpaceCamera);
-
         gfxSystem->drawEntities();
 
-        EndMode2D();
-
-        TextureManager::instance().drawLightingTexture();
-
-#ifndef NDEBUG
-        BeginMode2D(*mWorldSpaceCamera);
-        if (System::input.isOn(InputType::DEBUG)) {
-            drawDebugSystem->drawEntities();
-            drawColliders();
-        }
-        EndMode2D();
-#endif
-
-        EndTextureMode();
         // -----------------------------------------------------------------------
         // ECS DRAW END
         // Vector2f cameraPosf = getCameraPositionPrecise();
@@ -281,7 +263,7 @@ void Game::mainloop() {
         DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
         DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
 
-        TextureManager::instance().drawBloomTexture();
+        TextureManager::instance().drawRadianceTexture();
 
         EndTextureMode();
 
