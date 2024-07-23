@@ -24,6 +24,7 @@ ShaderManager::ShaderManager() {
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl"},
         {Shaders::Outline, 0, "src/Shader/outline.glsl"},
         {Shaders::Bloom, 0, "src/Shader/bloom.glsl"},
+        {Shaders::Glow, 0, "src/Shader/glow.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
