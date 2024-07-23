@@ -28,9 +28,10 @@ static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
-static const std::array<TextureID, 2> S_LAYER_TEXTURES = {
+static const std::array<TextureID, 3> S_LAYER_TEXTURES = {
     TextureID::LayerNormal,
     TextureID::LayerBloom,
+    TextureID::LayerGlow,
 };
 
 static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
@@ -43,6 +44,8 @@ GfxSystem::Layer& GfxSystem::getLayer(TextureID texId) {
         return mLayerNormal;
     case TextureID::LayerBloom:
         return mLayerBloom;
+    case TextureID::LayerGlow:
+        return mLayerGlow;
     default:
         print("GfxSystem does not handle layer for TextureID: ", static_cast<s32>(texId));
         return mLayerNormal;

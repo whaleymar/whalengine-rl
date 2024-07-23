@@ -225,8 +225,8 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
 
     Frame frame = player.get<Animator>().getFrame();
     Sprite sprite(Depth::Player, frame);
-    sprite.shader = Shaders::Glow;
     player.add(Draw(sprite));
+    // player.add(Draw(sprite, TextureID::LayerGlow));
     // player.add(Draw(sprite, TextureID::LayerBloom));
 
     constexpr s32 width = 16;

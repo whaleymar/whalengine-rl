@@ -58,6 +58,7 @@ private:
 
     Layer mLayerNormal = Layer(Shaders::Default);
     Layer mLayerBloom = Layer(Shaders::Bloom);
+    Layer mLayerGlow = Layer(Shaders::Glow);
 };
 
 class DrawTextSystem : public ecs::ISystem<Transform2D, DrawText> {

@@ -40,5 +40,5 @@ void main()
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 
-    finalColor = graded_color;
+    finalColor = graded_color * fragColor;
 }

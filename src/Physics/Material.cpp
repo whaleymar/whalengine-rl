@@ -44,11 +44,11 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
     }
 
     if (isFlagSet(Light)) {
-        entity.add(PointLight{halfLenTexels * 4});
+        entity.add(PointLight{halfLenTexels * 2});
     }
 
     if (isFlagSet(RadianceFlag)) {
-        entity.add(Radiance{halfLenTexels * 4, 0, color});
+        entity.add(Radiance{halfLenTexels * 2, 0, color});
     }
 
     if (isFlagSet(DecaySpeed)) {
@@ -181,7 +181,8 @@ static const MaterialData S_MATERIAL_EMBER = {
 
 static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
                                                .id = WorldMaterial::Ember,
-                                               .colorRange = {RED, {Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 200}},
+                                               // .colorRange = {RED, {Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 255}},
+                                               .colorRange = {PINK, PINK},
                                                .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed |
                                                         MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
                                                .bounciness = 1.0,
