@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <vector>
+#include "Util/FileUtils.h"
 #include "Util/String.h"
 
 namespace whal {
@@ -28,6 +29,8 @@ public:
         if (mCache.size() >= N) {
             mCache.erase(mCache.begin());
         }
+
+        assert(isExist(filePath) && "file path doesn't exist");
 
         std::ifstream file(filePath);
         T newData;

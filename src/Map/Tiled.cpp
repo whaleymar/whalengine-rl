@@ -17,7 +17,6 @@
 #include "Map/Level.h"
 #include "Physics/Material.h"
 #include "Sys/System.h"
-#include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
 
@@ -31,39 +30,31 @@ inline const char* TSET_SPRITE_DIR = "data/sprite/map";
 static ComponentFactory COMPONENT_FACTORY;
 static EntityFactory PREFAB_FACTORY;
 static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
-// TODO MAPRESOURCE_MANAGER
+static ResourceManager<nlohmann::json, 250> MAP_MANAGER;
 
-static Expected<TileSet> parseTileset(std::string basename, s32 firstgid);
+static TileSet parseTileset(std::string basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
 static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
 static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
 static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
+static const nlohmann::json& getMapFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 
 void clearMapCache() {
+    MAP_MANAGER.clearCache();
     TEMPLATE_MANAGER.clearCache();
 }
 
 TileMap TileMap::parse(const char* path, ActiveLevel& level) {
-    // error handling sucks in this function but it's whatever
+    const auto data = getMapFile(path);
 
     TileMap map;
-    using json = nlohmann::json;
-
-    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, path).c_str());
-    if (!jString.isExpected()) {
-        print("error parsing json:", jString.error());
-        return map;
-    }
-
-    json data = json::parse(jString.value());
-
     map.widthTiles = readInt(data, "width");
     map.heightTiles = readInt(data, "height");
     map.tileSize = readInt(data, "tilewidth");
 
-    for (auto& layer : data["layers"]) {
+    for (const auto& layer : data["layers"]) {
         bool isVisible = readBool(layer, "visible");
         if (!isVisible) {
             continue;
@@ -81,20 +72,15 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         }
     }
 
-    for (auto& tileset : data["tilesets"]) {
+    for (const auto& tileset : data["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
 
-        Expected<TileSet> eTset = parseTileset(fileName, firstgid);
-        if (!eTset.isExpected()) {
-            print(eTset.error());
-            continue;
-        }
-        TileSet tset = eTset.value();
+        TileSet tset = parseTileset(fileName, firstgid);
         map.tilesets.push_back(tset);
     }
 
-    for (auto& property : data["properties"]) {
+    for (const auto& property : data["properties"]) {
         std::string propName = readString(property, "name");
         // std::string propType = readString(property, "type");
         if (propName == "CameraFollowParams") {
@@ -375,15 +361,8 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     entity.add(Draw(Sprite(layerData.depth, frame)));
 }
 
-Expected<TileSet> parseTileset(std::string basename, s32 firstgid) {
-    using json = nlohmann::json;
-
-    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, basename).c_str());
-    if (!jString.isExpected()) {
-        return jString.error();
-    }
-
-    json data = json::parse(jString.value());
+TileSet parseTileset(std::string basename, s32 firstgid) {
+    const auto data = getMapFile(basename);
 
     auto sourceFilePath = readString(data, "image");
 
@@ -456,34 +435,16 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     return newFrame;
 }
 
-Corrade::Containers::Optional<Error> parseMapProject(const char* mapfile) {
-    using json = nlohmann::json;
-
-    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, mapfile).c_str());
-    if (!jString.isExpected()) {
-        return jString.error();
-    }
-
-    const json data = json::parse(jString.value());
+void parseMapProject(const char* mapfile) {
+    const auto data = getMapFile(mapfile);
     for (auto& propType : data["propertyTypes"]) {
         COMPONENT_FACTORY.makeDefaultComponent(propType);
     }
-    return NULLOPT;
 }
 
+// parses a level's parameters and returns its LevelInfo struct
 static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
-    // parses a level's parameters and returns its LevelInfo struct
-    // returns error if not found
-
-    using json = nlohmann::json;
-
-    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, lvlFileName).c_str());
-    if (!jString.isExpected()) {
-        return jString.error();
-    }
-
-    json data = json::parse(jString.value());
-
+    const auto data = getMapFile(lvlFileName);
     for (auto& property : data["properties"]) {
         // std::string propName = readString(property, "name");
         std::string propType = readString(property, "propertytype");
@@ -506,19 +467,14 @@ static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
 }
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
-    using json = nlohmann::json;
+    const auto data = getMapFile(mapfile);
 
-    Expected<std::string> jString = readFile(whal_format("{}/{}", MAP_DIR, mapfile).c_str());
-    if (!jString.isExpected()) {
-        return jString.error();
-    }
-
-    json data = json::parse(jString.value());
-
+#ifndef NDEBUG
     std::string type = readString(data, "type");
     if (type != "world") {
         return Error("Not a world file");
     }
+#endif
 
     dstScene.name = mapfile;
     for (auto& map : data["maps"]) {
@@ -577,6 +533,13 @@ std::string getSpriteKeyFromPath(const std::string& spritePath) {
     return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
 }
 
+// MAP LOADING STUFF
+
+const nlohmann::json& getMapFile(std::string_view mapFile) {
+    const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
+    return MAP_MANAGER.readData(fullPath.c_str());
+}
+
 // TEMPLATE STUFF
 
 const nlohmann::json& getTemplate(std::string_view templateFile) {
@@ -585,7 +548,7 @@ const nlohmann::json& getTemplate(std::string_view templateFile) {
 }
 
 std::string getTypeFromTemplate(const std::string& templateFile) {
-    const auto prefabData = getTemplate(templateFile);
+    const auto& prefabData = getTemplate(templateFile);
     std::string objType = "";
     tryReadString(prefabData, "type", &objType);
     return objType;

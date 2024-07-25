@@ -138,10 +138,7 @@ bool Game::startup() {
         .registerSystems<RespawnListener>();
 
     // build default components for factory
-    err = parseMapProject(TILED_PROJECT_FILE);
-    if (err) {
-        print("Error parsing ", TILED_PROJECT_FILE, ":", *err);
-    }
+    parseMapProject(TILED_PROJECT_FILE);
 
     return false;
 }
