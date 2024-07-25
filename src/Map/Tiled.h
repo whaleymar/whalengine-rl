@@ -23,7 +23,7 @@ struct Transform2D;
 struct ActiveLevel;
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
-Corrade::Containers::Optional<Error> parseMapProject(const char* projectfile);
+void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform2D getTransformFromMapPosition(Vector2i mapCenterPositionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint);
 const TileSet* getTileSet(const TileMap& map, s32 blockId);
