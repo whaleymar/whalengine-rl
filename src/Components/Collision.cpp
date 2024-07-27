@@ -20,7 +20,6 @@
 #include "Physics/HitInfo.h"
 #include "Sys/System.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 
 namespace whal {
 
@@ -148,7 +147,8 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         auto& rigidbody = mSelf.get<RigidBody>();
         const bool wasGrounded = rigidbody.isGrounded;
         auto jumpControlOpt = mSelf.tryGet<Jumper>();
-        const bool hasMomentum = isMomentumStored();
+        auto momentumOpt = mSelf.tryGet<Momentum>();
+        const bool hasMomentum = momentumOpt && (*momentumOpt)->isMomentumStored();
         Velocity& velocity = mSelf.get<Velocity>();
 
         if (hitinfo && hitinfo.isVertical()) {
@@ -176,7 +176,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             }
 
             if (hasMomentum) {
-                onMomentumNotUsed();
+                (*momentumOpt)->onMomentumNotUsed();
             }
 
             if (velocity.total.y < 0 && wasGrounded && (!jumpControlOpt || !(*jumpControlOpt)->isJumping)) {
@@ -198,13 +198,13 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             }
 
             // prevent repeated push forces from accumulating huge speed
-            if (hasMomentum && rigidbody.momentumCooldownFrames <= 0) {
+            if (hasMomentum && (*momentumOpt)->cooldownFrames <= 0) {
                 // convert to texels/sec
-                velocity.stable += getMomentum() * FTEXELS_PER_PIXEL;
-                resetMomentum();
-                rigidbody.momentumCooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
-            } else if (rigidbody.momentumCooldownFrames > 0) {
-                rigidbody.momentumCooldownFrames--;
+                velocity.stable += (*momentumOpt)->getMomentum() * FTEXELS_PER_PIXEL;
+                (*momentumOpt)->resetMomentum();
+                (*momentumOpt)->cooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
+            } else if (momentumOpt && (*momentumOpt)->cooldownFrames > 0) {
+                (*momentumOpt)->cooldownFrames--;
             }
         }
     }
@@ -540,9 +540,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     const auto prevColliderPos = AABB(mShape.getPosition() - moveVec, mShape.getHalf());
     const auto prevColliderState = Collider(prevColliderPos, mCollisionLayer, mMaterial, nullptr, mCollisionDir);
 
-    if (abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) > 1) {
-        print("Rounding anomaly: Unrounded move value is", toMoveUnrounded, "but rounded value is ", toMoveRounded);
-    }
+    assert(abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 
     const f32 dt = System::dt();
     std::vector<Collider*> toCarry = riding;
@@ -609,13 +607,24 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             hitinfo.otherLayer = other->getCollisionLayer();
             System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
 
-            // set momentum if this movement was part of the physics system
-            if (isManualMove) {
-                other->maintainMomentum(isXDirection);
-            } else {
-                // don't worry about rounding, we're just moving the overlap distance
-                f32 momentum = static_cast<f32>(toMoveRounded) / dt;
-                other->setMomentum(momentum, isXDirection);
+            if (other->mSelf.has<Momentum>()) {
+                // set momentum if this movement was part of the physics system
+                if (isManualMove) {
+                    if (isXDirection) {
+                        other->mSelf.get<Momentum>().maintainMomentumX();
+                    } else {
+                        other->mSelf.get<Momentum>().maintainMomentumY();
+                    }
+
+                } else {
+                    // don't worry about rounding, we're just moving the overlap distance
+                    f32 momentum = static_cast<f32>(toMoveRounded) / dt;
+                    if (isXDirection) {
+                        other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
+                    } else {
+                        other->getEntity().get<Momentum>().setMomentumY(other->getEntity(), momentum);
+                    }
+                }
             }
         }
     }
@@ -636,12 +645,24 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         hitinfo.otherLayer = other->getCollisionLayer();
         System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
 
-        // set momentum if this movement was part of the physics system
-        if (isManualMove) {
-            other->maintainMomentum(isXDirection);
-        } else {
-            f32 momentum = toMoveUnrounded / dt;
-            other->setMomentum(momentum, isXDirection);
+        if (other->getEntity().has<Momentum>()) {
+            // set momentum if this movement was part of the physics system
+            if (isManualMove) {
+                if (isXDirection) {
+                    other->getEntity().get<Momentum>().maintainMomentumX();
+
+                } else {
+                    other->getEntity().get<Momentum>().maintainMomentumY();
+                }
+                // other->maintainMomentum(isXDirection);
+            } else {
+                f32 momentum = toMoveUnrounded / dt;
+                if (isXDirection) {
+                    other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
+                } else {
+                    other->getEntity().get<Momentum>().setMomentumY(other->getEntity(), momentum);
+                }
+            }
         }
     }
 }
@@ -742,45 +763,6 @@ void Collider::squish(ecs::Entity other, Vector2i hitNormal) {
     mSquishCallback(mSelf, other, hitNormal);
 }
 
-void Collider::setMomentum(const f32 momentum, const bool isXDirection) {
-    auto eRB = getEntity().tryGet<RigidBody>();
-    if (!eRB) {
-        return;
-    }
-    if (isXDirection) {
-        mStoredMomentum.x = momentum * (*eRB)->momentumMultiplier.x;
-        mMomentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
-    } else {
-        mStoredMomentum.y = momentum * (*eRB)->momentumMultiplier.y;
-        mMomentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
-    }
-}
-
-void Collider::maintainMomentum(const bool isXDirection) {
-    if (isXDirection) {
-        mMomentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
-    } else {
-        mMomentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
-    }
-}
-
-void Collider::onMomentumNotUsed() {
-    mMomentumFramesLeft -= {1, 1};
-    if (!mMomentumFramesLeft.x) {
-        mStoredMomentum.x = 0;
-        mMomentumFramesLeft.x = 0;
-    }
-    if (!mMomentumFramesLeft.y) {
-        mStoredMomentum.y = 0;
-        mMomentumFramesLeft.y = 0;
-    }
-}
-
-void Collider::resetMomentum() {
-    mStoredMomentum = {0, 0};
-    mMomentumFramesLeft = {0, 0};
-}
-
 // Try to wiggle out of collision if barely clipping another collider.
 // Returns true if successful.
 // Could be a lot faster if I do a broad pass QuadTree check like i do for normal movement
@@ -806,6 +788,104 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2
         }
     }
     return false;
+}
+
+void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {
+    auto eRB = self.tryGet<RigidBody>();
+    if (!eRB) {
+        return;
+    }
+
+    storedMomentum[nextIx.x].x = momentumX * (*eRB)->momentumMultiplier.x;
+    nextIx.x++;
+    if (nextIx.x == MOMENTUM_STORAGE_COUNT) {
+        nextIx.x = 0;
+    }
+    momentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
+}
+
+void Momentum::setMomentumY(ecs::Entity self, const f32 momentumY) {
+    auto eRB = self.tryGet<RigidBody>();
+    if (!eRB) {
+        return;
+    }
+
+    storedMomentum[nextIx.y].y = momentumY * (*eRB)->momentumMultiplier.y;
+    nextIx.y++;
+    if (nextIx.y == MOMENTUM_STORAGE_COUNT) {
+        nextIx.y = 0;
+    }
+    momentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
+}
+
+void Momentum::maintainMomentumX() {
+    momentumFramesLeft.x = MOMENTUM_LIFETIME_FRAMES;
+}
+
+void Momentum::maintainMomentumY() {
+    momentumFramesLeft.y = MOMENTUM_LIFETIME_FRAMES;
+}
+
+void Momentum::onMomentumNotUsed() {
+    momentumFramesLeft.x -= 1;
+    if (momentumFramesLeft.x == 0) {
+        resetMomentumX();
+    }
+
+    momentumFramesLeft.y -= 1;
+    if (momentumFramesLeft.y == 0) {
+        resetMomentumY();
+    }
+}
+
+void Momentum::resetMomentumX() {
+    momentumFramesLeft.x = 0;
+    for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
+        storedMomentum[i].x = 0.0f;
+    }
+    nextIx.x = 0;
+}
+
+void Momentum::resetMomentumY() {
+    momentumFramesLeft.y = 0;
+    for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
+        storedMomentum[i].y = 0.0f;
+    }
+    nextIx.y = 0;
+}
+
+Vector2f Momentum::getMomentum() const {
+    Vector2f momentum;
+
+    if (isMomentumStoredX()) {
+        f32 sum = 0;
+        f32 count = 0;
+        for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
+            if (storedMomentum[i].x != 0.0f) {
+                sum += storedMomentum[i].x;
+                count += 1.0f;
+            }
+        }
+        if (count > 0.0f) {
+            momentum.x = sum / count;
+        }
+    }
+
+    if (isMomentumStoredY()) {
+        f32 sum = 0;
+        f32 count = 0;
+        for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
+            if (storedMomentum[i].y != 0.0f) {
+                sum += storedMomentum[i].y;
+                count += 1.0f;
+            }
+        }
+        if (count > 0.0f) {
+            momentum.y = sum / count;
+        }
+    }
+
+    return momentum;
 }
 
 }  // namespace whal

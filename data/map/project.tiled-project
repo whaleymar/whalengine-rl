@@ -429,6 +429,11 @@
                     "value": 1
                 },
                 {
+                    "name": "gravityMultiplier",
+                    "type": "float",
+                    "value": 1
+                },
+                {
                     "name": "momentumMultiplierX",
                     "type": "float",
                     "value": 1

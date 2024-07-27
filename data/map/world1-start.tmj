@@ -328,8 +328,14 @@
                 {
                  "id":34,
                  "template":"templates\/BlastCrystal.tj",
-                 "x":82,
-                 "y":102
+                 "x":112,
+                 "y":13
+                }, 
+                {
+                 "id":37,
+                 "template":"templates\/SwitchBoard.tj",
+                 "x":47,
+                 "y":109
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -338,7 +344,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":36,
+ "nextobjectid":38,
  "orientation":"orthogonal",
  "properties":[
         {

@@ -98,14 +98,6 @@ public:
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 
-    // momentum:
-    void setMomentum(const f32 momentum, const bool isXDirection);
-    void maintainMomentum(const bool isXDirection);
-    bool isMomentumStored() const { return mMomentumFramesLeft.x > 0 || mMomentumFramesLeft.y > 0; }
-    void onMomentumNotUsed();
-    void resetMomentum();
-    Vector2f getMomentum() const { return mStoredMomentum; }
-
 protected:
     void updateEntityPosition();
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
@@ -123,8 +115,6 @@ protected:
     CollisionCallback mSquishCallback = &defaultSquish;
     f32 mXRemainder = 0.0;
     f32 mYRemainder = 0.0;
-    Vector2f mStoredMomentum = {0, 0};
-    Vector2T<s16> mMomentumFramesLeft = {0, 0};  // so this class doesn't have padding
     WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
 };
@@ -134,6 +124,38 @@ using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vec
 bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 struct Wiggle {
     WiggleCallback callback = &defaultWiggle;
+};
+
+// since movement is pixel perfect, rounding can have big effect on momentum
+// so track the previous 5 momentum values and use their average
+struct Momentum {
+    static inline constexpr s32 MOMENTUM_STORAGE_COUNT = 5;
+
+    Vector2T<s16> momentumFramesLeft;
+    Vector2T<s16> nextIx;
+    Vector2f storedMomentum[MOMENTUM_STORAGE_COUNT];
+    s32 cooldownFrames = 0;
+
+    void setMomentumX(ecs::Entity self, const f32 momentumX);
+    void setMomentumY(ecs::Entity self, const f32 momentumY);
+
+    void maintainMomentumX();
+    void maintainMomentumY();
+
+    bool isMomentumStored() const { return isMomentumStoredX() || isMomentumStoredY(); }
+    bool isMomentumStoredX() const { return momentumFramesLeft.x > 0; }
+    bool isMomentumStoredY() const { return momentumFramesLeft.y > 0; }
+
+    void onMomentumNotUsed();
+
+    void resetMomentum() {
+        resetMomentumX();
+        resetMomentumY();
+    }
+    void resetMomentumX();
+    void resetMomentumY();
+
+    Vector2f getMomentum() const;
 };
 
 struct ColliderOffset {
