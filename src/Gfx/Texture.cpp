@@ -7,7 +7,6 @@
 #include <string>
 
 #include "Components/Draw.h"
-#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 #include "Systems/TagTrackers.h"
 #include "Util/FileUtils.h"

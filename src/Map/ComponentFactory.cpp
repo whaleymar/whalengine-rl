@@ -329,6 +329,8 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultRigidBody.frictionMultiplier.x = member[KEY_VALUE];
             } else if (memberName == "frictionAir") {
                 DefaultRigidBody.frictionMultiplier.y = member[KEY_VALUE];
+            } else if (memberName == "gravityMultiplier") {
+                DefaultRigidBody.gravityMultiplier = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -742,6 +744,7 @@ void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& a
 
     tryReadVector2f(values, "momentumMultiplierX", "momentumMultiplierY", &rb.momentumMultiplier);
     tryReadVector2f(values, "frictionGround", "frictionAir", &rb.frictionMultiplier);
+    tryReadFloat(values, "gravityMultiplier", &rb.gravityMultiplier);
 
     entity.add(rb);
 }

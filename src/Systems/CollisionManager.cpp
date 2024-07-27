@@ -65,7 +65,11 @@ void QuadTreeSystem::rebuild(s32 width, s32 height) {
 
 void QuadTreeSystem::onAdd(ecs::Entity entity) {
     // RESEARCH unhandled edge case: fails if we try to create an entity beyond quadtree bounds.
-    entity.get<Collider>().setEntity(entity);
+    auto& collider = entity.get<Collider>();
+    collider.setEntity(entity);
+    if (collider.isActor() || collider.isSemiSolid()) {
+        entity.add<Momentum>();
+    }
     QUAD_TREE.add(entity);
 }
 

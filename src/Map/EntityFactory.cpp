@@ -31,6 +31,7 @@ static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTempla
 static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
@@ -41,6 +42,7 @@ static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"MultiSwitch", createSwitch},
     {"AppearTrigger", createAppearTrigger},
     {"BlastCrystal", createBlastCrystal},
+    {"SwitchBoard", createSwitchBoard},
 };
 
 EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
@@ -251,6 +253,39 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
                 self, trigger.onTriggerEnter);
         trigger.onTriggerEnter = nullptr;
     };
+}
+
+void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    entity.add(CustomUpdate([](ecs::Entity e) {
+        if (abs(e.get<Velocity>().total.x) < 0.01) {
+            e.get<Draw>().setColor(WHITE);
+        }
+    }));
+    entity.get<Collider>().setCollisionCallback(
+
+        [](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
+            if (hitNormal.y != 1) {
+                return;
+            }
+            auto const selfPosition = self.get<Transform2D>().position;
+            auto const otherPosition = other.get<Transform2D>().position;
+
+            Velocity velocity = self.get<Velocity>();
+            const f32 currentSpeed = velocity.total.x;
+            constexpr f32 TARGET_SPEED = 75.0f;
+            constexpr f32 STEP = TARGET_SPEED * 5.0f;
+            const f32 targetSpeed = otherPosition.x <= selfPosition.x ? -TARGET_SPEED : TARGET_SPEED;
+            const f32 newSpeed = approach(currentSpeed, targetSpeed, STEP * System::dt());
+
+            velocity.stable = {newSpeed, 0};
+            self.set(velocity);
+
+            if (newSpeed < 0) {
+                self.get<Draw>().setColor(Colors::LightBlue);
+            } else {
+                self.get<Draw>().setColor(RED);
+            }
+        });
 }
 
 }  // namespace whal

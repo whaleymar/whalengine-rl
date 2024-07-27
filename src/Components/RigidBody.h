@@ -18,7 +18,6 @@ struct RigidBody {
     f32 gravityMultiplier = 1.0;
 
     // automatically managed:
-    s32 momentumCooldownFrames = 0;
     s32 framesSinceLanding = 0;
     WorldMaterial groundMaterial = WorldMaterial::None;
     bool isLanding = false;
