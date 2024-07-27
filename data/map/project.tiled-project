@@ -650,6 +650,22 @@
             "valuesAsFlags": false
         },
         {
+            "id": 45,
+            "name": "Easing",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "Linear",
+                "InOutBezier",
+                "InOutSine",
+                "InQuad",
+                "OutQuad",
+                "InCubic",
+                "OutCubic"
+            ],
+            "valuesAsFlags": false
+        },
+        {
             "color": "#ffffaaff",
             "drawFill": true,
             "id": 5,
@@ -783,22 +799,6 @@
                 "Automatic",
                 "ManualStart",
                 "ManualAllSteps"
-            ],
-            "valuesAsFlags": false
-        },
-        {
-            "id": 2,
-            "name": "RailsMovement",
-            "storageType": "int",
-            "type": "enum",
-            "values": [
-                "LINEAR",
-                "EASEIO_BEZIER",
-                "EASEIO_SINE",
-                "EASEI_QUAD",
-                "EASEI_CUBE",
-                "EASEO_QUAD",
-                "EASEO_CUBE"
             ],
             "valuesAsFlags": false
         }

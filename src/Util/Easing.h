@@ -11,7 +11,7 @@ enum class Ease {
     OutCubic,
 };
 
-f32 ease(const f32 n1, const f32 n2, f32 t, Ease easeFunc) {
+inline f32 ease(const f32 n1, const f32 n2, f32 t, Ease easeFunc) {
     switch (easeFunc) {
     case Ease::Linear:
         return myLerp(n1, n2, t);

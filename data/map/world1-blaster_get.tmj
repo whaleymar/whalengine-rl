@@ -181,14 +181,14 @@
                         }],
                  "properties":[
                         {
-                         "name":"Move1",
-                         "propertytype":"RailsMovement",
+                         "name":"move1",
+                         "propertytype":"Easing",
                          "type":"int",
-                         "value":2
+                         "value":1
                         }, 
                         {
-                         "name":"Move2",
-                         "propertytype":"RailsMovement",
+                         "name":"move2",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":1
                         }],
@@ -214,20 +214,20 @@
                         }],
                  "properties":[
                         {
-                         "name":"Move1",
-                         "propertytype":"RailsMovement",
+                         "name":"move1",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":1
                         }, 
                         {
-                         "name":"Move2",
-                         "propertytype":"RailsMovement",
+                         "name":"move2",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }, 
                         {
-                         "name":"Move3",
-                         "propertytype":"RailsMovement",
+                         "name":"move3",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }],
@@ -495,14 +495,14 @@
                         }],
                  "properties":[
                         {
-                         "name":"Move1",
-                         "propertytype":"RailsMovement",
+                         "name":"move1",
+                         "propertytype":"Easing",
                          "type":"int",
-                         "value":5
+                         "value":4
                         }, 
                         {
-                         "name":"Move2",
-                         "propertytype":"RailsMovement",
+                         "name":"move2",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }],

@@ -112,14 +112,14 @@
                         }],
                  "properties":[
                         {
-                         "name":"Move2",
-                         "propertytype":"RailsMovement",
+                         "name":"move1",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }, 
                         {
-                         "name":"Movement",
-                         "propertytype":"RailsMovement",
+                         "name":"move2",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":3
                         }],
@@ -183,14 +183,14 @@
                         }],
                  "properties":[
                         {
-                         "name":"Move1",
-                         "propertytype":"RailsMovement",
+                         "name":"move1",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }, 
                         {
-                         "name":"Move2",
-                         "propertytype":"RailsMovement",
+                         "name":"move2",
+                         "propertytype":"Easing",
                          "type":"int",
                          "value":0
                         }],
@@ -256,7 +256,7 @@
             }
         }],
  "renderorder":"right-down",
- "tiledversion":"1.10.2",
+ "tiledversion":"1.11.0",
  "tileheight":8,
  "tilesets":[
         {

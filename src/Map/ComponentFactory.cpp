@@ -801,10 +801,10 @@ bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsCont
     const s32 parentY = readInt(checkpointData, "y");
     assert(checkpointData.contains("properties") && "Checkpoint object has no properties");
     const auto& properties = checkpointData["properties"];
-    std::vector<RailsControl::Movement> moveProps;
+    std::vector<Ease> moveProps;
     for (const auto& moveProperty : properties) {
         const s32 moveIx = moveProperty[KEY_VALUE];
-        moveProps.push_back(static_cast<RailsControl::Movement>(moveIx));
+        moveProps.push_back(static_cast<Ease>(moveIx));
     }
 
     bool isCycle = checkpointData.contains("polygon");
@@ -821,11 +821,11 @@ bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsCont
         const Vector2i mapPos = {x + parentX, parentY + y};
         const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
 
-        RailsControl::Movement moveType;
+        Ease moveType;
         if (ix >= moveProps.size()) {
             print("Checkpoints object with ID", readInt(checkpointData, "id"), "in level", level.filepath, "has", moveProps.size(),
                   "move type params but it has more points");
-            moveType = RailsControl::Movement::LINEAR;
+            moveType = Ease::Linear;
         } else {
             moveType = moveProps[ix];
         }

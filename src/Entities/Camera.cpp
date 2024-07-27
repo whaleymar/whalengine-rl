@@ -44,8 +44,8 @@ void onCameraAtDestination(ecs::Entity cameraEntity, RailsControl& rails) {
 RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextPosition) {
     return RailsControl(520,
                         {
-                            {currentPosition, RailsControl::Movement::LINEAR},
-                            {nextPosition, RailsControl::Movement::EASEO_CUBE},
+                            {currentPosition, Ease::Linear},
+                            {nextPosition, Ease::OutCubic},
                         },
                         0, RailsControl::CycleBehavior::AUTOMATIC_LOOP, &onCameraAtDestination);
 }

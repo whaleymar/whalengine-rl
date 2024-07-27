@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Util/Easing.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -25,11 +26,9 @@ struct RailsControl {
         MANUAL_ALLSTEPS_BACKTRACK,
     };
 
-    enum class Movement { LINEAR, EASEIO_BEZIER, EASEIO_SINE, EASEI_QUAD, EASEI_CUBE, EASEO_QUAD, EASEO_CUBE };
-
     struct CheckPoint {
         Vector2i position;
-        Movement movement;
+        Ease movement;
     };
 
     using ArrivalCallback = void (*)(ecs::Entity, RailsControl&);
