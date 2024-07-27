@@ -639,7 +639,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         }
 
         // emit carry event
-        HitInfo hitinfo(moveVec, false, false, true);
+        HitInfo hitinfo({0, 1}, false, false, true);
         hitinfo.setOther(other->getEntity());
         hitinfo.otherMaterial = other->getMaterial();
         hitinfo.otherLayer = other->getCollisionLayer();

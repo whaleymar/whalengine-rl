@@ -265,6 +265,7 @@ void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, 
 
         [](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
             if (hitNormal.y != 1) {
+                // print("skipped collision with hitNormal: ", hitNormal);
                 return;
             }
             auto const selfPosition = self.get<Transform2D>().position;
@@ -279,6 +280,11 @@ void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, 
 
             velocity.stable = {newSpeed, 0};
             self.set(velocity);
+            // print("currentSpeed: ", currentSpeed);
+            // print("step: ", STEP * System::dt());
+            // print("new speed: ", newSpeed);
+            // print("set velocity: ", velocity.stable);
+            // print("");
 
             if (newSpeed < 0) {
                 self.get<Draw>().setColor(Colors::LightBlue);

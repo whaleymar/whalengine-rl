@@ -78,11 +78,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666666
+                "x": -501.125,
+                "y": 276
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -111,8 +111,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666666
+                "x": 160,
+                "y": 95.83333333333331
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -122,30 +122,30 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666666
+                "x": -1034.3333333333333,
+                "y": 319.66666666666663
             }
         },
         "world1-rockettutorial.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666666
+                "x": 160,
+                "y": 95.875
             }
         },
         "world1-start.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666666
+                "x": 66.875,
+                "y": 84
             }
         },
         "world1.tmj": {
@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "float",
+    "property.type": "Easing",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
