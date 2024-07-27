@@ -58,10 +58,10 @@ void PointLightSystem::update() {
         f32 intensity = 1.0;
         s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = (*fadeoutOpt)->getIntensity();
+            intensity = fadeoutOpt->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if ((*lifetimeOpt)->secondsRemaining < defaultFadeTime) {
-                intensity = (*lifetimeOpt)->secondsRemaining / defaultFadeTime;
+            if (lifetimeOpt->secondsRemaining < defaultFadeTime) {
+                intensity = lifetimeOpt->secondsRemaining / defaultFadeTime;
             }
         }
 
@@ -116,10 +116,10 @@ void BoxLightSystem::update() {
         f32 intensity = 1.0;
         s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = (*fadeoutOpt)->getIntensity();
+            intensity = fadeoutOpt->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if ((*lifetimeOpt)->secondsRemaining < defaultFadeTime) {
-                intensity = (*lifetimeOpt)->secondsRemaining / defaultFadeTime;
+            if (lifetimeOpt->secondsRemaining < defaultFadeTime) {
+                intensity = lifetimeOpt->secondsRemaining / defaultFadeTime;
             }
         }
 
@@ -177,10 +177,10 @@ void RadianceLightSystem::update() {
         f32 intensity = 1.0;
         s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = (*fadeoutOpt)->getIntensity();
+            intensity = fadeoutOpt->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if ((*lifetimeOpt)->secondsRemaining < 0.25) {
-                intensity = (*lifetimeOpt)->secondsRemaining / 0.25;
+            if (lifetimeOpt->secondsRemaining < 0.25) {
+                intensity = lifetimeOpt->secondsRemaining / 0.25;
             }
         }
         radius = std::lerp(0, radius, intensity);

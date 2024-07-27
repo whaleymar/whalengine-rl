@@ -63,7 +63,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
     auto rbOpt = entity.tryGet<RigidBody>();
     RigidBody rb;
     if (rbOpt) {
-        rb = **rbOpt;
+        rb = *rbOpt;
     }
 
     auto jumperOpt = entity.tryGet<Jumper>();
@@ -91,7 +91,7 @@ bool brain(Animator& animator, ecs::Entity entity) {
             }
         }
     } else {
-        if (jumperOpt && (*jumperOpt)->isJumping) {
+        if (jumperOpt && jumperOpt->isJumping) {
             bool isJumping = [](s32 animId) -> bool {
                 switch (animId) {
                 case JUMP:
