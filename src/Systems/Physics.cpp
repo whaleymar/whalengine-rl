@@ -79,16 +79,16 @@ void PhysicsSystem::update() {
         }
 
         trans.isManuallyMoved = false;
-        if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
+        if (entity.has<Collider>()) {
             Transform2D transOffset = trans;
             if (entity.has<ColliderOffset>()) {
                 transOffset.position += entity.get<ColliderOffset>().offset;
             }
-            QuadTreeSystem::updatePosition(entity, (*colliderOpt)->getShapeMutable(), transOffset);
+            QuadTreeSystem::updatePosition(entity, entity.get<Collider>().getShapeMutable(), transOffset);
         }
 
-        if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
-            (*precisePositionOpt)->position = trans.position.as<f32>();
+        if (entity.has<PrecisePosition>()) {
+            entity.set<PrecisePosition>({trans.position.as<f32>()});
         }
     }
 
@@ -105,7 +105,7 @@ void PhysicsSystem::update() {
         auto rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
         if (rbOpt) {
-            frictionMultiplier = (*rbOpt)->frictionMultiplier;
+            frictionMultiplier = rbOpt->frictionMultiplier;
         }
 
         const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x;
@@ -130,18 +130,18 @@ void PhysicsSystem::update() {
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
-        auto jumpControl = entity.tryGet<Jumper>();
-        auto colliderOpt = entity.tryGet<Collider>();
+        auto jumpControlOpt = entity.tryGet<Jumper>();
 
         // ----------------------------------------------------------------
         // UPDATE POSITION
-        if (colliderOpt) {
-            (*colliderOpt)->move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
+        if (entity.has<Collider>()) {
+            entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
             allColliderEntities.push_back(entity);
         } else {
-            if (auto precisePositionOpt = entity.tryGet<PrecisePosition>(); precisePositionOpt) {
-                (*precisePositionOpt)->position += move;
-                trans.position = Vector2i(std::round((*precisePositionOpt)->position.x), std::round((*precisePositionOpt)->position.y));
+            if (entity.has<PrecisePosition>()) {
+                auto& precisePosition = entity.get<PrecisePosition>();
+                precisePosition.position += move;
+                trans.position = Vector2i(std::round(precisePosition.position.x), std::round(precisePosition.position.y));
                 // if (move.len() < 0.1) {
                 // clamp precise position to integer coordinates if we're not moving
                 // (*precisePositionOpt)->position = toFloatVec(trans.position);
@@ -168,7 +168,7 @@ void PhysicsSystem::update() {
         if (rbOpt) {
             // friction
             if (vel.stable.x) {
-                if ((*rbOpt)->isGrounded) {
+                if (rbOpt->isGrounded) {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
@@ -177,29 +177,20 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!(*rbOpt)->isGrounded) {
-                if (totalVelocity.y < JUMP_PEAK_SPEED_MAX && jumpControl) {
-                    (*jumpControl)->isJumping = false;
-                }
-
-                if (jumpControl) {
+            if (!rbOpt->isGrounded) {
+                if (jumpControlOpt) {
+                    auto& jumpControl = entity.get<Jumper>();
                     if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
                         // falling == not jumping
                         // a little lower than 0 while applying reduced gravity
-                        (*jumpControl)->isJumping = false;
+                        jumpControl.isJumping = false;
                     }
-                    applyGravity(vel, dt, (*rbOpt)->gravityMultiplier, (*jumpControl)->isJumping);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, jumpControl.isJumping);
                 } else {
-                    applyGravity(vel, dt, (*rbOpt)->gravityMultiplier, false);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, false);
                 }
 
-                (*rbOpt)->isLanding = false;
-
-                // } else {
-                //     if (totalVelocity.y < 0 && (!jumpControl || !(*jumpControl)->isJumping)) {
-                //         // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off
-                //         platform vel.stable.y = 0;
-                //     }
+                entity.get<RigidBody>().isLanding = false;
             }
         }
 

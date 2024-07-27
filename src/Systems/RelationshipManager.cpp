@@ -107,8 +107,8 @@ void FollowSystem::update() {
         bool isTargetMovingY = false;
         bool isMovingUp = false;
         if (auto velOpt = targetEntity.tryGet<Velocity>(); velOpt) {
-            f32 velx = (*velOpt)->total.x;
-            f32 vely = (*velOpt)->total.y;
+            f32 velx = velOpt->total.x;
+            f32 vely = velOpt->total.y;
             lookAheadX *= clamp(abs(velx) * 0.1f, 0.0f, 1.0f);
             lookAheadY *= clamp(abs(vely) * 0.1f, 0.0f, 1.0f);
             isTargetMovingX = abs(velx) > 1;

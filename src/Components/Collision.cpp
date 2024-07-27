@@ -129,7 +129,7 @@ void Collider::updateEntityPosition() {
     }
 
     if (auto precisePositionOpt = mSelf.tryGet<PrecisePosition>(); precisePositionOpt) {
-        (*precisePositionOpt)->position = trans.position.as<f32>();
+        mSelf.set<PrecisePosition>({trans.position.as<f32>()});
     }
 
     if (mSelf.has<Trigger>()) {
@@ -148,7 +148,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         const bool wasGrounded = rigidbody.isGrounded;
         auto jumpControlOpt = mSelf.tryGet<Jumper>();
         auto momentumOpt = mSelf.tryGet<Momentum>();
-        const bool hasMomentum = momentumOpt && (*momentumOpt)->isMomentumStored();
+        const bool hasMomentum = momentumOpt && momentumOpt->isMomentumStored();
         Velocity& velocity = mSelf.get<Velocity>();
 
         if (hitinfo && hitinfo.isVertical()) {
@@ -160,7 +160,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             }
 
             if (jumpControlOpt) {
-                (*jumpControlOpt)->isJumping = false;
+                jumpControlOpt->isJumping = false;
             }
             velocity.residualImpulse.y = 0;
         } else if (!hitinfo) {
@@ -176,10 +176,10 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             }
 
             if (hasMomentum) {
-                (*momentumOpt)->onMomentumNotUsed();
+                momentumOpt->onMomentumNotUsed();
             }
 
-            if (velocity.total.y < 0 && wasGrounded && (!jumpControlOpt || !(*jumpControlOpt)->isJumping)) {
+            if (velocity.total.y < 0 && wasGrounded && (!jumpControlOpt || !jumpControlOpt->isJumping)) {
                 // zero y velocity when grounded and not trying to jump, otherwise entity falls at terminal velocity after walking off platform
                 // do this on second frame on the ground
                 velocity.stable.y = 0;
@@ -188,24 +188,31 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 
         } else {
             if (jumpControlOpt) {
-                if (wasGrounded && !(*jumpControlOpt)->isJumping) {
-                    (*jumpControlOpt)->coyoteSecondsRemaining = (*jumpControlOpt)->coyoteTimeSecondsMax;
-                } else if ((*jumpControlOpt)->coyoteSecondsRemaining > 0) {
+                if (wasGrounded && !jumpControlOpt->isJumping) {
+                    jumpControlOpt->coyoteSecondsRemaining = jumpControlOpt->coyoteTimeSecondsMax;
+                } else if (jumpControlOpt->coyoteSecondsRemaining > 0) {
                     // is jumping
-                    (*jumpControlOpt)->coyoteSecondsRemaining -= System::dt();
+                    jumpControlOpt->coyoteSecondsRemaining -= System::dt();
                     skipBounceStep = true;
                 }
             }
 
             // prevent repeated push forces from accumulating huge speed
-            if (hasMomentum && (*momentumOpt)->cooldownFrames <= 0) {
+            if (hasMomentum && momentumOpt->cooldownFrames <= 0) {
                 // convert to texels/sec
-                velocity.stable += (*momentumOpt)->getMomentum() * FTEXELS_PER_PIXEL;
-                (*momentumOpt)->resetMomentum();
-                (*momentumOpt)->cooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
-            } else if (momentumOpt && (*momentumOpt)->cooldownFrames > 0) {
-                (*momentumOpt)->cooldownFrames--;
+                velocity.stable += momentumOpt->getMomentum() * FTEXELS_PER_PIXEL;
+                momentumOpt->resetMomentum();
+                momentumOpt->cooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
+            } else if (momentumOpt && momentumOpt->cooldownFrames > 0) {
+                momentumOpt->cooldownFrames--;
             }
+        }
+
+        if (jumpControlOpt) {
+            mSelf.set(*jumpControlOpt);
+        }
+        if (momentumOpt) {
+            mSelf.set(*momentumOpt);
         }
     }
 
@@ -352,7 +359,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
-                if ((*wiggleOpt)->callback(this, hitInfo, moveNormal, amount)) {
+                if (wiggleOpt->callback(this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
@@ -400,7 +407,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
-                if ((*wiggleOpt)->callback(this, hitInfo, moveNormal, amount)) {
+                if (wiggleOpt->callback(this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
@@ -796,7 +803,7 @@ void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {
         return;
     }
 
-    storedMomentum[nextIx.x].x = momentumX * (*eRB)->momentumMultiplier.x;
+    storedMomentum[nextIx.x].x = momentumX * eRB->momentumMultiplier.x;
     nextIx.x++;
     if (nextIx.x == MOMENTUM_STORAGE_COUNT) {
         nextIx.x = 0;
@@ -810,7 +817,7 @@ void Momentum::setMomentumY(ecs::Entity self, const f32 momentumY) {
         return;
     }
 
-    storedMomentum[nextIx.y].y = momentumY * (*eRB)->momentumMultiplier.y;
+    storedMomentum[nextIx.y].y = momentumY * eRB->momentumMultiplier.y;
     nextIx.y++;
     if (nextIx.y == MOMENTUM_STORAGE_COUNT) {
         nextIx.y = 0;

@@ -43,10 +43,10 @@ void RailsSystem::update() {
         // scale checkpoint threshold with speed
         f32 entitySpeed = [entity]() -> f32 {
             auto velOpt = entity.tryGet<Velocity>();
-            if (!velOpt || ((*velOpt)->stable.x == 0 && (*velOpt)->stable.y == 0)) {
+            if (!velOpt || (velOpt->stable.x == 0 && velOpt->stable.y == 0)) {
                 return 0;
             }
-            return (*velOpt)->stable.len();
+            return velOpt->stable.len();
         }();
         f32 epsilon = entitySpeed >= 50 ? entitySpeed * SPEED_DIVISOR + 1 : 0.95;
 
@@ -80,9 +80,8 @@ void RailsSystem::update() {
         } else if (distance <= epsilon) {
             // got to checkpoint, clamp to exact position
 
-            // if entity has collider, use its move function
-            if (auto colliderOpt = entity.tryGet<Collider>(); colliderOpt) {
-                (*colliderOpt)->move(delta, nullptr, false, true);
+            if (entity.has<Collider>()) {
+                entity.get<Collider>().move(delta, nullptr, false, true);
             } else {
                 entity.set(Transform2D(rails.getTarget().position));
             }
