@@ -52,11 +52,7 @@
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 
 ## Improving compile times:
-- would be GREAT to use the <iosfwd> include in Print.h and move the iostream import outside of the header file, but not sure how to do that bc it's templated
 - can maybe get <unordered_map> out of InputHandler.h and make it a static var in the source file
-- static functions / anonymous namespaces for functions that are only defined/used in source files
-- move CallbackMap definition from Physics.h to source file, make it static variable
-    - Removing ECS include from System.h makes things slower for some reason
 
 ## Misc
 - ECS parallelization (low priority)
