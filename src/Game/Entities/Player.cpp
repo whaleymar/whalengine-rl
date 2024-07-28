@@ -225,9 +225,9 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
 
     Frame frame = player.get<Animator>().getFrame();
     Sprite sprite(Depth::Player, frame);
-    player.add(Draw(sprite));
+    // player.add(Draw(sprite));
     // player.add(Draw(sprite, TextureID::LayerGlow));
-    // player.add(Draw(sprite, TextureID::LayerBloom));
+    player.add(Draw(sprite, TextureID::LayerBloom));
 
     constexpr s32 width = 16;
     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;

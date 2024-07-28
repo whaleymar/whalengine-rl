@@ -166,9 +166,10 @@ void PhysicsSystem::update() {
         // ----------------------------------------------------------------
         // UPDATE VELOCITY
         if (rbOpt) {
+            auto& rb = entity.get<RigidBody>();
             // friction
             if (vel.stable.x) {
-                if (rbOpt->isGrounded) {
+                if (rb.isGrounded) {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
@@ -177,7 +178,7 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!rbOpt->isGrounded) {
+            if (!rb.isGrounded) {
                 if (jumpControlOpt) {
                     auto& jumpControl = entity.get<Jumper>();
                     if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
@@ -185,12 +186,12 @@ void PhysicsSystem::update() {
                         // a little lower than 0 while applying reduced gravity
                         jumpControl.isJumping = false;
                     }
-                    applyGravity(vel, dt, rbOpt->gravityMultiplier, jumpControl.isJumping);
+                    applyGravity(vel, dt, rb.gravityMultiplier, jumpControl.isJumping);
                 } else {
-                    applyGravity(vel, dt, rbOpt->gravityMultiplier, false);
+                    applyGravity(vel, dt, rb.gravityMultiplier, false);
                 }
 
-                entity.get<RigidBody>().isLanding = false;
+                rb.isLanding = false;
             }
         }
 
