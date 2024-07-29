@@ -41,7 +41,7 @@ void PointLightSystem::update() {
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::PointLight);
-    BeginShaderMode(shader);
+    ScopedShader shaderScope(shader);
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesMutable()) {
@@ -75,8 +75,6 @@ void PointLightSystem::update() {
         Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
-
-    EndShaderMode();
 }
 
 BoxLightSystem::BoxLightSystem() {
@@ -94,7 +92,6 @@ void BoxLightSystem::update() {
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::BoxLight);
-    // BeginShaderMode(shader);
 
     Texture randomTexture = TextureManager::getRenderTexture(TextureID::Lighting).texture;
     for (auto [entityid, entity] : getEntitiesMutable()) {
@@ -104,7 +101,7 @@ void BoxLightSystem::update() {
 
         // do this every entity so draw calls aren't instanced and the uniform changes
         // should be fine if there aren't a ton of these lights
-        BeginShaderMode(shader);
+        ScopedShader shaderScope(shader);
 
         BoxLight light = entity.get<BoxLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
@@ -141,10 +138,7 @@ void BoxLightSystem::update() {
         Rectangle dstRect(screenPosition.x - lightBounds.x, screenPosition.y - lightBounds.y, lightBounds.x * 2, lightBounds.y * 2);
 
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
-        EndShaderMode();
     }
-
-    // EndShaderMode();
 }
 
 RadianceLightSystem::RadianceLightSystem() {
@@ -156,7 +150,7 @@ void RadianceLightSystem::update() {
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::Radiance);
-    BeginShaderMode(shader);
+    ScopedShader shaderScope(shader);
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Radiance));
     BeginMode2D(*Game::instance().getWorldCamera());
 
@@ -195,7 +189,6 @@ void RadianceLightSystem::update() {
 
     EndMode2D();
     EndTextureMode();
-    EndShaderMode();
 }
 
 }  // namespace whal

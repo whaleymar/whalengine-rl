@@ -6,6 +6,14 @@
 
 namespace whal {
 
+ScopedShader::ScopedShader(Shader shader) {
+    BeginShaderMode(shader);
+}
+
+ScopedShader::~ScopedShader() {
+    EndShaderMode();
+}
+
 static std::array<Shader, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_SHADERS;
 
 ShaderManager::ShaderManager() {
@@ -26,6 +34,7 @@ ShaderManager::ShaderManager() {
         {Shaders::Bloom, 0, "src/Shader/bloom.glsl"},
         {Shaders::Glow, 0, "src/Shader/glow.glsl"},
         {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
+        {Shaders::Warp, 0, "src/Shader/warp.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);

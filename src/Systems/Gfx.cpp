@@ -167,9 +167,8 @@ void GfxSystem::drawEntities() {
             if (layer.shader == Shaders::Default) {
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
             } else {
-                BeginShaderMode(ShaderManager::get(layer.shader));
+                ScopedShader shaderScope(ShaderManager::get(layer.shader));
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-                EndShaderMode();
             }
         }
 
