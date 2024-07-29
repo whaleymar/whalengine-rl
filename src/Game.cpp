@@ -243,9 +243,27 @@ void Game::mainloop() {
             isQuantizeOn = !isQuantizeOn;
         }
 
+        // TESTING
+        // static int timeUniform = GetShaderLocation(ShaderManager::get(Shaders::Warp), "iTime");
+        // static float iTime = 0.0;
+        // iTime += System::dt();
+        //
+        // SetShaderValue(ShaderManager::get(Shaders::Warp), timeUniform, &iTime, SHADER_UNIFORM_FLOAT);
+
+        // BeginShaderMode(ShaderManager::get(Shaders::Warp));
+        // DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
+        // EndShaderMode();
+        // TESTING END
+
         // this unflips the y axis for some reason
         DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
         DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
+
+        // TESTING
+        // BeginShaderMode(ShaderManager::get(Shaders::Warp));
+        // DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
+        // EndShaderMode();
+        // TESTING END
 
         TextureManager::instance().drawRadianceTexture();
 
@@ -263,11 +281,14 @@ void Game::mainloop() {
         BeginMode2D(*mScreenSpaceCamera);
 
         if (isQuantizeOn) {
+            // TODO this is being applied at full resolution
+            // also I want to be able to define a pipeline of effects that are applied sequentially
             BeginShaderMode(shaderQuantize);
             SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
         }
 
         Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
+
         DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
 
         if (isQuantizeOn) {
