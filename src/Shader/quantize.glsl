@@ -6,8 +6,10 @@ in vec4 fragColor;
 
 // Input uniform values
 uniform sampler2D texture0;
-uniform sampler2D palette;
 uniform vec4 colDiffuse;
+
+// mine:
+uniform sampler2D iPalette;
 
 // Output fragment color
 out vec4 finalColor;
@@ -35,8 +37,8 @@ void main()
     vec2 lut_pos_l = vec2(cell_l / COLORS + r_offset, g_offset); 
     vec2 lut_pos_h = vec2(cell_h / COLORS + r_offset, g_offset);
 
-    vec4 graded_color_l = texture(palette, lut_pos_l);
-    vec4 graded_color_h = texture(palette, lut_pos_h);
+    vec4 graded_color_l = texture(iPalette, lut_pos_l);
+    vec4 graded_color_h = texture(iPalette, lut_pos_h);
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 

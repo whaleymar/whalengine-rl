@@ -34,6 +34,7 @@
 #include "Game/Systems/RespawnSystem.h"
 #include "Settings.h"
 
+#include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 
@@ -161,7 +162,7 @@ void Game::mainloop() {
     // Color clearColor = {5, 5, 5, 255};
 
     Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
-    auto paletteTexUniform = GetShaderLocation(shaderQuantize, TEXNAME_PALETTE);
+    auto paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
     bool isQuantizeOn = false;
 
     // without the post processing step, would need to flip the y axis here by multiplying by -1
@@ -169,6 +170,12 @@ void Game::mainloop() {
                                        1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+
+    Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
+                                                                                             // Shaders::Bloom,
+                                                                                             // Shaders::Glitch,
+                                                                                             // Shaders::Quantize,
+                                                                                         });
 
 #ifndef NDEBUG
     bool isCreativeMode = false;
@@ -243,31 +250,14 @@ void Game::mainloop() {
             isQuantizeOn = !isQuantizeOn;
         }
 
-        // TESTING
-        // static int timeUniform = GetShaderLocation(ShaderManager::get(Shaders::Warp), "iTime");
-        // static float iTime = 0.0;
-        // iTime += System::dt();
-        //
-        // SetShaderValue(ShaderManager::get(Shaders::Warp), timeUniform, &iTime, SHADER_UNIFORM_FLOAT);
-
-        // BeginShaderMode(ShaderManager::get(Shaders::Warp));
-        // DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
-        // EndShaderMode();
-        // TESTING END
-
         // this unflips the y axis for some reason
         DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
         DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
-
-        // TESTING
-        // BeginShaderMode(ShaderManager::get(Shaders::Warp));
-        // DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
-        // EndShaderMode();
-        // TESTING END
-
         TextureManager::instance().drawRadianceTexture();
 
         EndTextureMode();
+
+        postProcessPipeline.process(TextureID::PostProcess);
 
         // -----------------------------------------------------------------------
         // POST PROCESSING EFFECTS END
@@ -281,8 +271,6 @@ void Game::mainloop() {
         BeginMode2D(*mScreenSpaceCamera);
 
         if (isQuantizeOn) {
-            // TODO this is being applied at full resolution
-            // also I want to be able to define a pipeline of effects that are applied sequentially
             BeginShaderMode(shaderQuantize);
             SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
         }
