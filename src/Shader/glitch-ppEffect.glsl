@@ -11,6 +11,7 @@ uniform vec4 colDiffuse;
 
 // mine:
 uniform float iTime;
+uniform vec2 iResolution;
 
 // Output fragment color
 out vec4 finalColor;
@@ -18,8 +19,6 @@ out vec4 finalColor;
 vec2 norm(vec2 coord) {
     return vec2(coord.x/2. + 1., coord.y/2. + 1.);
 }
-
-const vec2 iResolution = vec2(320, 180);
 
 vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;

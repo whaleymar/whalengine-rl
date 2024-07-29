@@ -17,13 +17,13 @@ enum class Shaders : s16 {
     Bloom,
     Glow,
     ToneMap,
-    Warp,
+    Glitch,
     _Count_DO_NOT_USE_ME
 };
 
 class ScopedShader {
 public:
-    ScopedShader(Shader shader);
+    ScopedShader(Shader shader, bool isActivated = false);
     ~ScopedShader();
 };
 
@@ -35,10 +35,12 @@ public:
     }
 
     static Shader get(Shaders shaderEnum);
+    static void activate(Shaders shaderEnum);
+    static ScopedShader activateScoped(Shaders shaderEnum);
 
 private:
     ShaderManager();
-    ~ShaderManager();
+    // ~ShaderManager();
 
     Shader _get(Shaders shaderEnum) const;
     void setIsUsed(s32 index);

@@ -12,6 +12,7 @@ void Deltatime::update() {
     f32 frameTime = GetFrameTime();
     mDeltatimeUnmodified = frameTime > MAX_FRAME_TIME ? MAX_FRAME_TIME : frameTime;
     mDeltatime = mDeltatimeUnmodified * mTimeMultiplier;
+    mTimeElapsed += mDeltatime;
 }
 
 void Deltatime::setMultiplier(f32 multiplier) {
