@@ -96,7 +96,7 @@ void PhysicsSystem::update() {
         f32 dt;
         // camera move normally unless pause menu is active
         if (entity.has<Camera>()) {
-            dt = System::dt.getUnmodified();
+            dt = System::time.getUnmodified();
         } else {
             dt = System::dt();
         }

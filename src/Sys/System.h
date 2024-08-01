@@ -1,21 +1,19 @@
 #pragma once
 
 #include "Audio.h"
-#include "Deltatime.h"
 #include "Event.h"
-#include "Frametracker.h"
 #include "InputHandler.h"
 #include "JobScheduler.h"
 #include "Random.h"
+#include "Time.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
 
 struct System {
     inline static InputHandler input;
-    inline static Deltatime dt;
+    inline static Time time;
     inline static RNG rng;
-    inline static Frametracker frame;
     inline static EventManager eventMgr;
     inline static AudioPlayer audio;
     inline static JobScheduler schedule;
@@ -24,11 +22,11 @@ struct System {
     static void setPaused(bool pause) {
         IsPaused = pause;
         if (pause) {
-            dt.setMultiplier(0.0);
+            time.setMultiplier(0.0);
             audio.pauseClips(true);
             world.pause();
         } else {
-            dt.setMultiplier(1.0);
+            time.setMultiplier(1.0);
             audio.pauseClips(false);
             world.unpause();
         }
@@ -36,13 +34,13 @@ struct System {
 
     static void Update() {
         input.update();
-        dt.update();
+        time.update();
         schedule.tick(dt());
-        frame.update();
         audio.update();
         world.update();
     }
 
+    static f32 dt() { return time.getDeltaTime(); }
     static void togglePause() { setPaused(!IsPaused); }
     static bool isPaused() { return IsPaused; }
     static void quit() { IsQuit = true; }
