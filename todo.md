@@ -1,7 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- lighting/shadows
+
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -37,6 +37,7 @@
 
         - this makes me think bloom should be a tag, not a Draw shader? Since an entity could have a custom shader AND bloom & it would work
         - UPDATE: first implementation did not go well. Too messy w/ having to switch back to the target texture. Need a general-purpose draw-layer-to-texture-then-draw-layer-to-targettexture pipeline working before i try this
+- animated tiles: some sort of lookup table, based on tile ix, which maps to animator list
 
 ## Map 
 - respawn map objects

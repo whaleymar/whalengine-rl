@@ -56,6 +56,10 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
         entity.add(ColorLerp(color, fadeColor, lifetime));
     }
 
+    if (isFlagSet(RadianceFlag)) {
+        entity.add(Radiance{2, 0, color});
+    }
+
     if (startScale != 1.0) {
         entity.add(ScaleLerp(Vector2f(1.0, 1.0) * startScale, {1.0, 1.0}, lifetime / 2));
     }
