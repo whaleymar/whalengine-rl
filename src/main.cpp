@@ -1,6 +1,6 @@
 #include "Game.h"
 
-#include "Settings.h"  // define macros
+#include "Engine.h"
 
 // windows-only way of coercing dedicated GPU usage...
 // #ifdef __cplusplus
@@ -15,14 +15,14 @@
 // #endif
 
 int main() {
-    Game& game = Game::instance();
+    whal::Engine<Game> engine;
 
-    if (game.startup()) {
+    if (engine.start()) {
         return 1;
     }
 
-    game.mainloop();
-    game.end();
+    engine.mainloop();
+    engine.end();
 
     return 0;
 }
