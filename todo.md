@@ -22,8 +22,6 @@
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
-## Vector2T
-- simd optimizations? (need profiling)
 
 ## Gfx
 - animated tiles: some sort of lookup table, based on tile ix, which maps to animator list
@@ -77,6 +75,10 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 
 ## ECS:
 - the entity.set<T> problem (with IMonitor systems): it doesn't really make sense to handle the problem at the system level, because not all component modifications matter. If anything, could do an event callback for when a component is modified and let systems listen for specific component modifications
+
+## Vector2T
+- simd optimizations? (need profiling)
+    - might make cross platform harder
 
 
 

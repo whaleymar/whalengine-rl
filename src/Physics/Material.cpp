@@ -48,7 +48,12 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
     }
 
     if (isFlagSet(DecaySpeed)) {
-        entity.add(DieWhenSpeedBelow(decayParams.decaySpeed.minSpeedTPS, ColorLerp(color, fadeColor, decayParams.decaySpeed.decaySeconds)));
+        // want to add this one after some delay, in case particle gains speed in first few frames (like from gravity or something)
+        System::schedule.eventFlow({entity}).addWait(0.5).add(
+            [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, Color color, Color fadeColor) {
+                e.add(DieWhenSpeedBelow(minSpeedTPS, ColorLerp(color, fadeColor, decaySeconds)));
+            },
+            entity, decayParams.decaySpeed.minSpeedTPS, decayParams.decaySpeed.decaySeconds, color, fadeColor);
     }
 
     if (isFlagSet(FadeOutFlag)) {
