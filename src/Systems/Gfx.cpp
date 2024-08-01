@@ -4,7 +4,6 @@
 #include <raylib.h>
 
 #include "Components/Tags.h"
-#include "Game.h"
 #include "Gfx/Depth.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
@@ -109,7 +108,7 @@ static void drawTextureFlipped(const Texture& tex) {
 }
 
 // this is really messy and will be a pain to add more layers to it
-void GfxSystem::drawEntities() {
+void GfxSystem::drawEntities(Camera2D worldCamera) {
     // update layers with new entities
     for (auto texID : S_LAYER_TEXTURES) {
         getLayer(texID).update();
@@ -119,7 +118,6 @@ void GfxSystem::drawEntities() {
     bool isFirstDrawToOcclusion = true;
 
     // draw one layer at a time to minimize FBO swaps
-    const auto camera = *Game::instance().getWorldCamera();
     while (true) {
         Depth currentDepth = Depth::Debug;
         for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
@@ -142,7 +140,7 @@ void GfxSystem::drawEntities() {
                 drawMask.set(i);
                 BeginTextureMode(TextureManager::getRenderTexture(texID));
                 ClearBackground(Colors::Clear);
-                BeginMode2D(camera);
+                BeginMode2D(worldCamera);
                 layer.iter = drawEntities(layer, layer.iter);
                 EndMode2D();
                 EndTextureMode();
@@ -196,7 +194,7 @@ void GfxSystem::drawEntities() {
     // TextureManager::instance().drawLightingTexture();
 
 #ifndef NDEBUG
-    BeginMode2D(*Game::instance().getWorldCamera());
+    BeginMode2D(worldCamera);
     if (System::input.isOn(InputType::DEBUG)) {
         System::world->getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();
@@ -321,14 +319,7 @@ DrawTextSystem::DrawTextSystem() {
 
 void DrawTextSystem::drawEntities(Color tint) {
     auto cameraPosF = getCameraPositionPrecise();
-    // auto cameraPosF = toFloatVec(getCameraPosition());
-
     constexpr s32 spacing = 0;  // PARAM
-
-    // constexpr s32 lineheight = spacing + fontSize;
-    // constexpr s32 menuHeight = lineheight * N_BUTTONS - spacing;  // n-1 fence posts
-    // constexpr s32 startHeight = WINDOW_HEIGHT_ACTUAL / 2 - menuHeight / 2;
-    // const Font* font = Game::instance().getFont();
 
     // sorting not required since Draw components don't have transparency
     for (auto const [entityid, entity] : getEntitiesMutable()) {

@@ -3,6 +3,7 @@
 #include "whalECS/src/ECS.h"
 
 typedef struct Shader Shader;
+typedef struct Camera2D Camera2D;
 
 namespace whal {
 
@@ -12,7 +13,7 @@ struct Radiance;
 struct Transform2D;
 struct ShadowLight;
 
-void drawLights();
+void drawLights(Camera2D worldCamera);
 
 class PointLightSystem : public ecs::ISystem<Transform2D, PointLight> {
 public:
@@ -37,7 +38,7 @@ private:
 class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance> {
 public:
     RadianceLightSystem();
-    void update();
+    void update(Camera2D worldCamera);
 
 private:
     int mPositionUniform;

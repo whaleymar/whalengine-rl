@@ -73,3 +73,4 @@ inline const char* SPRITE_TEXTURE_PATH = "data/sprite/atlas0.png";
 inline const char* PALETTE_TEXTURE_PATH = "data/texture/palette.png";
 inline const char* ATLAS_METADATA_PATH = "data/sprite/atlas.xml";
 inline const char* TILED_PROJECT_FILE = "project.tiled-project";  // path relative to map dir
+inline const char* ICON_IMAGE_PATH = "data/icon-hat.png";

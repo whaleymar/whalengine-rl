@@ -5,7 +5,6 @@
 #include "Components/PlayerControl.h"
 #include "Components/TriggerZone.h"
 #include "Events/Events.h"
-#include "Game.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
 #include "Systems/CollisionManager.h"

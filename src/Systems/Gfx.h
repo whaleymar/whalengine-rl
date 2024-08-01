@@ -11,6 +11,7 @@ typedef struct Texture Texture;
 typedef Texture Texture2D;
 typedef struct Shader Shader;
 typedef struct Color Color;
+typedef struct Camera2D Camera2D;
 
 namespace whal {
 
@@ -48,7 +49,7 @@ public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override;
 
-    void drawEntities();
+    void drawEntities(Camera2D worldCamera);
 
 private:
     static bool isBelow(const DrawInfo& first, const DrawInfo& second);
