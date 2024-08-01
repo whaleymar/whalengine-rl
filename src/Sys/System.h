@@ -19,18 +19,18 @@ struct System {
     inline static EventManager eventMgr;
     inline static AudioPlayer audio;
     inline static JobScheduler schedule;
-    inline static ecs::World* world = &ecs::World::getInstance();
+    inline static ecs::World& world = ecs::World::getInstance();
 
     static void setPaused(bool pause) {
         IsPaused = pause;
         if (pause) {
             dt.setMultiplier(0.0);
             audio.pauseClips(true);
-            world->pause();
+            world.pause();
         } else {
             dt.setMultiplier(1.0);
             audio.pauseClips(false);
-            world->unpause();
+            world.unpause();
         }
     }
 
@@ -40,7 +40,7 @@ struct System {
         schedule.tick(dt());
         frame.update();
         audio.update();
-        world->update();
+        world.update();
     }
 
     static void togglePause() { setPaused(!IsPaused); }

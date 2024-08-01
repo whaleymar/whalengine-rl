@@ -93,7 +93,7 @@ bool Game::start() {
     // RESEARCH considering moving registration for engine-specific systems into Engine.start, but that would make it harder to edit them (would
     // require recompiling), so maybe not?
     // note: nothing is actually running in parallel yet
-    System::world->BeginSystemRegistration()
+    System::world.BeginSystemRegistration()
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
         .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem, ColorLerpSystem, ScaleLerpSystem>()
@@ -101,7 +101,7 @@ bool Game::start() {
         .parallel<RocketJumpingSystem, SlowEntityKillerSystem>(2)
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
-    System::world->BeginSystemRegistration()
+    System::world.BeginSystemRegistration()
         .registerSystems<GfxSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem, RadianceLightSystem,
                          ShadowLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
@@ -116,9 +116,9 @@ bool Game::start() {
 
 void Game::mainloop() {
     // these are used for rendering, which still is run in this function but I might move it eventually
-    auto gfxSystem = System::world->getSystem<GfxSystem>();
-    auto textSystem = System::world->getSystem<DrawTextSystem>();
-    auto radianceSystem = System::world->getSystem<RadianceLightSystem>();
+    auto gfxSystem = System::world.getSystem<GfxSystem>();
+    auto textSystem = System::world.getSystem<DrawTextSystem>();
+    auto radianceSystem = System::world.getSystem<RadianceLightSystem>();
 
     // load scene
     // auto err = loadTestMap();
@@ -160,7 +160,7 @@ void Game::mainloop() {
 
 #ifndef NDEBUG
         if (IsKeyPressed(KEY_K)) {
-            for (auto [entityid, entity] : System::world->getSystem<PlayerSystem>()->getEntitiesMutable()) {
+            for (auto [entityid, entity] : System::world.getSystem<PlayerSystem>()->getEntitiesMutable()) {
                 entity.kill();
             }
         }
@@ -382,7 +382,7 @@ void Game::unloadScene(bool resetPlayers) {
         }
     }
 
-    System::world->killEntities();
+    System::world.killEntities();
     mIsSceneLoaded = false;
 }
 
@@ -426,14 +426,14 @@ void Game::updateLoadedLevels(Vector2f cameraWorldPosPixels) {
 }
 
 void Game::checkIfInNewLevel(bool overrideCache) {
-    if (System::world->getSystem<PlayerSystem>()->getEntitiesMutable().empty() || !mIsSceneLoaded ||
-        System::world->getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
+    if (System::world.getSystem<PlayerSystem>()->getEntitiesMutable().empty() || !mIsSceneLoaded ||
+        System::world.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
         return;
     }
     static std::string lastLevel = "default";
     std::string curLevel;
-    ecs::Entity player = System::world->getSystem<PlayerSystem>()->first();
-    // ecs::Entity camera = System::world->getSystem<CameraSystem>()->first();
+    ecs::Entity player = System::world.getSystem<PlayerSystem>()->first();
+    // ecs::Entity camera = System::world.getSystem<CameraSystem>()->first();
 
     Vector2i playerPosition = player.get<Transform2D>().position;
     if (player.has<Collider>()) {

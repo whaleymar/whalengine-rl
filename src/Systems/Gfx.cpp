@@ -196,7 +196,7 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
 #ifndef NDEBUG
     BeginMode2D(worldCamera);
     if (System::input.isOn(InputType::DEBUG)) {
-        System::world->getSystem<DrawDebugSystem>()->drawEntities();
+        System::world.getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();
     }
     EndMode2D();

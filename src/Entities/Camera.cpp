@@ -15,7 +15,7 @@
 namespace whal {
 
 Expected<ecs::Entity> createCamera(Transform2D trans) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }

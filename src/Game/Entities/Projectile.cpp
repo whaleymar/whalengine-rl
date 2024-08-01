@@ -121,7 +121,7 @@ static void Explode(ecs::Entity self, ecs::Entity other, Vector2i moveNormal) {
 
 Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i position, Vector2f velocity, f32 lifetimeSeconds, f32 explosionRadius,
                                      Vector2f pushStrength) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected.error();
     }

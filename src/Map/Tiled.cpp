@@ -89,7 +89,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    auto eEntity = System::world->entity();
+    auto eEntity = System::world.entity();
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
@@ -144,7 +144,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
 
-        auto eEntity = System::world->entity(false);
+        auto eEntity = System::world.entity(false);
         if (!eEntity.isExpected()) {
             failedToAllocateEntities = true;
             break;
@@ -346,7 +346,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
         return;
     }
 
-    auto eEntity = System::world->entity();
+    auto eEntity = System::world.entity();
     if (!eEntity.isExpected()) {
         return;
     }

@@ -11,7 +11,7 @@
 namespace whal {
 
 Expected<ecs::Entity> createBlock(Transform2D transform) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -29,7 +29,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, DrawRect rect) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -47,7 +47,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, DrawRect rect) {
 }
 
 Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMaterial material) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -65,7 +65,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
 }
 
 Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
