@@ -56,43 +56,26 @@
 constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
 const char* SCENE_FILE = "world1.world";
 
+static Camera2D S_CAMERA_WORLDSPACE;
+static Camera2D S_CAMERA_SCREENSPACE;
+static Font S_FONT_PAUSEMENU;
+
 // /GAME SETTINGS
-
-// STATIC VARS
-
-static Image S_ICON_IMAGE;
-
-// /STATIC VARS
 
 using namespace whal;
 
-Game::Game() {
-    mWorldSpaceCamera = new Camera2D();
-    mScreenSpaceCamera = new Camera2D();
-    mFont = new Font();
-}
-
-Game::~Game() {
-    delete mWorldSpaceCamera;
-    delete mScreenSpaceCamera;
-    delete mFont;
-}
-
 bool Game::start() {
-    S_ICON_IMAGE = LoadImage("data/icon-hat.png");
-    SetWindowIcon(S_ICON_IMAGE);
-
     // do this before any font/texture stuff or the settings seem to get fucked
-    mWorldSpaceCamera->target = Vector2(0.0f, 0.0f);
-    mWorldSpaceCamera->offset = Vector2(WINDOW_WIDTH_PIXELS / 2.0f, WINDOW_HEIGHT_PIXELS / 2.0f);  // center camera
-    mWorldSpaceCamera->zoom = 1.0f;
-    mWorldSpaceCamera->rotation = 0.0f;
+    S_CAMERA_WORLDSPACE.target = Vector2(0.0f, 0.0f);
+    S_CAMERA_WORLDSPACE.offset = Vector2(WINDOW_WIDTH_PIXELS / 2.0f, WINDOW_HEIGHT_PIXELS / 2.0f);  // center camera
+    S_CAMERA_WORLDSPACE.zoom = 1.0f;
+    S_CAMERA_WORLDSPACE.rotation = 0.0f;
 
-    mScreenSpaceCamera->target = Vector2(0.0f, 0.0f);
-    mScreenSpaceCamera->zoom = 1.0f;
-    mScreenSpaceCamera->rotation = 0.0f;
+    S_CAMERA_SCREENSPACE.target = Vector2(0.0f, 0.0f);
+    S_CAMERA_SCREENSPACE.zoom = 1.0f;
+    S_CAMERA_SCREENSPACE.rotation = 0.0f;
 
-    loadFont(FONT_PATH, 18, 0, 0);
+    S_FONT_PAUSEMENU = LoadFontEx(FONT_PATH, 18, 0, 0);
 
     Corrade::Containers::Optional<Error> err =
         TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
@@ -107,6 +90,8 @@ bool Game::start() {
         return true;
     }
 
+    // RESEARCH considering moving registration for engine-specific systems into Engine.start, but that would make it harder to edit them (would
+    // require recompiling), so maybe not?
     // note: nothing is actually running in parallel yet
     System::world->BeginSystemRegistration()
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
@@ -206,20 +191,20 @@ void Game::mainloop() {
         // CAMERA
         // -----------------------------------------------------------------------
         // round worldspace coords, keep decimals in screen space
-        mWorldSpaceCamera->target.x = static_cast<s32>(mScreenSpaceCamera->target.x);
-        mScreenSpaceCamera->target.x -= mWorldSpaceCamera->target.x;
-        mScreenSpaceCamera->target.x *= VIRTUAL_SCREEN_RATIO;
+        S_CAMERA_WORLDSPACE.target.x = static_cast<s32>(S_CAMERA_SCREENSPACE.target.x);
+        S_CAMERA_SCREENSPACE.target.x -= S_CAMERA_WORLDSPACE.target.x;
+        S_CAMERA_SCREENSPACE.target.x *= VIRTUAL_SCREEN_RATIO;
 
-        mWorldSpaceCamera->target.y = static_cast<s32>(mScreenSpaceCamera->target.y);
-        mScreenSpaceCamera->target.y -= mWorldSpaceCamera->target.y;
-        mScreenSpaceCamera->target.y *= VIRTUAL_SCREEN_RATIO;
+        S_CAMERA_WORLDSPACE.target.y = static_cast<s32>(S_CAMERA_SCREENSPACE.target.y);
+        S_CAMERA_SCREENSPACE.target.y -= S_CAMERA_WORLDSPACE.target.y;
+        S_CAMERA_SCREENSPACE.target.y *= VIRTUAL_SCREEN_RATIO;
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        radianceSystem->update();  // this gets drawn to its own texture
+        radianceSystem->update(S_CAMERA_WORLDSPACE);  // this gets drawn to its own texture
         TextureManager::instance().drawBackgroundTextures();
-        gfxSystem->drawEntities();
-        drawLights();
+        gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);
+        drawLights(S_CAMERA_WORLDSPACE);
 
         // -----------------------------------------------------------------------
         // ECS DRAW END
@@ -255,7 +240,7 @@ void Game::mainloop() {
 
         ClearBackground(Colors::Clear);
 
-        BeginMode2D(*mScreenSpaceCamera);
+        BeginMode2D(S_CAMERA_SCREENSPACE);
 
         // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
         // Q, but is completely black before that
@@ -277,7 +262,7 @@ void Game::mainloop() {
         EndMode2D();
 
         // TEXT STUFF
-        PauseMenu::instance().draw(mFont);
+        PauseMenu::instance().draw(S_FONT_PAUSEMENU);
 
 #ifndef NDEBUG
         if (System::input.isOn(InputType::DEBUG)) {
@@ -293,8 +278,7 @@ void Game::mainloop() {
 
 void Game::end() {
     TextureManager::instance().unloadAll();
-    UnloadFont(*mFont);
-    UnloadImage(S_ICON_IMAGE);
+    UnloadFont(S_FONT_PAUSEMENU);
 }
 
 void Game::onEvent(whal::DeathEvent, ecs::Entity entity) {
@@ -494,12 +478,4 @@ void Game::checkIfInNewLevel(bool overrideCache) {
     //         camera.add(follow);
     //     }
     // }
-}
-
-void Game::loadFont(const char* fontPath, s32 size, s32* codePoints, s32 codePointsCount) {
-    *mFont = LoadFontEx(fontPath, size, codePoints, codePointsCount);
-}
-
-const Font* Game::getFont() const {
-    return mFont;
 }

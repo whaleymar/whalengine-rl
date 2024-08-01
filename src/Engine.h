@@ -28,6 +28,11 @@ public:
         SetExitKey(KEY_NULL);  // Escape quits by default
         SetTargetFPS(FPS_TARGET);
 
+        if (FileExists(ICON_IMAGE_PATH)) {
+            mIconImage = LoadImage(ICON_IMAGE_PATH);
+            SetWindowIcon(mIconImage);
+        }
+
         // GRAPHICS INITIALIZATION
         ShaderManager::instance().loadShaders();
 
@@ -58,8 +63,14 @@ public:
         ShaderManager::instance().unloadAll();
 
         // RAYLIB END
+        if (FileExists(ICON_IMAGE_PATH)) {
+            UnloadImage(mIconImage);
+        }
         CloseWindow();
     }
+
+private:
+    Image mIconImage;
 };
 
 }  // namespace whal

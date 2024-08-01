@@ -22,7 +22,7 @@ public:
     }
 
     void onEvent(whal::ButtonPressEvent, InputType input) override;
-    void draw(Font* font) const;
+    void draw(Font& font) const;
     bool isActive() const { return mIsActive; }
 
 private:

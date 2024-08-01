@@ -8,7 +8,6 @@
 #include "Components/Light.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Game.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
@@ -20,9 +19,9 @@ namespace whal {
 
 const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
-void drawLights() {
+void drawLights(Camera2D worldCamera) {
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Lighting));
-    BeginMode2D(*Game::instance().getWorldCamera());
+    BeginMode2D(worldCamera);
     ClearBackground(COLOR_AMBIENT);
 
     BeginBlendMode(BLEND_ADDITIVE);
@@ -153,14 +152,14 @@ RadianceLightSystem::RadianceLightSystem() {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::Radiance), "position");
 }
 
-void RadianceLightSystem::update() {
+void RadianceLightSystem::update(Camera2D worldCamera) {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::Radiance);
     ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::Radiance);
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Radiance));
-    BeginMode2D(*Game::instance().getWorldCamera());
+    BeginMode2D(worldCamera);
 
     ClearBackground({0, 0, 0, 0});  // don't overwrite background stuff
 

@@ -54,7 +54,7 @@ void PauseMenu::onEvent(whal::ButtonPressEvent, InputType input) {
     }
 }
 
-void PauseMenu::draw(Font* font) const {
+void PauseMenu::draw(Font& font) const {
     if (!isActive()) {
         return;
     }
@@ -70,8 +70,8 @@ void PauseMenu::draw(Font* font) const {
         std::string fullScreenText = whal_format(S_BUTTON_TO_NAME[i], IsWindowFullscreen() ? "On" : "Off");
         const char* buttonText = i != static_cast<s32>(FullScreenToggle) ? S_BUTTON_TO_NAME[i] : fullScreenText.c_str();
         Color color = static_cast<Button>(i) == mCursorOption ? RED : WHITE;
-        Vector2 textDimensions = MeasureTextEx(*font, buttonText, fontSize, spacingX);
-        DrawTextEx(*font, buttonText, Vector2(WINDOW_WIDTH_ACTUAL / 2 - textDimensions.x / 2, startHeight + lineheight * i), fontSize, spacingX,
+        Vector2 textDimensions = MeasureTextEx(font, buttonText, fontSize, spacingX);
+        DrawTextEx(font, buttonText, Vector2(WINDOW_WIDTH_ACTUAL / 2 - textDimensions.x / 2, startHeight + lineheight * i), fontSize, spacingX,
                    color);
     }
 }
