@@ -1,21 +1,18 @@
 #include "InputHandler.h"
 
 #include <raylib.h>
+#include <unordered_map>
 
 #include "Events/Events.h"
-// #include "Gfx/Coordinates.h"
 #include "System.h"
-
-// #include "Game/Events.h"
 
 namespace whal {
 
-InputHandler::InputHandler() {
-    loadMappings();
-}
+inline static std::unordered_map<int, InputType> S_KEYMAP;
+inline static std::unordered_map<int, InputType> S_MOUSEMAP;
 
 void InputHandler::update() {
-    for (auto [key, inputType] : KeyMap) {
+    for (auto [key, inputType] : S_KEYMAP) {
         if (!isInputEnabled(inputType)) {
             continue;
         }
@@ -27,7 +24,7 @@ void InputHandler::update() {
         }
     }
     MousePosition = fromRaylibInt(GetMousePosition());
-    for (auto [mouseButton, inputType] : MouseMap) {
+    for (auto [mouseButton, inputType] : S_MOUSEMAP) {
         if (IsMouseButtonPressed(mouseButton)) {
             set(inputType);
         } else if (IsKeyReleased(mouseButton)) {
@@ -85,42 +82,22 @@ void InputHandler::reset(InputType input) {
 void InputHandler::loadMappings() const {
     // EVENTUALLY load from file once i have, like, menus working
 
-    KeyMap.clear();
-    MouseMap.clear();
-
-    // KeyMap.insert({KEY_A, InputType::LEFT});
-    // KeyMap.insert({KEY_D, InputType::RIGHT});
-    // KeyMap.insert({KEY_W, InputType::UP});
-    // KeyMap.insert({KEY_S, InputType::DOWN});
-    // KeyMap.insert({KEY_SPACE, InputType::JUMP});
-    // KeyMap.insert({KEY_ESCAPE, InputType::PAUSE});
-    // KeyMap.insert({KEY_ENTER, InputType::OK});
-    // KeyMap.insert({KEY_LEFT, InputType::LEFT});
-    // KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
-    // KeyMap.insert({KEY_UP, InputType::UP});
-    // KeyMap.insert({KEY_DOWN, InputType::DOWN});
-    //
     // MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
-
-    KeyMap.insert({KEY_UP, InputType::UP});
-    KeyMap.insert({KEY_RIGHT, InputType::RIGHT});
-    KeyMap.insert({KEY_DOWN, InputType::DOWN});
-    KeyMap.insert({KEY_LEFT, InputType::LEFT});
-    KeyMap.insert({KEY_C, InputType::JUMP});
-    KeyMap.insert({KEY_X, InputType::AIM});
-    KeyMap.insert({KEY_ESCAPE, InputType::PAUSE});
-    KeyMap.insert({KEY_ENTER, InputType::OK});
+    S_KEYMAP.insert({KEY_UP, InputType::UP});
+    S_KEYMAP.insert({KEY_RIGHT, InputType::RIGHT});
+    S_KEYMAP.insert({KEY_DOWN, InputType::DOWN});
+    S_KEYMAP.insert({KEY_LEFT, InputType::LEFT});
+    S_KEYMAP.insert({KEY_C, InputType::JUMP});
+    S_KEYMAP.insert({KEY_X, InputType::AIM});
+    S_KEYMAP.insert({KEY_ESCAPE, InputType::PAUSE});
+    S_KEYMAP.insert({KEY_ENTER, InputType::OK});
 
 #ifndef NDEBUG
-    KeyMap.insert({KEY_ZERO, InputType::DEBUG});
-    KeyMap.insert({KEY_M, InputType::MUSICTEST});
-    KeyMap.insert({KEY_R, InputType::RELOADSCENE});
-    KeyMap.insert({KEY_T, InputType::TIMETEST});
-    KeyMap.insert({KEY_K, InputType::KILLPLAYER});
-//     KeyMap.insert({GLFW_KEY_LEFT, InputType::SHRINKX});
-//     KeyMap.insert({GLFW_KEY_RIGHT, InputType::GROWX});
-//     KeyMap.insert({GLFW_KEY_DOWN, InputType::SHRINKY});
-//     KeyMap.insert({GLFW_KEY_UP, InputType::GROWY});
+    S_KEYMAP.insert({KEY_ZERO, InputType::DEBUG});
+    S_KEYMAP.insert({KEY_M, InputType::MUSICTEST});
+    S_KEYMAP.insert({KEY_R, InputType::RELOADSCENE});
+    S_KEYMAP.insert({KEY_T, InputType::TIMETEST});
+    S_KEYMAP.insert({KEY_K, InputType::KILLPLAYER});
 #endif
 }
 

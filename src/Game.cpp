@@ -119,6 +119,8 @@ bool Game::startup() {
         print("Error initializing audio manager");
         return true;
     }
+
+    System::input.loadMappings();
     System::world->setEntityDeathCallback(&emitEntityDeathEvent);
     System::schedule.start();
 
