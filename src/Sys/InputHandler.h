@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_map>
 #include "Components/Transform.h"
 #include "Util/Vector.h"
 
@@ -56,12 +55,10 @@ public:
 
     bool isJumpAvailable() const { return mIsJumpPressed; }
 
-    inline static std::unordered_map<int, InputType> KeyMap;
-    inline static std::unordered_map<int, InputType> MouseMap;
     inline static Vector2i MousePosition;
 
 private:
-    InputHandler();
+    InputHandler() = default;
     InputHandler(const InputHandler&) = delete;
     void operator=(const InputHandler&) = delete;
 
