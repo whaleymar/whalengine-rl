@@ -47,10 +47,6 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
         entity.add(PointLight{halfLenTexels * 2});
     }
 
-    if (isFlagSet(RadianceFlag)) {
-        entity.add(Radiance{halfLenTexels * 2, 0, color});
-    }
-
     if (isFlagSet(DecaySpeed)) {
         entity.add(DieWhenSpeedBelow(decayParams.decaySpeed.minSpeedTPS, ColorLerp(color, fadeColor, decayParams.decaySpeed.decaySeconds)));
     }

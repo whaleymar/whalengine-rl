@@ -59,7 +59,7 @@ ScopedShader::~ScopedShader() {
     EndShaderMode();
 }
 
-ShaderManager::ShaderManager() {
+void ShaderManager::loadShaders() {
     struct ShaderInfo {
         Shaders shaderEnum;
         const char* vertexPath;
@@ -79,6 +79,8 @@ ShaderManager::ShaderManager() {
         {Shaders::Glow, 0, "src/Shader/glow.glsl"},
         // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
         {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
+        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
+        {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
@@ -104,15 +106,15 @@ ShaderManager::ShaderManager() {
     }
 }
 
-// ShaderManager::~ShaderManager() {
-// idk why this is segfaulting. this runs on program close so maybe the memory is free'd somehow during shutdown
-// const s32 maxShaderCount = static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME);
-// for (size_t i = 0; i < maxShaderCount; i++) {
-//     if (getIsUsed(i)) {
-//         UnloadShader(S_SHADERS[i]);
-//     }
-// }
-// }
+void ShaderManager::unloadAll() {
+    // idk why this is segfaulting. this runs on program close so maybe the memory is free'd somehow during shutdown
+    const s32 maxShaderCount = static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME);
+    for (size_t i = 0; i < maxShaderCount; i++) {
+        if (getIsUsed(i)) {
+            UnloadShader(S_SHADERS[i]);
+        }
+    }
+}
 
 Shader ShaderManager::get(Shaders shaderEnum) {
     return instance()._get(shaderEnum);

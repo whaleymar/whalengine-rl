@@ -150,44 +150,6 @@
                  "y":58
                 }, 
                 {
-                 "id":18,
-                 "properties":[
-                        {
-                         "name":"Sprite",
-                         "propertytype":"Component_Sprite_NoAnim",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ffaaaaff",
-                             "Sprite":"ui\/arrow",
-                             "rotateAboutCenter":true,
-                             "rotationDegrees":0
-                            }
-                        }],
-                 "template":"templates\/Arrow.tj",
-                 "x":68,
-                 "y":72
-                }, 
-                {
-                 "id":19,
-                 "properties":[
-                        {
-                         "name":"Sprite",
-                         "propertytype":"Component_Sprite_NoAnim",
-                         "type":"class",
-                         "value":
-                            {
-                             "Color":"#ffaaaaff",
-                             "Sprite":"ui\/arrow",
-                             "rotateAboutCenter":true,
-                             "rotationDegrees":180
-                            }
-                        }],
-                 "template":"templates\/Arrow.tj",
-                 "x":48,
-                 "y":72
-                }, 
-                {
                  "height":10,
                  "id":22,
                  "properties":[
@@ -342,9 +304,65 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"UI Objects",
+         "objects":[
+                {
+                 "id":38,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffaaaaff",
+                             "Sprite":"ui\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":0
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":68,
+                 "y":72
+                }, 
+                {
+                 "id":39,
+                 "properties":[
+                        {
+                         "name":"Sprite",
+                         "propertytype":"Component_Sprite_NoAnim",
+                         "type":"class",
+                         "value":
+                            {
+                             "Color":"#ffaaaaff",
+                             "Sprite":"ui\/arrow",
+                             "rotateAboutCenter":true,
+                             "rotationDegrees":180
+                            }
+                        }],
+                 "template":"templates\/Arrow.tj",
+                 "x":48,
+                 "y":72
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":8
+                }],
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":7,
- "nextobjectid":38,
+ "nextlayerid":8,
+ "nextobjectid":40,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -353,6 +371,7 @@
          "type":"class",
          "value":
             {
+             "LightLevel":1,
              "isWorldEntryPoint":true
             }
         }],

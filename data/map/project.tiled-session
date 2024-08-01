@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-start.tmj",
+    "activeFile": "world1-blaster_get.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -81,8 +81,8 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -501.125,
-                "y": 276
+                "x": 225.375,
+                "y": 104
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -108,11 +108,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 95.83333333333331
+                "x": 160.125,
+                "y": 96.125
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -122,8 +122,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -1034.3333333333333,
-                "y": 319.66666666666663
+                "x": 160.16666666666666,
+                "y": 96.16666666666667
             }
         },
         "world1-rockettutorial.tmj": {
@@ -133,8 +133,8 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160,
-                "y": 95.875
+                "x": 160.125,
+                "y": 96.125
             }
         },
         "world1-start.tmj": {
@@ -142,10 +142,10 @@
                 2
             ],
             "scale": 4,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 66.875,
-                "y": 84
+                "x": 620.875,
+                "y": -34.25
             }
         },
         "world1.tmj": {
@@ -180,15 +180,15 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Easing",
+    "property.type": "Depth",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
-        "world1-blaster_get.tmj",
-        "world1-momentumtutorial.tmj",
-        "world1-rockettutorial.tmj",
-        "world1-jumptutorial.tmj",
         "world1-start.tmj",
+        "world1-jumptutorial.tmj",
+        "world1-rockettutorial.tmj",
+        "world1-momentumtutorial.tmj",
+        "world1-blaster_get.tmj",
         "world1-blasterplatformtest.tmj",
         "world1.tmj",
         "testmap2.tmj",

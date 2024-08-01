@@ -123,6 +123,12 @@
                     "name": "Color",
                     "type": "color",
                     "value": "#ffffffff"
+                },
+                {
+                    "name": "Layer",
+                    "propertyType": "DrawLayer",
+                    "type": "string",
+                    "value": "Default"
                 }
             ],
             "name": "Component_Draw",
@@ -646,6 +652,18 @@
                 "Foreground2",
                 "Foreground1",
                 "Debug"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "id": 46,
+            "name": "DrawLayer",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "Bloom",
+                "Glow",
+                "Default"
             ],
             "valuesAsFlags": false
         },

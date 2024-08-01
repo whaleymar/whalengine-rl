@@ -9,6 +9,8 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Game.h"
+#include "Gfx/Coordinates.h"
+#include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
@@ -26,10 +28,16 @@ void drawLights() {
     BeginBlendMode(BLEND_ADDITIVE);
     System::world->getSystem<PointLightSystem>()->update();
     System::world->getSystem<BoxLightSystem>()->update();
-    EndBlendMode();
-
     EndMode2D();
+
+    System::world->getSystem<ShadowLightSystem>()->update();
+    EndBlendMode();
     EndTextureMode();
+
+    // TODO try scaling the lighting texture up to full resolution, THEN doing blur, and then multiplying? I don't think pixelated lighting looks very
+    // good
+    static Pipeline lightingPipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {Shaders::Blur});
+    lightingPipeline.process(TextureID::Lighting);
 }
 
 PointLightSystem::PointLightSystem() {
@@ -41,7 +49,7 @@ void PointLightSystem::update() {
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::PointLight);
-    ScopedShader shaderScope(shader);
+    ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::PointLight);
 
     const Texture& randomTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
     for (auto [entityid, entity] : getEntitiesMutable()) {
@@ -101,7 +109,7 @@ void BoxLightSystem::update() {
 
         // do this every entity so draw calls aren't instanced and the uniform changes
         // should be fine if there aren't a ton of these lights
-        ScopedShader shaderScope(shader);
+        ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::BoxLight);
 
         BoxLight light = entity.get<BoxLight>();
         Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
@@ -150,7 +158,7 @@ void RadianceLightSystem::update() {
     // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::Radiance);
-    ScopedShader shaderScope(shader);
+    ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::Radiance);
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Radiance));
     BeginMode2D(*Game::instance().getWorldCamera());
 
@@ -189,6 +197,29 @@ void RadianceLightSystem::update() {
 
     EndMode2D();
     EndTextureMode();
+}
+
+void ShadowLightSystem::update() {
+    // RESEARCH maybe pass angle/spread uniform?
+    static const int lp1Uniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
+    static const int radiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
+
+    auto shader = ShaderManager::get(Shaders::ShadowLight);
+    for (auto [entityid, entity] : getEntitiesMutable()) {
+        ShaderManager::activate(Shaders::ShadowLight);
+
+        const auto light = entity.get<ShadowLight>();
+        Vector2i entityPos = entity.get<Transform2D>().position;
+        Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightTexels * PIXELS_PER_TEXEL));
+        Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
+        SetShaderValue(shader, lp1Uniform, &screenPosRL, SHADER_UNIFORM_VEC2);
+
+        const f32 lightRadiusPixels = light.radiusTexels * PIXELS_PER_TEXEL;
+        SetShaderValue(shader, radiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
+        auto& tex = TextureManager::getRenderTexture(TextureID::Occlusion).texture;
+        DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), light.color);
+        EndShaderMode();
+    }
 }
 
 }  // namespace whal

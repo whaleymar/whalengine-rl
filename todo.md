@@ -1,12 +1,7 @@
 # To Do 
 
 ## Current Goal: 
-- player controller improvements
-    - try working gravity multiplier into RJ state?
-    - in air: shooting projectile does have pushback? Maybe only if you shoot in a downward direction
-    - idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
-    - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
-        - could be a jump with neutral/directional variants for a little more control over what happens next
+- lighting/shadows
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -14,6 +9,13 @@
 
 ## Polish
 - player leaning over ledge anim 
+
+## Player Controller/Abilities
+- try working gravity multiplier into RJ state?
+- in air: shooting projectile does have pushback? Maybe only if you shoot in a downward direction
+- idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
+- idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
+    - could be a jump with neutral/directional variants for a little more control over what happens next
 
 ## Camera / Follow
 - pretty awful in general
@@ -55,7 +57,9 @@
 - can maybe get <unordered_map> out of InputHandler.h and make it a static var in the source file
 
 ## Misc
+- Web builds
 - ECS parallelization (low priority)
+- ECS methods (get, set, remove) can't be run in debugger. Would at least like to have `.get<T>` working.
 - Logger queue that runs on another thread
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
@@ -67,7 +71,7 @@
 things i might want to (re)consider in the future -- ctrl+f for "RESEARCH" 
 
 ## System:
-- make this an actual framework 
+- make this an actual framework -- create GameInterface which has startup, mainloop, and end methods, then convert a lot of current Game class into Engine class which calls these things
 - hot-reloading code (youtube video is bookmarked)
 
 ## Map:

@@ -138,6 +138,7 @@ TextureManager::TextureManager() {
         {TextureID::LayerNormal, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerBloom, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerGlow, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::Occlusion, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
@@ -448,14 +449,11 @@ void TextureManager::drawBackgroundTextures() {
 void TextureManager::drawLightingTexture() {
     RenderTexture2D lightingTexture = getRenderTexture(TextureID::Lighting);
     Rectangle screenSourceRec =
-        Rectangle(0.0f, 0.0f, static_cast<f32>(lightingTexture.texture.width), -1 * static_cast<f32>(lightingTexture.texture.height));
+        Rectangle(0.0f, 0.0f, static_cast<f32>(lightingTexture.texture.width), static_cast<f32>(lightingTexture.texture.height));
     Rectangle dstRect(0, 0, lightingTexture.texture.width, lightingTexture.texture.height);
 
     BeginBlendMode(BLEND_MULTIPLIED);
-    // doesnt look good, just makes everything look way brighter
-    // BeginShaderMode(ShaderManager::get(Shaders::Bloom));
     DrawTexturePro(lightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
-    // EndShaderMode();
     EndBlendMode();
 }
 
