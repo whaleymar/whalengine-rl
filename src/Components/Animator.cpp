@@ -15,7 +15,7 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
     const Animation& anim = animator.getAnimation();
 
     // play animations at normal speed if paused? Seems cute
-    f32 dt = System::isPaused() ? System::dt.getUnmodified() : System::dt();
+    f32 dt = System::isPaused() ? System::time.getUnmodified() : System::dt();
     animator.curFrameDuration += dt;
     animator.curAnimDuration += dt;
     if (animator.curFrameDuration >= anim.secondsPerFrame) {
@@ -80,7 +80,7 @@ void Animator::setLooping(bool loop) {
     isLooping = loop;
 }
 
-Animation::Animation() : frames({}), id(-1){};
+Animation::Animation() : frames({}), id(-1) {};
 
 Animation::Animation(s32 id_, std::vector<Frame> frames_, f32 secondsPerFrame_) : frames(frames_), id(id_), secondsPerFrame(secondsPerFrame_) {}
 

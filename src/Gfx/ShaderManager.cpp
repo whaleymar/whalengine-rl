@@ -34,7 +34,7 @@ static void ActivateShader(Shaders shaderEnum) {
     BeginShaderMode(shader);
 
     if (uniforms.isSet(Uniforms::Time)) {
-        const f32 iTime = System::dt.getElapsed();
+        const f32 iTime = System::time.getElapsed();
         SetShaderValue(shader, uniforms.iTime, &iTime, SHADER_UNIFORM_FLOAT);
     }
 

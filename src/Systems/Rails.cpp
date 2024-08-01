@@ -26,7 +26,7 @@ void RailsSystem::update() {
         f32 dt;
         // camera moves normally unless pause menu is activated
         if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
-            dt = System::dt.getUnmodified();
+            dt = System::time.getUnmodified();
         } else {
             dt = System::dt();
         }
