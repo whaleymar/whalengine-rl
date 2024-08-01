@@ -21,6 +21,7 @@
                 {
                  "Collider":true,
                  "Color":"#ffffaaff",
+                 "Depth":6,
                  "Direction":4,
                  "Light":true,
                  "Material":12,

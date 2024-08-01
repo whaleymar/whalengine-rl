@@ -78,10 +78,10 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
-            "selectedLayer": 2,
+            "scale": 8,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 225.375,
+                "x": 171.0625,
                 "y": 104
             }
         },
@@ -144,8 +144,8 @@
             "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 620.875,
-                "y": -34.25
+                "x": 160.125,
+                "y": 96.125
             }
         },
         "world1.tmj": {

@@ -62,7 +62,7 @@ static void makeExplosionParticles(Vector2i center, Vector2i surfaceNormal) {
         }
 
         Vector2f particleVel(velX, velY);
-        auto particle = createParticle(Transform2D(center), WorldMaterial::Ember, Depth::Level, 2.0);
+        auto particle = createParticle(Transform2D(center), WorldMaterial::Ember, Depth::Foreground3, 2.0);
         if (!particle.isExpected()) {
             break;
         }

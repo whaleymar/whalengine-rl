@@ -25,7 +25,7 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
             camera.remove<Follow>();
         }
         camera.add(createCameraMoveController(camera.get<Transform2D>().position, focalPoint));
-        System::dt.setMultiplier(0.0);
+        System::time.setMultiplier(0.0);
         return;
     }
 }
