@@ -25,11 +25,11 @@ void drawLights(Camera2D worldCamera) {
     ClearBackground(COLOR_AMBIENT);
 
     BeginBlendMode(BLEND_ADDITIVE);
-    System::world->getSystem<PointLightSystem>()->update();
-    System::world->getSystem<BoxLightSystem>()->update();
+    System::world.getSystem<PointLightSystem>()->update();
+    System::world.getSystem<BoxLightSystem>()->update();
     EndMode2D();
 
-    System::world->getSystem<ShadowLightSystem>()->update();
+    System::world.getSystem<ShadowLightSystem>()->update();
     EndBlendMode();
     EndTextureMode();
 

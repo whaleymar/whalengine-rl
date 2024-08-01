@@ -38,7 +38,7 @@ public:
 
         // SYSTEM INITIALIZATION
         System::input.loadMappings();
-        System::world->setEntityDeathCallback(&emitEntityDeathEvent);
+        System::world.setEntityDeathCallback(&emitEntityDeathEvent);
         System::schedule.start();
         if (!System::audio.isValid()) {
             print("Error initializing audio manager");

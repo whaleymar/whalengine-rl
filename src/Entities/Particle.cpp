@@ -24,7 +24,7 @@ constexpr f32 MAX_SPEED_BURST = 20.0f;
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
 static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color color, f32 lifetime) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -43,7 +43,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();
 
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }

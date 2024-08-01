@@ -38,7 +38,7 @@ struct PushStrength {
 };
 
 Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f pushStrength, f32 lifetimeSeconds) {
-    auto eEntity = System::world->entity(false);
+    auto eEntity = System::world.entity(false);
     if (!eEntity.isExpected()) {
         return eEntity;
     }

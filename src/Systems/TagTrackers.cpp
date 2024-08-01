@@ -31,10 +31,10 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
 }
 
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (System::world->getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
+    if (System::world.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
         return Corrade::Containers::NullOpt;
     }
-    return System::world->getSystem<CameraSystem>()->first();
+    return System::world.getSystem<CameraSystem>()->first();
 }
 
 void setCameraTarget(ecs::Entity target) {

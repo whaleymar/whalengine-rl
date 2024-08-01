@@ -261,7 +261,7 @@ u8 FadeOut::getAlpha() const {
 }
 
 Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime, Corrade::Containers::Optional<Color> color) {
-    auto eEntity = System::world->entity();
+    auto eEntity = System::world.entity();
     if (!eEntity.isExpected()) {
         return eEntity.error();
     }
@@ -286,7 +286,7 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
 }
 
 Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, Corrade::Containers::Optional<Color> color) {
-    auto eEntity = System::world->entity();
+    auto eEntity = System::world.entity();
     if (!eEntity.isExpected()) {
         return eEntity.error();
     }

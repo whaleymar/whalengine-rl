@@ -178,7 +178,7 @@ static Animator getAnimator() {
 void respawnPlayer(Transform2D transform);
 
 Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
-    auto expected = System::world->entity(false);
+    auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }

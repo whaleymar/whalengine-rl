@@ -34,7 +34,7 @@ static bool IS_AIMING = false;
 using namespace whal;
 
 ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
-    auto entity = System::world->entity(false).value();
+    auto entity = System::world.entity(false).value();
     auto _ = ecs::DeferActivate(entity);
 
     const Vector2i offsetTexels = {-TEXELS_PER_TILE, 2 * TEXELS_PER_TILE};
@@ -175,7 +175,7 @@ void ProjectileSystem::addAimReticles() {
         //     continue;
         // }
 
-        auto childExpected = System::world->entity(false);
+        auto childExpected = System::world.entity(false);
         if (childExpected.isExpected()) {
             auto child = childExpected.value();
             blaster.aimReticle = child;
