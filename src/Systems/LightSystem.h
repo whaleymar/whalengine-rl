@@ -10,6 +10,7 @@ struct PointLight;
 struct BoxLight;
 struct Radiance;
 struct Transform2D;
+struct ShadowLight;
 
 void drawLights();
 
@@ -40,6 +41,11 @@ public:
 
 private:
     int mPositionUniform;
+};
+
+class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight> {
+public:
+    void update();
 };
 
 }  // namespace whal

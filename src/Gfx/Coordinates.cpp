@@ -18,4 +18,12 @@ Vector2i screenToWorldCoords(Vector2i screenCoords) {
     return yAtTop + cameraPos - middleOffset;
 }
 
+// (0,0) at BOTTOM LEFT for this function
+Vector2f worldToUVcoords(Vector2f worldCoords) {
+    const Vector2f resolutonRecip = Vector2f(1.0 / FWINDOW_WIDTH_PIXELS, 1.0 / FWINDOW_HEIGHT_PIXELS);
+    const Vector2f screenHalf = Vector2f(FWINDOW_WIDTH_PIXELS, FWINDOW_HEIGHT_PIXELS) * 0.5;
+    const Vector2f cameraPos = getCameraPositionPrecise();
+    return (Vector2f(worldCoords.x - cameraPos.x, worldCoords.y - cameraPos.y) + screenHalf) * resolutonRecip;
+}
+
 }  // namespace whal

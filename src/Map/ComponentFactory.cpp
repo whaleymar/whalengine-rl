@@ -237,6 +237,8 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
                 DefaultDraw.setColor(hexStringARGBToColor(hexString));
+            } else if (memberName == "Layer") {
+                // do nothing
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -519,7 +521,17 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
         draw.setColor(color);
     }
 
-    entity.add(Draw(draw));
+    TextureID texID = TextureID::LayerNormal;
+    if (values.contains("Layer")) {
+        std::string textureLayer = values["Layer"];
+        if (textureLayer == "Bloom") {
+            texID = TextureID::LayerBloom;
+        } else if (textureLayer == "Glow") {
+            texID = TextureID::LayerGlow;
+        }
+    }
+
+    entity.add(Draw(draw, texID));
 }
 
 void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,

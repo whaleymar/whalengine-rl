@@ -113,6 +113,7 @@ bool Game::startup() {
     }
 
     SetTargetFPS(FPS_TARGET);
+    ShaderManager::instance().loadShaders();
 
     if (!System::audio.isValid()) {
         print("Error initializing audio manager");
@@ -131,8 +132,8 @@ bool Game::startup() {
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
     System::world->BeginSystemRegistration()
-        .registerSystems<GfxSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem,
-                         RadianceLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
+        .registerSystems<GfxSystem, DrawTextSystem, DrawDebugSystem, PointLightSystem, BoxLightSystem, RadianceLightSystem,
+                         ShadowLightSystem>()  // render systems DO have update methods, but are not automated right now bc they're special
         .registerSystems<PlayerSystem, CameraSystem, EntityChildSystem>()
         .registerSystems<QuadTreeSystem>()
         .registerSystems<RespawnListener>();
@@ -171,6 +172,10 @@ void Game::mainloop() {
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
 
+    Pipeline testPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
+                                                                                      Shaders::ShadowLight,
+                                                                                  });
+
     Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
                                                                                              // Shaders::Bloom,
                                                                                              // Shaders::Glitch,
@@ -178,7 +183,7 @@ void Game::mainloop() {
                                                                                          });
 
 #ifndef NDEBUG
-    bool isCreativeMode = false;
+    bool isCreativeMode = false;  // known issue: killing player when in creative mode will cause crash on next creative mode activation
 #endif
 
     while (!WindowShouldClose() && !System::isQuit()) {
@@ -232,10 +237,11 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        drawLights();
         radianceSystem->update();  // this gets drawn to its own texture
         TextureManager::instance().drawBackgroundTextures();
+        // testPipeline.process(TextureID::Background);
         gfxSystem->drawEntities();
+        drawLights();
 
         // -----------------------------------------------------------------------
         // ECS DRAW END
@@ -253,6 +259,9 @@ void Game::mainloop() {
         // this unflips the y axis for some reason
         DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
         DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
+        // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
+        TextureManager::instance().drawLightingTexture();
+
         TextureManager::instance().drawRadianceTexture();
 
         EndTextureMode();
@@ -270,6 +279,8 @@ void Game::mainloop() {
 
         BeginMode2D(*mScreenSpaceCamera);
 
+        // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
+        // Q, but is completely black before that
         if (isQuantizeOn) {
             BeginShaderMode(shaderQuantize);
             SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
@@ -308,6 +319,7 @@ void Game::end() {
 
     // raylib stuff:
     TextureManager::instance().unloadAll();
+    ShaderManager::instance().unloadAll();
     UnloadFont(*mFont);
     UnloadImage(S_ICON_IMAGE);
     CloseWindow();
@@ -423,6 +435,13 @@ Corrade::Containers::Optional<Error> Game::reloadScene(bool resetPlayers) {
     if (!errOpt) {
         checkIfInNewLevel(true);
     }
+
+    // #ifndef NDEBUG
+    // TODO for this to work i think i need to reload all uniforms, which sucks bc they're all decentralized
+    // ShaderManager::instance().unloadAll();
+    // ShaderManager::instance().loadShaders();
+    // #endif
+
     return errOpt;
 }
 

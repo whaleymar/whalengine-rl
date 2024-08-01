@@ -116,6 +116,7 @@ void GfxSystem::drawEntities() {
     }
 
     bool isFirstDrawToMain = true;
+    bool isFirstDrawToOcclusion = true;
 
     // draw one layer at a time to minimize FBO swaps
     const auto camera = *Game::instance().getWorldCamera();
@@ -145,6 +146,19 @@ void GfxSystem::drawEntities() {
                 layer.iter = drawEntities(layer, layer.iter);
                 EndMode2D();
                 EndTextureMode();
+
+                if (currentDepth == Depth::Level) {
+                    // draw to occlusion mask
+                    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Occlusion));
+                    if (isFirstDrawToOcclusion) {
+                        ClearBackground(Colors::Clear);
+                        isFirstDrawToOcclusion = false;
+                    }
+                    BeginBlendMode(BLEND_ADDITIVE);
+                    drawTextureFlipped(TextureManager::getRenderTexture(texID).texture);
+                    EndBlendMode();
+                    EndTextureMode();
+                }
             }
         }
 
@@ -167,7 +181,7 @@ void GfxSystem::drawEntities() {
             if (layer.shader == Shaders::Default) {
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
             } else {
-                ScopedShader shaderScope(ShaderManager::get(layer.shader));
+                ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
             }
         }
@@ -179,7 +193,7 @@ void GfxSystem::drawEntities() {
         }
     }
 
-    TextureManager::instance().drawLightingTexture();
+    // TextureManager::instance().drawLightingTexture();
 
 #ifndef NDEBUG
     BeginMode2D(*Game::instance().getWorldCamera());
@@ -200,7 +214,7 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
     const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
 
     Shaders prevShader = static_cast<Shaders>(layer.sorted.begin()->shaderIx);
-    BeginShaderMode(ShaderManager::get(prevShader));
+    ShaderManager::activate(prevShader);
     std::forward_list<DrawInfo>::iterator it;
     for (it = startIt; it != layer.sorted.end() && it->depthId == startIt->depthId; ++it) {
         const auto drawInfo = *it;
@@ -211,7 +225,7 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
         if (newShader != prevShader) {
             prevShader = newShader;
             EndShaderMode();
-            BeginShaderMode(ShaderManager::get(newShader));
+            ShaderManager::activate(newShader);
         }
         drawEntity(drawInfo.entity, spriteTexture, cameraPosF);
     }

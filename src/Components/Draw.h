@@ -114,6 +114,7 @@ public:
     Depth getDepth() const;
     Shaders getShader() const;
     TextureID getTexLayer() const { return mLayerTexture; }
+    void setTexLayer(TextureID texID) { mLayerTexture = texID; }  // this will not do anything unless the entity is removed & re-added to gfx system
     void setAlpha(u8 alpha);
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);

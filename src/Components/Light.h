@@ -29,8 +29,6 @@ struct BoxLight : public IEmitLight {
 
 struct Radiance : public IEmitLight {};
 
-// struct EnvironmentLight : public IEmitLight {
-//     s32 radius;
-// }
+struct ShadowLight : public IEmitLight {};
 
 }  // namespace whal

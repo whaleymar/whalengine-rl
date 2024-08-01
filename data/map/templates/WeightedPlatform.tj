@@ -19,7 +19,8 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ffffaaff"
+                 "Color":"#ffffaaff",
+                 "Layer":"Glow"
                 }
             }, 
             {

@@ -3,6 +3,7 @@
 #include "Util/Types.h"
 
 typedef struct Shader Shader;
+class Game;
 
 namespace whal {
 
@@ -18,6 +19,8 @@ enum class Shaders : s16 {
     Glow,
     ToneMap,
     Glitch,
+    ShadowLight,
+    Blur,
     _Count_DO_NOT_USE_ME
 };
 
@@ -28,6 +31,8 @@ public:
 };
 
 class ShaderManager {
+    friend Game;
+
 public:
     static ShaderManager& instance() {
         static ShaderManager instance_;
@@ -39,8 +44,8 @@ public:
     static ScopedShader activateScoped(Shaders shaderEnum);
 
 private:
-    ShaderManager();
-    // ~ShaderManager();
+    void loadShaders();
+    void unloadAll();
 
     Shader _get(Shaders shaderEnum) const;
     void setIsUsed(s32 index);
