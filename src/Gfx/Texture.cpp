@@ -325,7 +325,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
 void TextureManager::drawBackgroundTextures() {
     // currently, lighting does not affect this texture
     BeginTextureMode(getRenderTexture(TextureID::Background));
-    ClearBackground(Colors::Clear);
+    const Color clearColor = {58, 57, 106, 255};
+    // ClearBackground(Colors::Clear);
+    ClearBackground(clearColor);
     Rectangle screenSourceRec;
 
     // const Vector2f cameraPos = getCameraPositionPrecise();
@@ -470,6 +472,7 @@ void TextureManager::drawRadianceTexture() {
     // }
 
     BeginBlendMode(BLEND_ADDITIVE);
+    // BeginBlendMode(BLEND_MULTIPLIED);
     RenderTexture2D radianceTexture = getRenderTexture(TextureID::Radiance);
     DrawTexture(radianceTexture.texture, 0, 0, WHITE);
     EndBlendMode();

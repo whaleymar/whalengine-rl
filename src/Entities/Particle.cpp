@@ -57,7 +57,8 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add<Velocity>();
     materialData.addComponents(particle, 1, color, lifetimeMultiplier);
 
-    TextureID texID = materialData.isFlagSet(MaterialData::RadianceFlag) ? TextureID::LayerGlow : TextureID::LayerNormal;
+    // TextureID texID = materialData.isFlagSet(MaterialData::RadianceFlag) ? TextureID::LayerGlow : TextureID::LayerNormal;
+    TextureID texID = TextureID::LayerNormal;
 
     if (materialData.particleShape == Draw::DrawTag::Line) {
         particle.add(Draw(DrawStraightLine(3, color, 1.0, 1.0, 1.0, depth, true), texID));

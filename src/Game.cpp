@@ -158,9 +158,7 @@ void Game::mainloop() {
         return;
     }
 
-    // Color clearColor = {73, 77, 126, 255};
     Color clearColor = {58, 57, 106, 255};
-    // Color clearColor = {5, 5, 5, 255};
 
     Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
@@ -171,10 +169,6 @@ void Game::mainloop() {
                                        1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
     const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
                                      WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
-
-    Pipeline testPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
-                                                                                      Shaders::ShadowLight,
-                                                                                  });
 
     Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
                                                                                              // Shaders::Bloom,
@@ -239,7 +233,6 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         radianceSystem->update();  // this gets drawn to its own texture
         TextureManager::instance().drawBackgroundTextures();
-        // testPipeline.process(TextureID::Background);
         gfxSystem->drawEntities();
         drawLights();
 
@@ -275,7 +268,7 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
         BeginDrawing();
 
-        ClearBackground(clearColor);
+        ClearBackground(Colors::Clear);
 
         BeginMode2D(*mScreenSpaceCamera);
 
