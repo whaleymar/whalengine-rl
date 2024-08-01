@@ -70,8 +70,6 @@ Game::Game() {
     mWorldSpaceCamera = new Camera2D();
     mScreenSpaceCamera = new Camera2D();
     mFont = new Font();
-
-    SetTraceLogLevel(LOG_WARNING);
 }
 
 Game::~Game() {
@@ -80,10 +78,7 @@ Game::~Game() {
     delete mFont;
 }
 
-bool Game::startup() {
-    InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
-    SetExitKey(KEY_NULL);  // Escape quits by default
-
+bool Game::start() {
     S_ICON_IMAGE = LoadImage("data/icon-hat.png");
     SetWindowIcon(S_ICON_IMAGE);
 
@@ -111,18 +106,6 @@ bool Game::startup() {
         print(*err);
         return true;
     }
-
-    SetTargetFPS(FPS_TARGET);
-    ShaderManager::instance().loadShaders();
-
-    if (!System::audio.isValid()) {
-        print("Error initializing audio manager");
-        return true;
-    }
-
-    System::input.loadMappings();
-    System::world->setEntityDeathCallback(&emitEntityDeathEvent);
-    System::schedule.start();
 
     // note: nothing is actually running in parallel yet
     System::world->BeginSystemRegistration()
@@ -309,15 +292,9 @@ void Game::mainloop() {
 }
 
 void Game::end() {
-    System::schedule.end();
-    System::schedule.await();
-
-    // raylib stuff:
     TextureManager::instance().unloadAll();
-    ShaderManager::instance().unloadAll();
     UnloadFont(*mFont);
     UnloadImage(S_ICON_IMAGE);
-    CloseWindow();
 }
 
 void Game::onEvent(whal::DeathEvent, ecs::Entity entity) {

@@ -3,7 +3,6 @@
 #include "Util/Types.h"
 
 typedef struct Shader Shader;
-class Game;
 
 namespace whal {
 
@@ -31,8 +30,6 @@ public:
 };
 
 class ShaderManager {
-    friend Game;
-
 public:
     static ShaderManager& instance() {
         static ShaderManager instance_;
@@ -43,10 +40,10 @@ public:
     static void activate(Shaders shaderEnum);
     static ScopedShader activateScoped(Shaders shaderEnum);
 
-private:
     void loadShaders();
     void unloadAll();
 
+private:
     Shader _get(Shaders shaderEnum) const;
     void setIsUsed(s32 index);
     bool getIsUsed(s32 index) const;

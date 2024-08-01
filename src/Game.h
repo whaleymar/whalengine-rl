@@ -3,6 +3,7 @@
 #include "CorradeOptional.h"
 
 #include "Events/Events.h"
+#include "IGame.h"
 #include "Map/Level.h"
 #include "Sys/System.h"
 #include "Util/Vector.h"
@@ -21,7 +22,7 @@ class Entity;
 
 }  // namespace whal
 
-class Game : public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
+class Game : public whal::IGame, public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
 public:
     static Game& instance() {
         static Game instance_;
@@ -31,9 +32,9 @@ public:
     Game(const Game& other) = delete;
     void operator=(const Game&) = delete;
 
-    bool startup();
-    void mainloop();
-    void end();
+    bool start() override;
+    void mainloop() override;
+    void end() override;
 
     // calls removeEntityFromLevel on killed entity
     void onEvent(whal::DeathEvent, whal::ecs::Entity) override;
