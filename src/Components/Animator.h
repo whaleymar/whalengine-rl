@@ -26,9 +26,12 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
  *
  * constraint: all animations have the same dimensions
  */
+
+using AnimInfo = std::vector<std::tuple<const char*, s32, s32, f32>>;
 struct Animator {
     Animator() = default;
-    Animator(std::vector<Animation> animations_, AnimBrain brain_);
+    Animator(AnimInfo animInfo);
+    Animator(AnimInfo animInfo, AnimBrain brain_);
 
     std::vector<Animation> animations;
     AnimBrain brain = &basicAnimation;

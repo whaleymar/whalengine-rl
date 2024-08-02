@@ -99,10 +99,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    const AnimInfo animInfo = {{"actor/magichat", 0, 8, 0.2}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
-    animator.brain = &basicAnimation;
+    Animator animator({{"actor/magichat", 0, 8, 0.2}}, &basicAnimation);
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Level, animator.getFrame())));
     // entity.add(Sprite(Depth::Level, animator.getFrame(), WHITE, Shaders::Bloom));
@@ -222,10 +219,7 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 }
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    AnimInfo animInfo = {{"actor/blast-crystal", 0, 2, 0.0}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
-    animator.brain = &basicAnimationUnsquish;
+    Animator animator({{"actor/blast-crystal", 0, 2, 0.0}}, &basicAnimationUnsquish);
     entity.add(animator);
 
     auto& trigger = entity.get<Trigger>();

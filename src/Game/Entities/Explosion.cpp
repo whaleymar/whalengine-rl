@@ -46,14 +46,12 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto entity = eEntity.value();
     auto _ = ecs::DeferActivate(entity);
 
-    // ANIMATOR
     constexpr s32 nFrames = 6;
     const f32 frameTime = lifetimeSeconds / static_cast<f32>(nFrames);
-    static const AnimInfo animInfo = {{"effect/explosion", 0, nFrames, frameTime}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
+    Animator animator({{"effect/explosion", 0, nFrames, frameTime}});
     animator.setLooping(false);
-    // ----
+    entity.add(animator);
+    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
     Transform2D trans = Transform2D(center - Vector2i(0, animator.getFrame().dimensionsTexels.y * PIXELS_PER_TEXEL / 2));
     entity.add(trans);
@@ -152,9 +150,6 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto shape = Shape(Circle(center, halflen));
     auto trigger = Trigger(shape, CollisionLayer::TriggerActors, pushEntityAway);
     entity.add(trigger);
-
-    entity.add(animator);
-    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
     entity.add(Lifetime(lifetimeSeconds));
     entity.add(PointLight({TEXELS_PER_TILE * 5, halflen / PIXELS_PER_TEXEL}));
