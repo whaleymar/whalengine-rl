@@ -5,8 +5,8 @@
     },
     "activeFile": "world1-blaster_get.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
