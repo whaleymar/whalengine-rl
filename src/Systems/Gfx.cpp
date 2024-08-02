@@ -179,8 +179,16 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
             if (layer.shader == Shaders::Default) {
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
             } else {
-                ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
-                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                if (layer.shader == Shaders::Bloom) {
+                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                    ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
+                    BeginBlendMode(BLEND_ADDITIVE);
+                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                    EndBlendMode();
+                } else {
+                    ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
+                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                }
             }
         }
 

@@ -10,7 +10,8 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ffff55ff"
+                 "Color":"#ffff55ff",
+                 "Layer":"Bloom"
                 }
             }, 
             {
