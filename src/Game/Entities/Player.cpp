@@ -166,13 +166,6 @@ bool brain(Animator& animator, ecs::Entity entity) {
     return frameChanged;
 }
 
-static Animator getAnimator() {
-    Animator animator;
-    loadAnimations(animator, PlayerAnim::S_PLAYER_ANIM_INFO);
-    animator.brain = &PlayerAnim::brain;
-    return animator;
-}
-
 }  // namespace PlayerAnim
 
 void respawnPlayer(Transform2D transform);
@@ -221,7 +214,8 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // player.add(AngularVelocity::fromSecondsPerRotation(1));
 
     // graphics
-    player.add(PlayerAnim::getAnimator());
+    Animator animator(PlayerAnim::S_PLAYER_ANIM_INFO, &PlayerAnim::brain);
+    player.add(animator);
 
     Frame frame = player.get<Animator>().getFrame();
     Sprite sprite(Depth::Player, frame);

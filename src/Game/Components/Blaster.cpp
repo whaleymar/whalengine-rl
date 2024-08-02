@@ -42,13 +42,7 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
     entity.add(Attach(attachedEntity, offsetTexels, Attach::DirectionParam::UseFacingForOffset));
     entity.add(Name("Mana Gauge"));
 
-    AnimInfo animInfo = {{"actor/mana-gauge", 0, 5, 0.0}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
-
-    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
-
-    animator.brain = [](Animator& animator, ecs::Entity self) -> bool {
+    Animator animator({{"actor/mana-gauge", 0, 5, 0.0}}, [](Animator& animator, ecs::Entity self) -> bool {
         auto& sprite = self.get<Draw>().getSprite();
         const f32 unsquishStep = System::dt();
         sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
@@ -73,9 +67,10 @@ ecs::Entity createManaGauge(ecs::Entity attachedEntity) {
             self.add(ColorLerp(Color(255, 255, 255, 255), Color(255, 255, 255, 127), 0.2));
         }
         return false;
-    };
+    });
 
     entity.add(animator);
+    entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
     return entity;
 }

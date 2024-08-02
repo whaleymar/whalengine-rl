@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "Components/AnimUtil.h"
 #include "Components/Draw.h"
 #include "whalECS/src/ECS.h"
 
@@ -36,7 +37,13 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     return basicAnimation(animator, entity);
 }
 
-Animator::Animator(std::vector<Animation> animations_, AnimBrain brain_) : animations(animations_), brain(brain_) {}
+Animator::Animator(AnimInfo animInfo) {
+    loadAnimations(*this, animInfo);
+}
+
+Animator::Animator(AnimInfo animInfo, AnimBrain brain_) : brain(brain_) {
+    loadAnimations(*this, animInfo);
+}
 
 Frame Animator::getFrame() const {
     return animations[curAnimIx].getFrame(curFrameIx);

@@ -146,9 +146,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, explosionRadius, pushStrength});
     entity.add(ParticleEmitter(WorldMaterial::Ember, CollisionDir::ALL, Depth::Level, 5, 15));
 
-    static const AnimInfo animInfo = {{"effect/bluefire", 0, 4, 0.1}};
-    Animator animator;
-    loadAnimations(animator, animInfo);
+    Animator animator({{"effect/bluefire", 0, 4, 0.1}});
     entity.add(animator);
     Sprite sprite = Sprite(Depth::Player, animator.getFrame());
     sprite.scale = {0.5, 0.5};

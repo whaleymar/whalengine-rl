@@ -22,7 +22,6 @@
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
-
 ## Gfx
 - animated tiles: some sort of lookup table, based on tile ix, which maps to animator list
 
