@@ -869,11 +869,6 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
         hasTag = false;
     }
 
-    if (tryReadBool(values, "FreeControl", &hasTag) && hasTag) {
-        entity.add<FreeControl>();
-        hasTag = false;
-    }
-
     if (tryReadBool(values, "PrecisePosition", &hasTag) && hasTag) {
         entity.add(PrecisePosition::fromTrans(entity.get<Transform2D>()));
         hasTag = false;

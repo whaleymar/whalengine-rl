@@ -539,11 +539,6 @@
             "id": 34,
             "members": [
                 {
-                    "name": "FreeControl",
-                    "type": "bool",
-                    "value": false
-                },
-                {
                     "name": "Invisible",
                     "type": "bool",
                     "value": false

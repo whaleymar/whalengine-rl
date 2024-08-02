@@ -5,7 +5,6 @@
 namespace whal {
 
 struct PlayerControl;
-struct FreeControl;
 struct RigidBody;
 struct Transform2D;
 struct Velocity;
@@ -16,7 +15,7 @@ public:
     void update() override;
 };
 
-class FreeControlSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, FreeControl>, public ecs::IUpdate {
+class FreeControlSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, ecs::Lacks<RigidBody>>, public ecs::IUpdate {
 public:
     void update() override;
 };

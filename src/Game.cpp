@@ -168,7 +168,6 @@ void Game::mainloop() {
             if (isCreativeMode) {
                 isCreativeMode = false;
                 for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
-                    entity.remove<FreeControl>();
                     entity.add<RigidBody>();
                     constexpr s32 width = 16;
                     constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
@@ -179,7 +178,6 @@ void Game::mainloop() {
             } else {
                 isCreativeMode = true;
                 for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
-                    entity.add<FreeControl>();
                     entity.remove<RigidBody>();
                     entity.remove<Collider>();
                     entity.set(PlayerControl{250});
