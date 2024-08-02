@@ -85,8 +85,7 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 
 Random note: how to save texture to image:
 ```cpp
-Vector2f cameraPosf = getCameraPositionPrecise();
-auto filename = sprint(cameraPosf, "_.png");
-Image img = LoadImageFromTexture(targetTexture.texture);
-ExportImage(img, filename.c_str());
+auto filename = "TEST.png";
+Image img = LoadImageFromTexture(tex.texture);
+ExportImage(img, filename);
 ```

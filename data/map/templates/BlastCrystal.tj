@@ -19,6 +19,7 @@
              "type":"class",
              "value":
                 {
+                 "Layer":"Bloom",
                  "Sprite":"actor\/blast-crystal1"
                 }
             }, 

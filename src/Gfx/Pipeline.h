@@ -15,6 +15,7 @@ public:
 
     // applies the Pipeline's shader effects to the RenderTexture associated with the given ID. Overwrites the given texture!
     void process(TextureID textureID);
+    void process(RenderTexture2D& renderTexture);
 
 private:
     void swapBuffer();
@@ -22,7 +23,7 @@ private:
     std::vector<Shaders> mShaders;
     RenderTexture2D mSwapBuffer;
     RenderTexture2D mActiveBuffer;
-    TextureID mTargetTextureID;
+    RenderTexture2D* mTargetTexture = nullptr;
     const Vector2i mResolution;
     bool mIsDrawingToSwapBuffer;
 };

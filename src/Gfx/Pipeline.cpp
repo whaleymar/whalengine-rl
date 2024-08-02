@@ -21,11 +21,15 @@ static void drawTextureFlipped(const Texture& tex) {
 
 void Pipeline::process(TextureID textureID) {
     RenderTexture& processTexture = TextureManager::getRenderTexture(textureID);
+    process(processTexture);
+}
+
+void Pipeline::process(RenderTexture2D& processTexture) {
     assert(processTexture.texture.width == mResolution.x && processTexture.texture.height == mResolution.y &&
            "Pipeline resolution does not match passed RenderTexture");
 
     // initialize stuff for buffer swaps
-    mTargetTextureID = textureID;
+    mTargetTexture = &processTexture;
     mActiveBuffer = mSwapBuffer;
     mIsDrawingToSwapBuffer = true;
 
@@ -46,7 +50,7 @@ void Pipeline::process(TextureID textureID) {
 }
 
 void Pipeline::swapBuffer() {
-    RenderTexture& processTexture = TextureManager::getRenderTexture(mTargetTextureID);
+    RenderTexture& processTexture = *mTargetTexture;
 
     if (mIsDrawingToSwapBuffer) {
         drawTextureFlipped(processTexture.texture);
