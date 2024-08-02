@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Depth",
+    "property.type": "DrawLayer",
     "recentFiles": [
         "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",

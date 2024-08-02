@@ -2,9 +2,11 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "rlgl.h"
 
 #include "Components/Tags.h"
 #include "Gfx/Depth.h"
+#include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Physics/Shapes.h"
@@ -116,6 +118,8 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
 
     bool isFirstDrawToMain = true;
     bool isFirstDrawToOcclusion = true;
+    static RenderTexture2D tmpBloomTex = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
+    static Pipeline bloomPipeline(Vector2i(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS), {Shaders::Bloom, Shaders::Blur});
 
     // draw one layer at a time to minimize FBO swaps
     while (true) {
@@ -160,6 +164,20 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
             }
         }
 
+        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
+            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
+            if (drawMask[i] && layer.shader == Shaders::Bloom) {
+                BeginTextureMode(tmpBloomTex);
+                ClearBackground(Colors::Clear);
+                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                EndTextureMode();
+
+                bloomPipeline.process(tmpBloomTex);
+
+                break;
+            }
+        }
+
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         if (isFirstDrawToMain) {
             ClearBackground(Colors::Clear);
@@ -181,9 +199,14 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
             } else {
                 if (layer.shader == Shaders::Bloom) {
                     drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-                    ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
-                    BeginBlendMode(BLEND_ADDITIVE);
-                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+                    // ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
+                    // drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
+
+                    // for some INSANE reason, adding black (0, 0, 0, 255) to any color equals BLACK ??? so i have to do this BS
+                    // case RL_BLEND_ADDITIVE: glBlendFunc(GL_SRC_ALPHA, GL_ONE); glBlendEquation(GL_FUNC_ADD); break;
+                    rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
+                    BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+                    drawTextureFlipped(tmpBloomTex.texture);
                     EndBlendMode();
                 } else {
                     ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);

@@ -554,6 +554,16 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         sprite.setColor(color);
     }
 
+    TextureID texID = TextureID::LayerNormal;
+    if (values.contains("Layer")) {
+        std::string textureLayer = values["Layer"];
+        if (textureLayer == "Bloom") {
+            texID = TextureID::LayerBloom;
+        } else if (textureLayer == "Glow") {
+            texID = TextureID::LayerGlow;
+        }
+    }
+
     std::string spritePath = "";
     if (values.contains("Sprite")) {
         spritePath = values["Sprite"];
@@ -563,13 +573,13 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (frameOpt) {
         sprite.depth = layerData.depth;
         sprite.setFrame(*frameOpt);
-        entity.add(Draw(sprite));
+        entity.add(Draw(sprite, texID));
     } else {
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
         DrawRect draw = DefaultDraw;
         draw.setFrameSize(entityData.dimensionsTexels);
-        entity.add(Draw(draw));
+        entity.add(Draw(draw, texID));
     }
 }
 

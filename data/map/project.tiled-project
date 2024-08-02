@@ -467,6 +467,12 @@
                     "value": "#ffffffff"
                 },
                 {
+                    "name": "Layer",
+                    "propertyType": "DrawLayer",
+                    "type": "string",
+                    "value": "Default"
+                },
+                {
                     "name": "Sprite",
                     "type": "string",
                     "value": ""

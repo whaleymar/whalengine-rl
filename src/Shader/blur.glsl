@@ -64,5 +64,6 @@ void main() {
     }
 
 
-    finalColor = vec4(final_colour/(Z*Z), 1.0);
+    const float alpha = 1.0;
+    finalColor = vec4(final_colour/(Z*Z), alpha);
 }
