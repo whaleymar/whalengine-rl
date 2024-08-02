@@ -247,9 +247,9 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
     std::forward_list<DrawInfo>::iterator it;
     for (it = startIt; it != layer.sorted.end() && it->depthId == startIt->depthId; ++it) {
         const auto drawInfo = *it;
-        if (drawInfo.entity.has<Invisible>()) {
-            continue;
-        }
+        // if (drawInfo.entity.has<Invisible>()) {
+        //     continue;
+        // }
         Shaders newShader = static_cast<Shaders>(drawInfo.shaderIx);
         if (newShader != prevShader) {
             prevShader = newShader;
