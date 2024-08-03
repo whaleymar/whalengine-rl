@@ -3,9 +3,9 @@
 #include "Components/Callback.h"
 #include "Components/Light.h"
 #include "Components/ParticleEmitter.h"
-#include "Components/RigidBody.h"
 #include "Entities/Particle.h"
 #include "Game/Components/ProjectileInfo.h"
+#include "Game/Entities/Animations.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/Material.h"
 #include "Physics/Shapes.h"
@@ -146,7 +146,7 @@ Expected<ecs::Entity> makeProjectile(ecs::EntityID parentEntityID, Vector2i posi
     entity.add(ProjectileInfo{parentEntityID, lifetimeSeconds, explosionRadius, pushStrength});
     entity.add(ParticleEmitter(WorldMaterial::Ember, CollisionDir::ALL, Depth::Level, 5, 15));
 
-    Animator animator({{"effect/bluefire", 0, 4, 0.1}});
+    Animator animator = getAnimator("effect/bluefire");
     entity.add(animator);
     Sprite sprite = Sprite(Depth::Player, animator.getFrame());
     sprite.scale = {0.5, 0.5};

@@ -16,6 +16,7 @@
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Respawn.h"
 #include "Game/Components/Switch.h"
+#include "Game/Entities/Animations.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
@@ -99,7 +100,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    Animator animator({{"actor/magichat", 0, 8, 0.2}}, &basicAnimation);
+    Animator animator = getAnimator("actor/magichat");
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Level, animator.getFrame())));
     // entity.add(Sprite(Depth::Level, animator.getFrame(), WHITE, Shaders::Bloom));
@@ -219,7 +220,7 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 }
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    Animator animator({{"actor/blast-crystal", 0, 2, 0.0}}, &basicAnimationUnsquish);
+    Animator animator = getAnimator("actor/blast-crystal");
     entity.add(animator);
 
     auto& trigger = entity.get<Trigger>();
