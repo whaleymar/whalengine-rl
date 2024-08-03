@@ -9,6 +9,9 @@
 
 ## Polish
 - player leaning over ledge anim 
+- crouching state/anim
+- looking up anim
+- aiming anim
 
 ## Player Controller/Abilities
 - try working gravity multiplier into RJ state?

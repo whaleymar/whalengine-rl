@@ -6,6 +6,18 @@ namespace whal {
 
 enum class Direction : u8 { Neutral, N, S, E, W, NE, SE, NW, SW };
 
+inline bool isCardinal(Direction d) {
+    switch (d) {
+    case Direction::N:
+    case Direction::S:
+    case Direction::E:
+    case Direction::W:
+        return true;
+    default:
+        return false;
+    }
+}
+
 template <typename T>
 inline Vector2T<T> directionToVector(Direction direction) {
     switch (direction) {

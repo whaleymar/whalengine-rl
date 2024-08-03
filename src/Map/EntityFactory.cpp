@@ -248,7 +248,7 @@ void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, 
     entity.get<Collider>().setCollisionCallback(
 
         [](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) {
-            if (hitNormal.y != 1) {
+            if (hitNormal.y != 1 || other.has<Particle>()) {
                 // print("skipped collision with hitNormal: ", hitNormal);
                 return;
             }

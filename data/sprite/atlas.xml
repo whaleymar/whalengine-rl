@@ -68,15 +68,31 @@
 		<img n="actor/magichat4" x="1825" y="0" w="16" h="9" />
 		<img n="actor/magichat1" x="1842" y="0" w="16" h="9" />
 		<img n="actor/magichat8" x="1859" y="0" w="16" h="9" />
+		<img n="actor/aim-arrow-diagonal6" x="1876" y="0" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal7" x="1740" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight7" x="1751" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight3" x="1762" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight8" x="1773" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal2" x="1784" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight5" x="1795" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal1" x="1806" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight4" x="1817" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal5" x="1828" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal8" x="1839" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight1" x="1850" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-straight6" x="1861" y="10" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal3" x="1887" y="0" w="10" h="10" />
+		<img n="actor/aim-arrow-diagonal4" x="1898" y="0" w="10" h="10" />
+		<img n="actor/aim-arrow-straight2" x="1909" y="0" w="10" h="10" />
 		<img n="ui/arrow" x="1211" y="36" w="8" h="8" />
 		<img n="actor/mana-gauge4" x="1211" y="45" w="8" h="8" />
 		<img n="actor/mana-gauge5" x="1184" y="50" w="8" h="8" />
-		<img n="actor/mana-gauge2" x="1876" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge3" x="1885" y="0" w="8" h="8" />
-		<img n="actor/mana-gauge1" x="1894" y="0" w="8" h="8" />
-		<img n="tile/dirtblock" x="1903" y="0" w="8" h="8" />
-		<img n="tile/testgrass" x="1912" y="0" w="8" h="8" />
-		<img n="tile/translucent" x="1921" y="0" w="8" h="8" />
-		<img n="tile/purpledirt" x="1930" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge2" x="1920" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge3" x="1929" y="0" w="8" h="8" />
+		<img n="actor/mana-gauge1" x="1938" y="0" w="8" h="8" />
+		<img n="tile/dirtblock" x="1947" y="0" w="8" h="8" />
+		<img n="tile/testgrass" x="1956" y="0" w="8" h="8" />
+		<img n="tile/translucent" x="1965" y="0" w="8" h="8" />
+		<img n="tile/purpledirt" x="1974" y="0" w="8" h="8" />
 	</tex>
 </atlas>

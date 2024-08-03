@@ -11,6 +11,7 @@
 
 #include "Events/Events.h"
 
+#include "Game/Entities/Animations.h"
 #include "Settings.h"
 #include "Sys/Event.h"
 #include "Sys/InputHandler.h"
@@ -80,8 +81,6 @@ void shootProjectile() {
 
     // slight delay for enabling movement so player can adjust arrow keys
     System::schedule.after([]() { System::input.enableMovement(); }, 0.2);
-    // but allow jumping immediately
-    // System::input.enableJumping();
 
     // Vector2i moveNormali = System::input.getMoveNormal();
     // System::eventMgr.triggerEvent(GameEvent::SHOOT_EVENT, moveNormali);
@@ -161,6 +160,52 @@ void ProjectileSystem::onEvent(ButtonPressOrReleaseEvent, InputType input, bool 
     }
 }
 
+static void updateAimSprite(ecs::Entity entity, Direction direction, Transform2D& trans) {
+    s32 animationIx = 1;
+    bool isFlipX = false;
+    s32 rotationDegrees = 0;
+
+    if (direction == Direction::Neutral || isCardinal(direction)) {
+        animationIx = 0;
+    }
+
+    if (direction == Direction::W) {
+        isFlipX = true;
+    } else if (direction == Direction::NW) {
+        isFlipX = true;
+    } else if (direction == Direction::SW) {
+        rotationDegrees = 180;
+    } else if (direction == Direction::SE) {
+        rotationDegrees = 180;
+        isFlipX = true;
+    } else if (direction == Direction::N) {
+        rotationDegrees = 270;
+    } else if (direction == Direction::S) {
+        rotationDegrees = 90;
+    }
+
+    auto& animator = entity.get<Animator>();
+    animator.setAnimation(animationIx);
+    if (isFlipX) {
+        trans.facing = Facing::Left;
+    } else {
+        trans.facing = Facing::Right;
+    }
+    trans.rotationDegrees = rotationDegrees;
+}
+
+static Vector2i getReticleOffset(Direction d) {
+    // Vector2i offset = SHOOT_OFFSET + Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * directionToVector<s32>(d);
+    Vector2i bias = Vector2i(0, 5);
+    if (d == Direction::NW || d == Direction::NE) {
+        bias = Vector2i(0, 3);
+    } else if (d == Direction::SW || d == Direction::SE) {
+        bias = Vector2i(0, 7);
+    }
+    Vector2i offset = bias + Vector2i(10, 14) * directionToVector<s32>(d);
+    return offset;
+}
+
 void ProjectileSystem::addAimReticles() {
     // Vector2i aimDirection = System::input.getMoveNormal();
     Direction aimDirection = System::input.getDirection();
@@ -183,10 +228,17 @@ void ProjectileSystem::addAimReticles() {
             }
             blaster.aimDirection = aimDirection;
 
-            Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * directionToVector<s32>(aimDirection);
-            Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
-            child.add(Transform2D(position));
-            child.add(Draw(DrawRect(BROWN)));
+            Vector2i offset = getReticleOffset(aimDirection);
+            Vector2i position = parentTrans.position + offset;
+            Transform2D trans(position);
+            // child.add(Draw(DrawRect(BROWN)));
+            auto animator = getAnimator("actor/aim-arrow");
+            child.add(animator);
+            auto sprite = Sprite(Depth::Foreground1, animator.getFrame());
+            sprite.isRotateAboutCenter = true;
+            child.add(Draw(sprite));
+            updateAimSprite(child, aimDirection, trans);
+            child.add(trans);
         }
     }
 }
@@ -194,6 +246,11 @@ void ProjectileSystem::addAimReticles() {
 void ProjectileSystem::update() {
     f32 dt = System::dt();
     Direction aimDirection = System::input.getDirection();
+
+    // this is sort of redundant. Makes sure the scheduled re-enabling of movement doesn't happen if we started aiming since it was scheduled
+    if (IS_AIMING) {
+        System::input.disableMovement();
+    }
     for (auto [entityid, entity] : getEntitiesMutable()) {
         Blaster& blaster = entity.get<Blaster>();
 
@@ -215,9 +272,21 @@ void ProjectileSystem::update() {
             blaster.aimDirection = aimDirection;
         }
 
-        Vector2i offset = Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) * directionToVector<s32>(blaster.aimDirection);
-        Vector2i position = SHOOT_OFFSET + parentTrans.position + offset;
-        blaster.aimReticle->set(Transform2D(position));
+        Vector2i offset = getReticleOffset(blaster.aimDirection);
+        Vector2i position = parentTrans.position + offset;
+        auto& trans = blaster.aimReticle->get<Transform2D>();
+        // fix rounding errors
+        if (parentTrans.facing == Facing::Right && blaster.aimDirection == Direction::N) {
+            position.x -= 1;
+        } else if (parentTrans.facing == Facing::Left && blaster.aimDirection == Direction::S) {
+            position.x += 1;
+        }
+        trans.position = position;
+        trans.isManuallyMoved = true;
+
+        if (mIsAimUpdateNeeded) {
+            updateAimSprite(*blaster.aimReticle, aimDirection, trans);
+        }
     }
     mIsAimUpdateNeeded = false;
 }

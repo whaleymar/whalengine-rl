@@ -18,6 +18,10 @@ whal::Animator getAnimator(const char* name) {
         {"effect/explosion", Animator({{"effect/explosion", 0, 6, 0.5 / 6.0}}, false)},
         {"actor/magichat", Animator({{"actor/magichat", 0, 8, 0.2}})},
         {"actor/blast-crystal", Animator({{"actor/blast-crystal", 0, 2, 0.0}}, &basicAnimationUnsquish)},
+        {"actor/aim-arrow", Animator({
+                                {"actor/aim-arrow-straight", 0, 8, 0.125},
+                                {"actor/aim-arrow-diagonal", 1, 8, 0.125},
+                            })},
     };
     constexpr s32 NUM_ANIMATORS = sizeof(S_ANIMATORS) / sizeof(NameToAnimator);
 
