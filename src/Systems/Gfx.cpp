@@ -421,13 +421,11 @@ void FadeOutSystem::update() {
 void ColorLerpSystem::update() {
     f32 dt = System::dt();
     for (auto [entityid, entity] : getEntitiesCopy()) {
-        auto colorLerp = entity.get<ColorLerp>();
+        auto& colorLerp = entity.get<ColorLerp>();
         colorLerp.tick(dt);
         entity.get<Draw>().setColor(colorLerp.getColor());
         if (colorLerp.isDone()) {
             entity.remove<ColorLerp>();
-        } else {
-            entity.set(colorLerp);
         }
     }
 }

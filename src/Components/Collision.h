@@ -86,15 +86,16 @@ public:
 
     bool isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
     bool isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
-    HitInfo checkIsGroundedQT(const bool triggerCollisionEvents);
-    bool isOtherGround(const Collider* other) const;
+    HitInfo checkIsGrounded(const bool triggerCollisionEvents, const std::vector<std::pair<ecs::Entity, Collider>>& groundColliders);
+    bool isOtherGround(const Collider& other) const;
     std::vector<Collider*> getRidingCollidersQT() const;
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
     u16 getCollisionLayersThatCanRideMe() const;
 
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,
                              const bool triggerCollisionEvents = false) const;
-    std::vector<std::pair<ecs::Entity, Collider>> getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask = CollisionLayer::ALL) const;
+    std::vector<std::pair<ecs::Entity, Collider>> getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask = CollisionLayer::ALL,
+                                                                         bool updateRigidBodyFlags = false) const;
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
 

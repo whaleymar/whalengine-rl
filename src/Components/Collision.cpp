@@ -209,10 +209,14 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         }
 
         if (jumpControlOpt) {
-            mSelf.set(*jumpControlOpt);
+            // mSelf.set(*jumpControlOpt);
+            // this is 2x faster:
+            mSelf.get<Jumper>() = *jumpControlOpt;
         }
         if (momentumOpt) {
-            mSelf.set(*momentumOpt);
+            // mSelf.set(*momentumOpt);
+            // this is 2x faster:
+            mSelf.get<Momentum>() = *momentumOpt;
         }
     }
 
@@ -282,7 +286,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
     bool isHit = false;
     switch (mCollisionLayer) {
     case CollisionLayer::Actor: {
-        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe());
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         isHit =
             emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags) ||
@@ -309,7 +313,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         const auto riding = getRidingCollidersQT();
 
         // moveX, then push/carry in that direction only
-        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe());
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
         auto originalPosition = getShape().getPosition();
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
@@ -379,18 +383,24 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
                         const std::vector<std::pair<ecs::Entity, Collider>>& others, bool isGroundedCheckNeeded) {
     // include fractional movement from previous calls
     s32 toMove = amountRounded.y;
+    std::vector<std::pair<ecs::Entity, Collider>> groundColliders;
+    for (const auto& pair : others) {
+        if (isOtherGround(pair.second)) {
+            groundColliders.push_back(pair);
+        }
+    }
 
-    auto groundedCheck = [this](f32 amountY) -> HitInfo {
+    auto groundedCheck = [this](f32 amountY, const std::vector<std::pair<ecs::Entity, Collider>>& groundColliders) -> HitInfo {
         if (amountY > 0) {
             return HitInfo();
         }
 
-        return checkIsGroundedQT(true);
+        return checkIsGrounded(true, groundColliders);
     };
 
     if (toMove == 0) {
         if (isGroundedCheckNeeded) {
-            return groundedCheck(amount.y);
+            return groundedCheck(amount.y, groundColliders);
         }
         return HitInfo();
     }
@@ -422,7 +432,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
 
     if (isGroundedCheckNeeded) {
-        return groundedCheck(amount.y);
+        return groundedCheck(amount.y, groundColliders);
     }
     return HitInfo();
 }
@@ -466,34 +476,17 @@ bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i
 }
 
 // Check for collision 1 unit down.
-// (making sure to use the unmoved collider for the directional collision check so the edges are properly aligned)
-HitInfo Collider::checkIsGroundedQT(const bool triggerCollisionEvents) {
-    const auto movedCollider = AABB(mShape.getPosition() + Vector2i::unitDown, mShape.getHalf());
-    HitInfo hitinfo;
-
-    for (auto entity : QuadTreeSystem::query(movedCollider)) {
-        const auto pCollider = &entity.get<Collider>();
-        if (isCollisionPossible(pCollider, {0, -1}) && isOtherGround(pCollider)) {
-            hitinfo = HitInfo(Vector2i(0, -1));
-            hitinfo.setOther(pCollider->getEntity());
-            hitinfo.otherMaterial = pCollider->getMaterial();
-            hitinfo.otherLayer = pCollider->getCollisionLayer();
-
-            if (triggerCollisionEvents) {
-                System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
-            }
-        }
-    }
-
-    return hitinfo;
+HitInfo Collider::checkIsGrounded(const bool triggerCollisionEvents, const std::vector<std::pair<ecs::Entity, Collider>>& groundColliders) {
+    const Vector2i nextPos = mShape.getPosition() + Vector2i::unitDown;
+    return checkCollisionInMoveArea(nextPos, Vector2i::unitDown, groundColliders, triggerCollisionEvents);
 }
 
 // check other's collision layer and direction.
-bool Collider::isOtherGround(const Collider* other) const {
+bool Collider::isOtherGround(const Collider& other) const {
     // semisolids should be ground for each other, so just check if other is any solid? Works ig.
 
     // return (other->mCollisionLayer & getCollisionLayersThatCanStopMe()) > 0 &&
-    return (other->isSolidAny() && (other->mCollisionDir == CollisionDir::ALL || other->mCollisionDir == CollisionDir::UP));
+    return (other.isSolidAny() && (other.mCollisionDir == CollisionDir::ALL || other.mCollisionDir == CollisionDir::UP));
 }
 
 // get colliders that are riding us. Basically check which colliders would intersect us if we moved 1px up, taking collision layers and directional
@@ -675,9 +668,9 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 }
 
 // collision layers should already have been checked by caller
-HitInfo Collider::checkCollisionInMoveArea(const Vector2i position, const Vector2i moveNormal,
+HitInfo Collider::checkCollisionInMoveArea(const Vector2i newPosition, const Vector2i moveNormal,
                                            const std::vector<std::pair<ecs::Entity, Collider>>& others, const bool triggerCollisionEvents) const {
-    const auto movedCollider = AABB(position, mShape.getHalf());
+    const auto movedCollider = AABB(newPosition, mShape.getHalf());
     HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such. doesn't matter which specific collision is returned.
 
     for (const auto& pair : others) {
@@ -745,12 +738,21 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     return hitInfoToReturn;
 }
 
-std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask) const {
+std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask,
+                                                                               bool updateRigidBodyFlags) const {
     if (!isCollidable()) {
         return {};
     }
-    const auto bigCollider = AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x)) / 2),
-                                                                                                 std::ceil(static_cast<f32>(abs(toMove.y)) / 2)));
+
+    s32 yPadding = 0;
+    if (updateRigidBodyFlags) {
+        // add 1 to toMove.y so ground colliders are fetched
+        yPadding = 1;
+    }
+    const auto bigCollider =
+        AABB(mShape.getPosition() + toMove / 2,
+             mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x)) / 2), std::ceil(static_cast<f32>(abs(toMove.y)) / 2) + yPadding));
+
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
     for (auto entity : QuadTreeSystem::query(bigCollider)) {
         const auto& other = entity.get<Collider>();
@@ -868,10 +870,8 @@ Vector2f Momentum::getMomentum() const {
         f32 sum = 0;
         f32 count = 0;
         for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
-            if (storedMomentum[i].x != 0.0f) {
-                sum += storedMomentum[i].x;
-                count += 1.0f;
-            }
+            sum += storedMomentum[i].x;
+            count += 1.0f;
         }
         if (count > 0.0f) {
             momentum.x = sum / count;
@@ -882,10 +882,8 @@ Vector2f Momentum::getMomentum() const {
         f32 sum = 0;
         f32 count = 0;
         for (size_t i = 0; i < MOMENTUM_STORAGE_COUNT; i++) {
-            if (storedMomentum[i].y != 0.0f) {
-                sum += storedMomentum[i].y;
-                count += 1.0f;
-            }
+            sum += storedMomentum[i].y;
+            count += 1.0f;
         }
         if (count > 0.0f) {
             momentum.y = sum / count;

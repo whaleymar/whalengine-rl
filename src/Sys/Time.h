@@ -16,6 +16,7 @@ public:
     s32 getFrame() const { return mFrame; }
     void update();
     void setMultiplier(f32);
+    f32 getMultiplier() const { return mTimeMultiplier; }
 
 private:
     Time();

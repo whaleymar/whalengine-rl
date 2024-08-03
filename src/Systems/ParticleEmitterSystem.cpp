@@ -22,7 +22,7 @@ void ParticleEmitterSystem::update() {
         const auto trans = entity.get<Transform2D>();
         const auto emitter = entity.get<ParticleEmitter>();
 
-        s32 nParticles = emitter.particlesPerSecond / 60;
+        s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * System::time.getMultiplier());
         const f32 spawnSample = System::rng.uniform();
         if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f > spawnSample) {
             nParticles++;
