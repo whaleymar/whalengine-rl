@@ -459,6 +459,44 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 47,
+            "members": [
+                {
+                    "name": "Animator",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "Color",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "Layer",
+                    "propertyType": "DrawLayer",
+                    "type": "string",
+                    "value": "Default"
+                },
+                {
+                    "name": "rotateAboutCenter",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "rotationDegrees",
+                    "type": "int",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Sprite_Animated",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 9,
             "members": [
                 {

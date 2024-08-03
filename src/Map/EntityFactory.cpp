@@ -1,7 +1,5 @@
 #include "EntityFactory.h"
 
-#include "Components/AnimUtil.h"
-#include "Components/Animator.h"
 #include "Components/Callback.h"
 #include "Components/Collision.h"
 #include "Components/Draw.h"
@@ -16,7 +14,6 @@
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Respawn.h"
 #include "Game/Components/Switch.h"
-#include "Game/Entities/Animations.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
@@ -100,11 +97,6 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    Animator animator = getAnimator("actor/magichat");
-    entity.add(animator);
-    entity.add(Draw(Sprite(Depth::Level, animator.getFrame())));
-    // entity.add(Sprite(Depth::Level, animator.getFrame(), WHITE, Shaders::Bloom));
-
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;
@@ -220,9 +212,6 @@ void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate
 }
 
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
-    Animator animator = getAnimator("actor/blast-crystal");
-    entity.add(animator);
-
     auto& trigger = entity.get<Trigger>();
     trigger.shape = Shape(Circle(entity.get<Transform2D>(), 9));
     trigger.onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {

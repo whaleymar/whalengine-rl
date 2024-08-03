@@ -1,6 +1,8 @@
 #include "ComponentFactory.h"
 
+#include "Components/Animator.h"
 #include "CorradeOptional.h"
+#include "Game/Entities/Animations.h"
 #include "json.hpp"
 
 #include "Game/Components/Switch.h"
@@ -90,6 +92,9 @@ static void addComponentDraw(const nlohmann::json& values, const nlohmann::json&
 static void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,
                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+static void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& allObjects,
+                                 const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
+                                 const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 static void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
                                 const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                 const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -136,6 +141,7 @@ static PlayerControl DefaultPlayerControl;
 static Jumper DefaultJumper;
 static DrawRect DefaultDraw;
 static Sprite DefaultSprite;
+static Sprite DefaultAnimatedSprite;
 static FadeOut DefaultFadeout;
 static Follow DefaultFollow;
 static Attach DefaultAttach;
@@ -153,6 +159,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Trigger", addComponentTrigger},
     {"Component_Draw", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
+    {"Component_Sprite_Animated", addComponentAnimator},
     {"Component_FadeOut", addComponentFadeout},
     {"Component_PointLight", addComponentLight},
     {"Component_Radiance", addComponentRadiance},
@@ -243,6 +250,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 print("Skipping member ", memberName, "for", componentName);
             }
         }
+
     } else if (componentName == "Component_Sprite_NoAnim") {
         DefaultSprite = Sprite();
         for (const auto& member : property[KEY_MEMBERS]) {
@@ -256,6 +264,24 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 // do nothing, affects Transform
             } else if (memberName == "rotateAboutCenter") {
                 DefaultSprite.isRotateAboutCenter = member[KEY_VALUE];
+            } else {
+                print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+
+    } else if (componentName == "Component_Sprite_Animated") {
+        DefaultAnimatedSprite = Sprite();
+        for (const auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "Color") {
+                std::string hexString = member[KEY_VALUE];
+                DefaultAnimatedSprite.setColor(hexStringARGBToColor(hexString));
+            } else if (memberName == "Sprite") {
+                // do nothing
+            } else if (memberName == "rotationDegrees") {
+                // do nothing, affects Transform
+            } else if (memberName == "rotateAboutCenter") {
+                DefaultAnimatedSprite.isRotateAboutCenter = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -337,6 +363,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 print("Skipping member ", memberName, "for", componentName);
             }
         }
+
     } else if (componentName == "Component_Jumper") {
         DefaultJumper = Jumper();
         for (const auto& member : property[KEY_MEMBERS]) {
@@ -351,6 +378,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 print("Skipping member ", memberName, "for", componentName);
             }
         }
+
     } else if (componentName == "Component_Velocity") {
         DefaultVelocity = Velocity();
         for (const auto& member : property[KEY_MEMBERS]) {
@@ -581,6 +609,44 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         draw.setFrameSize(entityData.dimensionsTexels);
         entity.add(Draw(draw, texID));
     }
+}
+
+void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
+                          ecs::Entity entity, LayerData layerData) {
+    Sprite sprite = entity.has<Draw>() ? entity.get<Draw>().getSprite() : DefaultAnimatedSprite;
+    std::string animatorName = readString(values, "Animator");
+    Animator animator = getAnimator(animatorName.c_str());
+    entity.add(animator);
+    sprite.setFrame(animator.getFrame());
+
+    s32 rotationDegrees;
+    if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
+        entity.get<Transform2D>().rotationDegrees = rotationDegrees;
+    }
+
+    tryReadBool(values, "rotateAboutCenter", &sprite.isRotateAboutCenter);
+
+    // ARGB
+    if (values.contains("Color")) {
+        std::string hexcode = "#ffffffff";
+        hexcode = values["Color"];
+        Color color = hexStringARGBToColor(hexcode);
+        sprite.setColor(color);
+    }
+
+    TextureID texID = TextureID::LayerNormal;
+    if (values.contains("Layer")) {
+        std::string textureLayer = values["Layer"];
+        if (textureLayer == "Bloom") {
+            texID = TextureID::LayerBloom;
+        } else if (textureLayer == "Glow") {
+            texID = TextureID::LayerGlow;
+        }
+    }
+
+    sprite.depth = layerData.depth;
+    entity.add(Draw(sprite, texID));
 }
 
 void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
