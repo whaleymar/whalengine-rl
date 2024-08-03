@@ -267,6 +267,7 @@ void Game::mainloop() {
             DrawFPS(10, 10);
         }
 #endif
+        // DrawFPS(10, 10); // for testing in release build
 
         EndDrawing();
         // -----------------------------------------------------------------------

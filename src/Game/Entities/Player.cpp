@@ -186,8 +186,8 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<Jumper>();
     player.add<Wiggle>();
 
-    // if (true) {
-    if (EventFlags::check(EventFlags::HasMagicHat)) {
+    if (true) {
+        // if (EventFlags::check(EventFlags::HasMagicHat)) {
         player.add<Blaster>();
     }
 
@@ -235,10 +235,10 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // player.add<FreeControl>();
     // player.add(DrawText("Test message. This message is really long the quick fox jumped over the lazy dog", GRAY, {100, 100}, true));
 
-    player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
+    // player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
     // player.add(BoxLight{{TEXELS_PER_TILE * 3, TEXELS_PER_TILE, {255, 255, 204, 255}}, frame.dimensionsTexels});
     // player.add(Radiance{TEXELS_PER_TILE * 1, TEXELS_PER_TILE, {255, 255, 255, 175}});
-    // player.add(ShadowLight{TEXELS_PER_TILE * 12, TEXELS_PER_TILE, WHITE});
+    player.add(ShadowLight{TEXELS_PER_TILE * 12, TEXELS_PER_TILE, WHITE});
 
     // player.add(ParticleEmitter(Color(7, 82, 250, 179), 0.25f, ParticleSetting::RigidBody | ParticleSetting::Light | ParticleSetting::RightOnly,
     // 150,
