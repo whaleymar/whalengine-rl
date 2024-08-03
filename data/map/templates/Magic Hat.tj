@@ -5,6 +5,16 @@
      "name":"Magic Hat",
      "properties":[
             {
+             "name":"Animation",
+             "propertytype":"Component_Sprite_Animated",
+             "type":"class",
+             "value":
+                {
+                 "Animator":"actor\/magichat",
+                 "Layer":"Bloom"
+                }
+            }, 
+            {
              "name":"ParticleEmitter",
              "propertytype":"Component_ParticleEmitter",
              "type":"class",

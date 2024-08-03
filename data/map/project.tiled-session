@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-blaster_get.tmj",
+    "activeFile": "mossy-tileset-background.tsj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -81,8 +81,8 @@
             "scale": 8,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 171.0625,
-                "y": 104
+                "x": 160.0625,
+                "y": 96.0625
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -180,15 +180,15 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "DrawLayer",
+    "property.type": "Component_Sprite_Animated",
     "recentFiles": [
         "mossy-tileset.tsj",
-        "mossy-tileset-background.tsj",
-        "world1-start.tmj",
-        "world1-jumptutorial.tmj",
-        "world1-rockettutorial.tmj",
-        "world1-momentumtutorial.tmj",
         "world1-blaster_get.tmj",
+        "world1-momentumtutorial.tmj",
+        "world1-rockettutorial.tmj",
+        "world1-jumptutorial.tmj",
+        "world1-start.tmj",
+        "mossy-tileset-background.tsj",
         "world1-blasterplatformtest.tmj",
         "world1.tmj",
         "testmap2.tmj",

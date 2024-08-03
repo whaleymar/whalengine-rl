@@ -5,22 +5,22 @@
      "name":"BlastCrystal",
      "properties":[
             {
+             "name":"Animation",
+             "propertytype":"Component_Sprite_Animated",
+             "type":"class",
+             "value":
+                {
+                 "Animator":"actor\/blast-crystal",
+                 "Layer":"Bloom"
+                }
+            }, 
+            {
              "name":"PointLight",
              "propertytype":"Component_PointLight",
              "type":"class",
              "value":
                 {
                  "radiusTexels":8
-                }
-            }, 
-            {
-             "name":"Sprite",
-             "propertytype":"Component_Sprite_NoAnim",
-             "type":"class",
-             "value":
-                {
-                 "Layer":"Bloom",
-                 "Sprite":"actor\/blast-crystal1"
                 }
             }, 
             {

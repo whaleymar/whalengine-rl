@@ -186,8 +186,8 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     player.add<Jumper>();
     player.add<Wiggle>();
 
-    if (true) {
-        // if (EventFlags::check(EventFlags::HasMagicHat)) {
+    // if (true) {
+    if (EventFlags::check(EventFlags::HasMagicHat)) {
         player.add<Blaster>();
     }
 
@@ -232,7 +232,6 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // player.add(Collider::SemiSolid(transform, Vector2i(halfLenX, halfLenY)));
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
     player.add<RigidBody>();
-    // player.add<FreeControl>();
     // player.add(DrawText("Test message. This message is really long the quick fox jumped over the lazy dog", GRAY, {100, 100}, true));
 
     // player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
