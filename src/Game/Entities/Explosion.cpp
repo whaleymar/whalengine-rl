@@ -2,6 +2,7 @@
 
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
+#include "Game/Entities/Animations.h"
 #include "Game/MathUtil.h"
 
 #include "Physics/CollisionLayer.h"
@@ -46,10 +47,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto entity = eEntity.value();
     auto _ = ecs::DeferActivate(entity);
 
-    constexpr s32 nFrames = 6;
-    const f32 frameTime = lifetimeSeconds / static_cast<f32>(nFrames);
-    Animator animator({{"effect/explosion", 0, nFrames, frameTime}});
-    animator.setLooping(false);
+    Animator animator = getAnimator("effect/explosion");
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 

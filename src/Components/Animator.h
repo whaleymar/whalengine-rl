@@ -30,8 +30,8 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
 using AnimInfo = std::vector<std::tuple<const char*, s32, s32, f32>>;
 struct Animator {
     Animator() = default;
-    Animator(AnimInfo animInfo);
-    Animator(AnimInfo animInfo, AnimBrain brain_);
+    Animator(AnimInfo animInfo, bool isLooping_ = true);
+    Animator(AnimInfo animInfo, AnimBrain brain_, bool isLooping_ = true);
 
     std::vector<Animation> animations;
     AnimBrain brain = &basicAnimation;

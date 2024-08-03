@@ -37,11 +37,11 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     return basicAnimation(animator, entity);
 }
 
-Animator::Animator(AnimInfo animInfo) {
+Animator::Animator(AnimInfo animInfo, bool isLooping_) : isLooping(isLooping_) {
     loadAnimations(*this, animInfo);
 }
 
-Animator::Animator(AnimInfo animInfo, AnimBrain brain_) : brain(brain_) {
+Animator::Animator(AnimInfo animInfo, AnimBrain brain_, bool isLooping_) : brain(brain_), isLooping(isLooping_) {
     loadAnimations(*this, animInfo);
 }
 
