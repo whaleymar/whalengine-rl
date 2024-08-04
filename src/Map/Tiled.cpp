@@ -32,7 +32,7 @@ static EntityFactory PREFAB_FACTORY;
 static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
 static ResourceManager<nlohmann::json, 250> MAP_MANAGER;
 
-static TileSet parseTileset(std::string basename, s32 firstgid);
+static TileSet parseTileset(const std::string& basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
 static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
 static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
@@ -44,6 +44,48 @@ static std::string getTypeFromTemplate(const std::string& templateFile);
 void clearMapCache() {
     MAP_MANAGER.clearCache();
     TEMPLATE_MANAGER.clearCache();
+}
+
+void TileSet::addComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, const LayerData layerData, Vector2i mapPosition) const {
+    const auto& object = getMapFile(fileName);
+
+    if (!object.contains("properties")) {
+        return;
+    }
+
+    const EntityMapData mapData = {mapPosition, {TEXELS_PER_TILE, TEXELS_PER_TILE}, 0, false, true};
+
+    // don't need values for allObjects or idToIndex since tiles (should be) standalone entities
+    const nlohmann::json emptyJson;
+    const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
+
+    // add tileset components
+    for (const auto& property : object["properties"]) {
+        const std::string componentName = readString(property, "propertytype");
+        ComponentAdder creatorFunc = nullptr;
+        COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
+        if (creatorFunc == nullptr) {
+            continue;
+        }
+
+        creatorFunc(property["value"], emptyJson, emptyIdToIndex, mapData, level, entity, layerData);
+    }
+
+    // tile-specific component overrides
+    s32 propsIx = tileIDToIndex[tileID];
+    if (propsIx != -1) {
+        const auto& tiledata = object["tiles"][propsIx];
+        for (const auto& property : tiledata["properties"]) {
+            const std::string componentName = readString(property, "propertytype");
+            ComponentAdder creatorFunc = nullptr;
+            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
+            if (creatorFunc == nullptr) {
+                continue;
+            }
+
+            creatorFunc(property["value"], emptyJson, emptyIdToIndex, mapData, level, entity, layerData);
+        }
+    }
 }
 
 TileMap TileMap::parse(const char* path, ActiveLevel& level) {
@@ -361,7 +403,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     entity.add(Draw(Sprite(layerData.depth, frame)));
 }
 
-TileSet parseTileset(std::string basename, s32 firstgid) {
+TileSet parseTileset(const std::string& basename, s32 firstgid) {
     const auto data = getMapFile(basename);
 
     auto sourceFilePath = readString(data, "image");
@@ -379,42 +421,33 @@ TileSet parseTileset(std::string basename, s32 firstgid) {
     s32 heightTiles = heightTexels / tileHeight;
     s32 tilecount = readInt(data, "tilecount");
 
-    std::vector<WorldMaterial> materials;
-    for (s32 i = 0; i < tilecount; i++) {
-        materials.push_back(WorldMaterial::None);
-    }
-
+    std::vector<s32> idToIx(tilecount, -1);
     if (data.contains("tiles")) {
-        for (auto& tiledata : data["tiles"]) {
+        s32 ix = 0;
+        for (const auto& tiledata : data["tiles"]) {
             s32 id = readInt(tiledata, "id");
-            for (auto& property : tiledata["properties"]) {
-                std::string propname = readString(property, "propertytype");
-                if (propname == "Material") {
-                    materials[id] = property["value"];
-                    break;
-                }
-            }
+            idToIx[id] = ix++;
         }
     }
 
     return TileSet(firstgid, tilecount, tileWidth, tileHeight, widthTiles, heightTiles, data["margin"], data["spacing"], basename,
-                   sourceFileBasenameNoExt, materials);
+                   sourceFileBasenameNoExt, std::move(idToIx));
 }
 
-const TileSet* getTileSet(const TileMap& map, s32 blockId) {
+const TileSet& getTileSet(const TileMap& map, s32 blockId) {
     for (size_t i = 0; i < map.tilesets.size(); i++) {
         s32 firstgid = map.tilesets[i].firstgid;
         if (firstgid <= blockId && blockId < firstgid + map.tilesets[i].tilecount) {
-            return &map.tilesets[i];
+            return map.tilesets[i];
         }
     }
     print("error getting tileset for blockIx", blockId, "\nReturning first tileset instead");
-    return &map.tilesets[0];
+    return map.tilesets[0];
 }
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
-    const TileSet* tset = getTileSet(map, blockId);
-    std::string spritePath = whal_format("{}/{}", "map", tset->spriteFileName);
+    const TileSet& tset = getTileSet(map, blockId);
+    std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
     Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
@@ -423,15 +456,15 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 
     // ASSUMING 0 MARGIN && SPACING
 
-    s32 blockIx = blockId - tset->firstgid;
+    s32 blockIx = blockId - tset.firstgid;
 
-    s32 rowIx = blockIx / tset->heightTiles;
-    s32 colIx = blockIx % tset->widthTiles;
+    s32 rowIx = blockIx / tset.heightTiles;
+    s32 colIx = blockIx % tset.widthTiles;
 
     Frame fullFrame = *tsetFrameOpt;
     Frame newFrame = {
-        {fullFrame.atlasPositionTexels.x + colIx * tset->tileWidthTexels, fullFrame.atlasPositionTexels.y + rowIx * tset->tileHeightTexels},
-        {tset->tileWidthTexels, tset->tileHeightTexels}};
+        {fullFrame.atlasPositionTexels.x + colIx * tset.tileWidthTexels, fullFrame.atlasPositionTexels.y + rowIx * tset.tileHeightTexels},
+        {tset.tileWidthTexels, tset.tileHeightTexels}};
     return newFrame;
 }
 

@@ -140,6 +140,24 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 48,
+            "members": [
+                {
+                    "name": "Layer",
+                    "propertyType": "DrawLayer",
+                    "type": "string",
+                    "value": "Default"
+                }
+            ],
+            "name": "Component_DrawLayer_TileOnly",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 31,
             "members": [
                 {

@@ -95,6 +95,9 @@ static void addComponentSprite(const nlohmann::json& values, const nlohmann::jso
 static void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& allObjects,
                                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+static void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
+                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
+                         ecs::Entity entity, LayerData layerData);
 static void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
                                 const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                 const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -151,6 +154,7 @@ static Lifetime DefaultLifeTime;
 static SwitchGate DefaultSwitchGate;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
+static TextureID DefaultDrawLayer = TextureID::LayerNormal;
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
@@ -160,6 +164,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Draw", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
     {"Component_Sprite_Animated", addComponentAnimator},
+    {"Component_DrawLayer_TileOnly", addDrawLayer},
     {"Component_FadeOut", addComponentFadeout},
     {"Component_PointLight", addComponentLight},
     {"Component_Radiance", addComponentRadiance},
@@ -647,6 +652,27 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
 
     sprite.depth = layerData.depth;
     entity.add(Draw(sprite, texID));
+}
+
+// this is only intended to be used on tiles (which already have a sprite), not objects
+void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
+                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
+                  ecs::Entity entity, LayerData layerData) {
+    if (!entity.has<Draw>()) {
+        print("can't add draw layer for entity", entityData.id, "without Draw component");
+        return;
+    }
+    TextureID texID = DefaultDrawLayer;
+    if (values.contains("Layer")) {
+        std::string textureLayer = values["Layer"];
+        if (textureLayer == "Bloom") {
+            texID = TextureID::LayerBloom;
+        } else if (textureLayer == "Glow") {
+            texID = TextureID::LayerGlow;
+        }
+    }
+
+    entity.get<Draw>().setTexLayer(texID);
 }
 
 void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,

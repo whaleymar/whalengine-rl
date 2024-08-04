@@ -26,7 +26,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform2D getTransformFromMapPosition(Vector2i mapCenterPositionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint);
-const TileSet* getTileSet(const TileMap& map, s32 blockId);
+const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
 
@@ -62,7 +62,9 @@ struct TileSet {
     s32 spacing;
     std::string fileName;
     std::string spriteFileName;
-    std::vector<WorldMaterial> materials;
+    std::vector<s32> tileIDToIndex;
+
+    void addComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, LayerData layerData, Vector2i mapPosition) const;
 };
 
 struct TileMap {
