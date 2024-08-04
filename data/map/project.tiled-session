@@ -5,8 +5,8 @@
     },
     "activeFile": "mossy-tileset.tsj",
     "expandedProjectPaths": [
-        "templates",
-        "."
+        ".",
+        "templates"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -83,7 +83,7 @@
             "selectedLayer": 3,
             "viewCenter": {
                 "x": 160.0625,
-                "y": 96.125
+                "y": 96.0625
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -146,7 +146,7 @@
             "selectedLayer": 1,
             "viewCenter": {
                 "x": 160.125,
-                "y": 96
+                "y": 96.125
             }
         },
         "world1.tmj": {
@@ -180,7 +180,7 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_DrawLayer_TileOnly",
+    "property.type": "Component_Sprite_Animated",
     "recentFiles": [
         "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",

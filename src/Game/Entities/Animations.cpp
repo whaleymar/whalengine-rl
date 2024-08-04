@@ -22,6 +22,8 @@ whal::Animator getAnimator(const char* name) {
                                 {"actor/aim-arrow-straight", 0, 8, 0.125},
                                 {"actor/aim-arrow-diagonal", 1, 8, 0.125},
                             })},
+        // {"actor/mana-gauge", Animator({{"actor/mana-gauge", 0, 5, 1.0}})}, // this has a complex animator, but it's my only 8x8 animation so i use
+        // for testing
     };
     constexpr s32 NUM_ANIMATORS = sizeof(S_ANIMATORS) / sizeof(NameToAnimator);
 
