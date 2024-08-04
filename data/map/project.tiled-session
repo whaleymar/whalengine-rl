@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "mossy-tileset-background.tsj",
+    "activeFile": "mossy-tileset.tsj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -16,10 +16,11 @@
         },
         "mossy-tileset.tsj": {
             "scaleInDock": 5.5,
-            "scaleInEditor": 8
+            "scaleInEditor": 11
         },
         "mushrooms.tsj": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 11
         },
         "prefab-editor.tmj": {
             "expandedObjectLayers": [
@@ -82,7 +83,7 @@
             "selectedLayer": 3,
             "viewCenter": {
                 "x": 160.0625,
-                "y": 96.0625
+                "y": 96.125
             }
         },
         "world1-blasterplatformtest.tmj": {
@@ -145,7 +146,7 @@
             "selectedLayer": 1,
             "viewCenter": {
                 "x": 160.125,
-                "y": 96.125
+                "y": 96
             }
         },
         "world1.tmj": {
@@ -172,7 +173,6 @@
     "mapScene.enableWorlds": true,
     "openFiles": [
         "mossy-tileset.tsj",
-        "mossy-tileset-background.tsj",
         "world1-start.tmj",
         "world1-jumptutorial.tmj",
         "world1-rockettutorial.tmj",
@@ -180,20 +180,20 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Sprite_Animated",
+    "property.type": "Component_DrawLayer_TileOnly",
     "recentFiles": [
-        "mossy-tileset.tsj",
         "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",
         "world1-rockettutorial.tmj",
         "world1-jumptutorial.tmj",
         "world1-start.tmj",
+        "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
+        "mushrooms.tsj",
         "world1-blasterplatformtest.tmj",
         "world1.tmj",
         "testmap2.tmj",
-        "prefab-editor.tmj",
-        "tileset-small.tsj"
+        "prefab-editor.tmj"
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {

@@ -142,7 +142,7 @@ struct Tile {
     bool isRotate;
 };
 
-Tile getTile(u32 tileMask) {
+static Tile getTile(u32 tileMask) {
     Tile tile;
     tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
     tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
@@ -162,6 +162,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
         // std::vector<s32> collisionColumn;
         for (s32 y = 0; y < map.heightTiles; y++) {
             Transform2D trans = Transform2D(Transform2D::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
+            Vector2i mapPosition = Vector2i(x * TEXELS_PER_TILE, y * TEXELS_PER_TILE);  // no idea if this is correct
             trans.facing = Facing::Right;
             s32 ix = map.widthTiles * y + x;
 
@@ -199,34 +200,31 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                     trans.rotationDegrees += 90;
                 }
 
+                // 0 means the tile is empty
                 if (blockID != 0) {
                     Expected<Frame> frame = getTileFrame(map, blockID);
                     if (!frame.isExpected()) {
                         print(frame.error());
-                        auto eEntity = createBlock(trans);
-                        if (eEntity.isExpected()) {
-                            lvl.childEntities.insert(eEntity.value());
-                        }
+                        continue;
                     } else {
-                        Sprite sprite = Sprite(layer.metadata.depth, frame.value());
+                        Sprite sprite = Sprite(layer.metadata.depth, *frame);
                         sprite.isRotateAboutCenter = true;
 
-                        // everything with Level/Player depth has collision
-                        if (layer.metadata.depth == Depth::Level || layer.metadata.depth == Depth::Player) {
-                            // not using collision mesh because i lose material info
-                            const TileSet* tset = getTileSet(map, blockID);
-                            WorldMaterial material = tset->materials[blockID - tset->firstgid];
-                            auto eEntity = createBlock(trans, sprite, material);
-                            if (eEntity.isExpected()) {
-                                lvl.childEntities.insert(eEntity.value());
-                            }
-
-                        } else {
-                            auto eEntity = createDecal(trans, sprite);
-                            if (eEntity.isExpected()) {
-                                lvl.childEntities.insert(eEntity.value());
-                            }
+                        auto eEntity = createDecal(trans, sprite, false);
+                        if (!eEntity.isExpected()) {
+                            print(eEntity.error());
+                            continue;
                         }
+                        const TileSet& tset = getTileSet(map, blockID);
+                        // TODO collider position not matching rotation
+                        s32 tileID = blockID - tset.firstgid;
+                        tset.addComponents(*eEntity, tileID, lvl, layer.metadata, mapPosition);
+
+                        (*eEntity).activate();
+                        // if ((*eEntity).has<Collider>()) {
+                        //     collisionColumn.push_back(1);
+                        // }
+                        lvl.childEntities.insert(*eEntity);
                     }
                 } else {
                     // collisionColumn.push_back(0);

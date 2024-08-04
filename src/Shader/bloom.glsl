@@ -68,7 +68,6 @@ void main()
 
         // just include the stuff to add, and let the normal part of the texture be drawn separately
         finalColor = toAdd * colDiffuse;
-
     }
 
 }

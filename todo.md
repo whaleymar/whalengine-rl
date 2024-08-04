@@ -42,6 +42,7 @@
     - would need some way to say "if collision and collider has parent, try running parent callback"
 - background/foreground layers should be written to a texture?
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
+- if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 
 ## Misc
 - Web builds

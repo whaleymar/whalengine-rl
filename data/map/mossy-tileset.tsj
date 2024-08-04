@@ -5,91 +5,22 @@
  "margin":0,
  "name":"mossy-tileset",
  "objectalignment":"topleft",
+ "properties":[
+        {
+         "name":"Collider",
+         "propertytype":"Component_Collider",
+         "type":"class",
+         "value":
+            {
+             "CollisionDir":0,
+             "Layer":"Solid",
+             "Material":5
+            }
+        }],
  "spacing":0,
  "tilecount":36,
  "tiledversion":"1.11.0",
  "tileheight":8,
- "tiles":[
-        {
-         "id":0,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":1,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":2,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":3,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":4,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":5,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":7,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":11,
-         "properties":[
-                {
-                 "name":"Material",
-                 "propertytype":"Material",
-                 "type":"int",
-                 "value":5
-                }]
-        }],
  "tilewidth":8,
  "type":"tileset",
  "version":"1.10",

@@ -7,7 +7,7 @@
  "objectalignment":"topleft",
  "spacing":0,
  "tilecount":16,
- "tiledversion":"1.10.2",
+ "tiledversion":"1.11.0",
  "tileheight":8,
  "tilewidth":8,
  "type":"tileset",

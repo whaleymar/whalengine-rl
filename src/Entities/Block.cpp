@@ -64,17 +64,18 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
     return block;
 }
 
-Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite) {
+Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite, bool activate) {
     auto expected = System::world.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
-    auto _ = ecs::DeferActivate(expected.value());
     auto decal = expected.value();
 
     decal.add(transform);
     decal.add(Draw(sprite));
-    // decal.add(Draw(sprite, TextureID::LayerBloom));
+    if (activate) {
+        decal.activate();
+    }
     return decal;
 }
 
