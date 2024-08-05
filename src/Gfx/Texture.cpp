@@ -108,8 +108,9 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     RenderTexture2D texture = LoadRenderTexture(width * PIXELS_PER_TEXEL, height * PIXELS_PER_TEXEL);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
-    f32 heightDiff = WINDOW_HEIGHT_TEXELS - frameOpt->height;
-    Rectangle dstRect = Rectangle(0, heightDiff * 2, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
+    // f32 heightDiff = WINDOW_HEIGHT_TEXELS - frameOpt->height;
+    // Rectangle dstRect = Rectangle(0, heightDiff * 2, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
+    Rectangle dstRect = Rectangle(0, 0, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
     BeginTextureMode(texture);
 
     ClearBackground(Colors::Clear);
@@ -203,11 +204,12 @@ RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {
 }
 
 void TextureManager::setRenderTexture(TextureID id, RenderTexture2D rTexture) {
-    s32 texIx = static_cast<s32>(TextureID::BackgroundStatic);
+    s32 texIx = static_cast<s32>(id);
     if (isRenderTextureUsed(texIx)) {
         UnloadRenderTexture(_getRenderTexture(id));
     }
     S_RENDER_TEXTURES[texIx] = rTexture;
+    setIsRenderTextureUsed(texIx);
 }
 
 bool TextureManager::isRenderTextureUsed(s32 ix) const {
@@ -256,56 +258,44 @@ const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
 Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                                   Vector2f parallax, Vector2i offset, bool isRepeatX,
                                                                                   bool isRepeatY) {
+    Corrade::Containers::Optional<Rectangle> frameOpt = getTextureAtlas(atlasName).getFrame(spriteName);
+    if (!frameOpt) {
+        return Error(whal_format("Couldn't find {} in the atlas {}", spriteName, atlasName));
+    }
+    Vector2i spriteDims(frameOpt->width, frameOpt->height);
+    TextureID dstRenderTexture;
     std::string texname;
+    BGData* pBGData = nullptr;
     switch (dstBG) {
-    case BGTexture::STATIC: {
-        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!rTexOpt) {
-            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
-        }
-        setRenderTexture(TextureID::BackgroundStatic, *rTexOpt);
-
+    case BGTexture::STATIC:
+        dstRenderTexture = TextureID::BackgroundStatic;
         texname = "static";
         break;
-    }
-
-    case BGTexture::FAR: {
-        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!rTexOpt) {
-            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
-        }
-        setRenderTexture(TextureID::BackgroundFar, *rTexOpt);
-
-        mScrollFar = {};
+    case BGTexture::FAR:
+        dstRenderTexture = TextureID::BackgroundFar;
         texname = "far";
-        mBGDataFar = {parallax, offset, isRepeatX, isRepeatY};
+        pBGData = &mBGDataFar;
+        mScrollFar = {};
         break;
-    }
-
-    case BGTexture::MID: {
-        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!rTexOpt) {
-            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
-        }
-        setRenderTexture(TextureID::BackgroundMid, *rTexOpt);
-
-        mScrollMid = {};
+    case BGTexture::MID:
+        dstRenderTexture = TextureID::BackgroundMid;
         texname = "mid";
-        mBGDataMid = {parallax, offset, isRepeatX, isRepeatY};
+        pBGData = &mBGDataMid;
+        mScrollMid = {};
+        break;
+    case BGTexture::NEAR:
+        dstRenderTexture = TextureID::BackgroundNear;
+        texname = "near";
+        pBGData = &mBGDataNear;
+        mScrollNear = {};
         break;
     }
 
-    case BGTexture::NEAR:
-        auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
-        if (!rTexOpt) {
-            return Error(whal_format("Couldn't create texture: {} is not in the {} atlas", spriteName, atlasName));
-        }
-        setRenderTexture(TextureID::BackgroundNear, *rTexOpt);
+    auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+    setRenderTexture(dstRenderTexture, *rTexOpt);
 
-        mScrollNear = {};
-        texname = "near";
-        mBGDataNear = {parallax, offset, isRepeatX, isRepeatY};
-        break;
+    if (pBGData != nullptr) {
+        *pBGData = BGData{parallax, offset, spriteDims, isRepeatX, isRepeatY};
     }
 
     print("Loaded ", spriteName, " to texture", texname);
@@ -322,12 +312,9 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
     return NULLOPT;
 }
 
-void TextureManager::drawBackgroundTextures() {
-    // currently, lighting does not affect this texture
+void TextureManager::renderBackgroundTextures() {
     BeginTextureMode(getRenderTexture(TextureID::Background));
-    const Color clearColor = {58, 57, 106, 255};
-    // ClearBackground(Colors::Clear);
-    ClearBackground(clearColor);
+    ClearBackground(Colors::Clear);
     Rectangle screenSourceRec;
 
     // const Vector2f cameraPos = getCameraPositionPrecise();
@@ -343,7 +330,10 @@ void TextureManager::drawBackgroundTextures() {
             scrollVar.x = texWidth - effectiveDistance - offset;
         }
 
-        distance = cameraPos.y + texHeight - (bgdata.worldPosTopLeftTexels.y * FPIXELS_PER_TEXEL);
+        // I do NOT know why I have to subtract 3 here to get it to line up with the bottom of the screen
+        s32 heightDiff = texHeight - bgdata.trueDimensions.y;
+        distance = cameraPos.y + texHeight + heightDiff - 3 - (bgdata.worldPosTopLeftTexels.y * FPIXELS_PER_TEXEL);
+
         offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y);
         effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y));
         if (bgdata.isRepeatY) {
