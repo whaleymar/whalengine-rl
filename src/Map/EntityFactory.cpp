@@ -17,6 +17,7 @@
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
+#include "Systems/TagTrackers.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -237,6 +238,16 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
                 self, trigger.onTriggerEnter);
         trigger.onTriggerEnter = nullptr;
     };
+
+    // if (!CameraSystem::getEntitiesMutable().empty()) {
+    //     TweenPosition tween = TweenPosition(Vector2i(PIXELS_PER_TILE * 2, 1), 2.0f, Ease::InOutSine)
+    //                               .asRelative()
+    //                               .setLoops(5)
+    //                               .asRunDuringPause()
+    //                               .asBounce()
+    //                               .from(CameraSystem::first().get<Transform2D>().position);
+    //     entity.add(tween);
+    // }
 }
 
 void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {

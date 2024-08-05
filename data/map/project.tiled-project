@@ -674,6 +674,34 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 49,
+            "members": [
+                {
+                    "name": "Duration",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "Easing",
+                    "propertyType": "Easing",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "Target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_TweenPosition",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 11,
             "members": [
                 {

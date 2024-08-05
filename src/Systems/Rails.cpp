@@ -81,7 +81,7 @@ void RailsSystem::update() {
             // got to checkpoint, clamp to exact position
 
             if (entity.has<Collider>()) {
-                entity.get<Collider>().move(delta, nullptr, false, true);
+                entity.get<Collider>().move(delta, nullptr, false, true, false, false, true);
             } else {
                 entity.set(Transform2D(rails.getTarget().position));
             }

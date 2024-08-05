@@ -309,8 +309,8 @@
                 {
                  "id":34,
                  "template":"templates\/BlastCrystal.tj",
-                 "x":112,
-                 "y":13
+                 "x":83,
+                 "y":34
                 }, 
                 {
                  "id":37,
@@ -381,7 +381,7 @@
          "y":0
         }],
  "nextlayerid":9,
- "nextobjectid":40,
+ "nextobjectid":42,
  "orientation":"orthogonal",
  "properties":[
         {

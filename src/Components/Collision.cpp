@@ -267,10 +267,11 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     - const Vector2f amount: float amount to move, in pixels
     - const CollisionCallbackNew callback: callback to run on *this* if a collision occurs
     - bool isGroundedCheckNeeded: skips grounded check if false
-    - bool isManualMove: should be true if this is called outside of the physics system. Only affects momentum of pushed/carried entities
+    - bool isManualMove: should be true if this is called outside of the physics system. If true, entity transform is updated here.
+    - bool isSkipMomentumUpdate: if true, pushing other colliders will not affect their momentum value (but will reset its timer)
 */
 bool Collider::move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded, bool isManualMove, bool isPushedBySolid,
-                    bool updateRigidBodyFlags) {
+                    bool updateRigidBodyFlags, bool isSkipmomentumUpdate) {
     // round to nearest pixel
     mXRemainder += amount.x;
     mYRemainder += amount.y;
@@ -301,11 +302,11 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         // need to move+push on one axis before moving on the other
         auto moveVec = Vector2i(toMoveRounded.x, 0);
         moveNoCollisionCheck(amount, moveVec);
-        pushAndCarry1D(amount, moveVec, riding, isManualMove);
+        pushAndCarry1D(amount, moveVec, riding, isSkipmomentumUpdate);
 
         moveVec = Vector2i(0, toMoveRounded.y);
         moveNoCollisionCheck(amount, moveVec);
-        pushAndCarry1D(amount, moveVec, riding, isManualMove);
+        pushAndCarry1D(amount, moveVec, riding, isSkipmomentumUpdate);
         break;
     }
     case CollisionLayer::SemiSolid: {
@@ -318,7 +319,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
         Vector2f moveUnrounded = isHit ? moveAmount.as<f32>() : Vector2f(amount.x, 0);
-        pushAndCarry1D(moveUnrounded, moveAmount, riding, isManualMove, isPushedBySolid);
+        pushAndCarry1D(moveUnrounded, moveAmount, riding, isSkipmomentumUpdate, isPushedBySolid);
 
         // moveY, then push/carry in that direction only
         originalPosition = getShape().getPosition();
@@ -327,7 +328,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         isHit = isHit || isHitY;
         moveAmount = getShape().getPosition() - originalPosition;
         moveUnrounded = isHitY ? moveAmount.as<f32>() : Vector2f(0, amount.y);
-        pushAndCarry1D(moveUnrounded, moveAmount, riding, isManualMove, isPushedBySolid);
+        pushAndCarry1D(moveUnrounded, moveAmount, riding, isSkipmomentumUpdate, isPushedBySolid);
 
         break;
     }
@@ -444,20 +445,24 @@ void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
 }
 
 void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove,
-                              bool isPushedBySolid) {
+                              bool isPushedBySolid, bool isSkipMomentumUpdate) {
     // turn off collision so colliders moved by us don't get stuck on us
     bool wasCollidable = mIsCollidable;
     mIsCollidable = false;
 
     // Caller should only have moved on one dimension before calling this, so only push/carry on that dimension
     if (move1D.x > 0) {
-        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid);
+        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.right(), &AABB::left, ridingColliders, isManualMove, isPushedBySolid,
+                      isSkipMomentumUpdate);
     } else if (move1D.x < 0) {
-        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid);
+        _pushAndCarry(move1D.x, moveOriginal.x, true, mShape.left(), &AABB::right, ridingColliders, isManualMove, isPushedBySolid,
+                      isSkipMomentumUpdate);
     } else if (move1D.y > 0) {
-        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid);
+        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.top(), &AABB::bottom, ridingColliders, isManualMove, isPushedBySolid,
+                      isSkipMomentumUpdate);
     } else if (move1D.y < 0) {
-        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid);
+        _pushAndCarry(move1D.y, moveOriginal.y, false, mShape.bottom(), &AABB::top, ridingColliders, isManualMove, isPushedBySolid,
+                      isSkipMomentumUpdate);
     }
 
     mIsCollidable = wasCollidable;
@@ -530,7 +535,7 @@ u16 Collider::getCollisionLayersThatCanRideMe() const {
 }
 
 void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
-                             const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid) {
+                             const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid, bool isSkipMomentumUpdate) {
     Vector2i moveVec;
     if (isXDirection) {
         moveVec = {toMoveRounded, 0};
@@ -563,7 +568,8 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             if (!isPushedBySolid && isSemiSolid()) {
                 Vector2i originalPosition = other->getShape().getPosition();
                 bool hitSolid = false;
-                hitSolid = other->move(otherMoveVec.as<f32>(), &squishEntityPushedBySemiSolid);
+                hitSolid =
+                    other->move(otherMoveVec.as<f32>(), &squishEntityPushedBySemiSolid, false, isManualMove, false, false, isSkipMomentumUpdate);
 
                 Vector2i newPosition = other->getShape().getPosition();
                 // Calculate difference between newPosition and expected position.
@@ -574,7 +580,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                     // using &squishCollider as the callback because we're effectively being pushed by the solid that `other` hit
                     mIsCollidable = true;
                     other->mIsCollidable = false;
-                    move(delta.as<f32>(), &squishEntity, false, false, true);
+                    move(delta.as<f32>(), &squishEntity, false, isManualMove, true, false, isSkipMomentumUpdate);
                     mIsCollidable = false;
                     other->mIsCollidable = true;
 
@@ -597,7 +603,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                     }
                 }
             } else {
-                other->move(otherMoveVec.as<f32>(), &squishEntity, false, false, true);
+                other->move(otherMoveVec.as<f32>(), &squishEntity, false, isManualMove, true, false, isSkipMomentumUpdate);
             }
 
             // emit push event
@@ -609,7 +615,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
             if (other->mSelf.has<Momentum>()) {
                 // set momentum if this movement was part of the physics system
-                if (isManualMove) {
+                if (isSkipMomentumUpdate) {
                     if (isXDirection) {
                         other->mSelf.get<Momentum>().maintainMomentumX();
                     } else {
