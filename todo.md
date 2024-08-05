@@ -1,6 +1,11 @@
 # To Do 
 
 ## Current Goal: 
+**Get Web Builds Working**
+- [x] Remove variables from Game::mainloop and put it in a free function 
+- [ ] stub FMOD audio calls 
+- [ ] rewrite shaders in older glsl version 
+- [ ] do the thing!
 
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)

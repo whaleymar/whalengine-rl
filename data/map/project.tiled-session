@@ -5,8 +5,8 @@
     },
     "activeFile": "world1-start.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -112,8 +112,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": -114.83333333333331,
-                "y": 95.99999999999999
+                "x": 160.16666666666666,
+                "y": 96.16666666666667
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -145,7 +145,7 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 162.5,
+                "x": 137.5,
                 "y": 70.66666666666666
             }
         },

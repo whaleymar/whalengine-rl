@@ -63,6 +63,25 @@ static Font S_FONT_PAUSEMENU;
 
 using namespace whal;
 
+// MAINLOOP VARIABLES
+
+// gfx stuff
+static GfxSystem* gfxSystem = nullptr;
+static DrawTextSystem* textSystem = nullptr;
+static RadianceLightSystem* radianceSystem = nullptr;
+static Pipeline* postProcessPipeline = nullptr;
+
+// hopefully can remove eventually:
+Shader shaderQuantize;
+s32 paletteTexUniform;
+static bool isQuantizeOn = false;
+
+#ifndef NDEBUG
+static bool isCreativeMode = false;  // known issue: killing player when in creative mode will cause crash on next creative mode activation
+#endif
+
+// /MAINLOOP VARIABLES
+
 bool Game::start() {
     // do this before any font/texture stuff or the settings seem to get fucked
     S_CAMERA_WORLDSPACE.target = Vector2(0.0f, 0.0f);
@@ -107,169 +126,168 @@ bool Game::start() {
         .registerSystems<QuadTreeSystem>()
         .registerSystems<RespawnListener>();
 
+    gfxSystem = System::world.getSystem<GfxSystem>();
+    textSystem = System::world.getSystem<DrawTextSystem>();
+    radianceSystem = System::world.getSystem<RadianceLightSystem>();
+
+    // graphics stuff:
+    shaderQuantize = ShaderManager::get(Shaders::Quantize);
+    paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
+    postProcessPipeline = new Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
+                                                                                        // Shaders::Bloom,
+                                                                                        // Shaders::Glitch,
+                                                                                        // Shaders::Quantize,
+                                                                                    });
+
     // build default components for factory
     parseMapProject(TILED_PROJECT_FILE);
+
+    // load first scene:
+    err = loadScene(SCENE_FILE, true);
+    if (err) {
+        print("Error loading debug scene: ", *err);
+        return true;
+    }
 
     return false;
 }
 
-void Game::mainloop() {
-    // these are used for rendering, which still is run in this function but I might move it eventually
-    auto gfxSystem = System::world.getSystem<GfxSystem>();
-    auto textSystem = System::world.getSystem<DrawTextSystem>();
-    auto radianceSystem = System::world.getSystem<RadianceLightSystem>();
+// without the post processing step, would need to flip the y axis here by multiplying by -1
+static const Rectangle SCREEN_SOURCE_RECT = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
+                                             1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
+static const Rectangle SCREEN_DEST_RECT = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
+                                           WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
 
-    // load scene
-    // auto err = loadTestMap();
-    auto err = loadScene(SCENE_FILE, true);
-    if (err) {
-        print("Error loading debug scene: ", *err);
-        return;
+// the update loop is in its own function bc emscripten
+void Update() {
+    System::Update();
+
+    // Update Scene
+    Game::instance().checkIfInNewLevel();
+
+    // RENDERING STUFF
+
+#ifndef NDEBUG
+    if (IsKeyPressed(KEY_K)) {
+        for (auto [entityid, entity] : System::world.getSystem<PlayerSystem>()->getEntitiesMutable()) {
+            entity.kill();
+        }
+    }
+    if (IsKeyPressed(KEY_P)) {
+        if (isCreativeMode) {
+            isCreativeMode = false;
+            for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
+                entity.add<RigidBody>();
+                constexpr s32 width = 16;
+                constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
+                constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
+                entity.add(Collider::Actor(entity.get<Transform2D>(), Vector2i(halfLenX, halfLenY)));
+                entity.set(PlayerControl());
+            }
+        } else {
+            isCreativeMode = true;
+            for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
+                entity.remove<RigidBody>();
+                entity.remove<Collider>();
+                entity.set(PlayerControl{250});
+            }
+        }
+    }
+#endif
+
+    // CAMERA
+    // -----------------------------------------------------------------------
+    // round worldspace coords, keep decimals in screen space
+    S_CAMERA_WORLDSPACE.target.x = static_cast<s32>(S_CAMERA_SCREENSPACE.target.x);
+    S_CAMERA_SCREENSPACE.target.x -= S_CAMERA_WORLDSPACE.target.x;
+    S_CAMERA_SCREENSPACE.target.x *= VIRTUAL_SCREEN_RATIO;
+
+    S_CAMERA_WORLDSPACE.target.y = static_cast<s32>(S_CAMERA_SCREENSPACE.target.y);
+    S_CAMERA_SCREENSPACE.target.y -= S_CAMERA_WORLDSPACE.target.y;
+    S_CAMERA_SCREENSPACE.target.y *= VIRTUAL_SCREEN_RATIO;
+
+    // ECS DRAW START
+    // -----------------------------------------------------------------------
+    radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
+    TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
+    gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);           // draws entities AND backgrounds
+    drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
+
+    // -----------------------------------------------------------------------
+    // ECS DRAW END
+
+    // POST PROCESSING EFFECTS START
+    // -----------------------------------------------------------------------
+
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
+    ClearBackground(BLACK);
+
+    if (IsKeyPressed(KEY_Q)) {
+        isQuantizeOn = !isQuantizeOn;
     }
 
-    Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
-    auto paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
-    bool isQuantizeOn = false;
+    // this unflips the y axis (RenderTextures are drawn upside down by default because raylib is stupid)
+    DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
+    // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
+    TextureManager::instance().drawLightingTexture();
+    TextureManager::instance().drawRadianceTexture();
+    EndTextureMode();
 
-    // without the post processing step, would need to flip the y axis here by multiplying by -1
-    const Rectangle screenSourceRec = {BLEED_SIZE / 2, BLEED_SIZE / 2, static_cast<f32>(WINDOW_WIDTH_PIXELS),
-                                       1 * static_cast<f32>(WINDOW_HEIGHT_PIXELS)};
-    const Rectangle screenDestRec = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO, WINDOW_WIDTH_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2),
-                                     WINDOW_HEIGHT_ACTUAL + (VIRTUAL_SCREEN_RATIO * 2)};
+    postProcessPipeline->process(TextureID::PostProcess);
 
-    Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
-                                                                                             // Shaders::Bloom,
-                                                                                             // Shaders::Glitch,
-                                                                                             // Shaders::Quantize,
-                                                                                         });
+    // -----------------------------------------------------------------------
+    // POST PROCESSING EFFECTS END
+
+    // DRAW START
+    // -----------------------------------------------------------------------
+    BeginDrawing();
+
+    ClearBackground(Colors::Clear);
+
+    BeginMode2D(S_CAMERA_SCREENSPACE);
+
+    // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
+    // Q, but is completely black before that
+    if (isQuantizeOn) {
+        BeginShaderMode(shaderQuantize);
+        SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+    }
+
+    Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
+
+    DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, SCREEN_SOURCE_RECT, SCREEN_DEST_RECT, {0.0f, 0.0f}, 0.0f, color);
+
+    if (isQuantizeOn) {
+        EndShaderMode();
+    }
+
+    textSystem->drawEntities(color);
+
+    EndMode2D();
+
+    // TEXT STUFF
+    PauseMenu::instance().draw(S_FONT_PAUSEMENU);
 
 #ifndef NDEBUG
-    bool isCreativeMode = false;  // known issue: killing player when in creative mode will cause crash on next creative mode activation
+    if (System::input.isOn(InputType::DEBUG)) {
+        DrawFPS(10, 10);
+    }
 #endif
+    // DrawFPS(10, 10); // for testing in release build
 
+    EndDrawing();
+    // -----------------------------------------------------------------------
+    // DRAW END
+}
+
+void Game::mainloop() {
     while (!WindowShouldClose() && !System::isQuit()) {
-        System::Update();
-
-        // Update Scene
-        checkIfInNewLevel();
-
-        // RENDERING STUFF
-
-#ifndef NDEBUG
-        if (IsKeyPressed(KEY_K)) {
-            for (auto [entityid, entity] : System::world.getSystem<PlayerSystem>()->getEntitiesMutable()) {
-                entity.kill();
-            }
-        }
-        if (IsKeyPressed(KEY_P)) {
-            if (isCreativeMode) {
-                isCreativeMode = false;
-                for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
-                    entity.add<RigidBody>();
-                    constexpr s32 width = 16;
-                    constexpr s32 halfLenX = PIXELS_PER_TEXEL * width / 4;
-                    constexpr s32 halfLenY = PIXELS_PER_TEXEL * 6;
-                    entity.add(Collider::Actor(entity.get<Transform2D>(), Vector2i(halfLenX, halfLenY)));
-                    entity.set(PlayerControl());
-                }
-            } else {
-                isCreativeMode = true;
-                for (auto [id, entity] : PlayerSystem::getEntitiesMutable()) {
-                    entity.remove<RigidBody>();
-                    entity.remove<Collider>();
-                    entity.set(PlayerControl{250});
-                }
-            }
-        }
-#endif
-
-        // CAMERA
-        // -----------------------------------------------------------------------
-        // round worldspace coords, keep decimals in screen space
-        S_CAMERA_WORLDSPACE.target.x = static_cast<s32>(S_CAMERA_SCREENSPACE.target.x);
-        S_CAMERA_SCREENSPACE.target.x -= S_CAMERA_WORLDSPACE.target.x;
-        S_CAMERA_SCREENSPACE.target.x *= VIRTUAL_SCREEN_RATIO;
-
-        S_CAMERA_WORLDSPACE.target.y = static_cast<s32>(S_CAMERA_SCREENSPACE.target.y);
-        S_CAMERA_SCREENSPACE.target.y -= S_CAMERA_WORLDSPACE.target.y;
-        S_CAMERA_SCREENSPACE.target.y *= VIRTUAL_SCREEN_RATIO;
-
-        // ECS DRAW START
-        // -----------------------------------------------------------------------
-        radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
-        TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
-        gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);           // draws entities AND backgrounds
-        drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
-
-        // -----------------------------------------------------------------------
-        // ECS DRAW END
-
-        // POST PROCESSING EFFECTS START
-        // -----------------------------------------------------------------------
-
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
-        ClearBackground(BLACK);
-
-        if (IsKeyPressed(KEY_Q)) {
-            isQuantizeOn = !isQuantizeOn;
-        }
-
-        // this unflips the y axis (RenderTextures are drawn upside down by default because raylib is stupid)
-        DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
-        // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
-        TextureManager::instance().drawLightingTexture();
-        TextureManager::instance().drawRadianceTexture();
-        EndTextureMode();
-
-        postProcessPipeline.process(TextureID::PostProcess);
-
-        // -----------------------------------------------------------------------
-        // POST PROCESSING EFFECTS END
-
-        // DRAW START
-        // -----------------------------------------------------------------------
-        BeginDrawing();
-
-        ClearBackground(Colors::Clear);
-
-        BeginMode2D(S_CAMERA_SCREENSPACE);
-
-        // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
-        // Q, but is completely black before that
-        if (isQuantizeOn) {
-            BeginShaderMode(shaderQuantize);
-            SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-        }
-
-        Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
-
-        DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, screenSourceRec, screenDestRec, {0.0f, 0.0f}, 0.0f, color);
-
-        if (isQuantizeOn) {
-            EndShaderMode();
-        }
-
-        textSystem->drawEntities(color);
-
-        EndMode2D();
-
-        // TEXT STUFF
-        PauseMenu::instance().draw(S_FONT_PAUSEMENU);
-
-#ifndef NDEBUG
-        if (System::input.isOn(InputType::DEBUG)) {
-            DrawFPS(10, 10);
-        }
-#endif
-        // DrawFPS(10, 10); // for testing in release build
-
-        EndDrawing();
-        // -----------------------------------------------------------------------
-        // DRAW END
+        Update();
     }
 }
 
 void Game::end() {
+    delete postProcessPipeline;
     TextureManager::instance().unloadAll();
     UnloadFont(S_FONT_PAUSEMENU);
 }

@@ -19,7 +19,8 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ffffaaff"
+                 "Color":"#ffffaaff",
+                 "Layer":"Bloom"
                 }
             }, 
             {
@@ -37,7 +38,7 @@
              "type":"class",
              "value":
                 {
-                 "Color":"#ff226767"
+                 "Color":"#ff03393f"
                 }
             }, 
             {
