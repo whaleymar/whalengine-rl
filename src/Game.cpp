@@ -7,7 +7,6 @@
 #include "Components/PlayerControl.h"
 #include "Components/RailsControl.h"
 #include "Components/RigidBody.h"
-#include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Entities/Camera.h"
 #include "Systems/Animation.h"
@@ -128,8 +127,6 @@ void Game::mainloop() {
         return;
     }
 
-    Color clearColor = {58, 57, 106, 255};
-
     Shader shaderQuantize = ShaderManager::get(Shaders::Quantize);
     auto paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
     bool isQuantizeOn = false;
@@ -199,10 +196,10 @@ void Game::mainloop() {
 
         // ECS DRAW START
         // -----------------------------------------------------------------------
-        radianceSystem->update(S_CAMERA_WORLDSPACE);  // this gets drawn to its own texture
-        TextureManager::instance().drawBackgroundTextures();
-        gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);
-        drawLights(S_CAMERA_WORLDSPACE);
+        radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
+        TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
+        gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);           // draws entities AND backgrounds
+        drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
 
         // -----------------------------------------------------------------------
         // ECS DRAW END
@@ -211,20 +208,17 @@ void Game::mainloop() {
         // -----------------------------------------------------------------------
 
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
-        ClearBackground(clearColor);
+        ClearBackground(BLACK);
 
         if (IsKeyPressed(KEY_Q)) {
             isQuantizeOn = !isQuantizeOn;
         }
 
-        // this unflips the y axis for some reason
-        DrawTexture(TextureManager::getRenderTexture(TextureID::Background).texture, 0, 0, WHITE);
+        // this unflips the y axis (RenderTextures are drawn upside down by default because raylib is stupid)
         DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
         // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
         TextureManager::instance().drawLightingTexture();
-
         TextureManager::instance().drawRadianceTexture();
-
         EndTextureMode();
 
         postProcessPipeline.process(TextureID::PostProcess);

@@ -69,6 +69,7 @@ class TextureManager {
     struct BGData {
         Vector2f parallax;
         Vector2i worldPosTopLeftTexels;
+        Vector2i trueDimensions;
         bool isRepeatX;
         bool isRepeatY;
     };
@@ -94,7 +95,7 @@ public:
 
     Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
-    void drawBackgroundTextures();
+    void renderBackgroundTextures();
     void drawLightingTexture();
     void drawRadianceTexture();
 

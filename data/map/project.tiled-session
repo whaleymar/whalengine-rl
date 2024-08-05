@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "mossy-tileset.tsj",
+    "activeFile": "world1-start.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -109,11 +109,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
+            "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.125,
-                "y": 96.125
+                "x": -114.83333333333331,
+                "y": 95.99999999999999
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -142,11 +142,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 160.125,
-                "y": 96.125
+                "x": 162.5,
+                "y": 70.66666666666666
             }
         },
         "world1.tmj": {
@@ -180,14 +180,14 @@
         "world1-blaster_get.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Sprite_Animated",
+    "property.type": "Depth",
     "recentFiles": [
+        "mossy-tileset.tsj",
         "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",
         "world1-rockettutorial.tmj",
         "world1-jumptutorial.tmj",
         "world1-start.tmj",
-        "mossy-tileset.tsj",
         "mossy-tileset-background.tsj",
         "mushrooms.tsj",
         "world1-blasterplatformtest.tmj",

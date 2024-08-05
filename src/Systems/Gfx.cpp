@@ -180,7 +180,9 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
 
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         if (isFirstDrawToMain) {
-            ClearBackground(Colors::Clear);
+            // ClearBackground(Colors::Clear);
+            ClearBackground({58, 57, 106, 255});
+            drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
             isFirstDrawToMain = false;
         }
 
