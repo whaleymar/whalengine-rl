@@ -14,6 +14,7 @@ namespace whal {
 class Collider;
 struct HitInfo;
 class PhysicsSystem;
+class TweenPositionSystem;
 // namespace ecs {
 // class Entity;
 // }
@@ -24,6 +25,7 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 // currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
     friend PhysicsSystem;
+    friend TweenPositionSystem;
 
 public:
     Collider() = default;
@@ -73,7 +75,7 @@ public:
     bool isSolidAny() const { return LAYER_MATRIX.isSolidAny(mCollisionLayer); }
 
     bool move(const Vector2f amount, const CollisionCallback callback, bool isGroundedCheckNeeded = false, bool isManualMove = false,
-              bool isPushedBySolid = false, bool updateRigidBodyFlags = false);
+              bool isPushedBySolid = false, bool updateRigidBodyFlags = false, bool isSkipMomentumUpdate = false);
     HitInfo moveX(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback,
                   const std::vector<std::pair<ecs::Entity, Collider>>& others);
     HitInfo moveY(const Vector2f amountOriginal, const Vector2i amountRounded, const CollisionCallback callback,
@@ -81,7 +83,7 @@ public:
 
     void moveNoCollisionCheck(Vector2f toMoveOriginal, Vector2i toMoveRounded);
     void pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove = false,
-                        bool isPushedBySolid = false);
+                        bool isPushedBySolid = false, bool isSkipMomentumUpdate = false);
     bool emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isXDirection, bool updateRigidBodyFlags);
 
     bool isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
@@ -102,7 +104,7 @@ public:
 protected:
     void updateEntityPosition();
     void _pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
-                       const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid);
+                       const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid, bool isSkipMomentumUpdate);
     HitInfo checkCollisionInMoveArea(const Vector2i position, const Vector2i moveNormal, const std::vector<std::pair<ecs::Entity, Collider>>& others,
                                      const bool triggerCollisionEvents = false) const;
 

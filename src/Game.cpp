@@ -8,6 +8,7 @@
 #include "Components/RailsControl.h"
 #include "Components/RigidBody.h"
 #include "Components/Transform.h"
+
 #include "Entities/Camera.h"
 #include "Systems/Animation.h"
 #include "Systems/CallbackSystem.h"
@@ -44,6 +45,7 @@
 #include "Sys/PauseMenu.h"
 #include "Sys/System.h"
 
+#include "Systems/TweenSystem.h"
 #include "Util/Print.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -113,7 +115,8 @@ bool Game::start() {
     // note: nothing is actually running in parallel yet
     System::world.BeginSystemRegistration()
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
-        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem>()  // all entity movement happens here
+        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem,
+                    TweenPositionSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem, ColorLerpSystem, ScaleLerpSystem>()
         .parallel<ParticleEmitterSystem, ProjectileSystem, CustomUpdateSystem>()
         .parallel<RocketJumpingSystem, SlowEntityKillerSystem>(2)
@@ -198,6 +201,8 @@ void Update() {
     // CAMERA
     // -----------------------------------------------------------------------
     // round worldspace coords, keep decimals in screen space
+    // TODO do these need to be updated every frame? or can they be const?
+    // TODO should also look into moving camera instead of always offsetting objects. Wonder if that would help with graphical artifacts?
     S_CAMERA_WORLDSPACE.target.x = static_cast<s32>(S_CAMERA_SCREENSPACE.target.x);
     S_CAMERA_SCREENSPACE.target.x -= S_CAMERA_WORLDSPACE.target.x;
     S_CAMERA_SCREENSPACE.target.x *= VIRTUAL_SCREEN_RATIO;

@@ -156,7 +156,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     f32 distance = (getCameraPosition() - trans.position).as<f32>().len();
     f32 maxVolume = 0.2f;
     f32 maxDistance = 1500.0f;
-    f32 volume = easeOutQuad(maxVolume, 0.0f, distance / maxDistance);
+    f32 volume = myLerp(maxVolume, 0.0f, easeOutQuad(distance / maxDistance));
     System::audio.playClip(Sfx::EXPLOSION, volume, AudioPlayer::Filter::None, false, &trans.position);
     // System::audio.playClip(Sfx::EXPLOSION, volume);
 
