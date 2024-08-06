@@ -6,9 +6,7 @@ set(CMAKE_C_STANDARD 11) # required by raylib
 
 if (EMSCRIPTEN)
     set(CFLAGS "$CFLAGS -D__GLIBC_USE\(...\)=0")
-endif()
-
-if (WIN32)
+elseif (WIN32)
     set(CMAKE_CXX_COMPILER "clang-cl.exe") # uses clang w/ MSVC compiler
 elseif(UNIX)
     set(CMAKE_CXX_COMPILER "clang++")
@@ -50,7 +48,8 @@ include_directories(lib)
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
 if (EMSCRIPTEN)
-    find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
+    # find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
+    target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/lib/raylib/src")
 
     # these don't seem to work with clang-cl 
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
@@ -59,9 +58,15 @@ if (EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wbad-function-cast -Wcast-function-type)
-    target_link_libraries(${PROJECT_NAME} raylib)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=undefined)
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 -s ASYNCIFY --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1")
+    # force static linking
+    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/libraylib.a")
+
+    # TODO should have separate debug and release builds for web
+    # default stack size is 1mb (way too small) -- set to 0.5gb here but can go up to 4gb
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
+
 
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 

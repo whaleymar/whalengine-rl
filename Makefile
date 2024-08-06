@@ -7,7 +7,7 @@ release:
 	cmake . -DCMAKE_BUILD_TYPE=Release -B build -G Ninja && cd build && cmake --build . -j && cd ..
 
 WEB:
-	emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DEMSCRIPTEN=true -B build && emmake $(MAKE) -C build -j
+	EMCC_AUTODEBUG=1 emcmake cmake . -DCMAKE_BUILD_TYPE=Debug -DEMSCRIPTEN=true -B build && emmake $(MAKE) -C build -j
 
 clean:
 	rm -r build || true

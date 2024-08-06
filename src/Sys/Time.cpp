@@ -1,6 +1,8 @@
 #include "Time.h"
 
+#include <chrono>
 #include <raylib.h>
+#include <thread>
 #include "Settings.h"
 
 namespace whal {
@@ -24,6 +26,10 @@ void Time::update() {
 
 void Time::setMultiplier(f32 multiplier) {
     mTimeMultiplier = multiplier;
+}
+
+void Time::sleep(int milliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
 }  // namespace whal

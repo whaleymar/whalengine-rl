@@ -26,13 +26,16 @@ public:
         SetTraceLogLevel(LOG_WARNING);
         InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
         SetExitKey(KEY_NULL);  // Escape quits by default
+
         SetTargetFPS(FPS_TARGET);
         // SetTargetFPS(144); // for testing
 
+#ifndef __EMSCRIPTEN__
         if (FileExists(ICON_IMAGE_PATH)) {
             mIconImage = LoadImage(ICON_IMAGE_PATH);
             SetWindowIcon(mIconImage);
         }
+#endif
 
         // GRAPHICS INITIALIZATION
         ShaderManager::instance().loadShaders();
@@ -64,9 +67,11 @@ public:
         ShaderManager::instance().unloadAll();
 
         // RAYLIB END
+#ifndef __EMSCRIPTEN__
         if (FileExists(ICON_IMAGE_PATH)) {
             UnloadImage(mIconImage);
         }
+#endif
         CloseWindow();
     }
 

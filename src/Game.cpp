@@ -56,19 +56,6 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
-EM_JS(void, idbfs_put, (const char* filename, const char* str), {
-    FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
-    FS.syncfs(false, function(err) { assert(!err); });
-});
-EM_JS(char*, idbfs_get, (const char* filename), {
-    var arr = FS.readFile(UTF8ToString(filename));
-    var jsString = new TextDecoder().decode(arr);
-    var lengthBytes = lengthBytesUTF8(jsString) + 1;
-    // console.log(jsString);
-    var stringOnWasmHeap = _malloc(lengthBytes);
-    stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
-    return stringOnWasmHeap;
-});
 #endif
 
 // /WEB
@@ -312,10 +299,8 @@ void Update() {
 void Game::mainloop() {
 #ifdef __EMSCRIPTEN__
     EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
-    System::dt.sleep(1);
-    idbfs_put("file.txt", "Some dynamic file contents...\n");
-    EM_ASM({ Module.wasmTable = wasmTable; });
-    emscripten_set_main_loop(Update, 0, 1);
+    System::time.sleep(1);
+    emscripten_set_main_loop(Update, 0, 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
 #else
     while (!WindowShouldClose() && !System::isQuit()) {
         Update();

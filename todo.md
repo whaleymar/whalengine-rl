@@ -7,8 +7,7 @@
     - [ ] use raudio (or get FMOD web working) in long term
 - [x] stub custom shaders
     - [ ] eventually rewrite shaders in older glsl version 
-- [ ] get rid of threads import?
-- [ ] make sure it builds on windows -- could help with any build issues
+- [x] make sure it builds on windows -- could help with any build issues
 - [ ] do the thing!
 
 
