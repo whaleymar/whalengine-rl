@@ -1,4 +1,5 @@
 #include "Material.h"
+
 #include <cmath>
 
 #include "Components/Collision.h"
@@ -6,6 +7,8 @@
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/RigidBody.h"
+#include "Components/Transform.h"
+#include "Sys/System.h"
 #include "Physics/Shapes.h"
 
 namespace whal {

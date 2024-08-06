@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Util/MathUtil.h"
+#include "Util/Vector.h"
+
 enum class Ease {
     Linear,
     InOutBezier,

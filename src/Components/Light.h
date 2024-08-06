@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Util/Types.h"
+#include "Util/Vector.h"
 
 #include <raylib.h>
 

@@ -5,6 +5,7 @@
 #include "json_fwd.hpp"
 
 #include "Util/Factory.h"
+#include "Util/Vector.h"
 
 namespace whal {
 
