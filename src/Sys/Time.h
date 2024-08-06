@@ -1,6 +1,6 @@
 #pragma once
 
-typedef float f32;
+#include "Util/Types.h"
 
 namespace whal {
 

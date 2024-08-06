@@ -4,6 +4,7 @@
 #include <cassert>
 #include <raylib.h>
 #include "Settings.h"
+#include "Sys/System.h"
 
 namespace whal {
 

@@ -2,7 +2,8 @@
 
 #include <cstring>
 #include <ctime>
-#include "Util/Types.h"
+#include <cassert>
+#include <cmath>
 
 u32 xorshift32(u32& state) {
     state ^= state << 13;

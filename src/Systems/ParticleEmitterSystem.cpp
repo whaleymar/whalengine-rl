@@ -7,6 +7,7 @@
 #include "Physics/Shapes.h"
 #include "Settings.h"
 #include "Util/Vector.h"
+#include "Sys/System.h"
 
 namespace whal {
 constexpr f32 PERPENDICULAR_DAMPING = 0.33;
