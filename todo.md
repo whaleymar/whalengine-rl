@@ -3,9 +3,12 @@
 ## Current Goal: 
 **Get Web Builds Working**
 - [x] Remove variables from Game::mainloop and put it in a free function 
-- [ ] stub FMOD audio calls -- can use raudio in long term
-- [ ] rewrite shaders in older glsl version 
+- [x] stub FMOD audio calls 
+    - [ ] use raudio (or get FMOD web working) in long term
+- [x] stub custom shaders
+    - [ ] eventually rewrite shaders in older glsl version 
 - [ ] get rid of threads import?
+- [ ] make sure it builds on windows -- could help with any build issues
 - [ ] do the thing!
 
 

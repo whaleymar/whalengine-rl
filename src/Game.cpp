@@ -52,6 +52,27 @@
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
+// WEB BUILD STUFF
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+EM_JS(void, idbfs_put, (const char* filename, const char* str), {
+    FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
+    FS.syncfs(false, function(err) { assert(!err); });
+});
+EM_JS(char*, idbfs_get, (const char* filename), {
+    var arr = FS.readFile(UTF8ToString(filename));
+    var jsString = new TextDecoder().decode(arr);
+    var lengthBytes = lengthBytesUTF8(jsString) + 1;
+    // console.log(jsString);
+    var stringOnWasmHeap = _malloc(lengthBytes);
+    stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
+    return stringOnWasmHeap;
+});
+#endif
+
+// /WEB
+
 // GAME SETTINGS
 
 constexpr f32 MAX_LOAD_DISTANCE_TEXELS = WINDOW_WIDTH_TEXELS * 3;
@@ -213,10 +234,11 @@ void Update() {
 
     // ECS DRAW START
     // -----------------------------------------------------------------------
-    radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
+    // TODO lighting calls stubbed
+    // radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
     TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
     gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);           // draws entities AND backgrounds
-    drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
+    // drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
 
     // -----------------------------------------------------------------------
     // ECS DRAW END
@@ -234,11 +256,13 @@ void Update() {
     // this unflips the y axis (RenderTextures are drawn upside down by default because raylib is stupid)
     DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
     // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
-    TextureManager::instance().drawLightingTexture();
-    TextureManager::instance().drawRadianceTexture();
+    // TODO STUBBED
+    // TextureManager::instance().drawLightingTexture();
+    // TextureManager::instance().drawRadianceTexture();
     EndTextureMode();
 
-    postProcessPipeline->process(TextureID::PostProcess);
+    // TODO stubbed
+    // postProcessPipeline->process(TextureID::PostProcess);
 
     // -----------------------------------------------------------------------
     // POST PROCESSING EFFECTS END
@@ -253,18 +277,18 @@ void Update() {
 
     // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
     // Q, but is completely black before that
-    if (isQuantizeOn) {
-        BeginShaderMode(shaderQuantize);
-        SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-    }
+    // if (isQuantizeOn) {
+    //     BeginShaderMode(shaderQuantize);
+    //     SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+    // }
 
     Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
 
     DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, SCREEN_SOURCE_RECT, SCREEN_DEST_RECT, {0.0f, 0.0f}, 0.0f, color);
 
-    if (isQuantizeOn) {
-        EndShaderMode();
-    }
+    // if (isQuantizeOn) {
+    //     EndShaderMode();
+    // }
 
     textSystem->drawEntities(color);
 
@@ -286,9 +310,17 @@ void Update() {
 }
 
 void Game::mainloop() {
+#ifdef __EMSCRIPTEN__
+    EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
+    System::dt.sleep(1);
+    idbfs_put("file.txt", "Some dynamic file contents...\n");
+    EM_ASM({ Module.wasmTable = wasmTable; });
+    emscripten_set_main_loop(Update, 0, 1);
+#else
     while (!WindowShouldClose() && !System::isQuit()) {
         Update();
     }
+#endif
 }
 
 void Game::end() {

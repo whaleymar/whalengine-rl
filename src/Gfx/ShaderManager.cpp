@@ -87,7 +87,9 @@ void ShaderManager::loadShaders() {
 
     for (size_t i = 0; i < len; i++) {
         // dynamic allocation
-        Shader shader = LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        // TODO STUBBED
+        // Shader shader = LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        Shader shader = LoadShader(0, 0);
         s32 ix = static_cast<s32>(shaderInfo[i].shaderEnum);
         S_SHADERS[ix] = shader;
         setIsUsed(ix);
