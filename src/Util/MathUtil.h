@@ -2,6 +2,9 @@
 
 #include <cmath>
 #include <concepts>
+#ifdef __EMSCRIPTEN__
+#include <algorithm>  // for std::min/max
+#endif
 #include "Util/Types.h"
 
 inline constexpr f32 PI_MINE = 3.14159265358979323846;

@@ -2,7 +2,6 @@
 
 #include <initializer_list>
 #include <memory>
-#include <thread>
 #include "Events/Events.h"
 #include "System.h"
 

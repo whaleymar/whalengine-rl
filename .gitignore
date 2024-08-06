@@ -7,3 +7,13 @@ engine
 *.pdb
 *.ilk
 lib/
+engined.data
+engined.html
+engined.js
+engined.wasm
+engined.worker.js
+engine.data
+engine.html
+engine.js
+engine.wasm
+engine.worker.js

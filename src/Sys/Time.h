@@ -17,6 +17,7 @@ public:
     void update();
     void setMultiplier(f32);
     f32 getMultiplier() const { return mTimeMultiplier; }
+    void sleep(int milliseconds);
 
 private:
     Time();

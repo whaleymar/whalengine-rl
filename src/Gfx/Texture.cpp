@@ -28,6 +28,25 @@ void parse_error_handler(const char* what, void* where) {
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
+// unused:
+// #ifdef __EMSCRIPTEN__
+// #include <emscripten/emscripten.h>
+// EM_JS(void, idbfs_put, (const char* filename, const char* str), {
+//     FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
+//     FS.syncfs(false, function(err) { assert(!err); });
+// });
+// EM_JS(char*, idbfs_get, (const char* filename), {
+//     var arr = FS.readFile(UTF8ToString(filename));
+//     var jsString = new TextDecoder().decode(arr);
+//     var lengthBytes = lengthBytesUTF8(jsString) + 1;
+//     // console.log(jsString);
+//     var stringOnWasmHeap = _malloc(lengthBytes);
+//     stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
+//     return stringOnWasmHeap;
+// });
+// EM_JS(void, idbfs_free, (char* str), { _free(str); });
+// #endif
+
 namespace whal {
 
 static std::array<RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
@@ -37,18 +56,19 @@ Frame::Frame(Rectangle rect) : atlasPositionTexels(rect.x, rect.y), dimensionsTe
 Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPositionTexels(atlasPosition), dimensionsTexels(dimensions) {}
 
 Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
+    using namespace rapidxml;
+
     mTexture = texture;
+
+    xml_document<> doc;
+
     Expected<std::string> content = readFile(atlasDataPath);
     if (!content.isExpected()) {
         return content.error();
     }
 
-    using namespace rapidxml;
-
-    xml_document<> doc;
     std::string xmldata = content.value();
-
-    doc.parse<parse_no_entity_translation>(&xmldata[0]);
+    doc.parse<0>(&xmldata[0]);
     xml_node<>* atlasNode = doc.first_node("atlas");
     if (!atlasNode) {
         return Error("Could not find 'atlas' root node");
@@ -322,7 +342,7 @@ void TextureManager::renderBackgroundTextures() {
 
     auto checkWrapping = [](const Vector2f cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
         f32 distance = cameraPos.x - (bgdata.worldPosTopLeftTexels.x * FPIXELS_PER_TEXEL);
-        s32 offset = std::lerp<f32, f32>(texWidth, texWidth / 2, bgdata.parallax.x);
+        s32 offset = std::round(std::lerp(static_cast<f32>(texWidth), static_cast<f32>(texWidth) / 2.0f, bgdata.parallax.x));
         s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x));
         if (bgdata.isRepeatX) {
             scrollVar.x = (texWidth - (effectiveDistance % texWidth) - offset) % texWidth;
@@ -334,7 +354,7 @@ void TextureManager::renderBackgroundTextures() {
         s32 heightDiff = texHeight - bgdata.trueDimensions.y;
         distance = cameraPos.y + texHeight + heightDiff - 3 - (bgdata.worldPosTopLeftTexels.y * FPIXELS_PER_TEXEL);
 
-        offset = std::lerp<f32, f32>(texHeight, texHeight / 2, bgdata.parallax.y);
+        offset = std::round(std::lerp(static_cast<f32>(texHeight), static_cast<f32>(texHeight) / 2.0f, bgdata.parallax.y));
         effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y));
         if (bgdata.isRepeatY) {
             scrollVar.y = (texHeight - (effectiveDistance % texHeight) - offset) % texHeight;

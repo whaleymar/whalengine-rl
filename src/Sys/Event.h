@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Util/Types.h"
+#include "whalECS/src/Traits.h"
 
 namespace whal {
 
