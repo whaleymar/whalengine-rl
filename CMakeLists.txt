@@ -4,6 +4,10 @@ project(engine CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11) # required by raylib
 
+if (EMSCRIPTEN)
+    set(CFLAGS "$CFLAGS -D__GLIBC_USE\(...\)=0")
+endif()
+
 if (WIN32)
     set(CMAKE_CXX_COMPILER "clang-cl.exe") # uses clang w/ MSVC compiler
 elseif(UNIX)
@@ -45,8 +49,23 @@ include_directories(lib)
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
+if (EMSCRIPTEN)
+    find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
-if (WIN32)
+    # these don't seem to work with clang-cl 
+    target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wbad-function-cast -Wcast-function-type)
+    target_link_libraries(${PROJECT_NAME} raylib)
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 -s ASYNCIFY --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1")
+
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+
+elseif (WIN32)
     target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/lib/raylib/src")
 
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/fmod_vc.lib")
