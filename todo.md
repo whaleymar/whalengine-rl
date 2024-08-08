@@ -1,15 +1,6 @@
 # To Do 
 
 ## Current Goal: 
-**Get Web Builds Working**
-- [x] Remove variables from Game::mainloop and put it in a free function 
-- [x] stub FMOD audio calls 
-    - [ ] use raudio (or get FMOD web working) in long term
-- [x] stub custom shaders
-    - [ ] eventually rewrite shaders in older glsl version 
-- [x] make sure it builds on windows -- could help with any build issues
-- [ ] do the thing!
-
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -50,9 +41,9 @@
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 
 ## Misc
-- Web builds
 - ECS parallelization (low priority)
 - ECS methods (get, set, remove) can't be run in debugger. Would at least like to have `.get<T>` working.
+    - Sorta works now
 - Logger queue that runs on another thread
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)

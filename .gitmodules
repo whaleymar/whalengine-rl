@@ -3,7 +3,7 @@
 	url = https://github.com/whaleymar/whalECS.git
 [submodule "lib/raylib"]
 	path = lib/raylib
-	url = https://github.com/raysan5/raylib.git
+	url = https://github.com/whaleymar/raylib.git
 [submodule "lib/magnum-singles"]
 	path = lib/magnum-singles
 	url = https://github.com/whaleymar/magnum-singles.git

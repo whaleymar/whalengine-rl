@@ -1,8 +1,10 @@
-#version 330
+#version 100
+
+precision mediump float;
 
 // Input vertex attributes (from vertex shader)
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 // Input uniform values
 // default:
@@ -10,9 +12,6 @@ uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 // mine:
 uniform vec2 lightpos;
-
-// Output fragment color
-out vec4 finalColor;
 
 void main() {
     vec2 adj = vec2(fragTexCoord.x - 0.5, fragTexCoord.y - 0.5);
@@ -24,11 +23,11 @@ void main() {
     intensity = intensity * step(0.5, intensity); 
     intensity = (intensity - 0.5) * 2.;
 
-    finalColor = vec4(fragColor * intensity);
+    gl_FragColor = vec4(fragColor * intensity);
 
     // full lighting if pretty close. This is like a 1.5 tile radius
     // if (distance < 0.1) {
-    //     finalColor = fragColor;
+    //     gl_FragColor = fragColor;
     // } else {
     //     float intensity = 1. - distance + 0.1;
     //
@@ -36,6 +35,7 @@ void main() {
     //     intensity = intensity * step(0.5, intensity); 
     //     intensity = (intensity - 0.5) * 2.;
     //
-    //     finalColor = vec4(fragColor * intensity);
+    //     gl_FragColor = vec4(fragColor * intensity);
     // }
 }
+

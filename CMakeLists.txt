@@ -40,7 +40,6 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${FMOD_DIR}/api/core/inc"
     PUBLIC "${FMOD_DIR}/api/studio/inc"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/magnum-singles"
-    # PUBLIC "${PROJECT_SOURCE_DIR}/lib/raylib/src"
 )
 
 include_directories(lib)
@@ -63,8 +62,6 @@ if (EMSCRIPTEN)
     # force static linking
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/libraylib.a")
 
-    # TODO should have separate debug and release builds for web
-    # default stack size is 1mb (way too small) -- set to 0.5gb here but can go up to 4gb
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
 
 

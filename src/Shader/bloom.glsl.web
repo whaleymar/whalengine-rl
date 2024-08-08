@@ -1,8 +1,10 @@
-#version 330
+#version 100
+
+precision mediump float;
 
 // Input vertex attributes (from vertex shader)
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 // Input uniform values
 uniform sampler2D texture0;
@@ -11,9 +13,6 @@ uniform vec4 colDiffuse;
 // mine:
 uniform float iTime;
 uniform vec2 iResolution;
-
-// Output fragment color
-out vec4 finalColor;
 
 // const float samples = 5.;          // finalColors per axis; higher = bigger glow, worse performance. MIN 3
 // const float quality = 1.;          // Defines size factor: Lower = smaller glow, better quality
@@ -32,12 +31,12 @@ const float maxAlpha = 1.1;
 void main()
 {
     vec4 sum = vec4(0.);
-    vec2 sizeFactor = vec2(1)/iResolution*quality;
+    vec2 sizeFactor = vec2(1.)/iResolution*quality;
 
     // Texel color fetching from texture sampler
-    vec4 source = texture(texture0, fragTexCoord);
+    vec4 source = texture2D(texture0, fragTexCoord);
     if (source.a >= maxAlpha) {
-        finalColor = vec4(0.);
+        gl_FragColor = vec4(0.);
     } else {
         const int range = int(samples - 1.)/2;
 
@@ -50,7 +49,7 @@ void main()
                 if (coord.x < 0. || coord.x > 1. || coord.y < 0. || coord.y > 1.) {
                     continue;
                 }
-                vec4 sampleCol = texture(texture0, coord);
+                vec4 sampleCol = texture2D(texture0, coord);
                 sum += sampleCol;
             }
         }
@@ -58,16 +57,12 @@ void main()
         // Calculate final fragment color
 
         vec4 toAdd = (sum/(samples*samples));
-        // toAdd = pow(toAdd, vec4(0.5));
-
-        // finalColor = (toAdd + source)*colDiffuse;
-        // finalColor = (toAdd + finalSourceCol)*colDiffuse;
-
 
         // just include the stuff to add, and let the normal part of the texture be drawn separately
-        finalColor = toAdd * colDiffuse;
+        gl_FragColor = toAdd * colDiffuse;
     }
 
 }
+
 
 

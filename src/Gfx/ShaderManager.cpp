@@ -2,9 +2,14 @@
 
 #include <array>
 #include <cassert>
+#include <cstring>
 #include <raylib.h>
 #include "Settings.h"
 #include "Sys/System.h"
+
+#ifdef __EMSCRIPTEN__
+#include "Util/Print.h"
+#endif
 
 namespace whal {
 
@@ -77,7 +82,7 @@ void ShaderManager::loadShaders() {
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
         {Shaders::Outline, 0, "src/Shader/outline.glsl"},
         {Shaders::Bloom, 0, "src/Shader/bloom.glsl", Uniforms::Resolution},
-        {Shaders::Glow, 0, "src/Shader/glow.glsl"},
+        {Shaders::Glow, 0, "src/Shader/glow.glsl", Uniforms::Resolution},
         // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
         {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
         {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
@@ -88,9 +93,19 @@ void ShaderManager::loadShaders() {
 
     for (size_t i = 0; i < len; i++) {
         // dynamic allocation
-        // TODO STUBBED
-        // Shader shader = LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
-        Shader shader = LoadShader(0, 0);
+
+#ifdef __EMSCRIPTEN__
+        std::string vertexPath = shaderInfo[i].vertexPath ? std::string(shaderInfo[i].vertexPath) + ".web" : "";
+        std::string fragPath = shaderInfo[i].fragPath ? std::string(shaderInfo[i].fragPath) + ".web" : "";
+        const char* cVertexPath = vertexPath.empty() ? NULL : vertexPath.c_str();
+        const char* cFragPath = fragPath.empty() ? NULL : fragPath.c_str();
+        Shader shader = LoadShader(cVertexPath, cFragPath);
+        if (cFragPath) {
+            print("Loaded Shader: ", cFragPath);
+        }
+#else
+        Shader shader = LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+#endif
         s32 ix = static_cast<s32>(shaderInfo[i].shaderEnum);
         S_SHADERS[ix] = shader;
         setIsUsed(ix);
