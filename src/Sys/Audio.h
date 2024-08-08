@@ -29,6 +29,7 @@ namespace whal {
 static constexpr s32 MAX_CHANNELS = 256;  // upper limit. just used for AudioPlayer's channel pool
 
 struct System;
+class AudioPlayer;
 
 class AudioClip {
 public:
@@ -53,8 +54,8 @@ private:
 #ifndef __EMSCRIPTEN__
     FMOD::Sound* mSound = nullptr;
 #else
-    bool mIsValid = false;
     Sound mSound;
+    bool mIsValid = false;
 #endif
 };
 
@@ -64,6 +65,8 @@ public:
 
     friend System;
     friend AudioClip;
+
+    Corrade::Containers::Optional<Error> init();
 
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);

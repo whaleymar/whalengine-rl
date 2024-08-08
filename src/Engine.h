@@ -44,6 +44,10 @@ public:
         System::input.loadMappings();
         System::world.setEntityDeathCallback(&emitEntityDeathEvent);
         System::schedule.start();
+        if (auto err = System::audio.init(); err) {
+            print(*err);
+            return true;
+        }
         if (!System::audio.isValid()) {
             print("Error initializing audio manager");
             return true;
