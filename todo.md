@@ -18,6 +18,7 @@
 - idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
 - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
     - could be a jump with neutral/directional variants for a little more control over what happens next
+- ducking: make collider smaller, moves camera down after a sec like spelunky
 
 ## Camera / Follow
 - pretty awful in general
