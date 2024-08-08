@@ -52,7 +52,7 @@ if (EMSCRIPTEN)
 
     # these don't seem to work with clang-cl 
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated -Wshadow)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
@@ -78,7 +78,7 @@ elseif(UNIX)
 
     # these don't seem to work with clang-cl 
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated -Wshadow)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)

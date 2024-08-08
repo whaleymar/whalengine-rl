@@ -7,11 +7,14 @@
 #include "fmod_common.h"
 #include "fmod_dsp_effects.h"
 
+#include "Settings.h"
+#include "System.h"
+
 #else
 
 #include <raylib.h>  // can remove, is in header
 
-static const float exponent = 1.0f;        // Audio exponentiation value
+static const float EXPONENT = 1.0f;        // Audio exponentiation value
 static float averageVolume[400] = {0.0f};  // Average volume history
 void ProcessAudio(void* buffer, unsigned int frames) {
     float* samples = (float*)buffer;  // Samples internally stored as <float>s
@@ -20,8 +23,8 @@ void ProcessAudio(void* buffer, unsigned int frames) {
     for (unsigned int frame = 0; frame < frames; frame++) {
         float *left = &samples[frame * 2 + 0], *right = &samples[frame * 2 + 1];
 
-        *left = powf(fabsf(*left), exponent) * ((*left < 0.0f) ? -1.0f : 1.0f);
-        *right = powf(fabsf(*right), exponent) * ((*right < 0.0f) ? -1.0f : 1.0f);
+        *left = powf(fabsf(*left), EXPONENT) * ((*left < 0.0f) ? -1.0f : 1.0f);
+        *right = powf(fabsf(*right), EXPONENT) * ((*right < 0.0f) ? -1.0f : 1.0f);
 
         average += fabsf(*left) / frames;  // accumulating average volume
         average += fabsf(*right) / frames;
@@ -36,8 +39,6 @@ void ProcessAudio(void* buffer, unsigned int frames) {
 
 #endif
 
-#include "Settings.h"
-#include "System.h"
 #include "Util/Print.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
@@ -75,7 +76,7 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
         return Error(sprint("Error loading clip:", path, "\nGot error:", err));
     }
 #else
-    Sound mSound = LoadSound(path);
+    mSound = LoadSound(path);
     if (!IsSoundReady(mSound)) {
         mIsValid = false;
         return Error(sprint("Error loading audio clip: ", path));
@@ -86,19 +87,17 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     return NULLOPT;
 }
 
-AudioPlayer::AudioPlayer() {
+Corrade::Containers::Optional<Error> AudioPlayer::init() {
 #ifndef __EMSCRIPTEN__
     // Init System
     auto result = FMOD::System_Create(&mSystem);
     if (result != FMOD_OK) {
-        print("Got bad result for System_Create:", FMOD_ErrorString(result));
-        return;
+        return Error(sprint("Got bad result for System_Create:", FMOD_ErrorString(result)));
     }
     auto outputSettings = FMOD_OUTPUTTYPE_AUTODETECT;
     result = mSystem->init(MAX_CHANNELS, FMOD_INIT_NORMAL, &outputSettings);
     if (result != FMOD_OK) {
-        print("Got bad result for mSystem->init:", FMOD_ErrorString(result));
-        return;
+        return Error(sprint("Got bad result for mSystem->init:", FMOD_ErrorString(result)));
     }
     mIsValid = true;
 
@@ -125,8 +124,7 @@ AudioPlayer::AudioPlayer() {
 
     InitAudioDevice();
     if (!IsAudioDeviceReady()) {
-        print("Audio device not ready");
-        return;
+        return Error("Audio device not ready");
     }
     AttachAudioMixedProcessor(ProcessAudio);
     mIsValid = true;
@@ -134,9 +132,13 @@ AudioPlayer::AudioPlayer() {
 #endif
     // Init Sfx Clips
     if (auto errOpt = Sfx::instance().load(); errOpt) {
-        print(*errOpt);
+        return errOpt;
     }
+
+    return NULLOPT;
 }
+
+AudioPlayer::AudioPlayer() {}
 
 AudioPlayer::~AudioPlayer() {
     if (mIsValid) {
