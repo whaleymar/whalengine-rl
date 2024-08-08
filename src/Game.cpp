@@ -221,11 +221,10 @@ void Update() {
 
     // ECS DRAW START
     // -----------------------------------------------------------------------
-    // TODO lighting calls stubbed
-    // radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
+    radianceSystem->update(S_CAMERA_WORLDSPACE);            // drawn to TextureID::Radiance
     TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
     gfxSystem->drawEntities(S_CAMERA_WORLDSPACE);           // draws entities AND backgrounds
-    // drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
+    drawLights(S_CAMERA_WORLDSPACE);                        // drawn to TextureID::Lighting
 
     // -----------------------------------------------------------------------
     // ECS DRAW END
@@ -243,13 +242,11 @@ void Update() {
     // this unflips the y axis (RenderTextures are drawn upside down by default because raylib is stupid)
     DrawTexture(TextureManager::getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
     // DrawTexture(TextureManager::getRenderTexture(TextureID::Occlusion).texture, 0, 0, WHITE); // testing
-    // TODO STUBBED
-    // TextureManager::instance().drawLightingTexture();
-    // TextureManager::instance().drawRadianceTexture();
+    TextureManager::instance().drawLightingTexture();
+    TextureManager::instance().drawRadianceTexture();
     EndTextureMode();
 
-    // TODO stubbed
-    // postProcessPipeline->process(TextureID::PostProcess);
+    postProcessPipeline->process(TextureID::PostProcess);
 
     // -----------------------------------------------------------------------
     // POST PROCESSING EFFECTS END
@@ -264,18 +261,18 @@ void Update() {
 
     // TODO i want this to be in the gfx pipeline, but having trouble setting the palette texture uniform -- works after the *first* time i press
     // Q, but is completely black before that
-    // if (isQuantizeOn) {
-    //     BeginShaderMode(shaderQuantize);
-    //     SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-    // }
+    if (isQuantizeOn) {
+        BeginShaderMode(shaderQuantize);
+        SetShaderValueTexture(shaderQuantize, paletteTexUniform, TextureManager::instance().getTexture(TEXNAME_PALETTE));
+    }
 
     Color color = PauseMenu::instance().isActive() ? Color(25, 50, 75, 255) : WHITE;
 
     DrawTexturePro(TextureManager::getRenderTexture(TextureID::PostProcess).texture, SCREEN_SOURCE_RECT, SCREEN_DEST_RECT, {0.0f, 0.0f}, 0.0f, color);
 
-    // if (isQuantizeOn) {
-    //     EndShaderMode();
-    // }
+    if (isQuantizeOn) {
+        EndShaderMode();
+    }
 
     textSystem->drawEntities(color);
 

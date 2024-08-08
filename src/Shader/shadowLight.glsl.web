@@ -1,8 +1,10 @@
-#version 330
+#version 100
+
+precision mediump float;
 
 // Input vertex attributes (from vertex shader)
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 // Input uniform values
 // default:
@@ -16,13 +18,10 @@ uniform vec2 iResolution;
 uniform vec2 lp1;
 uniform float radiusPixels;
 
-// Output fragment color
-out vec4 finalColor;
-
 // good balance of speed & visuals
 // can handle 5+ lights
 // set steps to 100 for slightly less chunky shadows
-const float STEPS = 80.;
+const int STEPS = 50;
 const int LIGHTPASSES = 10;
 
 const vec3 wallColor = vec3(0.0);
@@ -34,12 +33,12 @@ float rand(vec2 n) {
 }
 
 bool isWall(vec2 p) {
-    vec4 sampleCol = texture(texture0, p);
+    vec4 sampleCol = texture2D(texture0, p);
     return sampleCol.a > 0.05;
 }
 
 vec3 getColor(vec2 p) {	 
-    vec4 sampleCol = texture(texture0, p);
+    vec4 sampleCol = texture2D(texture0, p);
     const float MIN_OCCLUSION_ALPHA = 0.9;
     return step(MIN_OCCLUSION_ALPHA, sampleCol.a) * wallColor + (1. - step(MIN_OCCLUSION_ALPHA, sampleCol.a)) * vec3(1.);
 }
@@ -49,8 +48,7 @@ vec3 getLighting(vec2 p, vec2 lp) {
 	vec2 samplePixel = p;
     float distance = length(p - lp);
 
-    int nSteps = int(STEPS * distance);
-	vec2 step = (lp-p)/float(nSteps);
+	vec2 step = (lp-p)/float(STEPS);
 
     // vec3 wallVal = distance/vec3(1.,1.,1.) + 1./distance*0.075*vec3(1.0,0.5,0.6);
 
@@ -58,7 +56,7 @@ vec3 getLighting(vec2 p, vec2 lp) {
     vec3 wallVal = 1./distance*0.075*vec3(1.0,0.5,0.6);
     vec3 airVal = vec3(1.0,1.0,1.0) + 1./distance*0.075*vec3(1.0,0.5,0.6);
 
-	for (int i = 0 ; i < nSteps; i++) {
+	for (int i = 0 ; i < STEPS; i++) {
 		if (isWall(samplePixel)) {
             return wallVal;
 		}
@@ -113,5 +111,6 @@ vec3 processLight(vec2 p, vec2 lightPos) {
 
 void main() {
     // vec2 lp1 = vec2(0.5, 0.5);
-    finalColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;
+    gl_FragColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;
 }
+

@@ -196,8 +196,7 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
             if (!drawMask[i]) {
                 continue;
             }
-            // TODO forcing default shader
-            if (true || layer.shader == Shaders::Default) {
+            if (layer.shader == Shaders::Default) {
                 drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
             } else {
                 if (layer.shader == Shaders::Bloom) {

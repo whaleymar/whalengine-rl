@@ -6,6 +6,7 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
+#ifndef __EMSCRIPTEN__
 namespace FMOD {
 
 class System;
@@ -16,6 +17,12 @@ class ChannelControl;
 class DSP;
 
 }  // namespace FMOD
+#else
+
+#include <raylib.h>
+#include <vector>
+
+#endif
 
 namespace whal {
 
@@ -33,11 +40,22 @@ public:
     void operator=(const AudioClip&) = delete;
 
     Corrade::Containers::Optional<Error> load(const char* path);
+
+#ifndef __EMSCRIPTEN__
     bool isValid() const { return mSound != nullptr; }
     FMOD::Sound* get() const { return mSound; }
+#else
+    bool isValid() const { return mIsValid; }
+    Sound get() const { return mSound; }
+#endif
 
 private:
+#ifndef __EMSCRIPTEN__
     FMOD::Sound* mSound = nullptr;
+#else
+    bool mIsValid = false;
+    Sound mSound;
+#endif
 };
 
 class AudioPlayer {
@@ -63,7 +81,6 @@ public:
     bool isValid() const { return mIsValid; }
     void update();
 
-    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
     void setFilterMusic(Filter filter);
     void setFilterClips(Filter filter);
     Filter getFilterMusic() const { return mMusicFilter; }
@@ -76,11 +93,13 @@ private:
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 
+#ifndef __EMSCRIPTEN__
     FMOD::System* getSystem() const;
     void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
                              bool isInGroup = true);
-    void setChannelFilter(Filter filter, FMOD::ChannelControl* channel);
 
+    void setChannelFilter(Filter filter, FMOD::ChannelControl* channel);
+    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
     FMOD::Sound* mMusic = nullptr;
     FMOD::ChannelGroup* mClipChannelGroup = nullptr;
     FMOD::Channel* mClipChannelPool[MAX_CHANNELS];
@@ -88,6 +107,12 @@ private:
     FMOD::Channel* mMenuChannel = nullptr;
     FMOD::System* mSystem = nullptr;
     FMOD::DSP* mLowpassFilter = nullptr;
+#else
+    Music mMusic;
+    std::vector<Sound> mClipSounds;
+    std::vector<Sound> mMenuSounds;
+    bool mIsClipsPaused = false;
+#endif
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;
