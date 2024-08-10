@@ -11,6 +11,7 @@
 
 #include "Components/Tween.h"
 #include "Entities/Camera.h"
+#include "Game/Components/Shake.h"
 #include "Game/Systems/ShakeSystem.h"
 #include "Systems/Animation.h"
 #include "Systems/CallbackSystem.h"
@@ -181,6 +182,10 @@ void Update() {
 
 #ifndef NDEBUG
     if (IsKeyPressed(KEY_K)) {
+        auto cameraOpt = getCamera();
+        if (cameraOpt) {
+            cameraOpt->add(Shake());
+        }
         for (auto [entityid, entity] : System::world.getSystem<PlayerSystem>()->getEntitiesMutable()) {
             entity.kill();
         }

@@ -143,9 +143,6 @@ private:
     };
     DrawTag mTag;
     TextureID mLayerTexture = TextureID::LayerNormal;
-
-public:
-    Vector2i offset;
 };
 
 struct DrawText {

@@ -13,6 +13,7 @@
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Respawn.h"
+#include "Game/Components/Shake.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
