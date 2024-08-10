@@ -180,7 +180,6 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
 
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         if (isFirstDrawToMain) {
-            // ClearBackground(Colors::Clear);
             ClearBackground({58, 57, 106, 255});
             drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
             isFirstDrawToMain = false;
@@ -249,9 +248,6 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
     std::forward_list<DrawInfo>::iterator it;
     for (it = startIt; it != layer.sorted.end() && it->depthId == startIt->depthId; ++it) {
         const auto drawInfo = *it;
-        // if (drawInfo.entity.has<Invisible>()) {
-        //     continue;
-        // }
         Shaders newShader = static_cast<Shaders>(drawInfo.shaderIx);
         if (newShader != prevShader) {
             prevShader = newShader;
@@ -267,7 +263,7 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
 void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Transform2D trans = entity.get<Transform2D>();
     Draw draw = entity.get<Draw>();
-    const Vector2i pos = trans.position + draw.offset;
+    const Vector2i pos = trans.position;
     Vector2f posF = pos.as<f32>();
     const Vector2i cameraPos = cameraPosF.round();
     const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
