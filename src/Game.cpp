@@ -143,8 +143,7 @@ bool Game::start() {
     radianceSystem = System::world.getSystem<RadianceLightSystem>();
 
     // graphics stuff:
-    shaderQuantize = ShaderManager::get(Shaders::Quantize);
-    paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
+    System::eventMgr.triggerEvent<ShaderReloadEvent>();  // update uniforms tracked by ECS systems
     postProcessPipeline = new Pipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {
                                                                                         // Shaders::Bloom,
                                                                                         // Shaders::Glitch,
@@ -321,6 +320,11 @@ void Game::onEvent(whal::DeathEvent, ecs::Entity entity) {
     removeEntityFromLevel(entity);
 }
 
+void Game::onEvent(whal::ShaderReloadEvent) {
+    shaderQuantize = ShaderManager::get(Shaders::Quantize);
+    paletteTexUniform = GetShaderLocation(shaderQuantize, "iPalette");
+}
+
 void Game::removeEntityFromLevel(ecs::Entity entity) {
     Scene& scene = getScene();
     if (scene.childEntities.erase(entity)) {
@@ -428,11 +432,9 @@ Corrade::Containers::Optional<Error> Game::reloadScene(bool resetPlayers) {
         checkIfInNewLevel(true);
     }
 
-    // #ifndef NDEBUG
-    // TODO for this to work i think i need to reload all uniforms, which sucks bc they're all decentralized
-    // ShaderManager::instance().unloadAll();
-    // ShaderManager::instance().loadShaders();
-    // #endif
+#ifndef NDEBUG
+    ShaderManager::instance().reloadShaders();
+#endif
 
     return errOpt;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Events/Events.h"
+#include "Sys/System.h"
 #include "whalECS/src/ECS.h"
 
 typedef struct Shader Shader;
@@ -15,19 +17,19 @@ struct ShadowLight;
 
 void drawLights(Camera2D worldCamera);
 
-class PointLightSystem : public ecs::ISystem<Transform2D, PointLight> {
+class PointLightSystem : public ecs::ISystem<Transform2D, PointLight>, public IListen<ShaderReloadEvent, true> {
 public:
-    PointLightSystem();
     void update();
+    void onEvent(ShaderReloadEvent) override;
 
 private:
     int mPositionUniform;
 };
 
-class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight> {
+class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public IListen<ShaderReloadEvent, true> {
 public:
-    BoxLightSystem();
     void update();
+    void onEvent(ShaderReloadEvent) override;
 
 private:
     int mPositionUniform;
@@ -35,18 +37,23 @@ private:
     int mRadiusUniform;
 };
 
-class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance> {
+class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<ShaderReloadEvent, true> {
 public:
-    RadianceLightSystem();
     void update(Camera2D worldCamera);
+    void onEvent(ShaderReloadEvent) override;
 
 private:
     int mPositionUniform;
 };
 
-class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight> {
+class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public IListen<ShaderReloadEvent, true> {
 public:
     void update();
+    void onEvent(ShaderReloadEvent) override;
+
+private:
+    int mLightPosUniform;
+    int mRadiusUniform;
 };
 
 }  // namespace whal

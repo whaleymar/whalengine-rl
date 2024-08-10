@@ -42,6 +42,7 @@ public:
 
     void loadShaders();
     void unloadAll();
+    void reloadShaders();
 
 private:
     Shader _get(Shaders shaderEnum) const;
