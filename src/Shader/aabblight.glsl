@@ -12,15 +12,14 @@ uniform vec4 colDiffuse;
 uniform vec2 lightpos;
 uniform vec2 lighthalflen;
 uniform float lightradius;
-uniform vec2 screenSize;
+uniform vec2 iResolution;
 
 // Output fragment color
 out vec4 finalColor;
 
 void main() {
     // Get the position of the current fragment (screen coordinates!)
-    // vec2 position = vec2( gl_FragCoord.x - WIDTH/2., HEIGHT/2. - gl_FragCoord.y);
-    vec2 position = vec2( gl_FragCoord.x - screenSize.x/2., screenSize.y/2. - gl_FragCoord.y);
+    vec2 position = vec2( gl_FragCoord.x - iResolution.x/2., iResolution.y/2. - gl_FragCoord.y);
 
     // clamp delta to be on the light's bounds. that is the closest point on the light to the pixel 
     vec2 delta = position - lightpos; // vector pointing from light center to cur pixel

@@ -76,7 +76,7 @@ void ShaderManager::loadShaders() {
     static const ShaderInfo shaderInfo[] = {
         {Shaders::Default, 0, 0},
         {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
-        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl"},
+        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::Resolution},
         {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
         {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
@@ -118,6 +118,7 @@ void ShaderManager::loadShaders() {
         if (S_UNIFORMS[ix].isSet(Uniforms::Resolution)) {
             S_UNIFORMS[ix].iResolution = GetShaderLocation(shader, "iResolution");
         }
+        // not working
         // if (S_UNIFORMS[ix].isSet(Uniforms::Palette)) {
         //     S_UNIFORMS[ix].iPalette = GetShaderLocation(shader, "iPalette");
         // }
@@ -125,13 +126,19 @@ void ShaderManager::loadShaders() {
 }
 
 void ShaderManager::unloadAll() {
-    // idk why this is segfaulting. this runs on program close so maybe the memory is free'd somehow during shutdown
     const s32 maxShaderCount = static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME);
     for (size_t i = 0; i < maxShaderCount; i++) {
         if (getIsUsed(i)) {
             UnloadShader(S_SHADERS[i]);
         }
     }
+}
+
+void ShaderManager::reloadShaders() {
+    unloadAll();
+    loadShaders();
+
+    System::eventMgr.triggerEvent<ShaderReloadEvent>();
 }
 
 Shader ShaderManager::get(Shaders shaderEnum) {

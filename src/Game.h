@@ -19,7 +19,9 @@ class Entity;
 
 }  // namespace whal
 
-class Game : public whal::IGame, public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity> {
+class Game : public whal::IGame,
+             public whal::IListen<whal::DeathEvent, true, whal::ecs::Entity>,
+             public whal::IListen<whal::ShaderReloadEvent, true> {
 public:
     static Game& instance() {
         static Game instance_;
@@ -36,6 +38,7 @@ public:
 
     // calls removeEntityFromLevel on killed entity
     void onEvent(whal::DeathEvent, whal::ecs::Entity) override;
+    void onEvent(whal::ShaderReloadEvent) override;
 
     void removeEntityFromLevel(whal::ecs::Entity entity);
     Corrade::Containers::Optional<Error> loadScene(const char* name, bool resetPlayers);

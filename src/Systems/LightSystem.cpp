@@ -8,6 +8,7 @@
 #include "Components/Light.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
+#include "Events/Events.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
@@ -39,7 +40,7 @@ void drawLights(Camera2D worldCamera) {
     lightingPipeline.process(TextureID::Lighting);
 }
 
-PointLightSystem::PointLightSystem() {
+void PointLightSystem::onEvent(ShaderReloadEvent) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
 }
 
@@ -84,14 +85,11 @@ void PointLightSystem::update() {
     }
 }
 
-BoxLightSystem::BoxLightSystem() {
+void BoxLightSystem::onEvent(ShaderReloadEvent) {
     Shader shader = ShaderManager::get(Shaders::BoxLight);
     mPositionUniform = GetShaderLocation(shader, "lightpos");
     mHalflenUniform = GetShaderLocation(shader, "lighthalflen");
     mRadiusUniform = GetShaderLocation(shader, "lightradius");
-    int screenSizeUniform = GetShaderLocation(shader, "screenSize");
-    Vector2 screenSizeVec(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-    SetShaderValue(shader, screenSizeUniform, &screenSizeVec, SHADER_UNIFORM_VEC2);
 }
 
 void BoxLightSystem::update() {
@@ -148,7 +146,7 @@ void BoxLightSystem::update() {
     }
 }
 
-RadianceLightSystem::RadianceLightSystem() {
+void RadianceLightSystem::onEvent(ShaderReloadEvent) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::Radiance), "position");
 }
 
@@ -198,10 +196,13 @@ void RadianceLightSystem::update(Camera2D worldCamera) {
     EndTextureMode();
 }
 
+void ShadowLightSystem::onEvent(ShaderReloadEvent) {
+    mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
+    mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
+}
+
 void ShadowLightSystem::update() {
     // RESEARCH maybe pass angle/spread uniform?
-    static const int lp1Uniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
-    static const int radiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
 
     auto shader = ShaderManager::get(Shaders::ShadowLight);
     for (auto [entityid, entity] : getEntitiesMutable()) {
@@ -211,10 +212,10 @@ void ShadowLightSystem::update() {
         Vector2i entityPos = entity.get<Transform2D>().position;
         Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightTexels * PIXELS_PER_TEXEL));
         Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
-        SetShaderValue(shader, lp1Uniform, &screenPosRL, SHADER_UNIFORM_VEC2);
+        SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
 
         const f32 lightRadiusPixels = light.radiusTexels * PIXELS_PER_TEXEL;
-        SetShaderValue(shader, radiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
         auto& tex = TextureManager::getRenderTexture(TextureID::Occlusion).texture;
         DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), light.color);
         EndShaderMode();
