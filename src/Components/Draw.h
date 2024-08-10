@@ -9,6 +9,18 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
+inline Color operator+(const Color& left, const Color& right) {
+    return Color(left.r + right.r, left.g + right.g, left.b + right.b, left.a + right.a);
+}
+
+inline Color operator*=(Color& left, const f32 f) {
+    left.r = left.r * f;
+    left.g = left.g * f;
+    left.b = left.b * f;
+    left.a = left.a * f;
+    return left;
+}
+
 namespace whal {
 
 Color hexStringARGBToColor(std::string hexstring);
@@ -131,6 +143,9 @@ private:
     };
     DrawTag mTag;
     TextureID mLayerTexture = TextureID::LayerNormal;
+
+public:
+    Vector2i offset;
 };
 
 struct DrawText {

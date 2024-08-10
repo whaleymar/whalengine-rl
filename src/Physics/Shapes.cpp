@@ -116,7 +116,9 @@ void Circle::setPosition(Vector2i center) {
 }
 
 void Circle::setPosition(Transform2D transform) {
-    mCenter = Vector2i(transform.position.x, transform.position.y + mRadius);
+    // TODO needs work, is a little off on X axis when sprite is Not rotated about center (which reminds me... should be part of Transform)
+    // mCenter = transform.position + Vector2i(0, mRadius);
+    mCenter = transToCenter(transform, Vector2i(mRadius, mRadius));
 }
 
 #ifndef NDEBUG

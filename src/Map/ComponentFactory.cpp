@@ -29,7 +29,6 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
-#include "Components/Tween.h"
 #include "Components/Velocity.h"
 #include "Systems/TagTrackers.h"
 
@@ -59,7 +58,6 @@ DECLARE_COMPONENT_GETTER(whal::DrawText);
 DECLARE_COMPONENT_GETTER(whal::ParticleEmitter);
 DECLARE_COMPONENT_GETTER(whal::Name);
 DECLARE_COMPONENT_GETTER(whal::Animator);
-DECLARE_COMPONENT_GETTER(whal::TweenPosition);
 DECLARE_COMPONENT_GETTER(SwitchGate);
 #endif
 
@@ -145,9 +143,6 @@ static void addComponentFollow(const nlohmann::json& values, const nlohmann::jso
 static void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allObjects,
                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-static void addComponentTweenPosition(const nlohmann::json& values, const nlohmann::json& allObjects,
-                                      const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                                      const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 
 static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const ActiveLevel& level);
 
@@ -186,7 +181,6 @@ static Lifetime DefaultLifeTime;
 static SwitchGate DefaultSwitchGate;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
-static TweenPosition DefaultTweenPosition;
 static TextureID DefaultDrawLayer = TextureID::LayerNormal;
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
@@ -213,7 +207,6 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_SwitchGate", addSwitchGateComponent},
     {"Component_Text", addComponentText},
     {"Component_ParticleEmitter", addComponentParticleEmitter},
-    {"Component_TweenPosition", addComponentTweenPosition},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -364,21 +357,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "seconds") {
                 DefaultLifeTime.secondsRemaining = member[KEY_VALUE];
-            } else {
-                print("Skipping member ", memberName, "for", componentName);
-            }
-        }
-
-    } else if (componentName == "Component_TweenPosition") {
-        DefaultTweenPosition = TweenPosition();
-        for (const auto& member : property[KEY_MEMBERS]) {
-            std::string memberName = member[KEY_NAME];
-            if (memberName == "Duration") {
-                DefaultTweenPosition.duration = member[KEY_VALUE];
-            } else if (memberName == "Easing") {
-                DefaultTweenPosition.easing = member[KEY_VALUE];
-            } else if (memberName == "Target") {
-                // do nothing
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -898,24 +876,6 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
 
     attach.offsetTexels = (thisPosition - otherPosition) / PIXELS_PER_TEXEL;
     entity.add(attach);
-}
-
-void addComponentTweenPosition(const nlohmann::json& values, const nlohmann::json& allObjects,
-                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                               const ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
-    TweenPosition tp = entity.has<TweenPosition>() ? entity.get<TweenPosition>() : DefaultTweenPosition;
-
-    tryReadFloat(values, "Duration", &tp.duration);
-    tryReadVal(values, "Easing", &tp.easing);
-    assert(values.contains("Target") && "TweenPosition component missing target");
-
-    // other isn't guaranteed to have been parsed. Calculate its transform manually
-    s32 targetId = readInt(values, "Target");
-    const auto& targetObj = allObjects[idToIndex.at(targetId).first];
-    Vector2i otherDimsTexels = getObjectSize(targetObj);
-    tp.target = getTransformFromMapPosition(readVector2i(targetObj), otherDimsTexels, level, true).position;
-
-    entity.add(tp);
 }
 
 void addComponentRigidBody(const nlohmann::json& values, const nlohmann::json& allObjects,

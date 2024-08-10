@@ -51,7 +51,11 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
-    Transform2D trans = Transform2D(center - Vector2i(0, animator.getFrame().dimensionsTexels.y * PIXELS_PER_TEXEL / 2));
+    const Vector2i spriteHalfHeight = Vector2i(0, -animator.getFrame().dimensionsTexels.y * PIXELS_PER_TEXEL / 2);
+    const Vector2i triggerHalfHeight = Vector2i(0, -halflen);
+    const Vector2i triggerOffset = triggerHalfHeight - spriteHalfHeight;
+
+    Transform2D trans = Transform2D(center + spriteHalfHeight);
     entity.add(trans);
 
     entity.add(PushStrength(pushStrength));
@@ -146,7 +150,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         }
     };
     auto shape = Shape(Circle(center, halflen));
-    auto trigger = Trigger(shape, CollisionLayer::TriggerActors, pushEntityAway);
+    auto trigger = Trigger(shape, CollisionLayer::TriggerActors, pushEntityAway, triggerOffset);
     entity.add(trigger);
 
     entity.add(Lifetime(lifetimeSeconds));

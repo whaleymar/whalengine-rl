@@ -239,15 +239,37 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
         trigger.onTriggerEnter = nullptr;
     };
 
-    // if (!CameraSystem::getEntitiesMutable().empty()) {
-    //     TweenPosition tween = TweenPosition(Vector2i(PIXELS_PER_TILE * 2, 1), 2.0f, Ease::InOutSine)
-    //                               .asRelative()
-    //                               .setLoops(5)
-    //                               .asRunDuringPause()
-    //                               .asBounce()
-    //                               .from(CameraSystem::first().get<Transform2D>().position);
-    //     entity.add(tween);
-    // }
+    // TweenPosition tween = TweenPosition(Vector2i(PIXELS_PER_TILE * 2, 1), 2.0f, Ease::InOutSine)
+    //                           .from(CameraSystem::first().get<Transform2D>().position)
+    //                           .asRelative()
+    //                           .setLoops(5)
+    //                           .asRunDuringPause()
+    //                           .asBounce();
+    // entity.add(tween);
+
+    // TweenFloat tween = TweenFloat(360.0f, 2.0f, [](ecs::Entity self) -> f32& { return self.get<Transform2D>().rotationDegrees; })
+    //                        .setDelay(1.0f)
+    //                        .setLoops(1)
+    //                        .asRelative()
+    //                        .setTransition(Ease::InOutSine)
+    //                        .asBounce();
+    // TweenManager::add(tween, entity);
+    //
+    // TweenInt posXTween = TweenInt(-25, 2.5, [](ecs::Entity self) -> s32& { return self.get<Transform2D>().position.x; }).asRelative();
+    // TweenManager::add(posXTween, entity);
+    //
+    // TweenManager::add(
+    //     TweenVec2f({5.0f, 5.0f}, 4.0f, [](ecs::Entity self) -> Vector2f& { return self.get<Draw>().getSprite().scale; }).from(Vector2f(0.5, 0.5)),
+    //     entity);
+    //
+    // TweenManager::add(TweenColor(RED, 3.0f, [](ecs::Entity self) -> Color& { return self.get<Draw>().getSprite().color; })
+    //                       .from(BLUE)
+    //                       .setLoops(1)
+    //                       .setTransition(Ease::InQuad),
+    //                   entity);
+
+    // TweenManager::add(TweenVec2i(Vector2i(5, 5), 2.5f, [](ecs::Entity self) -> Vector2i& { return self.get<Draw>().offset; }), entity);
+    // entity.add(Shake());
 }
 
 void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {

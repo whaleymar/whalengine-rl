@@ -81,7 +81,7 @@ f32 RailsControl::getSpeedNew() {
     const Vector2f targetPosf = getTarget().position.as<f32>();
     const f32 segmentDistance = (targetPosf - startPosition).len();
     const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in tiles/sec, but pos is in pixels
-    f32 newSpeed = ease(0, speed, curActionTime / expectedSegmentTime, getTarget().movement);
+    f32 newSpeed = ease(0.0f, speed, curActionTime / expectedSegmentTime, getTarget().movement);
 
     return newSpeed;
 }
