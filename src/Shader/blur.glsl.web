@@ -51,9 +51,9 @@ void main() {
     {
         for (int j=-kSize; j <= kSize; ++j)
         {
-            vec2 sampleCoord = coord.xy+vec2(float(i),float(j));
-            sampleCoord = clamp(sampleCoord, vec2(0.), iResolution);
-            final_colour += kernel[kSize+j]*kernel[kSize+i]*texture2D(texture0, sampleCoord/iResolution.xy).rgb;
+            vec2 sampleCoord = (coord.xy+vec2(float(i),float(j)))/iResolution;
+            sampleCoord = clamp(sampleCoord, vec2(0.), vec2(0.999999)); // no texture wrapping
+            final_colour += kernel[kSize+j]*kernel[kSize+i]*texture2D(texture0, sampleCoord).rgb;
 
         }
     }
