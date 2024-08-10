@@ -308,9 +308,21 @@
                 }, 
                 {
                  "id":34,
+                 "properties":[
+                        {
+                         "name":"Animation",
+                         "propertytype":"Component_Sprite_Animated",
+                         "type":"class",
+                         "value":
+                            {
+                             "Animator":"actor\/blast-crystal",
+                             "Layer":"Bloom",
+                             "rotateAboutCenter":false
+                            }
+                        }],
                  "template":"templates\/BlastCrystal.tj",
-                 "x":83,
-                 "y":34
+                 "x":139,
+                 "y":87
                 }, 
                 {
                  "id":37,

@@ -11,6 +11,12 @@ void TriggerSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         std::vector<ecs::Entity> newInsideList;
         auto& trigger = entity.get<Trigger>();
+        const auto trans = entity.get<Transform2D>();
+
+        // update trigger zone w/ transform
+        Transform2D adjustedTransform = trans;
+        adjustedTransform.position += trigger.offset;
+        trigger.shape.setPosition(adjustedTransform);
 
         for (auto other : QuadTreeSystem::query(trigger.shape.getBoundingBox())) {
             auto collider = other.get<Collider>();

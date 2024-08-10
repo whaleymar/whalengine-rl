@@ -266,8 +266,9 @@ std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& 
 
 void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Transform2D trans = entity.get<Transform2D>();
-    Vector2f posF = trans.position.as<f32>();
     Draw draw = entity.get<Draw>();
+    const Vector2i pos = trans.position + draw.offset;
+    Vector2f posF = pos.as<f32>();
     const Vector2i cameraPos = cameraPosF.round();
     const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
 
@@ -279,12 +280,12 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
 
         // skip if entity is off screen
         // use generous 2x'd half len so we don't have to worry about rotations
-        if (AABB drawBox = AABB(trans.position, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
+        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
             return;
         }
 
         // subtract size.y so we draw from bottom left instead of top left
-        Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y - dstSize.y};
+        Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y - dstSize.y};
         // add halfX to pos to match the origin thingy done w/ sprites
         dstPosition -= {dstSize.x * 0.5f, 0};
         Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
@@ -301,7 +302,7 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
 
         // skip if entity is off screen
         // use generous 2x'd half len so we don't have to worry about rotations
-        if (AABB drawBox = AABB(trans.position, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
+        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
             return;
         }
 
@@ -320,9 +321,8 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
     case Draw::DrawTag::BezierQuad: {
         const DrawBezierQuad bezier = draw.getBezierQuad();
 
-        DrawSplineSegmentBezierQuadratic(toScreenCoord(trans.position, cameraPos),
-                                         toScreenCoord(trans.position + bezier.controlPointOffset, cameraPos),
-                                         toScreenCoord(trans.position + bezier.endPointOffset, cameraPos), bezier.thickness, bezier.color);
+        DrawSplineSegmentBezierQuadratic(toScreenCoord(pos, cameraPos), toScreenCoord(pos + bezier.controlPointOffset, cameraPos),
+                                         toScreenCoord(pos + bezier.endPointOffset, cameraPos), bezier.thickness, bezier.color);
         break;
     }
     case Draw::DrawTag::Line: {
@@ -332,12 +332,12 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
         Vector2i endPos;
         if (line.isRotateAboutCenter) {
             Vector2f halfLine = angleToUnit(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
-            startPos = (trans.position.as<f32>() - halfLine).round();
-            endPos = (trans.position.as<f32>() + halfLine).round();
+            startPos = (posF - halfLine).round();
+            endPos = (posF + halfLine).round();
 
         } else {
-            startPos = trans.position;
-            endPos = trans.position + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
+            startPos = pos;
+            endPos = pos + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
         }
 
         DrawLineEx(toScreenCoord(startPos, cameraPos), toScreenCoord(endPos, cameraPos), line.thickness, line.color);

@@ -9,7 +9,9 @@
 #include "Components/RigidBody.h"
 #include "Components/Transform.h"
 
+#include "Components/Tween.h"
 #include "Entities/Camera.h"
+#include "Game/Systems/ShakeSystem.h"
 #include "Systems/Animation.h"
 #include "Systems/CallbackSystem.h"
 #include "Systems/CollisionManager.h"
@@ -45,7 +47,6 @@
 #include "Sys/PauseMenu.h"
 #include "Sys/System.h"
 
-#include "Systems/TweenSystem.h"
 #include "Util/Print.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -123,10 +124,9 @@ bool Game::start() {
     // note: nothing is actually running in parallel yet
     System::world.BeginSystemRegistration()
         .parallel<ControllerSystem, FreeControlSystem, JumpSystem>()
-        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem,
-                    TweenPositionSystem>()  // all entity movement happens here
+        .sequential<RotationPhysicsSystem, PhysicsSystem, RailsSystem, FollowSystem, AttachSystem, OrbitSystem>()  // all entity movement happens here
         .parallel<TriggerSystem, LifetimeSystem, FadeOutSystem, ColorLerpSystem, ScaleLerpSystem>()
-        .parallel<ParticleEmitterSystem, ProjectileSystem, CustomUpdateSystem>()
+        .parallel<ParticleEmitterSystem, ProjectileSystem, CustomUpdateSystem, ShakeSystem>()
         .parallel<RocketJumpingSystem, SlowEntityKillerSystem>(2)
         .parallel<OnFrameEndSystem, AudioListenerSystem, AnimationSystem>();
 
@@ -172,6 +172,7 @@ static const Rectangle SCREEN_DEST_RECT = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREE
 // the update loop is in its own function bc emscripten
 void Update() {
     System::Update();
+    TweenManager::instance().update();  // cannot do this from system update because of circular imports
 
     // Update Scene
     Game::instance().checkIfInNewLevel();

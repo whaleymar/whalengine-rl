@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include "Components/PlayerControl.h"
-#include "Components/TriggerZone.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
@@ -151,13 +150,6 @@ void PhysicsSystem::update() {
                 auto remainder = move - moveRounded.as<f32>();
                 vel.residualImpulse += remainder;
                 trans.position += moveRounded;
-            }
-
-            if (entity.has<Trigger>()) {
-                auto trigger = entity.get<Trigger>();
-                Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
-                trigger.shape.setPosition(adjustedTransform);
-                entity.set(trigger);
             }
         }
         // ----------------------------------------------------------------

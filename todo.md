@@ -19,6 +19,7 @@
 - idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
     - could be a jump with neutral/directional variants for a little more control over what happens next
 - ducking: make collider smaller, moves camera down after a sec like spelunky
+- fast falling
 
 ## Camera / Follow
 - pretty awful in general
@@ -64,7 +65,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
 
 ## Physics:
-- a lot of physics stuff (like velocity) is stored as floats even though it could be fixed precision (like nearest tenth of a texel) --> I should use ints for this?
 - jumping: instead of applying contant upward velocity, could try reducing gravity while jump button held instead 
     - can also try the high parameter jump that sakurai suggested in his video
 - quad tree ray cast
