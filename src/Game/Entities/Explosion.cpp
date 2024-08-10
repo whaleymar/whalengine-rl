@@ -9,6 +9,7 @@
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
+#include "Util/Easing.h"
 #include "whalECS/src/ECS.h"
 
 #include "Gfx/Depth.h"
@@ -160,7 +161,7 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     f32 distance = (getCameraPosition() - trans.position).as<f32>().len();
     f32 maxVolume = 0.2f;
     f32 maxDistance = 1500.0f;
-    f32 volume = myLerp(maxVolume, 0.0f, easeOutQuad(distance / maxDistance));
+    f32 volume = ease(maxVolume, 0.0f, distance / maxDistance, Ease::OutQuad);
     System::audio.playClip(Sfx::EXPLOSION, volume, AudioPlayer::Filter::None, false, &trans.position);
     // System::audio.playClip(Sfx::EXPLOSION, volume);
 

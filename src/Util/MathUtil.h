@@ -7,8 +7,8 @@
 #endif
 #include "Util/Types.h"
 
-inline constexpr f32 PI_MINE = 3.14159265358979323846;
-inline constexpr f32 RAD_TO_DEG = 180.0f / PI_MINE;
+inline constexpr f32 MATH_PI = 3.14159265358979323846;
+inline constexpr f32 RAD_TO_DEG = 180.0f / MATH_PI;
 
 template <class T>
 concept SignedNumber = std::signed_integral<T> || std::floating_point<T>;
@@ -56,55 +56,4 @@ inline f32 approach(const f32 val, const f32 target, const f32 move) {
         return std::min(val + move, target);
     }
     return std::max(val - move, target);
-}
-
-inline f32 easeInOutBezier(const f32 t) {
-    return t * t * (3 - 2 * t);
-}
-
-inline f32 easeInOutBezierDt(const f32 t) {
-    return -6 * (t - 1) * t;
-}
-
-inline f32 easeInOutSine(const f32 t) {
-    // trough @ t=0, crest @ t=1
-    return 0.5 * (1 + std::sin(PI_MINE * (t - 0.5)));
-}
-
-inline f32 easeInOutSineDt(const f32 t) {
-    // trough @ t=0, crest @ t=0.5, trough @ t=1
-    return 0.5 * PI_MINE * std::cos(PI_MINE * (t - 0.5));
-}
-
-inline f32 easeInQuad(const f32 t) {
-    return t * t;
-}
-
-inline f32 easeInQuadDt(const f32 t) {
-    return 2 * t;
-}
-
-inline f32 easeInCubic(const f32 t) {
-    return t * t * t;
-}
-
-inline f32 easeInCubicDt(const f32 t) {
-    return 3 * t * t;
-}
-
-// THIS ONE USED
-inline f32 easeOutQuad(const f32 t) {
-    return std::sqrt(t);
-}
-
-inline f32 easeOutQuadDt(const f32 t) {
-    return 1 / (2 * std::sqrt(t));
-}
-
-inline f32 easeOutCubic(const f32 t) {
-    return std::cbrt(t);
-}
-
-inline f32 easeOutCubicDt(const f32 t) {
-    return 1 / (3 * std::cbrt(t * t));
 }
