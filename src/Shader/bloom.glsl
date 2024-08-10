@@ -47,9 +47,7 @@ void main()
             {
                 vec2 coord = fragTexCoord + vec2(x, y)*sizeFactor;
                 // no wrapping
-                if (coord.x < 0. || coord.x > 1. || coord.y < 0. || coord.y > 1.) {
-                    continue;
-                }
+                coord = clamp(coord, vec2(0.), vec2(0.9999999));
                 vec4 sampleCol = texture(texture0, coord);
                 sum += sampleCol;
             }
