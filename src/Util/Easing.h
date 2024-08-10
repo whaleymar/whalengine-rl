@@ -1,37 +1,50 @@
 #pragma once
 
 #include "Components/Draw.h"
-#include "Util/MathUtil.h"
 #include "Util/Vector.h"
 
 enum class Ease {
     Linear,
     InOutBezier,
+    InSine,
+    OutSine,
     InOutSine,
+    OutInSine,
     InQuad,
     OutQuad,
+    InOutQuad,
+    OutInQuad,
     InCubic,
     OutCubic,
+    InOutCubic,
+    OutInCubic,
+    InQuart,
+    OutQuart,
+    InOutQuart,
+    OutInQuart,
+    InQuint,
+    OutQuint,
+    InOutQuint,
+    OutInQuint,
+    InBounce,
+    OutBounce,
+    InOutBounce,
+    OutInBounce,
+    InElastic,
+    OutElastic,
+    InOutElastic,
+    OutInElastic,
+    InBack,
+    OutBack,
+    InOutBack,
+    OutInBack,
+    InSpring,
+    OutSpring,
+    InOutSpring,
+    OutInSpring,
 };
 
-inline f32 getEaseProgress(f32 t, Ease easeFunc) {
-    switch (easeFunc) {
-    case Ease::Linear:
-        return t;
-    case Ease::InOutBezier:
-        return easeInOutBezier(t);
-    case Ease::InOutSine:
-        return easeInOutSine(t);
-    case Ease::InQuad:
-        return easeInQuad(t);
-    case Ease::OutQuad:
-        return easeOutQuad(t);
-    case Ease::InCubic:
-        return easeInCubic(t);
-    case Ease::OutCubic:
-        return easeOutCubic(t);
-    }
-}
+f32 getEaseProgress(f32 t, Ease easeFunc);
 
 inline f32 ease(const f32 n1, const f32 n2, f32 t, Ease easeFunc) {
     return myLerp(n1, n2, getEaseProgress(t, easeFunc));
@@ -52,5 +65,3 @@ inline Vector2i ease(const Vector2i n1, Vector2i n2, f32 t, Ease easeFunc) {
 inline Color ease(Color c1, Color c2, f32 t, Ease easeFunc) {
     return whal::Colors::lerp(c1, c2, getEaseProgress(t, easeFunc));
 }
-
-// TODO color, then easing

@@ -9,6 +9,7 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
+#include "Components/Tween.h"
 #include "Components/Velocity.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
@@ -240,25 +241,18 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
         trigger.onTriggerEnter = nullptr;
     };
 
-    // TweenPosition tween = TweenPosition(Vector2i(PIXELS_PER_TILE * 2, 1), 2.0f, Ease::InOutSine)
-    //                           .from(CameraSystem::first().get<Transform2D>().position)
-    //                           .asRelative()
-    //                           .setLoops(5)
-    //                           .asRunDuringPause()
-    //                           .asBounce();
-    // entity.add(tween);
-
     // TweenFloat tween = TweenFloat(360.0f, 2.0f, [](ecs::Entity self) -> f32& { return self.get<Transform2D>().rotationDegrees; })
     //                        .setDelay(1.0f)
     //                        .setLoops(1)
-    //                        .asRelative()
-    //                        .setTransition(Ease::InOutSine)
-    //                        .asBounce();
+    // .asBounce()
+    // .asRelative()
+    //                        .setTransition(Ease::InOutQuint);
     // TweenManager::add(tween, entity);
-    //
-    // TweenInt posXTween = TweenInt(-25, 2.5, [](ecs::Entity self) -> s32& { return self.get<Transform2D>().position.x; }).asRelative();
+
+    // TweenInt posXTween =
+    //     TweenInt(-50, 2.5, [](ecs::Entity self) -> s32& { return self.get<Transform2D>().position.x; }).asRelative().setTransition(Ease::InBounce);
     // TweenManager::add(posXTween, entity);
-    //
+
     // TweenManager::add(
     //     TweenVec2f({5.0f, 5.0f}, 4.0f, [](ecs::Entity self) -> Vector2f& { return self.get<Draw>().getSprite().scale; }).from(Vector2f(0.5, 0.5)),
     //     entity);
