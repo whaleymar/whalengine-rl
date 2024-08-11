@@ -24,7 +24,6 @@ Expected<ecs::Entity> createCamera(Transform2D trans) {
     auto camera = expected.value();
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
-    camera.add<Velocity>();
     camera.add(Name("Camera"));
     camera.add<Camera>();
     camera.add<AudioListener>();
@@ -39,15 +38,6 @@ void onCameraAtDestination(ecs::Entity cameraEntity, RailsControl& rails) {
     cameraEntity.add(OnFrameEnd(frameEndCallback));
     cameraEntity.add<Velocity>();  // railscontrol removed it
     System::time.setMultiplier(1.0);
-}
-
-RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextPosition) {
-    return RailsControl(520,
-                        {
-                            {currentPosition, Ease::Linear},
-                            {nextPosition, Ease::OutCubic},
-                        },
-                        0, RailsControl::CycleBehavior::AUTOMATIC_LOOP, &onCameraAtDestination);
 }
 
 }  // namespace whal
