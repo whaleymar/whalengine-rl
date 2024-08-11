@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-Level3_ForceCrystalTest.tmj",
+    "activeFile": "world1-forceCrystalTutorial.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -82,8 +82,8 @@
             "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -173,
-                "y": -98.33333333333331
+                "x": -175.66666666666663,
+                "y": 10
             }
         },
         "world1-blaster_get.tmj": {
@@ -123,8 +123,8 @@
             "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -196.125,
-                "y": 119.25
+                "x": 218.625,
+                "y": 155.25
             }
         },
         "world1-jumptutorial.tmj": {
@@ -168,8 +168,8 @@
             "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 683.6666666666666,
-                "y": 5.333333333333314
+                "x": 160.33333333333331,
+                "y": 94.33333333333334
             }
         },
         "world1.tmj": {
@@ -204,9 +204,9 @@
     "property.type": "InheritTemplate",
     "recentFiles": [
         "world1-start.tmj",
-        "world1-forceCrystalTutorial.tmj",
         "mossy-tileset.tsj",
         "world1-Level3_ForceCrystalTest.tmj",
+        "world1-forceCrystalTutorial.tmj",
         "world1-blasterplatformtest.tmj",
         "world1-bonus-blasterplatform.tmj",
         "world1-blaster_get.tmj",

@@ -141,6 +141,7 @@ f32 Circle::getDistanceFromCenter(const Circle* other) const {
     return (getPosition() - other->getPosition()).as<f32>().len() - other->getRadius();
 }
 
+// calculates a vector from the circle's origin to the closest point on the given AABB
 Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
     const auto delta = getPosition() - aabb.getPosition();  // vector from AABB's center to circle's
 
