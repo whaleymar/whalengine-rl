@@ -307,28 +307,13 @@
                  "y":112
                 }, 
                 {
-                 "id":34,
-                 "properties":[
-                        {
-                         "name":"Animation",
-                         "propertytype":"Component_Sprite_Animated",
-                         "type":"class",
-                         "value":
-                            {
-                             "Animator":"actor\/blast-crystal",
-                             "Layer":"Bloom",
-                             "rotateAboutCenter":false
-                            }
-                        }],
-                 "template":"templates\/BlastCrystal.tj",
-                 "x":139,
-                 "y":87
-                }, 
-                {
-                 "id":37,
-                 "template":"templates\/SwitchBoard.tj",
-                 "x":47,
-                 "y":109
+                 "height":96,
+                 "id":43,
+                 "template":"templates\/SimpleRespawnTrigger.tj",
+                 "type":"Entity",
+                 "width":20,
+                 "x":296,
+                 "y":0
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -393,7 +378,7 @@
          "y":0
         }],
  "nextlayerid":9,
- "nextobjectid":42,
+ "nextobjectid":48,
  "orientation":"orthogonal",
  "properties":[
         {

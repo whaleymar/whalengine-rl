@@ -755,6 +755,23 @@
             ]
         },
         {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 50,
+            "members": [
+                {
+                    "name": "TemplateFileName",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "InheritTemplate",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
             "id": 38,
             "name": "LightLevel",
             "storageType": "int",

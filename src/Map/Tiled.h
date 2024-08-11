@@ -64,7 +64,7 @@ struct TileSet {
     std::string spriteFileName;
     std::vector<s32> tileIDToIndex;
 
-    void addComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, LayerData layerData, Vector2i mapPosition) const;
+    void addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, LayerData layerData, Vector2i mapPosition) const;
 };
 
 struct TileMap {

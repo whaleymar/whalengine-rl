@@ -8,46 +8,18 @@
             "y": 0
         },
         {
-            "fileName": "world1-jumptutorial.tmj",
+            "fileName": "world1-forceCrystalTutorial.tmj",
             "height": 192,
             "width": 320,
             "x": 320,
-            "y": 0
+            "y": -24
         },
         {
-            "fileName": "world1-rockettutorial.tmj",
+            "fileName": "world1-Level3_ForceCrystalTest.tmj",
             "height": 192,
             "width": 320,
-            "x": 888,
-            "y": -232
-        },
-        {
-            "fileName": "world1-momentumtutorial.tmj",
-            "height": 192,
-            "width": 320,
-            "x": 1208,
-            "y": -232
-        },
-        {
-            "fileName": "world1-blaster_get.tmj",
-            "height": 192,
-            "width": 320,
-            "x": 568,
-            "y": -192
-        },
-        {
-            "fileName": "world1-blasterplatformtest.tmj",
-            "height": 192,
-            "width": 320,
-            "x": 1440,
-            "y": -424
-        },
-        {
-            "fileName": "world1-bonus-blasterplatform.tmj",
-            "height": 192,
-            "width": 320,
-            "x": 1528,
-            "y": -232
+            "x": 640,
+            "y": -24
         }
     ],
     "onlyShowAdjacentMaps": false,

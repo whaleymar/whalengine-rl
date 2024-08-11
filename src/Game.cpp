@@ -403,6 +403,7 @@ void Game::unloadScene(bool resetPlayers) {
         unloadLevel(lvlCopy);
     }
     mActiveScene.startLevelIx = -1;
+    mActiveScene.allLevels.clear();
     clearMapCache();
 
     std::set<ecs::Entity> toKill = std::move(mActiveScene.childEntities);

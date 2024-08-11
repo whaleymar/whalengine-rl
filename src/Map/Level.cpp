@@ -218,7 +218,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         const TileSet& tset = getTileSet(map, blockID);
                         // TODO collider position not matching rotation
                         s32 tileID = blockID - tset.firstgid;
-                        tset.addComponents(*eEntity, tileID, lvl, layer.metadata, mapPosition);
+                        tset.addTileComponents(*eEntity, tileID, lvl, layer.metadata, mapPosition);
 
                         (*eEntity).activate();
                         // if ((*eEntity).has<Collider>()) {

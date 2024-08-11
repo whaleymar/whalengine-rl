@@ -45,8 +45,43 @@ void clearMapCache() {
     MAP_MANAGER.clearCache();
     TEMPLATE_MANAGER.clearCache();
 }
+static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level, LayerData layerData) {
+    std::string name = "";
+    tryReadString(object, "name", &name);
+    if (name.size()) {
+        entity.add(Name(name.c_str()));
+        // print("created entity: ", name);
+    }
 
-void TileSet::addComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, const LayerData layerData, Vector2i mapPosition) const {
+    if (!object.contains("properties")) {
+        return;
+    }
+
+    for (auto& property : object["properties"]) {
+        std::string componentName = readString(property, "propertytype");
+        ComponentAdder creatorFunc = nullptr;
+        COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
+        if (creatorFunc == nullptr) {
+            if (componentName == "InheritTemplate") {
+                auto newTemplateFile = readString(property["value"], "TemplateFileName");
+                std::string path = whal_format("templates/{}.tj", newTemplateFile);
+                const auto& newPrefab = getTemplate(path);
+                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level, layerData);
+                EntityBuilder builderFunc = nullptr;
+                PREFAB_FACTORY.getEntryIndex(newTemplateFile.c_str(), &builderFunc);
+                if (builderFunc != nullptr) {
+                    builderFunc(entity, newPrefab, level);
+                }
+            }
+            continue;
+        }
+
+        creatorFunc(property["value"], allObjects, idToIndex, entityData, level, entity, layerData);
+    }
+}
+
+void TileSet::addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, const LayerData layerData, Vector2i mapPosition) const {
     const auto& object = getMapFile(fileName);
 
     if (!object.contains("properties")) {
@@ -60,31 +95,12 @@ void TileSet::addComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& l
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
     // add tileset components
-    for (const auto& property : object["properties"]) {
-        const std::string componentName = readString(property, "propertytype");
-        ComponentAdder creatorFunc = nullptr;
-        COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
-        if (creatorFunc == nullptr) {
-            continue;
-        }
-
-        creatorFunc(property["value"], emptyJson, emptyIdToIndex, mapData, level, entity, layerData);
-    }
+    addComponents(entity, mapData, object, emptyJson, emptyIdToIndex, level, layerData);
 
     // tile-specific component overrides
     s32 propsIx = tileIDToIndex[tileID];
     if (propsIx != -1) {
-        const auto& tiledata = object["tiles"][propsIx];
-        for (const auto& property : tiledata["properties"]) {
-            const std::string componentName = readString(property, "propertytype");
-            ComponentAdder creatorFunc = nullptr;
-            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
-            if (creatorFunc == nullptr) {
-                continue;
-            }
-
-            creatorFunc(property["value"], emptyJson, emptyIdToIndex, mapData, level, entity, layerData);
-        }
+        addComponents(entity, mapData, object["tiles"][propsIx], emptyJson, emptyIdToIndex, level, layerData);
     }
 }
 
@@ -204,30 +220,6 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
     }
 
-    auto addComponents = [&](ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object) {
-        std::string name = "";
-        tryReadString(object, "name", &name);
-        if (name.size()) {
-            entity.add(Name(name.c_str()));
-            // print("created entity: ", name);
-        }
-
-        if (!object.contains("properties")) {
-            return;
-        }
-
-        for (auto& property : object["properties"]) {
-            std::string componentName = readString(property, "propertytype");
-            ComponentAdder creatorFunc = nullptr;
-            COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
-            if (creatorFunc == nullptr) {
-                continue;
-            }
-
-            creatorFunc(property["value"], objects, idToIndex, entityData, level, entity, layerData);
-        }
-    };
-
     for (const auto& object : objects) {
         bool isVisible = true;
         if (tryReadBool(object, "visible", &isVisible) && !isVisible) {
@@ -304,7 +296,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         if (pPrefab) {
             // add template components
             entityData.isParsingTemplate = true;
-            addComponents(entity, entityData, *pPrefab);
+            addComponents(entity, entityData, *pPrefab, objects, idToIndex, level, layerData);
             entityData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
@@ -317,7 +309,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
 
         // add object components with factory
-        addComponents(entity, entityData, object);
+        addComponents(entity, entityData, object, objects, idToIndex, level, layerData);
 
         level.childEntities.insert(entity);
         level.objects.push_back(entity);

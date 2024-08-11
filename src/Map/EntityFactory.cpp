@@ -9,12 +9,10 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
-#include "Components/Tween.h"
 #include "Components/Velocity.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Respawn.h"
-#include "Game/Components/Shake.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
 #include "Game/Entities/Explosion.h"
@@ -26,7 +24,9 @@ namespace whal {
 
 static void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
-static void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+void addSpikeTileCC(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
@@ -36,8 +36,12 @@ static void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTem
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
+    {"SimpleRespawnTrigger", createRespawnTriggerPrefab},  // alias for prefab without shape reference
     {"WeightedPlatform", createWeightedPlatformPrefab},
-    {"DeathTrigger", createDeathZonePrefab},
+    {"DeathTrigger", addDeathTriggerCallback},
+    {"DeathTriggerBase", addDeathTriggerCallback},
+    {"DeathCollisionCallback", addDeathCollisionCallback},
+    {"SpikeTileHack", addSpikeTileCC},
     {"RubbleFallSwitch", createRubbleFallSwitch},
     {"Magic Hat", createMagicHat},
     {"MultiSwitch", createSwitch},
@@ -72,8 +76,44 @@ void createWeightedPlatformPrefab(ecs::Entity entity, const nlohmann::json& tile
     entity.get<RailsControl>().arrivalCallback = onMoveDone;
 }
 
-void createDeathZonePrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    if (!entity.has<Trigger>()) {
+        entity.add<Trigger>();
+    }
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
+}
+
+void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    if (!entity.has<Collider>()) {
+        entity.add<Collider>();
+    }
+    entity.get<Collider>().setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) { other.kill(); });
+}
+
+void addSpikeTileCC(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    if (!entity.has<Collider>()) {
+        entity.add<Collider>();
+    }
+    auto& collider = entity.get<Collider>();
+    collider.setCollisionCallback([](ecs::Entity self, ecs::Entity other, Vector2i hitNormal) { other.kill(); });
+
+    const auto shape = collider.getShape();
+    switch (collider.getCollisionDir()) {
+    case CollisionDir::UP:
+        collider.setShape(AABB(shape.getPosition() - Vector2i(0, 2), {4, 2}));
+        break;
+    case CollisionDir::DOWN:
+        collider.setShape(AABB(shape.getPosition() + Vector2i(0, 4), {4, 2}));
+        break;
+    case CollisionDir::LEFT:
+        collider.setShape(AABB(shape.getPosition() + Vector2i(2, 0), {2, 4}));
+        break;
+    case CollisionDir::RIGHT:
+        collider.setShape(AABB(shape.getPosition() - Vector2i(2, 0), {2, 4}));
+        break;
+    default:
+        break;
+    }
 }
 
 void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {

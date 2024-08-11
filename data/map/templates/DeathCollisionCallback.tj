@@ -1,0 +1,12 @@
+{ "object":
+    {
+     "height":8,
+     "id":45,
+     "name":"DeathCollisionCallback",
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":8
+    },
+ "type":"template"
+}
