@@ -74,20 +74,21 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
         Vector2f unitDelta = delta.isZero() ? Vector2f::zero : closestOrdinalDirection(delta.norm());
 
         // slight knockback falloff based on distance
-        // auto circle = trigger.shape.getCircle();
-        // f32 distanceFromCenter = circle.getDistanceFromCenter(&otherShape);
+        auto circle = trigger.shape.getCircle();
+        f32 distanceFromCenter = circle.getDistanceFromCenter(&otherShape);
 
-        // ok, what if instead of all this junk, i do uniform distance multiplier, and just set the other entity's transform to be on the trigger's
-        // boundary in whatever direction they're being pushed?
-        // const Vector2f moveVec = unitDelta * (static_cast<f32>(circle.getRadius()) - distanceFromCenter);
-        // otherCollider.move(moveVec, nullptr, false, true);
+        // put `other` on the outside of the trigger zone for consistency
+        const Vector2f moveVec = unitDelta * (static_cast<f32>(circle.getRadius()) - distanceFromCenter);
+        otherCollider.move(moveVec, nullptr, false, true);
 
-        // f32 distanceMultiplier = 1 - std::pow(distanceFromCenter / static_cast<f32>(circle.getRadius()), 3);
-        // f32 distanceMultiplier = 1 - distanceFromCenter / static_cast<f32>(circle.getRadius());
-        f32 distanceMultiplier = 1;
+        // if (other.has<Player>()) {
+        //     print("distanceFromCenter was", distanceFromCenter);
+        //     print("now is ", circle.getDistanceFromCenter(&otherShape));
+        //     print("");
+        // }
 
+        const f32 distanceMultiplier = 1;
         PushStrength cPushStrength = self.get<PushStrength>();
-
         Velocity& vel = other.get<Velocity>();
         // vel.stable += unitDelta * pushStrengthMax * Vector2f(multX, multY);
         const bool isRJStateOn = other.has<RocketJumping>();
@@ -115,19 +116,24 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
             }
         }
 
-        // for debugging stability:
-        // if (other.has<Player>()) {
-        // print("circle center: ", circle.getPosition());
-        // print("player center: ", otherShape.getPosition());
-        // print("Distance from explosion center: ", distanceFromCenter);
-        // print("Distance Multiplier: ", distanceMultiplier);
-        // print("Player Velocity before push: ", vel.stable);
-        // print("unitDelta: ", unitDelta);
-        // print("strength: ", cPushStrength.strength);
-        // print("Impulse force: ", impulse);
-        // print("");
-        // }
         vel.stable += impulse;
+
+        // for debugging stability:
+        // auto moveVec = circle.getVecToClosestPoint(otherShape);
+        // otherCollider.move(moveVec, nullptr, false, true);
+        // auto oldVel = vel.stable;
+        // if (other.has<Player>()) {
+        //     print("circle center: ", circle.getPosition());
+        //     print("player position: ", otherShape.getPosition());
+        //     print("Distance from explosion center: ", distanceFromCenter);
+        //     print("Distance Multiplier: ", distanceMultiplier);
+        //     print("Player Velocity before push: ", oldVel);
+        //     print("Player Velocity after push: ", vel.stable);
+        //     print("unitDelta: ", unitDelta);
+        //     print("strength: ", cPushStrength.strength);
+        //     print("Impulse force: ", impulse);
+        //     print("");
+        // }
 
         // ----------------------------
         // ADD ROCKET JUMPING COMPONENT

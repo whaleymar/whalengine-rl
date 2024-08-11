@@ -167,14 +167,7 @@ public:
 
     // kill tweens for that entity
     void onEvent(DeathEvent, ecs::Entity entity) override;
-
-    template <typename T>
-    void addAndInit(Tween<T>& tween, ecs::Entity entity) {
-        if (!mTweens.contains(entity)) {
-            mTweens[entity] = TweenLists();
-        }
-        tween.init(entity);
-    }
+    void update();
 
     static void add(TweenFloat tween, ecs::Entity entity) {
         instance().addAndInit(tween, entity);
@@ -201,12 +194,18 @@ public:
         instance().mTweens.at(entity).colors.push_back(tween);
     }
 
-    void update();
-
 private:
     TweenManager() = default;
     TweenManager(TweenManager&) = delete;
     TweenManager(TweenManager&&) = delete;
+
+    template <typename T>
+    void addAndInit(Tween<T>& tween, ecs::Entity entity) {
+        if (!mTweens.contains(entity)) {
+            mTweens[entity] = TweenLists();
+        }
+        tween.init(entity);
+    }
 
     std::unordered_map<ecs::Entity, TweenLists, ecs::EntityHash> mTweens;
 };
