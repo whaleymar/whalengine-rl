@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
 namespace whal {
@@ -14,6 +13,5 @@ class Entity;
 struct Transform2D;
 
 Expected<ecs::Entity> createCamera(Transform2D transform);
-RailsControl createCameraMoveController(Vector2i currentPosition, Vector2i nextPosition);
 
 }  // namespace whal
