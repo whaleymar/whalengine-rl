@@ -12,8 +12,12 @@ namespace whal {
 enum class InputType : u64;
 
 class PauseMenu : public IListen<ButtonPressEvent, true, InputType> {
-    enum Button { Resume, Restart, FullScreenToggle, Exit };
-    inline static constexpr s32 N_BUTTONS = 4;
+#ifndef NDEBUG
+    enum Button{Resume, Restart, QuickRestart, FullScreenToggle, Exit, _Count_DO_NOT_USE_ME};
+#else
+    enum Button { Resume, Restart, FullScreenToggle, Exit, _Count_DO_NOT_USE_ME };
+#endif
+    inline static constexpr s32 N_BUTTONS = static_cast<s32>(Button::_Count_DO_NOT_USE_ME);
 
 public:
     static PauseMenu& instance() {

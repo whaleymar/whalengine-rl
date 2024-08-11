@@ -1,6 +1,9 @@
 # To Do 
 
 ## Current Goal: 
+- levels 
+- explosion height is suddenly WAY less consistent
+- jump-thru logic for upward level transitions
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -11,6 +14,8 @@
 - crouching state/anim
 - looking up anim
 - aiming anim
+- spike art bad
+- death animation
 
 ## Player Controller/Abilities
 - try working gravity multiplier into RJ state?

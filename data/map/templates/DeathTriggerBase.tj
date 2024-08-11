@@ -1,0 +1,22 @@
+{ "object":
+    {
+     "height":8,
+     "id":44,
+     "name":"DeathTriggerBase",
+     "properties":[
+            {
+             "name":"Trigger",
+             "propertytype":"Component_Trigger",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":8
+    },
+ "type":"template"
+}

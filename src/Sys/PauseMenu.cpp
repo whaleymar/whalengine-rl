@@ -9,7 +9,11 @@
 
 namespace whal {
 
+#ifndef NDEBUG
+static const char* S_BUTTON_TO_NAME[] = {"Resume", "Restart", "Quick Restart", "Fullscreen: {}", "Exit"};
+#else
 static const char* S_BUTTON_TO_NAME[] = {"Resume", "Restart", "Fullscreen: {}", "Exit"};
+#endif
 
 s32 pythonMod(s32 a, s32 b) {
     // behaves like a % b in python (different from c++ for negative #s)
@@ -93,6 +97,15 @@ void PauseMenu::doCursorAction() {
     case Button::Exit:
         System::quit();
         break;
+#ifndef NDEBUG
+    case Button::QuickRestart: {
+        deactivate();
+        Game::instance().reloadScene(false);
+        break;
+    }
+#endif  // !NDEBUG
+    default:
+        print("Error: unhandled button");
     }
 }
 

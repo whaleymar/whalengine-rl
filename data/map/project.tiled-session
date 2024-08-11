@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-start.tmj",
+    "activeFile": "world1-Level3_ForceCrystalTest.tmj",
     "expandedProjectPaths": [
         ".",
         "templates"
@@ -16,7 +16,7 @@
         },
         "mossy-tileset.tsj": {
             "scaleInDock": 5.5,
-            "scaleInEditor": 11
+            "scaleInEditor": 8
         },
         "mushrooms.tsj": {
             "scaleInDock": 1,
@@ -75,34 +75,56 @@
                 "y": 145.16666666666663
             }
         },
+        "world1-Level3_ForceCrystalTest.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": -173,
+                "y": -98.33333333333331
+            }
+        },
         "world1-blaster_get.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 8,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 160.0625,
-                "y": 96.0625
+                "x": 171.5,
+                "y": 54.999999999999986
             }
         },
         "world1-blasterplatformtest.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2.8678125,
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 146.80178707638663,
-                "y": 155.69358178053832
+                "x": 79.5,
+                "y": 94.33333333333331
             }
         },
         "world1-bonus-blasterplatform.tmj": {
-            "scale": 2.8678125,
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -1355.3884711779451,
-                "y": 327.60161272747087
+                "x": 210.5,
+                "y": 94.99999999999999
+            }
+        },
+        "world1-forceCrystalTutorial.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 4,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": -196.125,
+                "y": 119.25
             }
         },
         "world1-jumptutorial.tmj": {
@@ -112,8 +134,8 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666667
+                "x": 117.16666666666664,
+                "y": 110.66666666666669
             }
         },
         "world1-momentumtutorial.tmj": {
@@ -123,30 +145,31 @@
             "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.16666666666666,
-                "y": 96.16666666666667
+                "x": 208.83333333333331,
+                "y": 94.99999999999999
             }
         },
         "world1-rockettutorial.tmj": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
+            "scale": 3,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 160.125,
-                "y": 96.125
+                "x": 212.5,
+                "y": 94.99999999999999
             }
         },
         "world1-start.tmj": {
             "expandedObjectLayers": [
-                2
+                2,
+                7
             ],
-            "scale": 3,
-            "selectedLayer": 3,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 137.5,
-                "y": 70.66666666666666
+                "x": 683.6666666666666,
+                "y": 5.333333333333314
             }
         },
         "world1.tmj": {
@@ -172,28 +195,26 @@
     "map.width": 40,
     "mapScene.enableWorlds": true,
     "openFiles": [
-        "mossy-tileset.tsj",
         "world1-start.tmj",
-        "world1-jumptutorial.tmj",
-        "world1-rockettutorial.tmj",
-        "world1-momentumtutorial.tmj",
-        "world1-blaster_get.tmj"
+        "world1-forceCrystalTutorial.tmj",
+        "world1-Level3_ForceCrystalTest.tmj",
+        "mossy-tileset.tsj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Tags",
+    "property.type": "InheritTemplate",
     "recentFiles": [
+        "world1-start.tmj",
+        "world1-forceCrystalTutorial.tmj",
         "mossy-tileset.tsj",
+        "world1-Level3_ForceCrystalTest.tmj",
+        "world1-blasterplatformtest.tmj",
+        "world1-bonus-blasterplatform.tmj",
         "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",
         "world1-rockettutorial.tmj",
         "world1-jumptutorial.tmj",
-        "world1-start.tmj",
         "mossy-tileset-background.tsj",
-        "mushrooms.tsj",
-        "world1-blasterplatformtest.tmj",
-        "world1.tmj",
-        "testmap2.tmj",
-        "prefab-editor.tmj"
+        "mushrooms.tsj"
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {
