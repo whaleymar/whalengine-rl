@@ -15,7 +15,7 @@ public:
     void update() override;
 };
 
-class FreeControlSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, ecs::Lacks<RigidBody>>, public ecs::IUpdate {
+class FreeControlSystem : public ecs::ISystem<PlayerControl, Transform2D, Velocity, ecs::Exclude<RigidBody>>, public ecs::IUpdate {
 public:
     void update() override;
 };

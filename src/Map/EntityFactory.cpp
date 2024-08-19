@@ -9,6 +9,7 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
+#include "Components/Tween.h"
 #include "Components/Velocity.h"
 #include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
@@ -18,6 +19,8 @@
 #include "Game/Entities/Explosion.h"
 #include "Game/Save/EventFlags.h"
 #include "Systems/TagTrackers.h"
+#include "Util/MathUtil.h"
+#include "Util/Print.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -33,6 +36,8 @@ static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate
 static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createJumpThruTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createBonusStarTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SpawnPointTrigger", createRespawnTriggerPrefab},
@@ -48,6 +53,8 @@ static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"AppearTrigger", createAppearTrigger},
     {"BlastCrystal", createBlastCrystal},
     {"SwitchBoard", createSwitchBoard},
+    {"JumpThruTrigger", createJumpThruTrigger},
+    {"BonusStar", createBonusStarTrigger},
 };
 
 EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
@@ -267,7 +274,7 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
         const auto shape = trigger.shape;
 
         constexpr f32 inactiveTime = 0.5;
-        makeExplosionZone(shape.getPosition(), shape.getCircle().getRadius(), explosionStrength, inactiveTime + 0.05);
+        makeExplosionZone(shape.getPosition(), shape.getCircle().getRadius() + 1, explosionStrength, inactiveTime + 0.05);
 
         self.add(FadeOut(inactiveTime, 0.0, 1.0));
         System::schedule.eventFlow({self})
@@ -281,6 +288,7 @@ static void createBlastCrystal(ecs::Entity entity, const nlohmann::json& tiledTe
         trigger.onTriggerEnter = nullptr;
     };
 
+    // TESTING
     // TweenFloat tween = TweenFloat(360.0f, 2.0f, [](ecs::Entity self) -> f32& { return self.get<Transform2D>().rotationDegrees; })
     //                        .setDelay(1.0f)
     //                        .setLoops(1)
@@ -344,6 +352,35 @@ void createSwitchBoard(ecs::Entity entity, const nlohmann::json& tiledTemplate, 
                 self.get<Draw>().setColor(RED);
             }
         });
+}
+
+void createJumpThruTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    const auto callback = [](ecs::Entity self, ecs::Entity other) {
+        if (!(other.has<Player>() && other.has<Velocity>() && other.has<RigidBody>())) {
+            return;
+        }
+
+        constexpr f32 minVelocity = 60.0f;
+        auto& velocity = other.get<Velocity>();
+        if (velocity.total.y > 0.0f && velocity.stable.y < minVelocity) {
+            velocity.stable.y = minVelocity;
+        }
+    };
+
+    auto& trigger = entity.get<Trigger>();
+    trigger.onTriggerEnter = callback;
+    trigger.onTriggerStay = callback;
+}
+
+void createBonusStarTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
+        print("STUBBED: Got bonus star");
+        self.kill();
+    };
+
+    // TODO not working
+    TweenManager::add(
+        TweenInt(10, -0.5, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; }).asRelative().setLoops(-1).asBounce(), entity);
 }
 
 }  // namespace whal

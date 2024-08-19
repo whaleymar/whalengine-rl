@@ -22,8 +22,9 @@ void Attach::initTarget(ecs::Entity self) {
 Orbit::Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i targetOffset_)
     : targetID(target.id()), radius(radius_), rotationsPerSecond(rotationsPerSecond_), targetOffset(targetOffset_) {}
 
+// adds self as child of target
 void Orbit::initTarget(ecs::Entity self) {
-    // adds self as child of target
+    isTargetInitialized = true;
     ecs::Entity targetEntity(targetID);
     if (targetEntity.has<Children>()) {
         targetEntity.get<Children>().add(self);

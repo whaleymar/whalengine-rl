@@ -286,6 +286,28 @@
         {
             "color": "#ffa0a0a4",
             "drawFill": true,
+            "id": 51,
+            "members": [
+                {
+                    "name": "RotationsPerSecond",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "Target",
+                    "type": "object",
+                    "value": 0
+                }
+            ],
+            "name": "Component_Orbit",
+            "type": "class",
+            "useAs": [
+                "property"
+            ]
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
             "id": 44,
             "members": [
                 {
@@ -732,11 +754,42 @@
             "values": [
                 "Linear",
                 "InOutBezier",
+                "InSine",
+                "OutSine",
                 "InOutSine",
+                "OutInSine",
                 "InQuad",
                 "OutQuad",
+                "InOutQuad",
+                "OutInQuad",
                 "InCubic",
-                "OutCubic"
+                "OutCubic",
+                "InOutCubic",
+                "OutInCubic",
+                "InQuart",
+                "OutQuart",
+                "InOutQuart",
+                "OutInQuart",
+                "InQuint",
+                "OutQuint",
+                "InOutQuint",
+                "OutInQuint",
+                "InBounce",
+                "OutBounce",
+                "InOutBounce",
+                "OutInBounce",
+                "InElastic",
+                "OutElastic",
+                "InOutElastic",
+                "OutInElastic",
+                "InBack",
+                "OutBack",
+                "InOutBack",
+                "OutInBack",
+                "InSpring",
+                "OutSpring",
+                "InOutSpring",
+                "OutInSpring"
             ],
             "valuesAsFlags": false
         },

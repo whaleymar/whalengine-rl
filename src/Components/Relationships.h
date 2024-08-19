@@ -24,6 +24,9 @@ struct Attach {
     ecs::EntityID targetEntityID;
     Vector2i offsetTexels;
     DirectionParam directionParam = DirectionParam::IgnoreFacing;
+
+    // managed:
+    bool isTargetInitialized = false;
 };
 
 struct Orbit {
@@ -37,9 +40,11 @@ struct Orbit {
     s32 radius;
     f32 rotationsPerSecond;
     Vector2i targetOffset;
+    Vector2i selfOffset;
 
     // managed:
     f32 currentAngle;
+    bool isTargetInitialized = false;
 };
 
 // in general, dead zone should be bigger than lookahead

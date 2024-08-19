@@ -1,0 +1,271 @@
+{ "compressionlevel":-1,
+ "height":24,
+ "infinite":false,
+ "layers":[
+        {
+         "data":[16, 17, 17, 10, 11, 11, 17, 17, 11, 16, 16, 19, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 20, 10, 17, 10, 11, 11,
+            11, 10, 17, 11, 10, 11, 10, 14, 14, 14, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20, 17, 10, 11, 16,
+            10, 10, 10, 16, 16, 10, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20, 10, 17, 17,
+            10, 10, 11, 17, 10, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20, 10, 19,
+            17, 11, 10, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 11, 25,
+            11, 17, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20, 17,
+            10, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 5, 5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 11, 11,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20, 10,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 17,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 20,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            22, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":24,
+         "id":1,
+         "name":"Tile Layer 1",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":4
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":40,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":2,
+         "name":"Object Layer 1",
+         "objects":[
+                {
+                 "height":8,
+                 "id":1,
+                 "template":"templates\/OneWayPlatform.tj",
+                 "width":40,
+                 "x":8,
+                 "y":184
+                }, 
+                {
+                 "height":8,
+                 "id":2,
+                 "template":"templates\/DeathTrigger.tj",
+                 "width":80,
+                 "x":56,
+                 "y":184
+                }, 
+                {
+                 "id":3,
+                 "template":"templates\/CameraFocus.tj",
+                 "x":159,
+                 "y":96
+                }, 
+                {
+                 "height":44,
+                 "id":6,
+                 "template":"templates\/SimpleRespawnTrigger.tj",
+                 "width":37,
+                 "x":10,
+                 "y":138
+                }, 
+                {
+                 "id":7,
+                 "properties":[
+                        {
+                         "name":"Rails",
+                         "propertytype":"Component_RailsControl",
+                         "type":"class",
+                         "value":
+                            {
+                             "Checkpoints":15,
+                             "CycleBehavior":"Automatic",
+                             "speed":100
+                            }
+                        }, 
+                        {
+                         "name":"Tags",
+                         "propertytype":"Component_Tags",
+                         "type":"class",
+                         "value":
+                            {
+                             "PrecisePosition":true
+                            }
+                        }, 
+                        {
+                         "name":"Velocity",
+                         "propertytype":"Component_Velocity",
+                         "type":"class",
+                         "value":
+                            {
+
+                            }
+                        }],
+                 "template":"templates\/BlastCrystal.tj",
+                 "x":110,
+                 "y":131
+                }, 
+                {
+                 "height":8,
+                 "id":9,
+                 "template":"templates\/DeathTrigger.tj",
+                 "width":176,
+                 "x":144,
+                 "y":184
+                }, 
+                {
+                 "id":10,
+                 "properties":[
+                        {
+                         "name":"Orbit",
+                         "propertytype":"Component_Orbit",
+                         "type":"class",
+                         "value":
+                            {
+                             "RotationsPerSecond":0.4,
+                             "Target":12
+                            }
+                        }],
+                 "template":"templates\/BlastCrystal.tj",
+                 "x":211,
+                 "y":116
+                }, 
+                {
+                 "height":5,
+                 "id":12,
+                 "name":"OrbitOrigin",
+                 "rotation":0,
+                 "type":"Entity",
+                 "visible":true,
+                 "width":8,
+                 "x":216,
+                 "y":88
+                }, 
+                {
+                 "id":13,
+                 "template":"templates\/InitialSpawnPoint.tj",
+                 "x":27,
+                 "y":167
+                }, 
+                {
+                 "id":14,
+                 "template":"templates\/BonusStar.tj",
+                 "type":"Entity",
+                 "x":216,
+                 "y":16
+                }, 
+                {
+                 "height":0,
+                 "id":15,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":-99,
+                         "y":0
+                        }],
+                 "properties":[
+                        {
+                         "name":"Ease1",
+                         "propertytype":"Easing",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"Ease2",
+                         "propertytype":"Easing",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":119,
+                 "y":140
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":4
+                }],
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":3,
+         "name":"Object Layer PlayerDepth",
+         "objects":[
+                {
+                 "id":4,
+                 "template":"templates\/BlastCrystal.tj",
+                 "x":57,
+                 "y":165
+                }, 
+                {
+                 "height":9,
+                 "id":5,
+                 "template":"templates\/JumpThruTrigger.tj",
+                 "type":"Entity",
+                 "width":40,
+                 "x":8,
+                 "y":183
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "propertytype":"Depth",
+                 "type":"int",
+                 "value":5
+                }],
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":4,
+ "nextobjectid":16,
+ "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"mapinfo",
+         "propertytype":"Map_MapInfo",
+         "type":"class",
+         "value":
+            {
+             "isWorldEntryPoint":true
+            }
+        }],
+ "renderorder":"right-down",
+ "tiledversion":"1.11.0",
+ "tileheight":8,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "source":"mossy-tileset.tsj"
+        }],
+ "tilewidth":8,
+ "type":"map",
+ "version":"1.10",
+ "width":40
+}

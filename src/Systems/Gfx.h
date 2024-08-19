@@ -25,7 +25,7 @@ struct DrawText;
 enum class TextureID;
 struct Invisible;
 
-class GfxSystem : public ecs::ISystem<Transform2D, Draw, ecs::Lacks<Invisible>>, public ecs::IMonitorSystem {
+class GfxSystem : public ecs::ISystem<Transform2D, Draw, ecs::Exclude<Invisible>>, public ecs::IMonitorSystem {
     struct DrawInfo {
         ecs::Entity entity;
         f32 depth;

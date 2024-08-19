@@ -58,6 +58,7 @@ DECLARE_COMPONENT_GETTER(whal::DrawText);
 DECLARE_COMPONENT_GETTER(whal::ParticleEmitter);
 DECLARE_COMPONENT_GETTER(whal::Name);
 DECLARE_COMPONENT_GETTER(whal::Animator);
+DECLARE_COMPONENT_GETTER(whal::Orbit);
 DECLARE_COMPONENT_GETTER(SwitchGate);
 #endif
 
@@ -143,6 +144,9 @@ static void addComponentFollow(const nlohmann::json& values, const nlohmann::jso
 static void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allObjects,
                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
+static void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allObjects,
+                              const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
+                              const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 
 static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const ActiveLevel& level);
 
@@ -181,6 +185,7 @@ static Lifetime DefaultLifeTime;
 static SwitchGate DefaultSwitchGate;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
+static Orbit DefaultOrbit;
 static TextureID DefaultDrawLayer = TextureID::LayerNormal;
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
@@ -207,6 +212,7 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_SwitchGate", addSwitchGateComponent},
     {"Component_Text", addComponentText},
     {"Component_ParticleEmitter", addComponentParticleEmitter},
+    {"Component_Orbit", addComponentOrbit},
 };
 
 ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
@@ -495,6 +501,20 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
 
             } else {
                 print("Skipping member ", memberName, "for", componentName);
+            }
+        }
+
+    } else if (componentName == "Component_Orbit") {
+        DefaultOrbit = Orbit();
+
+        for (const auto& member : property[KEY_MEMBERS]) {
+            std::string memberName = member[KEY_NAME];
+            if (memberName == "Radius") {
+                DefaultOrbit.radius = member[KEY_VALUE];
+            } else if (memberName == "RotationsPerSecond") {
+                DefaultOrbit.rotationsPerSecond = member[KEY_VALUE];
+            } else if (memberName == "Offset") {
+                // do nothing
             }
         }
 
@@ -1083,6 +1103,40 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
     }
 
     entity.add(emitter);
+}
+
+void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allObjects,
+                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
+                       ecs::Entity entity, LayerData layerData) {
+    Orbit orbit = entity.has<Orbit>() ? entity.get<Orbit>() : DefaultOrbit;
+
+    tryReadFloat(values, "RotationsPerSecond", &orbit.rotationsPerSecond);
+
+    const Vector2i entityDimensions = entityData.dimensionsTexels;
+    const Vector2i entityTrans = entity.get<Transform2D>().position;
+
+    if (!values.contains("Target")) {
+        print("Error: Orbit component requires a Target");
+        return;
+    }
+
+    s32 shapeId = readInt(values, "Target");
+    const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
+    Vector2i otherDimensions = Vector2i::zero;
+    bool isPoint = true;
+    if (tryReadVector2i(shapeObj, "width", "height", &otherDimensions)) {
+        isPoint = false;
+    }
+    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimensions, level, isPoint).position;
+
+    orbit.radius = std::round((entityTrans - otherTrans).as<f32>().len());
+
+    // seems to work correctly without this, actually
+    // orbit.targetOffset = entityDimensions / 2 - otherDimensions / 2;
+    // orbit.selfOffset = Vector2i(0, entityDimensions.y / 2);  // use the entity's center for orbiting
+    orbit.targetID = idToIndex.at(shapeId).second.id();
+
+    entity.add(orbit);
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {
