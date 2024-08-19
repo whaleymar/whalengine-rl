@@ -20,18 +20,14 @@ public:
     void onEvent(DeathEvent, ecs::Entity entity) override;
 };
 
-class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
+class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate {
 public:
     void update() override;
-    void onAdd(ecs::Entity entity) override;
-    void onRemove(ecs::Entity entity) override {}
 };
 
-class OrbitSystem : public ecs::ISystem<Orbit, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
+class OrbitSystem : public ecs::ISystem<Orbit, Transform2D>, public ecs::IUpdate {
 public:
     void update() override;
-    void onAdd(ecs::Entity entity) override;
-    void onRemove(ecs::Entity entity) override {}
 };
 
 class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D>,

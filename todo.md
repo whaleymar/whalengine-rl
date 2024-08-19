@@ -2,8 +2,6 @@
 
 ## Current Goal: 
 - levels 
-- explosion height is suddenly WAY less consistent
-- jump-thru logic for upward level transitions
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -16,6 +14,7 @@
 - aiming anim
 - spike art bad
 - death animation
+- art for one-way platform
 
 ## Player Controller/Abilities
 - try working gravity multiplier into RJ state?
@@ -25,6 +24,12 @@
     - could be a jump with neutral/directional variants for a little more control over what happens next
 - ducking: make collider smaller, moves camera down after a sec like spelunky
 - fast falling
+- other "spells" (projectiles that do other things)
+    - creates a short-lived platform in direction shot 
+    - creates updraft on collision
+
+## Rails
+- If entity lacks Velocity, create a tween on its position
 
 ## Camera / Follow
 - pretty awful in general
@@ -55,6 +60,9 @@
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
 - dialogue system (low priority)
+- single-threaded build option 
+    - necessary for portable web builds, since not all browsers/sites support SharedArrayBuffer (necessary for multithreading in browser)
+- make physics simulation run at 60 fps even if framerate is higher
 
 ---------------------------------------------------------------------------------------------------------------------------
 

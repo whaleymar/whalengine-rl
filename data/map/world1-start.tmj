@@ -378,7 +378,7 @@
          "y":0
         }],
  "nextlayerid":9,
- "nextobjectid":48,
+ "nextobjectid":50,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -388,7 +388,7 @@
          "value":
             {
              "LightLevel":1,
-             "isWorldEntryPoint":true
+             "isWorldEntryPoint":false
             }
         }],
  "renderorder":"right-down",

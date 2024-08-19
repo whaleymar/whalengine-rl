@@ -1,0 +1,22 @@
+{ "object":
+    {
+     "height":8,
+     "id":5,
+     "name":"JumpThruTrigger",
+     "properties":[
+            {
+             "name":"trigger",
+             "propertytype":"Component_Trigger",
+             "type":"class",
+             "value":
+                {
+
+                }
+            }],
+     "rotation":0,
+     "type":"Entity",
+     "visible":true,
+     "width":24
+    },
+ "type":"template"
+}

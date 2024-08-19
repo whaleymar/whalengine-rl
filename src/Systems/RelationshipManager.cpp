@@ -35,14 +35,13 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-void AttachSystem::onAdd(ecs::Entity entity) {
-    entity.get<Attach>().initTarget(entity);
-}
-
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const Transform2D trans = entity.get<Transform2D>();
-        const Attach attach = entity.get<Attach>();
+        Attach& attach = entity.get<Attach>();
+        if (!attach.isTargetInitialized) {
+            attach.initTarget(entity);
+        }
         const ecs::Entity targetEntity(attach.targetEntityID);
         const auto targetTrans = targetEntity.get<Transform2D>();
         const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
@@ -63,10 +62,6 @@ void AttachSystem::update() {
     }
 }
 
-void OrbitSystem::onAdd(ecs::Entity entity) {
-    entity.get<Orbit>().initTarget(entity);
-}
-
 // RESEARCH use collider.move if the entity has a collider? Seems like it would be glitchy if a collision does happen
 void OrbitSystem::update() {
     const f32 dt = System::dt();
@@ -74,6 +69,9 @@ void OrbitSystem::update() {
         auto& trans = entity.get<Transform2D>();
         Orbit& orbit = entity.get<Orbit>();
         const ecs::Entity targetEntity(orbit.targetID);
+        if (!orbit.isTargetInitialized) {
+            orbit.initTarget(entity);
+        }
         const Vector2i orbitTarget = targetEntity.get<Transform2D>().position + orbit.targetOffset;
 
         // if we get the current angle and add to that, it has this cool "follow if target moving, orbit if target is still" effect, but not sure if
@@ -86,7 +84,8 @@ void OrbitSystem::update() {
         orbit.currentAngle += toAdd;
 
         // RESEARCH bool param so that entity rotates in sync with orbit? (tidal lock)
-        trans.position = (angleToUnit(orbit.currentAngle) * static_cast<f32>(orbit.radius)).round() + orbitTarget;
+        const Vector2f unit = angleToUnit(orbit.currentAngle);
+        trans.position = (unit * static_cast<f32>(orbit.radius)).round() + orbitTarget + (orbit.selfOffset.as<f32>() * unit).round();
     }
 }
 

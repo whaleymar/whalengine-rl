@@ -20,6 +20,13 @@
             "width": 320,
             "x": 640,
             "y": -24
+        },
+        {
+            "fileName": "world1-Level4_ForceCrystalTest2.tmj",
+            "height": 192,
+            "width": 320,
+            "x": 904,
+            "y": -216
         }
     ],
     "onlyShowAdjacentMaps": false,

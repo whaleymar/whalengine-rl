@@ -109,7 +109,7 @@
                  "id":9,
                  "template":"templates\/BlastCrystal.tj",
                  "x":218,
-                 "y":161
+                 "y":164
                 }, 
                 {
                  "id":10,
@@ -133,7 +133,15 @@
                  "id":14,
                  "template":"templates\/BlastCrystal.tj",
                  "x":302,
-                 "y":51
+                 "y":49
+                }, 
+                {
+                 "height":4,
+                 "id":16,
+                 "template":"templates\/JumpThruTrigger.tj",
+                 "width":40,
+                 "x":272,
+                 "y":0
                 }],
          "opacity":1,
          "properties":[
@@ -149,7 +157,7 @@
          "y":0
         }],
  "nextlayerid":3,
- "nextobjectid":16,
+ "nextobjectid":17,
  "orientation":"orthogonal",
  "properties":[
         {
