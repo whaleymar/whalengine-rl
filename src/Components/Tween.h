@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sys/System.h"
 #include "Util/Easing.h"
 #include "whalECS/src/ECS.h"
 

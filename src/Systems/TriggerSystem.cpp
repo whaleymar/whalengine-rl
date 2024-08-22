@@ -1,6 +1,7 @@
 #include "TriggerSystem.h"
 
 #include "Components/Collision.h"
+#include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
 #include "Systems/CollisionManager.h"

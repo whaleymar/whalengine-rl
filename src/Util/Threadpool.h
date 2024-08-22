@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Settings.h"
+
+#ifdef USE_THREADS
+
 #include <condition_variable>
 #include <functional>
 #include <future>
@@ -68,3 +72,5 @@ auto ThreadPool::enqueue(F&& f, Args&&... args) -> std::future<void> {
     mCondition.notify_one();
     return res;
 }
+
+#endif
