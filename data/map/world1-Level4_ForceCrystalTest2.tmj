@@ -92,15 +92,6 @@
                              "CycleBehavior":"Automatic",
                              "speed":100
                             }
-                        }, 
-                        {
-                         "name":"Tags",
-                         "propertytype":"Component_Tags",
-                         "type":"class",
-                         "value":
-                            {
-                             "PrecisePosition":true
-                            }
                         }],
                  "template":"templates\/BlastCrystal.tj",
                  "x":110,

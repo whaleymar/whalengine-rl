@@ -10,6 +10,7 @@ struct HitInfo;
 struct Transform2D;
 
 Vector2i centerToTrans(Vector2i center, Vector2i half, f32 rotationDegrees);
+Vector2i transToCenter(Transform2D trans, Vector2i half);
 
 class AABB {
 public:
