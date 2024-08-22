@@ -282,7 +282,6 @@ void ProjectileSystem::update() {
             position.x += 1;
         }
         trans.position = position;
-        trans.isManuallyMoved = true;
 
         if (mIsAimUpdateNeeded) {
             updateAimSprite(*blaster.aimReticle, aimDirection, trans);

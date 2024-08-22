@@ -174,8 +174,8 @@
         },
         "world1-start.tmj": {
             "expandedObjectLayers": [
-                2,
-                7
+                7,
+                2
             ],
             "scale": 2.6748437499999995,
             "selectedLayer": 3,
@@ -214,7 +214,7 @@
         "world1-Level4_ForceCrystalTest2.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Easing",
+    "property.type": "Component_Velocity",
     "recentFiles": [
         "world1-start.tmj",
         "world1-forceCrystalTutorial.tmj",

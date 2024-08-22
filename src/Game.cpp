@@ -9,7 +9,6 @@
 #include "Components/RigidBody.h"
 #include "Components/Transform.h"
 
-#include "Components/Tween.h"
 #include "Entities/Camera.h"
 #include "Game/Components/Shake.h"
 #include "Game/Systems/ShakeSystem.h"
@@ -174,7 +173,6 @@ static const Rectangle SCREEN_DEST_RECT = {-VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREE
 // the update loop is in its own function bc emscripten
 void Update() {
     System::Update();
-    TweenManager::instance().update();  // cannot do this from system update because of circular imports
 
     // Update Scene
     Game::instance().checkIfInNewLevel();

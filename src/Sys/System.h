@@ -32,14 +32,7 @@ struct System {
         }
     }
 
-    static void Update() {
-        input.update();
-        time.update();
-        schedule.tick(dt());
-        audio.update();
-        world.update();
-    }
-
+    static void Update();
     static f32 dt() { return time.getDeltaTime(); }
     static void togglePause() { setPaused(!IsPaused); }
     static bool isPaused() { return IsPaused; }

@@ -57,8 +57,6 @@
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
 - dialogue system (low priority)
-- single-threaded build option 
-    - necessary for portable web builds, since not all browsers/sites support SharedArrayBuffer (necessary for multithreading in browser)
 - make physics simulation run at 60 fps even if framerate is higher
 
 ---------------------------------------------------------------------------------------------------------------------------

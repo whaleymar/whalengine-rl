@@ -5,6 +5,7 @@
 #include "Components/PlayerControl.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
+#include "Physics/Shapes.h"
 #include "Settings.h"
 #include "Systems/CollisionManager.h"
 
@@ -72,21 +73,20 @@ void PhysicsSystem::update() {
     // is a little inefficient to do it this way (vs separating the systems)
     for (auto& [entityid, entity] : getEntitiesMutable()) {
         Transform2D& trans = entity.get<Transform2D>();
-        if (!trans.isManuallyMoved) {
-            continue;
+        if (entity.has<PrecisePosition>()) {
+            entity.set<PrecisePosition>({trans.position.as<f32>()});
         }
 
-        trans.isManuallyMoved = false;
         if (entity.has<Collider>()) {
+            auto& collider = entity.get<Collider>();
             Transform2D transOffset = trans;
             if (entity.has<ColliderOffset>()) {
                 transOffset.position += entity.get<ColliderOffset>().offset;
             }
-            QuadTreeSystem::updatePosition(entity, entity.get<Collider>().getShapeMutable(), transOffset);
-        }
 
-        if (entity.has<PrecisePosition>()) {
-            entity.set<PrecisePosition>({trans.position.as<f32>()});
+            if (collider.getShape().getPosition() != transToCenter(transOffset, collider.getShape().getHalf())) {
+                QuadTreeSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
+            }
         }
     }
 
