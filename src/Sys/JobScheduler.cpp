@@ -57,16 +57,22 @@ JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
 }
 
 void JobScheduler::start() {
+#ifdef USE_THREADS
     mJobThread = std::thread(&JobScheduler::worker, this);
+#endif
 }
 
 void JobScheduler::await() {
+#ifdef USE_THREADS
     mJobThread.join();
+#endif
 }
 
 void JobScheduler::end() {
     mIsTerminated = true;
+#ifdef USE_THREADS
     mCondition.notify_one();
+#endif
 }
 
 evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
@@ -96,7 +102,11 @@ void JobScheduler::tick(f32 dt) {
     for (auto it = mQueue.begin(); it != mQueue.end(); ++it) {
         it->second -= dt;
     }
+#ifdef USE_THREADS
     mCondition.notify_one();
+#else
+    tryExecuteJobs();
+#endif
 
     // add queued event flows to main collection
     for (auto& evflow : mEventFlowsToAdd) {
@@ -130,6 +140,7 @@ void JobScheduler::tryExecuteJobs() {
     }
 }
 
+#ifdef USE_THREADS
 void JobScheduler::worker() {
     while (!mIsTerminated) {
         std::unique_lock<std::mutex> lock(mMutex);
@@ -138,5 +149,6 @@ void JobScheduler::worker() {
         tryExecuteJobs();
     }
 }
+#endif
 
 }  // namespace whal

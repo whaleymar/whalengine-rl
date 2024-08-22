@@ -1,16 +1,26 @@
 #pragma once
 
+#include "Settings.h"
+
+#ifdef USE_THREADS
+
 #include <condition_variable>
+#include <mutex>
+#include <thread>
+
+#else
+
+#include <memory>
+
+#endif
+
 #include <functional>
 #include <initializer_list>
 #include <list>
-#include <mutex>
-#include <thread>
 #include <type_traits>
 
 #include "Event.h"
 #include "Events/Events.h"
-#include "Util/Types.h"
 #include "whalECS/src/ECS.h"
 
 namespace {
@@ -117,11 +127,13 @@ public:
 private:
     JobScheduler();
 
+#ifdef USE_THREADS
     void worker();
 
     std::mutex mMutex;
     std::thread mJobThread;
     std::condition_variable mCondition;
+#endif
 
     std::list<Job> mQueue;
     std::vector<evfl::EventFlow> mEventFlows;
