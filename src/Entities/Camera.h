@@ -4,8 +4,6 @@
 
 namespace whal {
 
-struct RailsControl;
-
 namespace ecs {
 class Entity;
 }

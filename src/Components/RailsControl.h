@@ -51,7 +51,8 @@ public:
     bool isWaiting = true;
     bool isVelocityUpdateNeeded = false;
     bool isForward = true;
-    u64 curTarget = 0;
+    bool isPhysicsEntity;
+    u32 curTarget = 0;
 
     void setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform2D& trans);
     CheckPoint getTarget() const;
