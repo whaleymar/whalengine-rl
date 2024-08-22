@@ -52,6 +52,8 @@
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
+#include "Util/DebugFwd.h"
+
 #define NULLOPT Corrade::Containers::NullOpt;
 
 // WEB BUILD STUFF

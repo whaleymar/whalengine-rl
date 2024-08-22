@@ -34,34 +34,6 @@
 
 #include "Util/Print.h"
 
-// declaring component getters here because we're already including basically every component
-// this isn't perfect... only working for some components
-#ifndef NDEBUG
-DECLARE_COMPONENT_GETTER(whal::Transform2D);
-DECLARE_COMPONENT_GETTER(whal::Velocity);
-DECLARE_COMPONENT_GETTER(whal::RailsControl);
-DECLARE_COMPONENT_GETTER(whal::Collider);
-DECLARE_COMPONENT_GETTER(whal::Trigger);
-DECLARE_COMPONENT_GETTER(whal::RigidBody);
-DECLARE_COMPONENT_GETTER(whal::PlayerControl);
-DECLARE_COMPONENT_GETTER(whal::Jumper);
-DECLARE_COMPONENT_GETTER(whal::Draw);
-DECLARE_COMPONENT_GETTER(whal::FadeOut);
-DECLARE_COMPONENT_GETTER(whal::Follow);
-DECLARE_COMPONENT_GETTER(whal::Attach);
-DECLARE_COMPONENT_GETTER(whal::PointLight);
-DECLARE_COMPONENT_GETTER(whal::Radiance);
-DECLARE_COMPONENT_GETTER(whal::BoxLight);
-DECLARE_COMPONENT_GETTER(whal::ShadowLight);
-DECLARE_COMPONENT_GETTER(whal::Lifetime);
-DECLARE_COMPONENT_GETTER(whal::DrawText);
-DECLARE_COMPONENT_GETTER(whal::ParticleEmitter);
-DECLARE_COMPONENT_GETTER(whal::Name);
-DECLARE_COMPONENT_GETTER(whal::Animator);
-DECLARE_COMPONENT_GETTER(whal::Orbit);
-DECLARE_COMPONENT_GETTER(SwitchGate);
-#endif
-
 #ifndef NDEBUG
 #define MY_ASSERT(cond, msg)                                                                                                                         \
     do {                                                                                                                                             \
