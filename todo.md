@@ -28,9 +28,6 @@
     - creates a short-lived platform in direction shot 
     - creates updraft on collision
 
-## Rails
-- If entity lacks Velocity, create a tween on its position
-
 ## Camera / Follow
 - pretty awful in general
 - different movement types (easein/out stuff)

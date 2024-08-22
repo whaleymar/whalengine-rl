@@ -8,7 +8,6 @@
 #include "Components/Relationships.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Components/Velocity.h"
 
 #include "Sys/System.h"
 
@@ -29,15 +28,6 @@ Expected<ecs::Entity> createCamera(Transform2D trans) {
     camera.add<AudioListener>();
 
     return camera;
-}
-
-void onCameraAtDestination(ecs::Entity cameraEntity, RailsControl& rails) {
-    auto frameEndCallback = [](ecs::Entity entity) {
-        entity.remove<RailsControl>();
-    };  // don't call this immediately cause it will mutate the Rails system's entity list while it's iterating
-    cameraEntity.add(OnFrameEnd(frameEndCallback));
-    cameraEntity.add<Velocity>();  // railscontrol removed it
-    System::time.setMultiplier(1.0);
 }
 
 }  // namespace whal

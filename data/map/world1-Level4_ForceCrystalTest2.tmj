@@ -101,15 +101,6 @@
                             {
                              "PrecisePosition":true
                             }
-                        }, 
-                        {
-                         "name":"Velocity",
-                         "propertytype":"Component_Velocity",
-                         "type":"class",
-                         "value":
-                            {
-
-                            }
                         }],
                  "template":"templates\/BlastCrystal.tj",
                  "x":110,
