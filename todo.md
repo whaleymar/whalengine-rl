@@ -51,8 +51,6 @@
 
 ## Misc
 - ECS parallelization (low priority)
-- ECS methods (get, set, remove) can't be run in debugger. Would at least like to have `.get<T>` working.
-    - Sorta works now
 - Logger queue that runs on another thread
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
