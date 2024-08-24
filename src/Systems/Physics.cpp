@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "Components/PlayerControl.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
@@ -10,6 +9,7 @@
 #include "Systems/CollisionManager.h"
 
 #include "Components/Collision.h"
+#include "Components/PlayerControl.h"
 #include "Components/RigidBody.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
@@ -66,29 +66,48 @@ void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hi
     }
 }
 
-void PhysicsSystem::update() {
-    S_CALLBACK_QUEUE.clear();
-
-    // sync collider in case position changed in another system
-    // is a little inefficient to do it this way (vs separating the systems)
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+// syncs collider in case position changed in another system
+static void syncColliders(std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
+    for (auto& [entityid, entity] : physicsEntities) {
         Transform2D& trans = entity.get<Transform2D>();
         if (entity.has<PrecisePosition>()) {
             entity.set<PrecisePosition>({trans.position.as<f32>()});
         }
 
-        if (entity.has<Collider>()) {
-            auto& collider = entity.get<Collider>();
-            Transform2D transOffset = trans;
-            if (entity.has<ColliderOffset>()) {
-                transOffset.position += entity.get<ColliderOffset>().offset;
-            }
+        if (!entity.has<Collider>()) {
+            continue;
+        }
 
+        auto& collider = entity.get<Collider>();
+        Transform2D transOffset = trans;
+        if (entity.has<ColliderOffset>()) {
+            transOffset.position += entity.get<ColliderOffset>().offset;
+        }
+        if (trans.isManuallyMoved) {
+            // Sync collider position without checking collision
             if (collider.getShape().getPosition() != transToCenter(transOffset, collider.getShape().getHalf())) {
                 QuadTreeSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
             }
+            trans.isManuallyMoved = false;
+
+        } else {
+            // Move collider within physics engine
+            const auto targetColliderPosition = transToCenter(transOffset, collider.getShape().getHalf());
+            if (collider.getShape().getPosition() != targetColliderPosition) {
+                const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
+
+                // IsManualMove=true, so transform and QuadTree are synced automatically
+                collider.move(toMove, nullptr, false, true);
+            }
         }
     }
+}
+
+void PhysicsSystem::update() {
+    S_CALLBACK_QUEUE.clear();
+
+    // is a little inefficient to call this on all entities (vs splitting up this system)
+    syncColliders(getEntitiesMutable());
 
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntitiesMutable()) {
