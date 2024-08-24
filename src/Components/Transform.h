@@ -74,7 +74,8 @@ enum Facing : u8 {
 struct Transform2D {
     Vector2i position;
     f32 rotationDegrees = 0.0;      // counterclockwise
-    Facing facing = Facing::Right;  // draw calls flipped if facing right
+    Facing facing = Facing::Right;  // draw calls flipped if facing left
+    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
 
     static Transform2D texels(s32 x, s32 y);
     static Transform2D tiles(s32 x, s32 y);
