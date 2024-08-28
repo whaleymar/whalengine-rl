@@ -14,6 +14,7 @@ static void updateTweens(ecs::Entity entity, std::vector<Tween<T>>& tweens) {
             (*it).onEnd(entity);
             it = tweens.erase(it);
         } else {
+            (*it).onUpdate(entity);
             ++it;
         }
     }
