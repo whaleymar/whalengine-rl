@@ -35,6 +35,7 @@ static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color col
     particle.add(PrecisePosition::fromTrans(transform));
     particle.add(Lifetime(lifetime));
     particle.add<Particle>();
+    particle.add<Velocity>();
 
     return particle;
 }

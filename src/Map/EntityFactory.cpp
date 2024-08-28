@@ -61,6 +61,16 @@ EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
     initFactory(S_ENTITY_ENTRIES);
 }
 
+static void addBobbingTween(ecs::Entity entity) {
+    TweenManager::add(TweenInt(2, 0.8 + System::rng.range(0.0f, 0.4f), [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; })
+                          .asRelative()
+                          .setLoops(-1)
+                          .asBounce()
+                          .setDelay(System::rng.range(0.0f, 0.5f))
+                          .setTransition(Ease::InOutQuad),
+                      entity);
+}
+
 void createRespawnTriggerPrefab(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
     entity.get<Trigger>().onTriggerEnter = &onCheckpointEnter;
 }
@@ -147,6 +157,7 @@ void createRubbleFallSwitch(ecs::Entity entity, const nlohmann::json& tiledTempl
 }
 
 void createMagicHat(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    addBobbingTween(entity);
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) {
         if (!other.has<Player>()) {
             return;
@@ -377,13 +388,7 @@ void createBonusStarTrigger(ecs::Entity entity, const nlohmann::json& tiledTempl
         print("STUBBED: Got bonus star");
         self.kill();
     };
-
-    TweenManager::add(TweenInt(2, 1.0, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; })
-                          .asRelative()
-                          .setLoops(-1)
-                          .asBounce()
-                          .setTransition(Ease::InOutQuad),
-                      entity);
+    addBobbingTween(entity);
 }
 
 }  // namespace whal

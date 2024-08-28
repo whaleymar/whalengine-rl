@@ -49,15 +49,6 @@
                 }
             }, 
             {
-             "name":"Rails",
-             "propertytype":"Component_RailsControl",
-             "type":"class",
-             "value":
-                {
-
-                }
-            }, 
-            {
              "name":"Switch",
              "propertytype":"Component_Switch",
              "type":"class",
