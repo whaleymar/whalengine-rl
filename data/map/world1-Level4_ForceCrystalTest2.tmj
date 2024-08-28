@@ -111,7 +111,7 @@
                  "height":8,
                  "id":9,
                  "template":"templates\/DeathTrigger.tj",
-                 "width":167,
+                 "width":169,
                  "x":144,
                  "y":184
                 }, 
@@ -148,13 +148,6 @@
                  "template":"templates\/InitialSpawnPoint.tj",
                  "x":27,
                  "y":167
-                }, 
-                {
-                 "id":14,
-                 "template":"templates\/BonusStar.tj",
-                 "type":"Entity",
-                 "x":216,
-                 "y":16
                 }, 
                 {
                  "height":0,
@@ -196,6 +189,12 @@
                  "width":20,
                  "x":296,
                  "y":80
+                }, 
+                {
+                 "id":17,
+                 "template":"templates\/BonusStar.tj",
+                 "x":216,
+                 "y":27
                 }],
          "opacity":1,
          "properties":[
@@ -244,7 +243,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":17,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "properties":[
         {

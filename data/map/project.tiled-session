@@ -103,10 +103,10 @@
                 2
             ],
             "scale": 3.0875,
-            "selectedLayer": 0,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 13.927125506072883,
-                "y": 182.67206477732796
+                "x": -53.765182186234824,
+                "y": 104.93927125506072
             }
         },
         "world1-blaster_get.tmj": {
@@ -225,7 +225,7 @@
         "world1-Level4_ForceCrystalTest2.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Depth",
+    "property.type": "Component_ParticleEmitter",
     "recentFiles": [
         "world1-start.tmj",
         "world1-forceCrystalTutorial.tmj",

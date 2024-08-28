@@ -70,7 +70,9 @@ void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hi
 static void syncColliders(std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
     for (auto& [entityid, entity] : physicsEntities) {
         Transform2D& trans = entity.get<Transform2D>();
-        if (entity.has<PrecisePosition>()) {
+        const bool isManuallyMoved = trans.isManuallyMoved;
+        trans.isManuallyMoved = false;
+        if (isManuallyMoved && entity.has<PrecisePosition>()) {
             entity.set<PrecisePosition>({trans.position.as<f32>()});
         }
 
@@ -83,12 +85,11 @@ static void syncColliders(std::unordered_map<ecs::EntityID, ecs::Entity>& physic
         if (entity.has<ColliderOffset>()) {
             transOffset.position += entity.get<ColliderOffset>().offset;
         }
-        if (trans.isManuallyMoved) {
+        if (isManuallyMoved) {
             // Sync collider position without checking collision
             if (collider.getShape().getPosition() != transToCenter(transOffset, collider.getShape().getHalf())) {
                 QuadTreeSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
             }
-            trans.isManuallyMoved = false;
 
         } else {
             // Move collider within physics engine
@@ -158,7 +159,7 @@ void PhysicsSystem::update() {
             if (entity.has<PrecisePosition>()) {
                 auto& precisePosition = entity.get<PrecisePosition>();
                 precisePosition.position += move;
-                trans.position = Vector2i(std::round(precisePosition.position.x), std::round(precisePosition.position.y));
+                trans.position = precisePosition.position.round();
                 // if (move.len() < 0.1) {
                 // clamp precise position to integer coordinates if we're not moving
                 // (*precisePositionOpt)->position = toFloatVec(trans.position);

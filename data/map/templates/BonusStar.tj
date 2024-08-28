@@ -1,19 +1,9 @@
 { "object":
     {
-     "height":8,
+     "height":12,
      "id":14,
      "name":"BonusStar",
      "properties":[
-            {
-             "name":"Draw",
-             "propertytype":"Component_Draw",
-             "type":"class",
-             "value":
-                {
-                 "Color":"#ffff007f",
-                 "Layer":"Bloom"
-                }
-            }, 
             {
              "name":"Pointlight",
              "propertytype":"Component_PointLight",
@@ -31,11 +21,33 @@
                 {
 
                 }
+            }, 
+            {
+             "name":"emitter",
+             "propertytype":"Component_ParticleEmitter",
+             "type":"class",
+             "value":
+                {
+                 "Depth":3,
+                 "Material":13,
+                 "maxSpeed":10,
+                 "particlesPerSecond":10
+                }
+            }, 
+            {
+             "name":"sprite",
+             "propertytype":"Component_Sprite_NoAnim",
+             "type":"class",
+             "value":
+                {
+                 "Layer":"Bloom",
+                 "Sprite":"actor\/Apple"
+                }
             }],
      "rotation":0,
      "type":"Entity",
      "visible":true,
-     "width":8
+     "width":12
     },
  "type":"template"
 }
