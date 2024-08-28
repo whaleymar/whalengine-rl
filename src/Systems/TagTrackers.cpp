@@ -30,19 +30,14 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        constexpr f32 tweenTime = 0.5;
-        const Ease easeFunc = Ease::InOutQuad;
-        // TODO good use case for an onUpdate tween callback, which i could use to update precise position
-        TweenManager::add(TweenVec2i(focalPoint, tweenTime, [](ecs::Entity self) -> Vector2i& { return self.get<Transform2D>().position; })
-                              .setTransition(easeFunc)
+        TweenManager::add(TweenVec2f(focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> Vector2f& { return self.get<PrecisePosition>().position; })
+                              .setTransition(Ease::InOutQuad)
                               .asRunDuringPause()
-                              .setOnEnd([](ecs::Entity self, const TweenVec2i&) { System::time.setMultiplier(1.0); }),
+                              .setOnUpdate([](ecs::Entity self, const TweenVec2f&) {
+                                  self.get<Transform2D>().position = self.get<PrecisePosition>().position.round();
+                              })
+                              .setOnEnd([](ecs::Entity self, const TweenVec2f&) { System::time.setMultiplier(1.0); }),
                           camera);
-        TweenManager::add(
-            TweenVec2f(focalPoint.as<f32>(), tweenTime, [](ecs::Entity self) -> Vector2f& { return self.get<PrecisePosition>().position; })
-                .setTransition(easeFunc)
-                .asRunDuringPause(),
-            camera);
         System::time.setMultiplier(0.0);
         return;
     }

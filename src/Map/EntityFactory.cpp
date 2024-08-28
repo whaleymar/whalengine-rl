@@ -378,9 +378,12 @@ void createBonusStarTrigger(ecs::Entity entity, const nlohmann::json& tiledTempl
         self.kill();
     };
 
-    // TODO not working
-    TweenManager::add(
-        TweenInt(10, -0.5, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; }).asRelative().setLoops(-1).asBounce(), entity);
+    TweenManager::add(TweenInt(3, 1.0, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; })
+                          .asRelative()
+                          .setLoops(-1)
+                          .asBounce()
+                          .setTransition(Ease::InOutQuad),
+                      entity);
 }
 
 }  // namespace whal

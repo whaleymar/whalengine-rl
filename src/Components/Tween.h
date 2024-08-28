@@ -19,15 +19,15 @@ enum Flags : u8 {
 
 class TweenManager;
 
+// *might* want an onDelete callback for if the entity is killed during the tween and some global value needs resetting
 template <typename T>
 class Tween {
     friend TweenManager;
 
 public:
     using ValueGetter = T& (*)(ecs::Entity);
-    using TweenEnd = void (*)(ecs::Entity, const Tween<T>&);
+    using TweenCallback = void (*)(ecs::Entity, const Tween<T>&);
 
-    // Tween(T target, f32 duration, TweenUpdate onUpdate) : mDuration(duration), mEndValue(target), mOnUpdate(onUpdate) {}
     Tween(T target, f32 duration, ValueGetter getter) : mDuration(duration), mTweenValue(target), mGetter(getter) {}
 
     f32 getProgress() const { return (mElapsedTime - mDelay) / mDuration; }
@@ -70,10 +70,21 @@ public:
         }
     }
 
+    void onUpdate(ecs::Entity entity) {
+        if (mOnUpdate) {
+            mOnUpdate(entity, *this);
+        }
+    }
+
     bool isDone() const { return mIsDone; }
 
-    Tween<T>& setOnEnd(TweenEnd onEnd_) {
+    Tween<T>& setOnEnd(TweenCallback onEnd_) {
         mOnEnd = onEnd_;
+        return *this;
+    }
+
+    Tween<T>& setOnUpdate(TweenCallback onUpdate_) {
+        mOnUpdate = onUpdate_;
         return *this;
     }
 
@@ -137,7 +148,8 @@ private:
     T mEndValue;
     T mTweenValue;
     ValueGetter mGetter;
-    TweenEnd mOnEnd = nullptr;
+    TweenCallback mOnEnd = nullptr;
+    TweenCallback mOnUpdate = nullptr;
     u8 mFlags = TweenParams::None;
     bool mIsDone = false;
 };
