@@ -15,6 +15,7 @@
 - spike art bad
 - death animation
 - art for one-way platform
+- animation for force crystal recharging
 
 ## Player Controller/Abilities
 - try working gravity multiplier into RJ state?
@@ -27,6 +28,8 @@
 - other "spells" (projectiles that do other things)
     - creates a short-lived platform in direction shot 
     - creates updraft on collision
+    - horizonal dash (mb projectile pulls player or something)
+- holding jump & holding toward ledge that player is < 1 tile from clearing -> get-up anim like in deadlock?
 
 ## Camera / Follow
 - pretty awful in general

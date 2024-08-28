@@ -33,6 +33,15 @@
                  "speed":50,
                  "waitTime":2
                 }
+            }, 
+            {
+             "name":"Velocity",
+             "propertytype":"Component_Velocity",
+             "type":"class",
+             "value":
+                {
+
+                }
             }],
      "rotation":0,
      "type":"Entity",

@@ -88,14 +88,25 @@
         },
         "world1-Level4_ForceCrystalTest2.tmj": {
             "expandedObjectLayers": [
-                2,
-                3
+                3,
+                2
             ],
-            "scale": 3,
+            "scale": 3.0875,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 480.64777327935224,
+                "y": 57.00404858299595
+            }
+        },
+        "world1-Level5_MomentumIntro.tmj": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 3.0875,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 36,
-                "y": 13.666666666666657
+                "x": 13.927125506072883,
+                "y": 182.67206477732796
             }
         },
         "world1-blaster_get.tmj": {
@@ -174,8 +185,8 @@
         },
         "world1-start.tmj": {
             "expandedObjectLayers": [
-                2,
-                7
+                7,
+                2
             ],
             "scale": 2.6748437499999995,
             "selectedLayer": 3,
@@ -214,7 +225,7 @@
         "world1-Level4_ForceCrystalTest2.tmj"
     ],
     "project": "project.tiled-project",
-    "property.type": "Component_Velocity",
+    "property.type": "Depth",
     "recentFiles": [
         "world1-start.tmj",
         "world1-forceCrystalTutorial.tmj",

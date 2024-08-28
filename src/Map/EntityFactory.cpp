@@ -378,7 +378,7 @@ void createBonusStarTrigger(ecs::Entity entity, const nlohmann::json& tiledTempl
         self.kill();
     };
 
-    TweenManager::add(TweenInt(3, 1.0, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; })
+    TweenManager::add(TweenInt(2, 1.0, [](ecs::Entity self) -> int& { return self.get<Transform2D>().position.y; })
                           .asRelative()
                           .setLoops(-1)
                           .asBounce()
