@@ -16,6 +16,7 @@ whal::Animator getAnimator(const char* name) {
     static const NameToAnimator S_ANIMATORS[] = {
         {"effect/bluefire", Animator({{"effect/bluefire", 0, 4, 0.1}})},
         {"effect/explosion", Animator({{"effect/explosion", 0, 6, 0.5 / 6.0}}, false)},
+        {"effect/magic-explosion", Animator({{"effect/magic-explosion", 0, 11, 0.5 / 11.0}}, false)},
         {"actor/magichat", Animator({{"actor/magichat", 0, 8, 0.2}})},
         {"actor/blast-crystal", Animator({{"actor/blast-crystal", 0, 2, 0.0}}, &basicAnimationUnsquish)},
         {"actor/aim-arrow", Animator({

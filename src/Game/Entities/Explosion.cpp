@@ -48,7 +48,8 @@ Expected<ecs::Entity> makeExplosionZone(Vector2i center, s32 halflen, Vector2f p
     auto entity = eEntity.value();
     auto _ = ecs::DeferActivate(entity);
 
-    Animator animator = getAnimator("effect/explosion");
+    // Animator animator = getAnimator("effect/explosion");
+    Animator animator = getAnimator("effect/magic-explosion");
     entity.add(animator);
     entity.add(Draw(Sprite(Depth::Foreground1, animator.getFrame())));
 
