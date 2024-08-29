@@ -142,6 +142,21 @@ void Collider::updateEntityPosition() {
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {
     bool skipBounceStep = false;
+    Velocity& velocity = mSelf.get<Velocity>();
+
+    // zero velocity in collision direction
+    if (hitinfo) {
+        constexpr f32 maxSpeedPostCollision = 20.0f;
+        if (hitinfo.isVertical() && !isX) {
+            if (abs(velocity.stable.y) > maxSpeedPostCollision) {
+                velocity.stable.y = maxSpeedPostCollision * sign(velocity.stable.y);
+            }
+        } else if (hitinfo.isHorizontal() && isX) {
+            if (abs(velocity.stable.x) > maxSpeedPostCollision) {
+                velocity.stable.x = maxSpeedPostCollision * sign(velocity.stable.x);
+            }
+        }
+    }
 
     if (updateRigidBodyFlags && !isX) {
         auto& rigidbody = mSelf.get<RigidBody>();
@@ -149,7 +164,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         auto jumpControlOpt = mSelf.tryGet<Jumper>();
         auto momentumOpt = mSelf.tryGet<Momentum>();
         const bool hasMomentum = momentumOpt && momentumOpt->isMomentumStored();
-        Velocity& velocity = mSelf.get<Velocity>();
 
         if (hitinfo && hitinfo.isVertical()) {
             // update states for grounded, jumping, and reset impulses
@@ -229,7 +243,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         const f32 otherBounciness = MaterialData::get(hitinfo.otherMaterial).bounciness;
         const f32 bounciness = (selfBounciness + otherBounciness) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
-            auto& velocity = mSelf.get<Velocity>();
             if ((isX && abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
                 // stable can be negative (like for gravity) when impulse makes total velocity positive.
                 // in that case we don't want to do anything

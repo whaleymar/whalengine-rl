@@ -71,7 +71,7 @@
                  "id":9,
                  "template":"templates\/BlastCrystal.tj",
                  "x":248,
-                 "y":139
+                 "y":142
                 }, 
                 {
                  "id":12,
@@ -102,6 +102,12 @@
                  "width":20,
                  "x":296,
                  "y":1
+                }, 
+                {
+                 "id":16,
+                 "template":"templates\/InitialSpawnPoint.tj",
+                 "x":38,
+                 "y":144
                 }],
          "opacity":1,
          "properties":[
@@ -192,7 +198,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":16,
+ "nextobjectid":17,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -201,7 +207,7 @@
          "type":"class",
          "value":
             {
-
+             "isWorldEntryPoint":true
             }
         }],
  "renderorder":"right-down",

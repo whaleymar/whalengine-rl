@@ -7,6 +7,9 @@
 - parachute
 - air current (propeller?) -> comes before propeller
 
+## bugs
+- lights/radiance don't seem to be centered correctly?
+
 ## Polish
 - player leaning over ledge anim 
 - crouching state/anim

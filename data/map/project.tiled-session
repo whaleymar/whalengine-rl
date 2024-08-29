@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world1-Level4_ForceCrystalTest2.tmj",
+    "activeFile": "world1-forceCrystalTutorial.tmj",
     "expandedProjectPaths": [
-        ".",
-        "templates"
+        "templates",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -91,11 +91,11 @@
                 3,
                 2
             ],
-            "scale": 3.0875,
+            "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": -333.9271255060729,
-                "y": 314.8178137651822
+                "x": -431.25,
+                "y": 314
             }
         },
         "world1-Level5_MomentumIntro.tmj": {
@@ -143,11 +143,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3.0875,
-            "selectedLayer": 0,
+            "scale": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 481.9433198380567,
-                "y": 83.88663967611335
+                "x": -44,
+                "y": 117.875
             }
         },
         "world1-jumptutorial.tmj": {
@@ -222,23 +222,24 @@
         "world1-forceCrystalTutorial.tmj",
         "world1-Level3_ForceCrystalTest.tmj",
         "mossy-tileset.tsj",
-        "world1-Level4_ForceCrystalTest2.tmj"
+        "world1-Level4_ForceCrystalTest2.tmj",
+        "world1-Level5_MomentumIntro.tmj"
     ],
     "project": "project.tiled-project",
     "property.type": "Component_ParticleEmitter",
     "recentFiles": [
         "world1-start.tmj",
-        "world1-forceCrystalTutorial.tmj",
-        "world1-Level3_ForceCrystalTest.tmj",
-        "mossy-tileset.tsj",
+        "world1-Level5_MomentumIntro.tmj",
         "world1-Level4_ForceCrystalTest2.tmj",
+        "mossy-tileset.tsj",
+        "world1-Level3_ForceCrystalTest.tmj",
+        "world1-forceCrystalTutorial.tmj",
         "world1-blasterplatformtest.tmj",
         "world1-bonus-blasterplatform.tmj",
         "world1-blaster_get.tmj",
         "world1-momentumtutorial.tmj",
         "world1-rockettutorial.tmj",
-        "world1-jumptutorial.tmj",
-        "mossy-tileset-background.tsj"
+        "world1-jumptutorial.tmj"
     ],
     "tileset.lastUsedFormat": "json",
     "tileset.tileSize": {
