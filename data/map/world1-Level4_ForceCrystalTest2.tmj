@@ -252,7 +252,7 @@
          "type":"class",
          "value":
             {
-             "isWorldEntryPoint":true
+             "isWorldEntryPoint":false
             }
         }],
  "renderorder":"right-down",
