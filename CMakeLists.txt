@@ -63,10 +63,10 @@ if (EMSCRIPTEN)
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/lib/libraylib.a")
 
     # if I can use SharedArrayBuffer (enables threading)
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
 
     # single threaded build:
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
 
 
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
