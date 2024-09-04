@@ -6,8 +6,8 @@
 #include "Entities/Particle.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
-#include "Util/Vector.h"
 #include "Sys/System.h"
+#include "Util/Vector.h"
 
 namespace whal {
 constexpr f32 PERPENDICULAR_DAMPING = 0.33;
@@ -25,7 +25,7 @@ void ParticleEmitterSystem::update() {
 
         s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * System::time.getMultiplier());
         const f32 spawnSample = System::rng.uniform();
-        if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f > spawnSample) {
+        if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f * System::time.getMultiplier() > spawnSample) {
             nParticles++;
         }
 
