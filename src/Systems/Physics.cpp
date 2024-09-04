@@ -67,7 +67,7 @@ void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hi
 }
 
 // syncs collider in case position changed in another system
-static void syncColliders(std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
+static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
     for (auto& [entityid, entity] : physicsEntities) {
         Transform2D& trans = entity.get<Transform2D>();
         const bool isManuallyMoved = trans.isManuallyMoved;
