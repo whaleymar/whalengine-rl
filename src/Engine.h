@@ -2,7 +2,9 @@
 
 #include <raylib.h>
 #include <type_traits>
+#include "Components/Collision.h"
 #include "IGame.h"
+#include "Map/Level.h"
 #include "Settings.h"
 
 #include "Events/Listeners.h"
@@ -52,6 +54,10 @@ public:
             print("Error initializing audio manager");
             return true;
         }
+
+        // GLOBAL REFS INITIALIZATION
+        Collision::registerGame(&T::instance());
+        Map::registerGame(&T::instance());
 
         // GAME INITIALIZATION
         return T::instance().start();

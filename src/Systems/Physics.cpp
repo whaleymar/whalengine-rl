@@ -114,7 +114,7 @@ void PhysicsSystem::update() {
     for (auto& [entityid, entity] : getEntitiesMutable()) {
         f32 dt;
         // camera move normally unless pause menu is active
-        if (entity.has<Camera>()) {
+        if (entity.has<IgnoreTimeModifiers>()) {
             dt = System::time.getUnmodified();
         } else {
             dt = System::dt();

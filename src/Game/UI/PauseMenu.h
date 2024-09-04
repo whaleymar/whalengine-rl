@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Audio.h"
 #include "Events/Events.h"
-#include "System.h"
+#include "Sys/Audio.h"
+#include "Sys/System.h"
 #include "Util/Types.h"
 
 typedef struct Font Font;

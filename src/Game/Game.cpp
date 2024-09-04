@@ -44,14 +44,14 @@
 #include "Map/Tiled.h"
 
 #include "Sys/InputHandler.h"
-#include "Sys/PauseMenu.h"
 #include "Sys/System.h"
 
+#include "Game/UI/PauseMenu.h"
+
+#include "Util/DebugFwd.h"
 #include "Util/Print.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
-
-#include "Util/DebugFwd.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 

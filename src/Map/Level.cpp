@@ -1,5 +1,6 @@
 #include "Level.h"
 
+#include "IGame.h"
 #include "Settings.h"
 
 #include "Components/Collision.h"
@@ -7,7 +8,6 @@
 #include "Components/Transform.h"
 #include "Entities/Block.h"
 
-#include "Game.h"
 #include "Gfx/Texture.h"
 #include "Sys/System.h"
 #include "Tiled.h"
@@ -18,6 +18,15 @@
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
+
+// keep global reference to the game so we can get the current scene
+static IGame* P_GAME = nullptr;
+
+namespace Map {
+void registerGame(IGame* const pGame) {
+    P_GAME = pGame;
+}
+}  // namespace Map
 
 Color getLightColor(LevelLighting lightLevel) {
     switch (lightLevel) {
@@ -237,7 +246,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     // std::vector<SolidCollider> mesh;
     // makeCollisionMesh(collisionGrid, lvl);
 
-    Game::instance().getScene().loadedLevels.push_back(lvl);
+    P_GAME->getScene().loadedLevels.push_back(lvl);
 
     return NULLOPT;
 }
@@ -248,7 +257,7 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
     // also copy it so erasing it doesn't invalidate our pointer
 
     ActiveLevel copy = level;
-    Scene& scene = Game::instance().getScene();
+    Scene& scene = P_GAME->getScene();
     for (auto it = scene.loadedLevels.begin(); it != scene.loadedLevels.end(); ++it) {
         auto& lvl = *it;
         if (lvl == level) {

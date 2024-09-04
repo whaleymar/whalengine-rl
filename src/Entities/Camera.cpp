@@ -26,6 +26,7 @@ Expected<ecs::Entity> createCamera(Transform2D trans) {
     camera.add(Name("Camera"));
     camera.add<Camera>();
     camera.add<AudioListener>();
+    camera.add<IgnoreTimeModifiers>();
 
     return camera;
 }

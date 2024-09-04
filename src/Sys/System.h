@@ -25,10 +25,12 @@ struct System {
             time.setMultiplier(0.0);
             audio.pauseClips(true);
             world.pause();
+            eventMgr.triggerEvent<PauseEvent>(true);
         } else {
             time.setMultiplier(1.0);
             audio.pauseClips(false);
             world.unpause();
+            eventMgr.triggerEvent<PauseEvent>(false);
         }
     }
 

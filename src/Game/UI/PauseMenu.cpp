@@ -1,10 +1,10 @@
 #include "PauseMenu.h"
+
 #include <raylib.h>
 
 #include "Events/Events.h"
-#include "Game.h"
+#include "Game/Game.h"
 #include "Settings.h"
-#include "System.h"
 #include "Util/Print.h"
 
 namespace whal {
