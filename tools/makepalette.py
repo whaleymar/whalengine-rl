@@ -92,7 +92,7 @@ if __name__ == "__main__":
     if (len(sys.argv) != 3 and len(sys.argv) != 2):
         print("expected 1 or 2 args: file path and out path (optional)")
     else:
-        outpath = "data/texture/palette.png"
+        outpath = "src/Game/data/texture/palette.png"
         if (len(sys.argv)==3):
             outpath = sys.argv[2]
         inpath = sys.argv[1]
