@@ -1,6 +1,7 @@
 #include "TagTrackers.h"
 
 #include "Components/RailsControl.h"
+#include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/Tween.h"
 #include "Entities/Camera.h"
@@ -32,7 +33,7 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
 
         TweenManager::add(TweenVec2f(focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> Vector2f& { return self.get<PrecisePosition>().position; })
                               .setTransition(Ease::InOutQuad)
-                              .asRunDuringPause()
+                              .asIgnoreSlowdown()
                               .setOnUpdate([](ecs::Entity self, const TweenVec2f&) {
                                   self.get<Transform2D>().position = self.get<PrecisePosition>().position.round();
                               })
@@ -40,6 +41,15 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
                           camera);
         System::time.setMultiplier(0.0);
         return;
+    }
+}
+
+void CameraSystem::onEvent(PauseEvent, bool isPaused) {
+    auto camera = first();
+    if (isPaused) {
+        camera.remove<IgnoreTimeModifiers>();
+    } else {
+        camera.add<IgnoreTimeModifiers>();
     }
 }
 

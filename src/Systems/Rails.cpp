@@ -7,7 +7,6 @@
 #include "Components/Tween.h"
 #include "Components/Velocity.h"
 
-#include "Sys/PauseMenu.h"
 #include "Sys/System.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
@@ -29,8 +28,7 @@ void RailsSystem::onAdd(const ecs::Entity entity) {
 
 static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
     f32 dt;
-    // camera moves normally unless pause menu is activated
-    if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
+    if (entity.has<IgnoreTimeModifiers>()) {
         dt = System::time.getUnmodified();
     } else {
         dt = System::dt();
@@ -107,7 +105,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
 static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
     f32 dt;
     // camera moves normally unless pause menu is activated
-    if (entity.has<Camera>() && !PauseMenu::instance().isActive()) {
+    if (entity.has<IgnoreTimeModifiers>()) {
         dt = System::time.getUnmodified();
     } else {
         dt = System::dt();

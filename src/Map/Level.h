@@ -15,6 +15,11 @@ typedef struct Color Color;
 namespace whal {
 
 struct TileMap;
+class IGame;
+
+namespace Map {
+void registerGame(IGame* const pGame);
+}
 
 enum class LevelLighting { Dark, Normal, Dim };
 Color getLightColor(LevelLighting);

@@ -13,6 +13,7 @@ enum Flags : u8 {
     RelativeTarget = 1 << 1,
     CustomOrigin = 1 << 2,
     Bounce = 1 << 3,
+    IgnorePause = 1 << 4,
 };
 
 }
@@ -34,7 +35,9 @@ public:
     T getValue() const { return ease(mStartValue, mEndValue, getProgress(), mEaseFunc); }
 
     void tick(ecs::Entity entity) {
-        const f32 dt = isSet(TweenParams::IgnoreSlowdown) ? System::time.getUnmodified() : System::dt();
+        const f32 dt = System::isPaused() && !isSet(TweenParams::IgnorePause) ? 0.0f :
+                       isSet(TweenParams::IgnoreSlowdown)                     ? System::time.getUnmodified() :
+                                                                                System::dt();
 
         if (mDelay > mElapsedTime) {
             mElapsedTime += dt;
@@ -104,6 +107,11 @@ public:
     }
 
     Tween<T>& asRunDuringPause() {
+        setFlag(TweenParams::IgnorePause);
+        return *this;
+    }
+
+    Tween<T>& asIgnoreSlowdown() {
         setFlag(TweenParams::IgnoreSlowdown);
         return *this;
     }

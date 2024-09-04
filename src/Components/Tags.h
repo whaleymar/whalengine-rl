@@ -25,5 +25,6 @@ struct Camera {};
 struct AudioListener {};
 struct Particle {};
 struct Invisible {};
+struct IgnoreTimeModifiers {};
 
 }  // namespace whal
