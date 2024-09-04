@@ -10,3 +10,6 @@
 [submodule "lib/expected"]
 	path = lib/expected
 	url = https://github.com/TartanLlama/expected.git
+[submodule "src/Game"]
+	path = src/Game
+	url = git@github.com:whaleymar/Game.git
