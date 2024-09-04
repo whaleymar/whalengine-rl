@@ -550,145 +550,77 @@ Corrade::Containers::Optional<Error> Sfx::load() {
     mIsLoaded = true;
     Corrade::Containers::Optional<Error> errOpt;
 
-    errOpt = GAMEOVER.load("data/audio/sfx/zeldaGameOverSound.mp3");
+    const auto sfxPath = [](const char* fileName) { return whal_format("src/Game/data/audio/sfx/{}", fileName); };
+
+    errOpt = GAMEOVER.load(sfxPath("zeldaGameOverSound.mp3").c_str());
     if (errOpt)
         return errOpt;
 
-    errOpt = EXPLOSION.load("data/audio/sfx/explosion.wav");
+    errOpt = EXPLOSION.load(sfxPath("explosion.wav").c_str());
     if (errOpt)
         return errOpt;
 
-    errOpt = FOOTSTEPTEST.load("data/audio/sfx/test-footstep.mp3");
+    errOpt = FOOTSTEPTEST.load(sfxPath("test-footstep.mp3").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = SHOTFIRED.load("data/audio/sfx/shotfired.wav");
+    errOpt = SHOTFIRED.load(sfxPath("shotfired.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = JUMP.load("data/audio/sfx/jump.wav");
+    errOpt = JUMP.load(sfxPath("jump.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = LAND.load("data/audio/sfx/land.wav");
+    errOpt = LAND.load(sfxPath("land.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = DEATH.load("data/audio/sfx/death.wav");
+    errOpt = DEATH.load(sfxPath("death.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = MENU_MOVE.load("data/audio/sfx/menu_move.wav");
+    errOpt = MENU_MOVE.load(sfxPath("menu_move.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = MENU_OPEN.load("data/audio/sfx/menu_open.wav");
+    errOpt = MENU_OPEN.load(sfxPath("menu_open.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = MENU_CLOSE.load("data/audio/sfx/menu_close.wav");
+    errOpt = MENU_CLOSE.load(sfxPath("menu_close.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = MENU_SELECT.load("data/audio/sfx/menu_choose.wav");
+    errOpt = MENU_SELECT.load(sfxPath("menu_choose.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = SWITCH_FLIP.load("data/audio/sfx/switch_flip.wav");
+    errOpt = SWITCH_FLIP.load(sfxPath("switch_flip.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = DOOR_OPEN.load("data/audio/sfx/door_open.wav");
+    errOpt = DOOR_OPEN.load(sfxPath("door_open.wav").c_str());
     if (errOpt) {
         return errOpt;
     }
 
-    errOpt = MAJOR_ITEM_GET.load("data/audio/sfx/major_item_get.mp3");
+    errOpt = MAJOR_ITEM_GET.load(sfxPath("major_item_get.mp3").c_str());
     if (errOpt) {
         return errOpt;
     }
 
     return NULLOPT;
 }
-
-// AudioClip::AudioClip(const char* path) {}
-//
-// AudioClip::~AudioClip() {}
-//
-// Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
-//     return NULLOPT;
-// }
-//
-// AudioPlayer::AudioPlayer() {
-//     mIsValid = true;
-// }
-//
-// AudioPlayer::~AudioPlayer() {}
-//
-// void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool isLooping, Vector2i* position) {}
-//
-// void AudioPlayer::update() {}
-//
-// FMOD::System* AudioPlayer::getSystem() const {
-//     return mSystem;
-// }
-//
-// // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
-// void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping, Vector2i* position) {}
-// void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {}
-//
-// void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
-//                                       bool isInGroup) {}
-//
-// void AudioPlayer::stopMusic() {}
-//
-// void AudioPlayer::stopClips() {}
-//
-// void AudioPlayer::stopAll() {}
-//
-// void AudioPlayer::setMusicVolume(f32 volume) {}
-//
-// void AudioPlayer::setListenerPosition(Vector2i worldPosition) {}
-//
-// bool AudioPlayer::isMusicPaused() const {
-//     bool isPaused = false;
-//     return isPaused;
-// }
-//
-// bool AudioPlayer::isClipsPaused() const {
-//     bool isPaused = false;
-//     return isPaused;
-// }
-//
-// void AudioPlayer::pauseMusic(bool pause) {}
-//
-// void AudioPlayer::pauseClips(bool pause) {}
-//
-// void AudioPlayer::pauseAll(bool pause) {}
-//
-// // needs to be free'd with dsp->release();
-// Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) {
-//     return Error("stubbed");
-// }
-//
-// void AudioPlayer::setFilterMusic(Filter filter) {}
-//
-// void AudioPlayer::setFilterClips(Filter filter) {}
-//
-// void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel) {}
-//
-// Corrade::Containers::Optional<Error> Sfx::load() {
-//     return NULLOPT;
-// }
 
 }  // namespace whal

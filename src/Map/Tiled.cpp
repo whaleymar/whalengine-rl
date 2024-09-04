@@ -24,8 +24,7 @@
 
 namespace whal {
 
-inline const char* MAP_DIR = "data/map";
-inline const char* TSET_SPRITE_DIR = "data/sprite/map";
+inline const char* MAP_DIR = "src/Game/data/map";
 
 static ComponentFactory COMPONENT_FACTORY;
 static EntityFactory PREFAB_FACTORY;
