@@ -65,12 +65,15 @@ void FreeControlSystem::update() {
     }
 
     for (auto& [entityid, entity] : getEntitiesMutable()) {
+        auto& trans = entity.get<Transform2D>();
         Vector2f delta;
         if (System::input.isOn(InputType::LEFT)) {
             delta += Vector2f::unitLeft;
+            trans.facing = Facing::Left;
         }
         if (System::input.isOn(InputType::RIGHT)) {
             delta += Vector2f::unitRight;
+            trans.facing = Facing::Right;
         }
         if (System::input.isOn(InputType::UP)) {
             delta += Vector2f::unitUp;

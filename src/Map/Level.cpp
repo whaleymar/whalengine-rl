@@ -225,7 +225,8 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                             continue;
                         }
                         const TileSet& tset = getTileSet(map, blockID);
-                        // TODO collider position not matching rotation
+                        // TODO collider position not matching rotation -- rotateAboutCenter should be a transform component and then change that AABB
+                        // constructor that takes transforms
                         s32 tileID = blockID - tset.firstgid;
                         tset.addTileComponents(*eEntity, tileID, lvl, layer.metadata, mapPosition);
 
