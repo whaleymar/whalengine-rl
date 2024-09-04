@@ -102,9 +102,5 @@
 		<img n="actor/mana-gauge2" x="1687" y="21" w="8" h="8" />
 		<img n="actor/mana-gauge3" x="1696" y="21" w="8" h="8" />
 		<img n="actor/mana-gauge1" x="1705" y="21" w="8" h="8" />
-		<img n="tile/dirtblock" x="1714" y="21" w="8" h="8" />
-		<img n="tile/testgrass" x="1723" y="21" w="8" h="8" />
-		<img n="tile/translucent" x="1732" y="21" w="8" h="8" />
-		<img n="tile/purpledirt" x="1741" y="21" w="8" h="8" />
 	</tex>
 </atlas>
