@@ -232,7 +232,9 @@ Expected<ecs::Entity> createPlayerAt(Transform2D transform) {
     // player.get<Collider>().setMaterial(WorldMaterial::Soft);
     // player.add(Collider::SemiSolid(transform, Vector2i(halfLenX, halfLenY)));
     // player.add(Collider::Solid(transform, Vector2i(halfLenX, halfLenY)));
-    player.add<RigidBody>();
+    // RigidBody rb{};
+    // rb.gravityMultiplier = 0.0f;
+    // player.add(rb);
     // player.add(DrawText("Test message. This message is really long the quick fox jumped over the lazy dog", GRAY, {100, 100}, true));
 
     // player.add(PointLight{TEXELS_PER_TILE * 8, TEXELS_PER_TILE, WHITE});
