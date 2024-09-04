@@ -156,20 +156,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     bool skipBounceStep = false;
     Velocity& velocity = mSelf.get<Velocity>();
 
-    // zero velocity in collision direction
-    if (hitinfo) {
-        constexpr f32 maxSpeedPostCollision = 20.0f;
-        if (hitinfo.isVertical() && !isX) {
-            if (abs(velocity.stable.y) > maxSpeedPostCollision) {
-                velocity.stable.y = maxSpeedPostCollision * sign(velocity.stable.y);
-            }
-        } else if (hitinfo.isHorizontal() && isX) {
-            if (abs(velocity.stable.x) > maxSpeedPostCollision) {
-                velocity.stable.x = maxSpeedPostCollision * sign(velocity.stable.x);
-            }
-        }
-    }
-
     if (updateRigidBodyFlags && !isX) {
         auto& rigidbody = mSelf.get<RigidBody>();
         const bool wasGrounded = rigidbody.isGrounded;
@@ -253,7 +239,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         // average bounciness of both colliders
         const f32 selfBounciness = MaterialData::get(mMaterial).bounciness;
         const f32 otherBounciness = MaterialData::get(hitinfo.otherMaterial).bounciness;
-        const f32 bounciness = (selfBounciness + otherBounciness) / 2.0f;
+        const f32 bounciness = mSelf.has<IsIdealSpring>() ? 1.0f : (selfBounciness + otherBounciness) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
             if ((isX && abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
                 // stable can be negative (like for gravity) when impulse makes total velocity positive.
@@ -279,6 +265,18 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                     if (abs(velocity.stable.y) < BOUNCE_THRESHOLD) {
                         velocity.stable.y = 0;
                     }
+                }
+            }
+        } else {
+            // zero velocity in collision direction
+            constexpr f32 maxSpeedPostCollision = 20.0f;
+            if (hitinfo.isVertical() && !isX) {
+                if (abs(velocity.stable.y) > maxSpeedPostCollision) {
+                    velocity.stable.y = maxSpeedPostCollision * sign(velocity.stable.y);
+                }
+            } else if (hitinfo.isHorizontal() && isX) {
+                if (abs(velocity.stable.x) > maxSpeedPostCollision) {
+                    velocity.stable.x = maxSpeedPostCollision * sign(velocity.stable.x);
                 }
             }
         }

@@ -26,5 +26,6 @@ struct AudioListener {};
 struct Particle {};
 struct Invisible {};
 struct IgnoreTimeModifiers {};
+struct IsIdealSpring {};
 
 }  // namespace whal
