@@ -452,7 +452,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 
     s32 blockIx = blockId - tset.firstgid;
 
-    s32 rowIx = blockIx / tset.heightTiles;
+    s32 rowIx = blockIx / tset.widthTiles;
     s32 colIx = blockIx % tset.widthTiles;
 
     Frame fullFrame = *tsetFrameOpt;
