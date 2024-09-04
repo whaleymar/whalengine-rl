@@ -82,9 +82,10 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
 
 void TileSet::addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, const LayerData layerData, Vector2i mapPosition) const {
     const auto& object = getMapFile(fileName);
+    bool isMissingTsetProps = false;
 
     if (!object.contains("properties")) {
-        return;
+        isMissingTsetProps = true;
     }
 
     const EntityMapData mapData = {mapPosition, {TEXELS_PER_TILE, TEXELS_PER_TILE}, 0, false, true};
@@ -94,7 +95,9 @@ void TileSet::addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLeve
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
     // add tileset components
-    addComponents(entity, mapData, object, emptyJson, emptyIdToIndex, level, layerData);
+    if (!isMissingTsetProps) {
+        addComponents(entity, mapData, object, emptyJson, emptyIdToIndex, level, layerData);
+    }
 
     // tile-specific component overrides
     s32 propsIx = tileIDToIndex[tileID];
