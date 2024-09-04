@@ -79,6 +79,10 @@ void FreeControlSystem::update() {
             delta += Vector2f::unitDown;
         }
 
+        if (!delta.isZero()) {
+            delta = delta.norm();  // diagonal speed should match speed in cardinal directions
+        }
+
         auto control = entity.get<PlayerControl>();
         delta *= control.moveSpeed;
 
