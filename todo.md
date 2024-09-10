@@ -1,7 +1,12 @@
 # To Do 
 
 ## Current Goal: 
-- levels 
+- gfx system rework 
+    - use flag for occlusion
+    - web shader 
+    - make silhouette shader effect work on individual entities again (basically need to store more info per channel for this to work, and also need to get the right color there)
+        - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
+    - instead of TextureID::LayerXyz do a separate enum
 
 ## levels and game mechanics (each thing should have a level that teaches how to use)
 - parachute
@@ -9,30 +14,6 @@
 
 ## bugs
 - lights/radiance don't seem to be centered correctly?
-
-## Polish
-- player leaning over ledge anim 
-- crouching state/anim
-- looking up anim
-- aiming anim
-- spike art bad
-- death animation
-- art for one-way platform
-- animation for force crystal recharging
-
-## Player Controller/Abilities
-- try working gravity multiplier into RJ state?
-- in air: shooting projectile does have pushback? Maybe only if you shoot in a downward direction
-- idea: downward-diagonal shooting pushes player slightly upward, making it more powerful
-- idea: (small) double jump mechanic that kills your horizontal velocity, making it easier to adjust trajectory coming out of a rocket jump
-    - could be a jump with neutral/directional variants for a little more control over what happens next
-- ducking: make collider smaller, moves camera down after a sec like spelunky
-- fast falling
-- other "spells" (projectiles that do other things)
-    - creates a short-lived platform in direction shot 
-    - creates updraft on collision
-    - horizonal dash (mb projectile pulls player or something)
-- holding jump & holding toward ledge that player is < 1 tile from clearing -> get-up anim like in deadlock?
 
 ## Camera / Follow
 - pretty awful in general

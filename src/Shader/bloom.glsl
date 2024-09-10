@@ -9,7 +9,6 @@ uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 
 // mine:
-uniform float iTime;
 uniform vec2 iResolution;
 
 // Output fragment color
@@ -29,8 +28,7 @@ const float quality = 1.;          // Defines size factor: Lower = smaller glow,
 // can set this below 1. if i only want to bloom the outside of the object
 const float maxAlpha = 1.1;
 
-void main()
-{
+void main() {
     vec4 sum = vec4(0.);
     vec2 sizeFactor = vec2(1)/iResolution*quality;
 

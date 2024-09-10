@@ -11,7 +11,6 @@ uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 
 // mine:
-uniform float iTime;
 uniform vec2 iResolution;
 
 // const float samples = 5.;          // finalColors per axis; higher = bigger glow, worse performance. MIN 3
