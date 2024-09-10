@@ -27,7 +27,7 @@ void InputHandler::update() {
     for (auto [mouseButton, inputType] : S_MOUSEMAP) {
         if (IsMouseButtonPressed(mouseButton)) {
             set(inputType);
-        } else if (IsKeyReleased(mouseButton)) {
+        } else if (IsMouseButtonReleased(mouseButton)) {
             reset(inputType);
         }
     }
@@ -44,11 +44,6 @@ void InputHandler::set(InputType input) {
         }
         break;
 #endif
-
-    case InputType::SHOOT: {
-        mFlags |= static_cast<u64>(input);
-        break;
-    }
 
     case InputType::JUMP:
         mIsJumpPressed = true;
@@ -82,7 +77,7 @@ void InputHandler::reset(InputType input) {
 void InputHandler::loadMappings() const {
     // EVENTUALLY load from file once i have, like, menus working
 
-    // MouseMap.insert({MOUSE_BUTTON_LEFT, InputType::SHOOT});
+    S_MOUSEMAP.insert({MOUSE_BUTTON_LEFT, InputType::M1});
     S_KEYMAP.insert({KEY_UP, InputType::UP});
     S_KEYMAP.insert({KEY_RIGHT, InputType::RIGHT});
     S_KEYMAP.insert({KEY_DOWN, InputType::DOWN});

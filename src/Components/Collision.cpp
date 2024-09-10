@@ -469,8 +469,10 @@ void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
 
 void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove,
                               bool isPushedBySolid, bool isSkipMomentumUpdate) {
+    if (!mIsCollidable) {
+        return;
+    }
     // turn off collision so colliders moved by us don't get stuck on us
-    bool wasCollidable = mIsCollidable;
     mIsCollidable = false;
 
     // Caller should only have moved on one dimension before calling this, so only push/carry on that dimension
@@ -488,7 +490,7 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
                       isSkipMomentumUpdate);
     }
 
-    mIsCollidable = wasCollidable;
+    mIsCollidable = true;
 }
 
 // we are moving, other is still.
