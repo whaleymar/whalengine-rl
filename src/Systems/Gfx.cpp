@@ -2,10 +2,11 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Events/Events.h"
+#include "raylib/src/raylib.h"
 #include "rlgl.h"
 
 #include "Components/Tags.h"
-#include "Gfx/Depth.h"
 #include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
@@ -14,7 +15,6 @@
 
 #include "Systems/CollisionManager.h"
 #include "Systems/TagTrackers.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #include "Components/Draw.h"
@@ -25,260 +25,190 @@ namespace whal {
 static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint);
 static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                                     int selectStart, int selectLength, Color selectTint, Color selectBackTint);
+static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
-static const std::array<TextureID, 3> S_LAYER_TEXTURES = {
-    TextureID::LayerNormal,
-    TextureID::LayerBloom,
-    TextureID::LayerGlow,
-};
+static s32 mainTexUniform;
 
 static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
     return Vector2(worldCoord.x - cameraPos.x, cameraPos.y - worldCoord.y);
 }
 
-GfxSystem::Layer& GfxSystem::getLayer(TextureID texId) {
-    switch (texId) {
-    case TextureID::LayerNormal:
-        return mLayerNormal;
-    case TextureID::LayerBloom:
-        return mLayerBloom;
-    case TextureID::LayerGlow:
-        return mLayerGlow;
-    default:
-        print("GfxSystem does not handle layer for TextureID: ", static_cast<s32>(texId));
-        return mLayerNormal;
-    }
-}
-
-// sorts new entities
-void GfxSystem::Layer::update() {
-    std::sort(toSort.begin(), toSort.end(), &isBelow);
-
-    auto it = sorted.before_begin();
-    auto current = sorted.begin();
-    auto insertIt = toSort.begin();
-
-    // insert new elements in sorted order:
-    while (current != sorted.end()) {
-        while (insertIt != toSort.end() && isBelow(*insertIt, *current)) {
-            it = sorted.insert_after(it, *insertIt);
-            ++insertIt;
-        }
-        ++it;
-        ++current;
-    }
-    // insert remaining elements in vec:
-    while (insertIt != toSort.end()) {
-        it = sorted.insert_after(it, *insertIt);
-        ++insertIt;
-    }
-
-    toSort.clear();
-
-    // reset iterator
-    iter = sorted.begin();
-}
-
-void GfxSystem::onAdd(const ecs::Entity entity) {
-    const auto draw = entity.get<Draw>();
-    const DrawInfo drawInfo(entity, depthToFloat(draw.getDepth()), draw.getDepth(), static_cast<s16>(draw.getShader()));
-    getLayer(draw.getTexLayer()).toSort.push_back(drawInfo);
-}
-
-void GfxSystem::onRemove(const ecs::Entity entity) {
-    auto pred = [entity](const DrawInfo& drawInfo) { return drawInfo.entity.id() == entity.id(); };
-    auto& layer = getLayer(entity.get<Draw>().getTexLayer());
-    auto numRemoved = layer.sorted.remove_if(pred);
-    if (numRemoved == 0) {
-        auto it = std::find_if(layer.toSort.begin(), layer.toSort.end(), pred);
-        assert(it != layer.toSort.end() && "tried to remove entity from GfxSystem, but couldn't find it in layer.sorted or layer.toSort collections");
-        layer.toSort.erase(it);
-    }
-}
-
-// returns true if `first` should be drawn before `seccond`
-// based on depth, then shader
-bool GfxSystem::isBelow(const DrawInfo& first, const DrawInfo& second) {
-    return !(first.depth > second.depth || (first.depth == second.depth && first.shaderIx >= second.shaderIx));
+void GfxSystem::onEvent(ShaderReloadEvent) {
+    mainTexUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
 }
 
 static void drawTextureFlipped(const Texture& tex) {
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
 }
 
-// this is really messy and will be a pain to add more layers to it
-void GfxSystem::drawEntities(Camera2D worldCamera) {
-    // update layers with new entities
-    for (auto texID : S_LAYER_TEXTURES) {
-        getLayer(texID).update();
+static Color packEffectFlags(const Draw& draw) {
+    u8 r = 0, g = 0, b = 0;
+    if (draw.getTexLayer() == TextureID::LayerBloom) {
+        r = 255;
+    }
+    if (draw.getTexLayer() == TextureID::LayerGlow) {
+        g = 255;
     }
 
-    bool isFirstDrawToMain = true;
-    bool isFirstDrawToOcclusion = true;
-    static RenderTexture2D tmpBloomTex = LoadRenderTexture(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-    static Pipeline bloomPipeline(Vector2i(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS), {Shaders::Bloom, Shaders::Blur});
-
-    // draw one layer at a time to minimize FBO swaps
-    while (true) {
-        Depth currentDepth = Depth::Debug;
-        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
-            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
-            if (layer.iter == layer.sorted.end() || layer.iter->depthId == currentDepth) {
-                continue;
-            }
-
-            if (layer.iter->depth < depthToFloat(currentDepth)) {
-                currentDepth = layer.iter->depthId;
-            }
-        }
-
-        std::bitset<S_LAYER_TEXTURES.size()> drawMask;
-        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
-            const auto texID = S_LAYER_TEXTURES[i];
-            auto& layer = getLayer(texID);
-
-            if (layer.iter != layer.sorted.end() && currentDepth == layer.iter->depthId) {
-                drawMask.set(i);
-                BeginTextureMode(TextureManager::getRenderTexture(texID));
-                ClearBackground(Colors::Clear);
-                BeginMode2D(worldCamera);
-                layer.iter = drawEntities(layer, layer.iter);
-                EndMode2D();
-                EndTextureMode();
-
-                if (currentDepth == Depth::Level) {
-                    // draw to occlusion mask
-                    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Occlusion));
-                    if (isFirstDrawToOcclusion) {
-                        ClearBackground(Colors::Clear);
-                        isFirstDrawToOcclusion = false;
-                    }
-                    BeginBlendMode(BLEND_ADDITIVE);
-                    drawTextureFlipped(TextureManager::getRenderTexture(texID).texture);
-                    EndBlendMode();
-                    EndTextureMode();
-                }
-            }
-        }
-
-        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
-            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
-            if (drawMask[i] && layer.shader == Shaders::Bloom) {
-                BeginTextureMode(tmpBloomTex);
-                ClearBackground(Colors::Clear);
-                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-                EndTextureMode();
-
-                bloomPipeline.process(tmpBloomTex);
-
-                break;
-            }
-        }
-
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-        if (isFirstDrawToMain) {
-            ClearBackground({58, 57, 106, 255});
-            drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
-            isFirstDrawToMain = false;
-        }
-
-        bool isDone = true;
-        for (size_t i = 0; i < S_LAYER_TEXTURES.size(); i++) {
-            const auto& layer = getLayer(S_LAYER_TEXTURES[i]);
-            if (!isDone || layer.iter != layer.sorted.end()) {
-                isDone = false;
-            }
-
-            if (!drawMask[i]) {
-                continue;
-            }
-            if (layer.shader == Shaders::Default) {
-                drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-            } else {
-                if (layer.shader == Shaders::Bloom) {
-                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-                    // ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
-                    // drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-
-                    // for some INSANE reason, adding black (0, 0, 0, 255) to any color equals BLACK ??? so i have to do this BS
-                    // case RL_BLEND_ADDITIVE: glBlendFunc(GL_SRC_ALPHA, GL_ONE); glBlendEquation(GL_FUNC_ADD); break;
-                    rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
-                    BeginBlendMode(BLEND_CUSTOM_SEPARATE);
-                    drawTextureFlipped(tmpBloomTex.texture);
-                    EndBlendMode();
-                } else {
-                    ScopedShader shaderScope = ShaderManager::activateScoped(layer.shader);
-                    drawTextureFlipped(TextureManager::getRenderTexture(S_LAYER_TEXTURES[i]).texture);
-                }
-            }
-        }
-
-        if (isDone) {
-            break;
-        } else {
-            EndTextureMode();
-        }
-    }
-
-    // TextureManager::instance().drawLightingTexture();
-
-#ifndef NDEBUG
-    BeginMode2D(worldCamera);
-    if (System::input.isOn(InputType::DEBUG)) {
-        System::world.getSystem<DrawDebugSystem>()->drawEntities();
-        drawColliders();
-    }
-    EndMode2D();
-#endif
-
-    EndTextureMode();
+    return Color(r, g, b, 255);
 }
 
-// draw entities in layer starting at the passed iterator. Stops when the next entity has a new depth value
-std::forward_list<GfxSystem::DrawInfo>::iterator GfxSystem::drawEntities(Layer& layer, std::forward_list<DrawInfo>::iterator startIt) {
-    auto cameraPosF = getCameraPositionPrecise();
-    // auto cameraPosF = toFloatVec(getCameraPosition());
-    const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
+static s32 getLowestPoint(const GfxSystem::DrawInfo& drawInfo) {
+    if (drawInfo.trans.rotationDegrees == 0.0) {
+        return drawInfo.trans.position.y;
+    }
 
-    Shaders prevShader = static_cast<Shaders>(layer.sorted.begin()->shaderIx);
-    ShaderManager::activate(prevShader);
-    std::forward_list<DrawInfo>::iterator it;
-    for (it = startIt; it != layer.sorted.end() && it->depthId == startIt->depthId; ++it) {
-        const auto drawInfo = *it;
-        Shaders newShader = static_cast<Shaders>(drawInfo.shaderIx);
-        if (newShader != prevShader) {
-            prevShader = newShader;
-            EndShaderMode();
-            ShaderManager::activate(newShader);
+    // TODO account for when the entity is rotating about its center
+
+    // since we're rotating about the transform, at +/- 90 degrees the lowest point is -0.5 * width below the transform, and at 180 degrees the lowest
+    // point is -1 * height below the transform
+    const f32 radians = DEG2RAD * drawInfo.trans.rotationDegrees;
+    f32 lowestWidth = 0.25f * (std::cos(2.0f * radians) - 1.0f);
+    f32 lowestHeight = 0.5f * (std::cos(radians) - 1.0f);
+    f32 offset;
+    if (lowestWidth <= lowestHeight) {
+        offset = drawInfo.draw.getFrameSizeTexels().x * lowestWidth;
+    } else {
+        offset = drawInfo.draw.getFrameSizeTexels().y * lowestHeight;
+    }
+
+    return drawInfo.trans.position.y + offset;
+}
+
+static bool isBelow(const GfxSystem::DrawInfo& drawInfo1, const GfxSystem::DrawInfo& drawInfo2) {
+    if (drawInfo1.draw.getDepth() != drawInfo2.draw.getDepth()) {
+        return drawInfo1.draw.getDepth() < drawInfo2.draw.getDepth();
+    }
+
+    if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
+        // TODO need to take rotations into account :(
+        // return drawInfo1.trans.position.y > drawInfo2.trans.position.y;
+        return getLowestPoint(drawInfo1) > getLowestPoint(drawInfo2);
+    } else {
+        return false;  // doesn't really matter for side scrollers
+    }
+}
+
+static bool isInViewport(const Transform2D& trans, Draw draw, const AABB viewport) {
+    // use generous 2x'd half len so we don't have to worry about rotations
+    const Vector2i pos = trans.position;
+    switch (draw.getTag()) {
+    case Draw::DrawTag::Rect: {
+        const DrawRect rect = draw.getRect();
+        auto frameSize = rect.getFrameSizeTexels().as<f32>();
+        Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
+        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !viewport.isOverlapping(drawBox)) {
+            return false;
         }
-        drawEntity(drawInfo.entity, spriteTexture, cameraPosF);
+        break;
+    }
+    case Draw::DrawTag::Sprite: {
+        const Sprite sprite = draw.getSprite();
+        const Vector2i frameSize = sprite.getFrameSizeTexels();
+        Vector2f dstSize = {frameSize.x * sprite.scale.x * FPIXELS_PER_TEXEL, frameSize.y * sprite.scale.y * FPIXELS_PER_TEXEL};
+
+        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !viewport.isOverlapping(drawBox)) {
+            return false;
+        }
+        break;
+    }
+    case Draw::DrawTag::BezierQuad: {
+        break;  // TODO
+    }
+    case Draw::DrawTag::Line: {
+        break;  // TODO
+    }
+    }
+
+    return true;
+}
+
+void GfxSystem::sortEntities(Vector2i cameraPos) {
+    mSortedEntities.clear();                               // .clear() doesn't affect capacity
+    mSortedEntities.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
+    const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
+    for (auto const [entityid, entity] : getEntitiesMutable()) {
+        auto const trans = entity.get<Transform2D>();
+        auto const draw = entity.get<Draw>();
+        if (isInViewport(trans, draw, cameraViewBox)) {
+            mSortedEntities.push_back({trans, draw});
+        }
+    }
+    std::sort(mSortedEntities.begin(), mSortedEntities.end(), isBelow);
+}
+
+void GfxSystem::drawEntities(Camera2D worldCamera) {
+    constexpr Color noEffect = Color(0, 0, 0, 0);
+    const auto cameraPosF = getCameraPositionPrecise();
+    const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
+    sortEntities(cameraPosF.round());
+
+    // Draw to Effects Buffer
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
+    ClearBackground(noEffect);
+    BeginMode2D(worldCamera);
+    ShaderManager::activate(Shaders::Silhouette);
+
+    for (auto [trans, draw] : mSortedEntities) {
+        // TODO can use also set a flag for occlusion
+        const Color flagsColor = packEffectFlags(draw);
+        draw.setColor(flagsColor);
+        _draw(trans, draw, spriteTexture, cameraPosF);
     }
     EndShaderMode();
-    return it;
+    EndMode2D();
+    EndTextureMode();
+
+    // Normal drawing to main texture
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    ClearBackground({58, 57, 106, 255});
+    drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
+    BeginMode2D(worldCamera);
+    ShaderManager::activate(Shaders::Default);
+    for (auto [trans, draw] : mSortedEntities) {
+        _draw(trans, draw, spriteTexture, cameraPosF);
+    }
+    EndShaderMode();
+    EndMode2D();
+
+    // Apply Post Processing Effects
+    ShaderManager::activate(Shaders::PostProcess);
+    BeginBlendMode(BLEND_ADDITIVE);
+    // this... isn't working like it did before, but regular additive blend seems to look good
+    // rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
+    // BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mainTexUniform, TextureManager::getRenderTexture(TextureID::Main).texture);
+    drawTextureFlipped(TextureManager::getRenderTexture(TextureID::PostProcess).texture);
+    EndBlendMode();
+    EndShaderMode();
+    EndTextureMode();
+
+    // Draw debug stuff
+#ifndef NDEBUG
+    if (System::input.isOn(InputType::DEBUG)) {
+        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+        BeginMode2D(worldCamera);
+        // System::world.getSystem<DrawDebugSystem>()->drawEntities();
+        drawColliders();
+        EndMode2D();
+        EndTextureMode();
+    }
+#endif
 }
 
-void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
-    const Transform2D trans = entity.get<Transform2D>();
-    Draw draw = entity.get<Draw>();
+static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Vector2i pos = trans.position;
     Vector2f posF = pos.as<f32>();
     const Vector2i cameraPos = cameraPosF.round();
-    const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
 
     switch (draw.getTag()) {
     case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
         auto frameSize = rect.getFrameSizeTexels().as<f32>();
         Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
-
-        // skip if entity is off screen
-        // use generous 2x'd half len so we don't have to worry about rotations
-        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
-            return;
-        }
 
         // subtract size.y so we draw from bottom left instead of top left
         Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y - dstSize.y};
@@ -295,12 +225,6 @@ void GfxSystem::drawEntity(ecs::Entity entity, const Texture2D& spriteTexture, c
         const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
 
         Vector2f dstSize = {frameSize.x * sprite.scale.x * FPIXELS_PER_TEXEL, frameSize.y * sprite.scale.y * FPIXELS_PER_TEXEL};
-
-        // skip if entity is off screen
-        // use generous 2x'd half len so we don't have to worry about rotations
-        if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !cameraViewBox.isOverlapping(drawBox)) {
-            return;
-        }
 
         Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
 

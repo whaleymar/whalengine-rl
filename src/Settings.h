@@ -83,3 +83,10 @@ inline const char* PALETTE_TEXTURE_PATH = "src/Game/data/texture/palette.png";
 inline const char* ATLAS_METADATA_PATH = "src/Game/data/sprite/atlas.xml";
 inline const char* TILED_PROJECT_FILE = "project.tiled-project";  // path relative to map dir
 inline const char* ICON_IMAGE_PATH = "src/Game/data/icon.png";
+
+/////////////////////////////////////////////////////////////
+////////////////////// GAME SETTINGS ////////////////////////
+/////////////////////////////////////////////////////////////
+
+enum class WorldType2D { TopDown, SideScroller };
+inline constexpr WorldType2D WORLD_TYPE = WorldType2D::TopDown;

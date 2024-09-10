@@ -73,21 +73,17 @@ void ShaderManager::loadShaders() {
         u32 uniformFlags = Uniforms::None;
     };
 
-    static const ShaderInfo shaderInfo[] = {
-        {Shaders::Default, 0, 0},
-        {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
-        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::Resolution},
-        {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
-        {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
-        {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
-        {Shaders::Outline, 0, "src/Shader/outline.glsl"},
-        {Shaders::Bloom, 0, "src/Shader/bloom.glsl", Uniforms::Resolution},
-        {Shaders::Glow, 0, "src/Shader/glow.glsl", Uniforms::Resolution},
-        // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
-        {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
-        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
-        {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
-    };
+    static const ShaderInfo shaderInfo[] = {{Shaders::Default, 0, 0},
+                                            {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
+                                            {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::Resolution},
+                                            {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
+                                            {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
+                                            {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
+                                            // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
+                                            {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
+                                            {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
+                                            {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
+                                            {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::Resolution}};
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
 

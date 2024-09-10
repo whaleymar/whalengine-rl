@@ -34,10 +34,12 @@ void Pipeline::process(RenderTexture2D& processTexture) {
     mIsDrawingToSwapBuffer = true;
 
     for (const auto shaderType : mShaders) {
-        ScopedShader shaderScope = ShaderManager::activateScoped(shaderType);
+        // ScopedShader shaderScope = ShaderManager::activateScoped(shaderType);
 
         BeginTextureMode(mActiveBuffer);
+        ShaderManager::activate(shaderType);
         swapBuffer();
+        EndShaderMode();
         EndTextureMode();
     }
 
