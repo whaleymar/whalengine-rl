@@ -15,7 +15,7 @@ enum class InputType : u64 {
     JUMP = 1 << 4,
     PAUSE = 1 << 5,
     QUIT = 1 << 6,
-    SHOOT = 1 << 7,
+    M1 = 1 << 7,
     OK = 1 << 8,
     DEBUG = 1 << 9,
     GROWX = 1 << 10,

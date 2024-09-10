@@ -82,7 +82,7 @@ struct DrawRect : public IDraw {
 struct DrawBezierQuad {
     Vector2i controlPointOffset;
     Vector2i endPointOffset;
-    Color color;
+    Color color = WHITE;
     f32 thickness = 1.0;
     Depth depth = Depth::Level;
     Shaders shader = Shaders::Default;
@@ -90,7 +90,7 @@ struct DrawBezierQuad {
 
 struct DrawStraightLine {
     s32 length;
-    Color color;
+    Color color = WHITE;
     f32 thickness = 1.0;
     f32 scaleLength = 1.0;
     f32 scaleWidth = 1.0;
