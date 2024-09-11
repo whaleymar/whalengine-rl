@@ -10,5 +10,5 @@ webdebug:
 	EMCC_AUTODEBUG=1 emcmake cmake . -DCMAKE_BUILD_TYPE=Debug -DEMSCRIPTEN=true -B build && emmake $(MAKE) -C build -j
 
 clean:
-	rm -r build || true
+	(rm -r build || true) && (rm engined || true) && (rm engined.js || true) && (rm engined.wasm || true) && (rm engined.data || true) && (rm engined.html || true)
 
