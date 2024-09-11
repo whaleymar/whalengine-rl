@@ -34,10 +34,11 @@ Layer fromString(const char* layer) {
 static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {None, None},
     {Layer::Actor, Solid | SemiSolid | TriggerActors | TriggerPhysics},
-    {Layer::Solid, SemiSolid | Light | Vision | TriggerPhysics},
-    {Layer::SemiSolid, SemiSolid | Light | Vision | TriggerPhysics},
+    {Layer::Solid, SemiSolid | Light | Vision | TriggerPhysics | PlayerFriendlyFire | Player | Enemy | Npc},
+    {Layer::SemiSolid, SemiSolid | Light | Vision | TriggerPhysics | PlayerFriendlyFire | Player | Enemy | Npc},
     {Layer::TriggerPhysics, None},
     {Layer::TriggerActors, None},
+    {Layer::PlayerFriendlyFire, PlayerFriendlyFire | Player | Enemy | Npc},
     {Layer::Player, Enemy | Npc},  // thinking of using this for player actions? not sure
     {Layer::Enemy, None},
     {Layer::Npc, None},

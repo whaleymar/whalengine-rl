@@ -309,14 +309,6 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
     bool isHit = false;
     switch (mCollisionLayer) {
-    case CollisionLayer::Actor: {
-        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
-        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
-        isHit =
-            emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags) ||
-            isHit;
-        break;
-    }
     case CollisionLayer::Solid: {
         // check riding status *before* moving
         const auto riding = getRidingCollidersQT();
@@ -355,8 +347,14 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
         break;
     }
-    default:
-        moveNoCollisionCheck(amount, toMoveRounded);
+    default: {
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
+        isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
+        isHit =
+            emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags) ||
+            isHit;
+        break;
+    }
     }
 
     if (isManualMove) {
@@ -541,7 +539,7 @@ u16 Collider::getCollisionLayersThatCanStopMe() const {
     // Special case: actors shouldn't stop SemiSolid colliders from moving.
     // SemiSolids should also push each other instead of stopping movement.
     // Collision layer matrix is also checked in checkCollision. This is an additional check that must pass for a collision to happen, so returning
-    // ALL as default is fine.
+    // ALL as default is fine. Only add something here for special stuff like asymmetric behavior.
     if (mCollisionLayer == CollisionLayer::SemiSolid) {
         return CollisionLayer::Solid;
     } else if (mCollisionLayer == CollisionLayer::Solid) {

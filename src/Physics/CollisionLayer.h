@@ -17,11 +17,12 @@ enum Layer : u16 {
     SemiSolid = 1 << 2,
     TriggerPhysics = 1 << 3,
     TriggerActors = 1 << 4,
-    Player = 1 << 5,
-    Enemy = 1 << 6,
-    Npc = 1 << 7,
-    Light = 1 << 8,
-    Vision = 1 << 9,
+    PlayerFriendlyFire = 1 << 5,
+    Player = 1 << 6,
+    Enemy = 1 << 7,
+    Npc = 1 << 8,
+    Light = 1 << 9,
+    Vision = 1 << 10,
 };
 
 Layer fromString(const char* layer);

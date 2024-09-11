@@ -75,15 +75,20 @@ void InputHandler::reset(InputType input) {
 }
 
 void InputHandler::loadMappings() const {
-    // EVENTUALLY load from file once i have, like, menus working
+    // TODO EVENTUALLY load from file once i have, like, menus working
+    // TODO should put default mappings in Game/ directory
 
     S_MOUSEMAP.insert({MOUSE_BUTTON_LEFT, InputType::M1});
     S_KEYMAP.insert({KEY_UP, InputType::UP});
+    S_KEYMAP.insert({KEY_W, InputType::UP});
     S_KEYMAP.insert({KEY_RIGHT, InputType::RIGHT});
+    S_KEYMAP.insert({KEY_D, InputType::RIGHT});
     S_KEYMAP.insert({KEY_DOWN, InputType::DOWN});
+    S_KEYMAP.insert({KEY_S, InputType::DOWN});
     S_KEYMAP.insert({KEY_LEFT, InputType::LEFT});
-    S_KEYMAP.insert({KEY_C, InputType::JUMP});
-    S_KEYMAP.insert({KEY_X, InputType::AIM});
+    S_KEYMAP.insert({KEY_A, InputType::LEFT});
+    // S_KEYMAP.insert({KEY_C, InputType::JUMP});
+    // S_KEYMAP.insert({KEY_X, InputType::AIM});
     S_KEYMAP.insert({KEY_ESCAPE, InputType::PAUSE});
     S_KEYMAP.insert({KEY_ENTER, InputType::OK});
 

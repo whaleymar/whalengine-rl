@@ -8,12 +8,11 @@
         - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
     - instead of TextureID::LayerXyz do a separate enum
 
-## levels and game mechanics (each thing should have a level that teaches how to use)
-- parachute
-- air current (propeller?) -> comes before propeller
-
-## bugs
-- lights/radiance don't seem to be centered correctly?
+## Separating Game vs Engine 
+- want to register EntityFactory entries from Game 
+- want to edit CollisionLayers from Game 
+- want to edit Input mappings and add custom Input Enum values from Game 
+- editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
 
 ## Camera / Follow
 - pretty awful in general
@@ -50,7 +49,6 @@
 things i might want to (re)consider in the future -- ctrl+f for "RESEARCH" 
 
 ## System:
-- make this an actual framework -- create GameInterface which has startup, mainloop, and end methods, then convert a lot of current Game class into Engine class which calls these things
 - hot-reloading code (youtube video is bookmarked)
 
 ## Map:
