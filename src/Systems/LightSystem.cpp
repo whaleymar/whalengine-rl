@@ -15,6 +15,7 @@
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "Systems/TagTrackers.h"
+#include "Util/Vector.h"
 
 namespace whal {
 
@@ -40,6 +41,11 @@ void drawLights(Camera2D worldCamera) {
     lightingPipeline.process(TextureID::Lighting);
 }
 
+// RESEARCH this assumes the entity is rotated about the transform position
+static Vector2i getLightOffset(f32 rotationDegrees, s32 lightHeightPixels) {
+    return (angleToUnit(-rotationDegrees + 90.0f) * lightHeightPixels).round();
+}
+
 void PointLightSystem::onEvent(ShaderReloadEvent) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
 }
@@ -57,8 +63,9 @@ void PointLightSystem::update() {
             continue;
         }
         PointLight light = entity.get<PointLight>();
-        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
-        Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
+        const Vector2i worldPosition =
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
+        const Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
@@ -79,8 +86,8 @@ void PointLightSystem::update() {
         Vector2 screenPosV(screenPosition.x, screenPosition.y);
         SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
-        Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
+        const Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
+        const Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
 }
@@ -109,7 +116,8 @@ void BoxLightSystem::update() {
         ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::BoxLight);
 
         BoxLight light = entity.get<BoxLight>();
-        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
+        const Vector2i worldPosition =
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
@@ -168,7 +176,8 @@ void RadianceLightSystem::update(Camera2D worldCamera) {
         }
 
         Radiance light = entity.get<Radiance>();
-        Vector2i worldPosition = entity.get<Transform2D>().position + Vector2i(0, light.heightTexels * PIXELS_PER_TEXEL);
+        const Vector2i worldPosition =
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
         Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
