@@ -3,6 +3,7 @@
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Events/Events.h"
+#include "Sys/System.h"
 #include "whalECS/src/ECS.h"
 
 typedef struct Texture Texture;

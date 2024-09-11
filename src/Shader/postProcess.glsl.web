@@ -85,7 +85,8 @@ vec4 glow() {
 
         float sum = 0.0;
         for (int n = 0; n < 9; ++n) {
-            uv_y = (fragTexCoord.y * iResolution.y) + (glow_size * float(n - 4.5));
+            float nf = float(n);
+            uv_y = (fragTexCoord.y * iResolution.y) + (glow_size * (nf - 4.5));
             float h_sum = 0.0;
             for (float ny = -4.5; ny < 5.; ny += 1.) {
                 vec4 mask2 = texture2D(texture0, norm(ivec2(uv_x + ny * glow_size, uv_y)));
