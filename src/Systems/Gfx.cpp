@@ -44,13 +44,16 @@ static void drawTextureFlipped(const Texture& tex) {
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
 }
 
-static Color packEffectFlags(const Draw& draw) {
+static Color packEffectFlags(const Draw& draw, ecs::EntityID entityId) {
     u8 r = 0, g = 0, b = 0;
     if (draw.getTexLayer() == TextureID::LayerBloom) {
         r = 255;
     }
     if (draw.getTexLayer() == TextureID::LayerGlow) {
         g = 255;
+    }
+    if (draw.getDepth() == Depth::Level && ecs::Entity(entityId).has<Collider>() && !ecs::Entity(entityId).has<Particle>()) {
+        b = 255;
     }
 
     return Color(r, g, b, 255);
@@ -134,7 +137,7 @@ void GfxSystem::sortEntities(Vector2i cameraPos) {
         auto const trans = entity.get<Transform2D>();
         auto const draw = entity.get<Draw>();
         if (isInViewport(trans, draw, cameraViewBox)) {
-            mSortedEntities.push_back({trans, draw});
+            mSortedEntities.push_back({trans, draw, entityid});
         }
     }
     std::sort(mSortedEntities.begin(), mSortedEntities.end(), isBelow);
@@ -152,9 +155,9 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Silhouette);
 
-    for (auto [trans, draw] : mSortedEntities) {
+    for (auto [trans, draw, entityId] : mSortedEntities) {
         // TODO can use also set a flag for occlusion
-        const Color flagsColor = packEffectFlags(draw);
+        const Color flagsColor = packEffectFlags(draw, entityId);
         draw.setColor(flagsColor);
         _draw(trans, draw, spriteTexture, cameraPosF);
     }
@@ -168,7 +171,7 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Default);
-    for (auto [trans, draw] : mSortedEntities) {
+    for (auto [trans, draw, entityId] : mSortedEntities) {
         _draw(trans, draw, spriteTexture, cameraPosF);
     }
     EndShaderMode();

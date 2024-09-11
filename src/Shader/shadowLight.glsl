@@ -35,13 +35,13 @@ float rand(vec2 n) {
 
 bool isWall(vec2 p) {
     vec4 sampleCol = texture(texture0, p);
-    return sampleCol.a > 0.05;
+    return sampleCol.b > 0.05;
 }
 
 vec3 getColor(vec2 p) {	 
     vec4 sampleCol = texture(texture0, p);
-    const float MIN_OCCLUSION_ALPHA = 0.9;
-    return step(MIN_OCCLUSION_ALPHA, sampleCol.a) * wallColor + (1. - step(MIN_OCCLUSION_ALPHA, sampleCol.a)) * vec3(1.);
+    const float MIN_OCCLUSION_VAL = 0.9;
+    return step(MIN_OCCLUSION_VAL, sampleCol.b) * wallColor + (1. - step(MIN_OCCLUSION_VAL, sampleCol.b)) * vec3(1.);
 }
 
 
@@ -104,14 +104,14 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     if (pixelDistance > radiusPixels) {
         return vec3(0.);
     }
+    // 0.0 == full light; 1.0 == full shadow
     float fraction = pixelDistance/radiusPixels;
-    float weight = mix(0., 1., fraction * fraction);
+    float weight = mix(0., 1., sqrt(fraction));
     vec3 shadow = blendLighting(p, lightPos);
     shadow = mix(shadow, vec3(0.), weight);
     return shadow;
 }
 
 void main() {
-    // vec2 lp1 = vec2(0.5, 0.5);
     finalColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;
 }

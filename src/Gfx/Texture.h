@@ -61,7 +61,6 @@ enum class TextureID {
     BackgroundFar,
     BackgroundMid,
     BackgroundNear,
-    Occlusion,
     _COUNT_DO_NOT_USE_ME,
 };
 
