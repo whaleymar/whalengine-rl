@@ -2,7 +2,6 @@
 
 ## Current Goal: 
 - gfx system rework 
-    - use flag for occlusion
     - web shader 
     - make silhouette shader effect work on individual entities again (basically need to store more info per channel for this to work, and also need to get the right color there)
         - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
@@ -18,6 +17,10 @@
 - pretty awful in general
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
+
+## Lighting 
+- shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
+    - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
 
 ## Map 
 - respawn map objects

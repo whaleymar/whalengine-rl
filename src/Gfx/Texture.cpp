@@ -159,7 +159,6 @@ TextureManager::TextureManager() {
         {TextureID::LayerNormal, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerBloom, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::LayerGlow, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::Occlusion, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);

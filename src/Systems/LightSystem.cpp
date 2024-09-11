@@ -225,7 +225,7 @@ void ShadowLightSystem::update() {
 
         const f32 lightRadiusPixels = light.radiusTexels * PIXELS_PER_TEXEL;
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
-        auto& tex = TextureManager::getRenderTexture(TextureID::Occlusion).texture;
+        auto& tex = TextureManager::getRenderTexture(TextureID::PostProcess).texture;
         DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), light.color);
         EndShaderMode();
     }

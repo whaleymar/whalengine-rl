@@ -25,6 +25,7 @@ public:
     struct DrawInfo {
         Transform2D trans;
         Draw draw;
+        ecs::EntityID id;
     };
 
     void onEvent(ShaderReloadEvent) override;
