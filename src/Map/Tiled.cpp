@@ -46,12 +46,12 @@ void clearMapCache() {
 }
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level, LayerData layerData) {
-    std::string name = "";
-    tryReadString(object, "name", &name);
-    if (name.size()) {
-        entity.add(Name(name.c_str()));
-        // print("created entity: ", name);
-    }
+    // std::string name = "";
+    // tryReadString(object, "name", &name);
+    // if (name.size()) {
+    //     entity.add(Name(name.c_str()));
+    //     // print("created entity: ", name);
+    // }
 
     if (!object.contains("properties")) {
         return;
@@ -292,8 +292,17 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
         if (tryReadVector2i(object, "width", "height", &entityData.dimensionsTexels))
             entityData.isPoint = false;
+
+        // add transform
         Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint);
         entity.add(trans);
+
+        // add name
+        std::string name = "";
+        if (tryReadString(object, "name", &name)) {
+            entity.add(Name(name.c_str()));
+            print("created entity: ", name);
+        }
 
         if (pPrefab) {
             // add template components
@@ -302,9 +311,9 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             entityData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
-            const auto name = readString(*pPrefab, "name");
+            const auto prefabName = readString(*pPrefab, "name");
             EntityBuilder builderFunc = nullptr;
-            PREFAB_FACTORY.getEntryIndex(name.c_str(), &builderFunc);
+            PREFAB_FACTORY.getEntryIndex(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
                 builderFunc(entity, *pPrefab, level);
             }
