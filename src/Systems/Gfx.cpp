@@ -46,10 +46,10 @@ static void drawTextureFlipped(const Texture& tex) {
 
 static Color packEffectFlags(const Draw& draw, ecs::EntityID entityId) {
     u8 r = 0, g = 0, b = 0;
-    if (draw.getTexLayer() == TextureID::LayerBloom) {
+    if (draw.isPostProcessFlagSet(PostProcessFlag::Bloom)) {
         r = 255;
     }
-    if (draw.getTexLayer() == TextureID::LayerGlow) {
+    if (draw.isPostProcessFlagSet(PostProcessFlag::Glow)) {
         g = 255;
     }
     if (draw.getDepth() == Depth::Level && ecs::Entity(entityId).has<Collider>() && !ecs::Entity(entityId).has<Particle>()) {
@@ -156,7 +156,9 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     ShaderManager::activate(Shaders::Silhouette);
 
     for (auto [trans, draw, entityId] : mSortedEntities) {
-        // TODO can use also set a flag for occlusion
+        if (draw.getDepth() == Depth::Debug) {
+            continue;
+        }
         const Color flagsColor = packEffectFlags(draw, entityId);
         draw.setColor(flagsColor);
         _draw(trans, draw, spriteTexture, cameraPosF);
@@ -165,8 +167,28 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     EndMode2D();
     EndTextureMode();
 
+    // not working quite right
+    // 2nd pass we re-draw the effects mask and take the max at each point, since obscured entities should still block light (and have other effects?)
+    // BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
+    // BeginMode2D(worldCamera);
+    // SetShaderValueTexture(ShaderManager::get(Shaders::EffectsMask), GetShaderLocation(ShaderManager::get(Shaders::EffectsMask), "iMask"),
+    //                       TextureManager::getRenderTexture(TextureID::PostProcess).texture);
+    // ShaderManager::activate(Shaders::EffectsMask);
+    //
+    // for (auto [trans, draw, entityId] : mSortedEntities) {
+    //     const Color flagsColor = packEffectFlags(draw, entityId);
+    //     if (flagsColor.b > 0) {
+    //         draw.setColor(flagsColor);
+    //         _draw(trans, draw, spriteTexture, cameraPosF);
+    //     }
+    // }
+    // EndShaderMode();
+    // EndMode2D();
+    // EndTextureMode();
+
     // Normal drawing to main texture
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    // ClearBackground({0, 0, 0, 255});
     ClearBackground({58, 57, 106, 255});
     drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
     BeginMode2D(worldCamera);

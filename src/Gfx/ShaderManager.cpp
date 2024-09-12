@@ -83,7 +83,8 @@ void ShaderManager::loadShaders() {
                                             {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
                                             {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
                                             {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
-                                            {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::Resolution}};
+                                            {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::Resolution},
+                                            {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"}};
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
 

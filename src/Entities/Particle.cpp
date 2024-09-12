@@ -58,14 +58,11 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add<Velocity>();
     materialData.addComponents(particle, 1, color, lifetimeMultiplier);
 
-    // TextureID texID = materialData.isFlagSet(MaterialData::RadianceFlag) ? TextureID::LayerBloom : TextureID::LayerNormal;
-    TextureID texID = TextureID::LayerNormal;
-
     if (materialData.particleShape == Draw::DrawTag::Line) {
-        particle.add(Draw(DrawStraightLine(3, color, 1.0, 1.0, 1.0, depth, true), texID));
+        particle.add(Draw(DrawStraightLine(3, color, 1.0, 1.0, 1.0, depth, true)));
         particle.add<AngularVelocity>();
     } else {
-        particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth), texID));
+        particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
     }
 
     return particle;
