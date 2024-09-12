@@ -75,13 +75,13 @@ DrawText::DrawText(const char* string, Color color_, Vector2i frameSizeTexels_, 
 // rect by default
 Draw::Draw(Depth depth, Vector2i frameSizeTexels, Shaders shader, Color color) : mRect(color, frameSizeTexels, depth, shader), mTag(DrawTag::Rect) {}
 
-Draw::Draw(DrawRect rect, TextureID texLayer) : mRect(rect), mTag(DrawTag::Rect), mLayerTexture(texLayer) {}
+Draw::Draw(DrawRect rect, u32 flags) : mRect(rect), mTag(DrawTag::Rect), mPostProcessFlags(flags) {}
 
-Draw::Draw(Sprite sprite, TextureID texLayer) : mSprite(sprite), mTag(DrawTag::Sprite), mLayerTexture(texLayer) {}
+Draw::Draw(Sprite sprite, u32 flags) : mSprite(sprite), mTag(DrawTag::Sprite), mPostProcessFlags(flags) {}
 
-Draw::Draw(DrawBezierQuad bezier, TextureID texLayer) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad), mLayerTexture(texLayer) {}
+Draw::Draw(DrawBezierQuad bezier, u32 flags) : mBezierQuad(bezier), mTag(DrawTag::BezierQuad), mPostProcessFlags(flags) {}
 
-Draw::Draw(DrawStraightLine line, TextureID texLayer) : mLine(line), mTag(DrawTag::Line), mLayerTexture(texLayer) {}
+Draw::Draw(DrawStraightLine line, u32 flags) : mLine(line), mTag(DrawTag::Line), mPostProcessFlags(flags) {}
 
 Draw::Draw(const Draw& other) {
     std::memcpy(this, &other, sizeof(other));

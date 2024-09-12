@@ -54,9 +54,6 @@ enum class TextureID {
     // ColorGrade,  // this is a regular texture, not rendertexture, might remove
     Lighting,
     Radiance,
-    LayerNormal,
-    LayerBloom,
-    LayerGlow,
     BackgroundStatic,
     BackgroundFar,
     BackgroundMid,

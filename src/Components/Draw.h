@@ -48,6 +48,15 @@ inline Color lerp(Color first, Color second, f32 t) {
 
 }  // namespace Colors
 
+namespace PostProcessFlag {
+
+enum Flags : u32 {
+    Bloom = 1,
+    Glow = 1 << 1,
+};
+
+}
+
 // hard coded as rectangles until I need something else
 struct IDraw {
     IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_);
@@ -108,10 +117,10 @@ public:
 
     Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,
          Color color = WHITE);
-    Draw(DrawRect rect, TextureID texLayer = TextureID::LayerNormal);
-    Draw(Sprite sprite, TextureID texLayer = TextureID::LayerNormal);
-    Draw(DrawBezierQuad bezier, TextureID texLayer = TextureID::LayerNormal);
-    Draw(DrawStraightLine line, TextureID texLayer = TextureID::LayerNormal);
+    Draw(DrawRect rect, u32 flags = 0);
+    Draw(Sprite sprite, u32 flags = 0);
+    Draw(DrawBezierQuad bezier, u32 flags = 0);
+    Draw(DrawStraightLine line, u32 flags = 0);
 
     Draw(const Draw& other);
     Draw& operator=(const Draw& other);
@@ -125,8 +134,8 @@ public:
     Vector2i getFrameSizeTexels() const;
     Depth getDepth() const;
     Shaders getShader() const;
-    TextureID getTexLayer() const { return mLayerTexture; }
-    void setTexLayer(TextureID texID) { mLayerTexture = texID; }  // this will not do anything unless the entity is removed & re-added to gfx system
+    bool isPostProcessFlagSet(PostProcessFlag::Flags flag) const { return (mPostProcessFlags & flag) > 0; }
+    void setPostProcessFlags(u32 flags) { mPostProcessFlags = flags; }
     void setAlpha(u8 alpha);
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
@@ -142,7 +151,7 @@ private:
         DrawStraightLine mLine;
     };
     DrawTag mTag;
-    TextureID mLayerTexture = TextureID::LayerNormal;
+    u32 mPostProcessFlags = 0;
 };
 
 struct DrawText {

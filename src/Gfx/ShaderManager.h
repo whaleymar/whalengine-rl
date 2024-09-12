@@ -18,6 +18,7 @@ enum class Shaders : s16 {
     ShadowLight,
     Blur,
     PostProcess,
+    EffectsMask,
     _Count_DO_NOT_USE_ME
 };
 

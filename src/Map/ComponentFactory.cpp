@@ -158,7 +158,6 @@ static SwitchGate DefaultSwitchGate;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
 static Orbit DefaultOrbit;
-static TextureID DefaultDrawLayer = TextureID::LayerNormal;
 
 static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
@@ -558,6 +557,19 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
     entity.add(rails);
 }
 
+static u32 parseGfxEffects(const nlohmann::json& values) {
+    u32 flags = 0;
+    if (values.contains("Layer")) {
+        std::string textureLayer = values["Layer"];
+        if (textureLayer == "Bloom") {
+            flags |= PostProcessFlag::Bloom;
+        } else if (textureLayer == "Glow") {
+            flags |= PostProcessFlag::Glow;
+        }
+    }
+    return flags;
+}
+
 void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects,
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
@@ -573,17 +585,8 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
         draw.setColor(color);
     }
 
-    TextureID texID = TextureID::LayerNormal;
-    if (values.contains("Layer")) {
-        std::string textureLayer = values["Layer"];
-        if (textureLayer == "Bloom") {
-            texID = TextureID::LayerBloom;
-        } else if (textureLayer == "Glow") {
-            texID = TextureID::LayerGlow;
-        }
-    }
-
-    entity.add(Draw(draw, texID));
+    u32 flags = parseGfxEffects(values);
+    entity.add(Draw(draw, flags));
 }
 
 void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -606,15 +609,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         sprite.setColor(color);
     }
 
-    TextureID texID = TextureID::LayerNormal;
-    if (values.contains("Layer")) {
-        std::string textureLayer = values["Layer"];
-        if (textureLayer == "Bloom") {
-            texID = TextureID::LayerBloom;
-        } else if (textureLayer == "Glow") {
-            texID = TextureID::LayerGlow;
-        }
-    }
+    u32 flags = parseGfxEffects(values);
 
     std::string spritePath = "";
     if (values.contains("Sprite")) {
@@ -625,13 +620,13 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (frameOpt) {
         sprite.depth = layerData.depth;
         sprite.setFrame(*frameOpt);
-        entity.add(Draw(sprite, texID));
+        entity.add(Draw(sprite, flags));
     } else {
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
         DrawRect draw = DefaultDraw;
         draw.setFrameSize(entityData.dimensionsTexels);
-        entity.add(Draw(draw, texID));
+        entity.add(Draw(draw, flags));
     }
 }
 
@@ -659,18 +654,10 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
         sprite.setColor(color);
     }
 
-    TextureID texID = TextureID::LayerNormal;
-    if (values.contains("Layer")) {
-        std::string textureLayer = values["Layer"];
-        if (textureLayer == "Bloom") {
-            texID = TextureID::LayerBloom;
-        } else if (textureLayer == "Glow") {
-            texID = TextureID::LayerGlow;
-        }
-    }
+    u32 flags = parseGfxEffects(values);
 
     sprite.depth = layerData.depth;
-    entity.add(Draw(sprite, texID));
+    entity.add(Draw(sprite, flags));
 }
 
 // this is only intended to be used on tiles (which already have a sprite), not objects
@@ -681,17 +668,9 @@ void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects
         print("can't add draw layer for entity", entityData.id, "without Draw component");
         return;
     }
-    TextureID texID = DefaultDrawLayer;
-    if (values.contains("Layer")) {
-        std::string textureLayer = values["Layer"];
-        if (textureLayer == "Bloom") {
-            texID = TextureID::LayerBloom;
-        } else if (textureLayer == "Glow") {
-            texID = TextureID::LayerGlow;
-        }
-    }
 
-    entity.get<Draw>().setTexLayer(texID);
+    u32 flags = parseGfxEffects(values);
+    entity.get<Draw>().setPostProcessFlags(flags);
 }
 
 void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,

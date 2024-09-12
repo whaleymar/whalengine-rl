@@ -156,9 +156,6 @@ TextureManager::TextureManager() {
         {TextureID::PostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
         {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::LayerNormal, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::LayerBloom, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::LayerGlow, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
