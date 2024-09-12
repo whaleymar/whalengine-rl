@@ -4,15 +4,16 @@
 #include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Components/Light.h"
+#include "Components/Name.h"
 #include "Components/RailsControl.h"
 #include "Components/RigidBody.h"
 #include "Components/Tags.h"
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
-#include "Game/Components/Blaster.h"
 #include "Game/Components/ProjectileInfo.h"
 #include "Game/Components/Switch.h"
 #include "Game/Entities/Checkpoint.h"
+#include "Game/Entities/Enemy.h"
 #include "Game/Entities/Explosion.h"
 #include "Systems/TagTrackers.h"
 #include "whalECS/src/ECS.h"
@@ -26,6 +27,7 @@ void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTe
 static void createSwitch(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createAppearTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 static void createJumpThruTrigger(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void createEnemy(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
 
 static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"SimpleRespawnTrigger", createRespawnTriggerPrefab},
@@ -34,6 +36,7 @@ static NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"MultiSwitch", createSwitch},
     {"AppearTrigger", createAppearTrigger},
     {"JumpThruTrigger", createJumpThruTrigger},
+    {"Enemy", createEnemy},
 };
 
 EntityFactory::EntityFactory() : Factory<EntityBuilder>("EntityFactory") {
@@ -189,6 +192,11 @@ void createJumpThruTrigger(ecs::Entity entity, const nlohmann::json& tiledTempla
     auto& trigger = entity.get<Trigger>();
     trigger.onTriggerEnter = callback;
     trigger.onTriggerStay = callback;
+}
+
+void createEnemy(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+    Enemy type = fromString(entity.get<Name>().name.c_str());
+    addEnemyComponents(entity, type);
 }
 
 }  // namespace whal

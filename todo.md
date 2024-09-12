@@ -8,6 +8,7 @@
 
 ## Separating Game vs Engine 
 - want to register EntityFactory entries from Game 
+- want to register game specific components in the Component Factory
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
