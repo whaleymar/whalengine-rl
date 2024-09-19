@@ -35,7 +35,13 @@ f32 getAngleClockwise(Vector2f vec, Vector2f reference) {
     f32 dot = vec.dot(reference);
     f32 det = vec.det(reference);
     f32 angleRadians = std::atan2(det, dot);
-    return angleRadians * RAD_TO_DEG;
+    f32 angleDegrees = angleRadians * RAD_TO_DEG;
+
+    // angles >180 are negative. clamp between 0 and 360
+    if (angleDegrees < 0.0f) {
+        return 360.0f + angleDegrees;
+    }
+    return angleDegrees;
 }
 
 f32 getAngle(Vector2f vec, Vector2f reference) {
