@@ -42,29 +42,41 @@ public:
     void registerListener(EventListener<T...>& listener) {
         static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
         listener.mId = S_LISTENER_ID++;
-        mEvents.push_back({getEventId<E>(), &listener});
+        auto id = getEventId<E>();
+        if (!mListeners.contains(id)) {
+            mListeners[id] = {};
+        }
+        mListeners[id].push_back(&listener);
     }
 
     template <typename E, typename... T>
     void stopListening(EventListener<T...>& listener) {
         const EventId eventId = getEventId<E>();
-        for (size_t i = 0; i < mEvents.size(); i++) {
-            EventListener<T...>* eventListener = static_cast<EventListener<T...>*>(mEvents[i].second);
-            if (mEvents[i].first == eventId && eventListener->id() == listener.id()) {
-                removeListenerAt(i);
+        if (!mListeners.contains(eventId)) {
+            return;
+        }
+
+        size_t ix = 0;
+        for (auto genericListener : mListeners[eventId]) {
+            EventListener<T...>* eventListener = static_cast<EventListener<T...>*>(genericListener);
+            if (eventListener->id() == listener.id()) {
+                removeListenerAt(eventId, ix);
+                return;
             }
+            ix++;
         }
     }
 
     template <typename E, typename... T>
     void triggerEvent(T... args) {
         static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
-        for (auto& [eventId, listener] : mEvents) {
-            if (eventId != getEventId<E>()) {
-                continue;
-            }
+        const EventId eventId = getEventId<E>();
+        if (!mListeners.contains(eventId)) {
+            return;
+        }
 
-            EventListener<T...>* eventListener = static_cast<EventListener<T...>*>(listener);
+        for (auto genericListener : mListeners[eventId]) {
+            EventListener<T...>* eventListener = static_cast<EventListener<T...>*>(genericListener);
             eventListener->callback(args...);
         }
     }
@@ -72,10 +84,11 @@ public:
 private:
     EventManager() = default;
     EventManager(EventManager& other) = delete;
-    void removeListenerAt(int ix) {
-        auto lastPair = mEvents.back();
-        mEvents[ix] = lastPair;
-        mEvents.pop_back();
+
+    void removeListenerAt(EventId eventId, size_t ix) {
+        auto last = mListeners[eventId].back();
+        mListeners[eventId][ix] = last;
+        mListeners[eventId].pop_back();
     }
 
     template <typename T>
@@ -84,8 +97,7 @@ private:
         return id_;
     }
 
-    // RESEARCH can do a std::unordered_map<EventBase, std::vector<void*>> if this gets too slow
-    std::vector<std::pair<EventId, void*>> mEvents;
+    std::unordered_map<EventId, std::vector<void*>> mListeners;
     inline static ListenerId S_LISTENER_ID = 1;  // 0 is invalid id;
     inline static EventId S_EVENT_ID = 1;
 };
