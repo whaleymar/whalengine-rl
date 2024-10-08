@@ -4,7 +4,6 @@
 - gfx system rework 
     - make silhouette shader effect work on individual entities again (basically need to store more info per channel for this to work, and also need to get the right color there)
         - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
-    - instead of TextureID::LayerXyz do a separate enum
 
 ## Separating Game vs Engine 
 - want to register EntityFactory entries from Game 
