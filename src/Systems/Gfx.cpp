@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <raylib.h>
 #include "Events/Events.h"
+#include "Util/EngineUtil.h"
 #include "raylib/src/raylib.h"
 #include "rlgl.h"
 
@@ -38,10 +39,6 @@ static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos) {
 
 void GfxSystem::onEvent(ShaderReloadEvent) {
     mainTexUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
-}
-
-static void drawTextureFlipped(const Texture& tex) {
-    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
 }
 
 static Color packEffectFlags(const Draw& draw, ecs::EntityID entityId) {
@@ -190,7 +187,7 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
     // ClearBackground({0, 0, 0, 255});
     ClearBackground({58, 57, 106, 255});
-    drawTextureFlipped(TextureManager::getRenderTexture(TextureID::Background).texture);
+    drawRenderTexture(TextureManager::getRenderTexture(TextureID::Background));
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Default);
     for (auto [trans, draw, entityId] : mSortedEntities) {
@@ -206,7 +203,7 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     // rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
     // BeginBlendMode(BLEND_CUSTOM_SEPARATE);
     SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mainTexUniform, TextureManager::getRenderTexture(TextureID::Main).texture);
-    drawTextureFlipped(TextureManager::getRenderTexture(TextureID::PostProcess).texture);
+    drawRenderTexture(TextureManager::getRenderTexture(TextureID::PostProcess));
     EndBlendMode();
     EndShaderMode();
     EndTextureMode();

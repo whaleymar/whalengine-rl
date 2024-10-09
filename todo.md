@@ -17,9 +17,13 @@
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
+## Gfx 
+- like godot, should have tag components for {Blocks light, Blocks AI pathing}
+
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
     - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
+    - includes Debug/UI stuff -- I don't want that to be affected by lighting
 
 ## Map 
 - respawn map objects
