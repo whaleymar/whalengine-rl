@@ -4,6 +4,7 @@
 #include "Components/Draw.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
+#include "Util/EngineUtil.h"
 
 namespace whal {
 
@@ -12,11 +13,6 @@ Pipeline::Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders)
 
 Pipeline::~Pipeline() {
     UnloadRenderTexture(mSwapBuffer);
-}
-
-static void drawTextureFlipped(const Texture& tex) {
-    ClearBackground(Colors::Clear);
-    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
 }
 
 void Pipeline::process(TextureID textureID) {
@@ -46,7 +42,8 @@ void Pipeline::process(RenderTexture2D& processTexture) {
     if (!mIsDrawingToSwapBuffer) {
         // last draw was to mSwapBuffer, so need to update processTexture
         BeginTextureMode(processTexture);
-        drawTextureFlipped(mSwapBuffer.texture);
+        ClearBackground(Colors::Clear);
+        drawRenderTexture(mSwapBuffer);
         EndTextureMode();
     }
 }
@@ -54,10 +51,11 @@ void Pipeline::process(RenderTexture2D& processTexture) {
 void Pipeline::swapBuffer() {
     RenderTexture& processTexture = *mTargetTexture;
 
+    ClearBackground(Colors::Clear);
     if (mIsDrawingToSwapBuffer) {
-        drawTextureFlipped(processTexture.texture);
+        drawRenderTexture(processTexture);
     } else {
-        drawTextureFlipped(mSwapBuffer.texture);
+        drawRenderTexture(mSwapBuffer);
     }
 
     mIsDrawingToSwapBuffer = !mIsDrawingToSwapBuffer;

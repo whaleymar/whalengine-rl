@@ -40,7 +40,6 @@ public:
     template <typename E, typename... T>
         requires(std::is_base_of<IEvent<T...>, E>::value)
     void registerListener(EventListener<T...>& listener) {
-        static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
         listener.mId = S_LISTENER_ID++;
         auto id = getEventId<E>();
         if (!mListeners.contains(id)) {
@@ -68,8 +67,8 @@ public:
     }
 
     template <typename E, typename... T>
+        requires(is_base_of_template<IEvent, E>::value)
     void triggerEvent(T... args) {
-        static_assert(is_base_of_template<IEvent, E>::value, "Event must inherit from IEvent");
         const EventId eventId = getEventId<E>();
         if (!mListeners.contains(eventId)) {
             return;
