@@ -30,6 +30,7 @@
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
     - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
     - includes Debug/UI stuff -- I don't want that to be affected by lighting
+- player sprite should NOT affect shadows!!!
 
 ## Map 
 - things not on the tile grid have their collision/trigger boxes messed up

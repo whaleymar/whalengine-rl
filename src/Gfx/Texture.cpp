@@ -147,22 +147,18 @@ TextureManager::TextureManager() {
         TextureID id;
         s32 width;
         s32 height;
-        bool isUseBleedBuffer;
     };
 
     static const RenderTextureInfo sRenderTexInfo[] = {
-        {TextureID::Main, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::Background, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::PostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
-        {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS, true},
+        {TextureID::Main, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},        {TextureID::Background, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
+        {TextureID::PostProcess, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL}, {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
     for (size_t i = 0; i < len; i++) {
         const auto rtInfo = sRenderTexInfo[i];
-        s32 buffer = rtInfo.isUseBleedBuffer ? BLEED_SIZE : 0;
-        RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width + buffer, rtInfo.height + buffer);
+        RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;
         setIsRenderTextureUsed(ix);
