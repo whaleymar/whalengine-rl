@@ -18,7 +18,8 @@ struct Uniforms {
         None = 0,
         Time = 1,
         Resolution = 1 << 1,
-        Palette = 1 << 2,
+        VirtualResolution = 1 << 2,  // mutually exclusive w/ Resolution
+        Palette = 1 << 3,
     };
 
     bool isSet(flags flag) { return (uniformFlags & flag) > 0; }
@@ -44,8 +45,11 @@ static void ActivateShader(Shaders shaderEnum) {
         SetShaderValue(shader, uniforms.iTime, &iTime, SHADER_UNIFORM_FLOAT);
     }
 
-    if (uniforms.isSet(Uniforms::Resolution)) {
+    if (uniforms.isSet(Uniforms::VirtualResolution)) {
         const f32 iResolution[2] = {FWINDOW_WIDTH_PIXELS, FWINDOW_HEIGHT_PIXELS};
+        SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
+    } else if (uniforms.isSet(Uniforms::Resolution)) {
+        const f32 iResolution[2] = {FWINDOW_WIDTH_ACTUAL, FWINDOW_HEIGHT_ACTUAL};
         SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
     }
 
@@ -75,13 +79,13 @@ void ShaderManager::loadShaders() {
 
     static const ShaderInfo shaderInfo[] = {{Shaders::Default, 0, 0},
                                             {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
-                                            {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::Resolution},
+                                            {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
                                             {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
                                             {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
                                             {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
                                             // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
                                             {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
-                                            {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::Resolution},
+                                            {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
                                             {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
                                             {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::Resolution},
                                             {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"}};
