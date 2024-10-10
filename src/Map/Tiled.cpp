@@ -2,7 +2,6 @@
 
 #include "Components/Draw.h"
 #include "Components/Light.h"
-#include "Game/Entities/Checkpoint.h"
 #include "Gfx/Depth.h"
 #include "Map/EntityFactory.h"
 #include "json.hpp"
@@ -24,12 +23,10 @@
 
 namespace whal {
 
-inline const char* MAP_DIR = "src/Game/data/map";
+static const char* MAP_DIR = "src/Game/data/map";
 
-static ComponentFactory COMPONENT_FACTORY;
-static EntityFactory PREFAB_FACTORY;
-static ResourceManager<nlohmann::json, 50> TEMPLATE_MANAGER;
-static ResourceManager<nlohmann::json, 250> MAP_MANAGER;
+static ResourceManager<nlohmann::json, 50> S_TEMPLATE_MANAGER;
+static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
 
 static TileSet parseTileset(const std::string& basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
@@ -40,19 +37,14 @@ static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 
+// TODO this should be an event listener. Currently being called from game code
 void clearMapCache() {
-    MAP_MANAGER.clearCache();
-    TEMPLATE_MANAGER.clearCache();
+    S_MAP_MANAGER.clearCache();
+    S_TEMPLATE_MANAGER.clearCache();
 }
+
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level, LayerData layerData) {
-    // std::string name = "";
-    // tryReadString(object, "name", &name);
-    // if (name.size()) {
-    //     entity.add(Name(name.c_str()));
-    //     // print("created entity: ", name);
-    // }
-
     if (!object.contains("properties")) {
         return;
     }
@@ -60,7 +52,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
     for (auto& property : object["properties"]) {
         std::string componentName = readString(property, "propertytype");
         ComponentAdder creatorFunc = nullptr;
-        COMPONENT_FACTORY.getEntryIndex(componentName.c_str(), &creatorFunc);
+        System::prefab.component.getEntry(componentName.c_str(), &creatorFunc);
         if (creatorFunc == nullptr) {
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
@@ -68,7 +60,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 const auto& newPrefab = getTemplate(path);
                 addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level, layerData);
                 EntityBuilder builderFunc = nullptr;
-                PREFAB_FACTORY.getEntryIndex(newTemplateFile.c_str(), &builderFunc);
+                System::prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
                     builderFunc(entity, newPrefab, level);
                 }
@@ -313,7 +305,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
             const auto prefabName = readString(*pPrefab, "name");
             EntityBuilder builderFunc = nullptr;
-            PREFAB_FACTORY.getEntryIndex(prefabName.c_str(), &builderFunc);
+            System::prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
                 builderFunc(entity, *pPrefab, level);
             }
@@ -474,7 +466,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 void parseMapProject(const char* mapfile) {
     const auto data = getMapFile(mapfile);
     for (auto& propType : data["propertyTypes"]) {
-        COMPONENT_FACTORY.makeDefaultComponent(propType);
+        System::prefab.component.makeDefaultComponent(propType);
     }
 }
 
@@ -573,14 +565,14 @@ std::string getSpriteKeyFromPath(const std::string& spritePath) {
 
 const nlohmann::json& getMapFile(std::string_view mapFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
-    return MAP_MANAGER.readData(fullPath.c_str());
+    return S_MAP_MANAGER.readData(fullPath.c_str());
 }
 
 // TEMPLATE STUFF
 
 const nlohmann::json& getTemplate(std::string_view templateFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
-    return TEMPLATE_MANAGER.readData(fullPath.c_str())["object"];
+    return S_TEMPLATE_MANAGER.readData(fullPath.c_str())["object"];
 }
 
 std::string getTypeFromTemplate(const std::string& templateFile) {

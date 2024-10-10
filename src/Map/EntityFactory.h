@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Util/Factory.h"
+#include "Util/DynamicFactory.h"
 #include "json_fwd.hpp"
 
 namespace whal {
@@ -12,7 +12,7 @@ class Entity;
 struct ActiveLevel;
 
 using EntityBuilder = void (*)(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
-class EntityFactory : public Factory<EntityBuilder> {
+class EntityFactory : public DynamicFactory<EntityBuilder> {
 public:
     EntityFactory();
 };
