@@ -32,6 +32,7 @@
     - includes Debug/UI stuff -- I don't want that to be affected by lighting
 
 ## Map 
+- things not on the tile grid have their collision/trigger boxes messed up
 - respawn map objects
 - object layers
     - special metadata
