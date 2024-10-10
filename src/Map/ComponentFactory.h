@@ -4,7 +4,7 @@
 
 #include "json_fwd.hpp"
 
-#include "Util/Factory.h"
+#include "Util/DynamicFactory.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -20,7 +20,7 @@ struct Follow;
 // there is no base component class, so I'll pass the entity to the creation function instead of returning a component
 using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, std::pair<s32, ecs::Entity>>&,
                                 EntityMapData, const ActiveLevel&, ecs::Entity, LayerData layerData);
-class ComponentFactory : public Factory<ComponentAdder> {
+class ComponentFactory : public DynamicFactory<ComponentAdder> {
 public:
     ComponentFactory();
 

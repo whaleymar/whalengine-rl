@@ -1,11 +1,10 @@
 #include "ComponentFactory.h"
 
 #include "CorradeOptional.h"
-#include "Game/Entities/Animations.h"
 #include "json.hpp"
 
-#include "Game/Components/Switch.h"
-#include "Game/Entities/Checkpoint.h"
+#include "Game/Entities/Animations.h"  // TODO remove
+
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
@@ -21,7 +20,6 @@
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
-#include "Components/Name.h"
 #include "Components/ParticleEmitter.h"
 #include "Components/PlayerControl.h"
 #include "Components/RailsControl.h"
@@ -32,23 +30,8 @@
 #include "Components/Velocity.h"
 #include "Systems/TagTrackers.h"
 
+#include "Util/DebugUtil.h"
 #include "Util/Print.h"
-
-#ifndef NDEBUG
-#define MY_ASSERT(cond, msg)                                                                                                                         \
-    do {                                                                                                                                             \
-        if (!(cond)) {                                                                                                                               \
-            std::ostringstream str;                                                                                                                  \
-            str << msg;                                                                                                                              \
-            std::cerr << str.str() << std::endl;                                                                                                     \
-            std::abort();                                                                                                                            \
-        }                                                                                                                                            \
-    } while (0)
-#else
-#define MY_ASSERT(cond, msg)                                                                                                                         \
-    do {                                                                                                                                             \
-    } while (0)
-#endif
 
 namespace whal {
 
@@ -122,14 +105,6 @@ static void addComponentOrbit(const nlohmann::json& values, const nlohmann::json
 
 static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const ActiveLevel& level);
 
-static void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
-                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                               const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-
-static void addSwitchGateComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
-                                   const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                                   const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-
 static void addComponentText(const nlohmann::json& values, const nlohmann::json& allObjects,
                              const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                              const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -154,14 +129,12 @@ static Attach DefaultAttach;
 static PointLight DefaultPointLight;
 static Radiance DefaultRadiance;
 static Lifetime DefaultLifeTime;
-static SwitchGate DefaultSwitchGate;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
 static Orbit DefaultOrbit;
 
-static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
+static const NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
-    // {"Animator", addComponentAnimator},
     {"Component_Collider", addComponentCollider},
     {"Component_Trigger", addComponentTrigger},
     {"Component_Draw", addComponentDraw},
@@ -179,21 +152,17 @@ static NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Jumper", addComponentJumper},
     {"Component_Velocity", addComponentVelocity},
     {"Component_Tags", addTagComponents},
-    {"Component_Switch", addSwitchComponent},
-    {"Component_SwitchGate", addSwitchGateComponent},
     {"Component_Text", addComponentText},
     {"Component_ParticleEmitter", addComponentParticleEmitter},
     {"Component_Orbit", addComponentOrbit},
 };
 
-ComponentFactory::ComponentFactory() : Factory<ComponentAdder>("ComponentFactory") {
-    initFactory(S_COMPONENT_ENTRIES);
-}
+ComponentFactory::ComponentFactory() : DynamicFactory<ComponentAdder>("ComponentFactory", S_COMPONENT_ENTRIES) {}
 
 void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
     std::string componentName = property[KEY_NAME];
     ComponentAdder creatorFunc = nullptr;
-    if (getEntryIndex(componentName.c_str(), &creatorFunc) == -1) {
+    if (!getEntry(componentName.c_str(), &creatorFunc)) {
         return;
     }
 
@@ -489,20 +458,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             }
         }
 
-    } else if (componentName == "Component_SwitchGate") {
-        DefaultSwitchGate = SwitchGate();
-        for (const auto& member : property[KEY_MEMBERS]) {
-            std::string memberName = member[KEY_NAME];
-            if (memberName == "numKeys") {
-                DefaultSwitchGate.numKeys = member[KEY_VALUE];
-            } else if (memberName == "isPersistent") {
-                DefaultSwitchGate.isPersistent = member[KEY_VALUE];
-            } else {
-                print("Skipping member ", memberName, "for", componentName);
-            }
-        }
-    } else if (componentName == "Component_Switch") {
-        // do nothing
     } else {
         print("unhandled default component type: ", componentName);
     }
@@ -975,35 +930,6 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
     }
 }
 
-void addSwitchComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
-                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                        ecs::Entity entity, LayerData layerData) {
-    s32 targetId;
-
-    if (entityData.isParsingTemplate) {
-        return;
-    }
-
-    if (!tryReadInt(values, "target", &targetId)) {
-        print(entity.get<Name>(), "has Switch component with no target");
-        assert(false);
-    }
-
-    MY_ASSERT(idToIndex.contains(targetId),
-              whal_format("Target ID {} pointed to by {}'s SwitchComponent was not found", targetId, entity.get<Name>().name));
-    ecs::Entity target = idToIndex.at(targetId).second;
-    entity.add(Switch{target.id()});
-}
-
-void addSwitchGateComponent(const nlohmann::json& values, const nlohmann::json& allObjects,
-                            const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                            ecs::Entity entity, LayerData layerData) {
-    SwitchGate gate = entity.has<SwitchGate>() ? entity.get<SwitchGate>() : DefaultSwitchGate;
-    tryReadInt(values, "numKeys", &gate.numKeys);
-    tryReadBool(values, "isPersistent", &gate.isPersistent);
-    entity.add(gate);
-}
-
 void addComponentText(const nlohmann::json& values, const nlohmann::json& allObjects,
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
@@ -1091,33 +1017,33 @@ void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allOb
 }
 
 s32 readInt(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
 }
 
 s32 readFloat(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
 }
 
 Vector2i readVector2i(const nlohmann::json& data, const char* xKey, const char* yKey) {
-    MY_ASSERT(data.contains(xKey), data.contains(yKey) && whal_format("Missing keys: {} & {}", xKey, yKey).c_str());
+    DBG_ASSERT(data.contains(xKey), data.contains(yKey) && whal_format("Missing keys: {} & {}", xKey, yKey).c_str());
     return Vector2i(data[xKey], data[yKey]);
 }
 
 bool readBool(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
 }
 
 std::string readString(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
 }
 
 template <typename T>
 T readVal(const nlohmann::json& data, std::string_view key) {
-    MY_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
 }
 

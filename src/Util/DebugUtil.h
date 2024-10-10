@@ -56,4 +56,22 @@ DECLARE_COMPONENT(whal::Camera);
 DECLARE_COMPONENT(whal::AudioListener);
 DECLARE_COMPONENT(whal::Particle);
 DECLARE_COMPONENT(whal::Invisible);
+
+#endif
+
+#ifndef NDEBUG
+#include <sstream>
+#define DBG_ASSERT(cond, msg)                                                                                                                        \
+    do {                                                                                                                                             \
+        if (!(cond)) {                                                                                                                               \
+            std::ostringstream str;                                                                                                                  \
+            str << msg;                                                                                                                              \
+            std::cerr << str.str() << std::endl;                                                                                                     \
+            std::abort();                                                                                                                            \
+        }                                                                                                                                            \
+    } while (0)
+#else
+#define DBG_ASSERT(cond, msg)                                                                                                                        \
+    do {                                                                                                                                             \
+    } while (0)
 #endif

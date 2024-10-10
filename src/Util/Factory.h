@@ -12,11 +12,6 @@ struct NameToCreator {
 
 template <typename T>
 class Factory {
-private:
-    const char* mFactoryName;
-    NameToCreator<T>* mFactoryEntries;
-    s32 mNumFactoryEntries;
-
 public:
     inline Factory(const char* factoryName) : mFactoryName(factoryName), mFactoryEntries(nullptr), mNumFactoryEntries(0) {}
 
@@ -46,6 +41,11 @@ public:
         }
         return -1;
     }
+
+private:
+    const char* mFactoryName;
+    NameToCreator<T>* mFactoryEntries;
+    s32 mNumFactoryEntries;
 };
 
 }  // namespace whal

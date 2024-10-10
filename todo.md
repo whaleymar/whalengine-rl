@@ -4,21 +4,27 @@
 - gfx system rework 
     - make silhouette shader effect work on individual entities again (basically need to store more info per channel for this to work, and also need to get the right color there)
         - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
+    - add an outline shader
 
 ## Separating Game vs Engine 
-- want to register EntityFactory entries from Game 
-- want to register game specific components in the Component Factory
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
+- animation factory
 
 ## Camera / Follow
 - pretty awful in general
 - different movement types (easein/out stuff)
 - be affected by momentum (maybe momentum should be added to velocity.total?)
 
+## Tweens
+- should be able to cancel them
+
 ## Gfx 
 - like godot, should have tag components for {Blocks light, Blocks AI pathing}
+- draw with full resolution so rotations look better
+    - make things with PrecisePosition be drawn at their... precise position 
+    - make camera position not follow the pixel grid
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
@@ -41,6 +47,10 @@
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 
+## Sprite Editing workflow
+- .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
+    - see how Murder Engine does this
+
 ## Misc
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
@@ -62,8 +72,6 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
 
 ## Physics:
-- jumping: instead of applying contant upward velocity, could try reducing gravity while jump button held instead 
-    - can also try the high parameter jump that sakurai suggested in his video
 - quad tree ray cast
 
 ## Other:

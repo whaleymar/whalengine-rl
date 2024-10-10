@@ -5,6 +5,7 @@
 #include "InputHandler.h"
 #include "JobScheduler.h"
 #include "Random.h"
+#include "Sys/Prefab.h"
 #include "Time.h"
 #include "whalECS/src/ECS.h"
 
@@ -18,6 +19,7 @@ struct System {
     inline static AudioPlayer audio;
     inline static JobScheduler schedule;
     inline static ecs::World& world = ecs::World::getInstance();
+    inline static Prefab prefab;
 
     static void setPaused(bool pause) {
         IsPaused = pause;
