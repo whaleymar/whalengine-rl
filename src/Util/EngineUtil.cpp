@@ -47,9 +47,9 @@ void setDefaultCursor() {
 
 // raylib's DrawTextureXYZ(RenderTexture.texture) draws upside down.
 // This opts for a less confusing approach.
-void drawRenderTexture(RenderTexture renderTexture) {
+void drawRenderTexture(RenderTexture renderTexture, Color color) {
     const auto tex = renderTexture.texture;
-    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), WHITE);
+    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
 }
 
 Vector2i getMouseWorldPosition() {

@@ -212,6 +212,7 @@ void ShadowLightSystem::onEvent(ShaderReloadEvent) {
 
 void ShadowLightSystem::update() {
     // RESEARCH maybe pass angle/spread uniform?
+    return;  // TODO
 
     auto shader = ShaderManager::get(Shaders::ShadowLight);
     for (auto [entityid, entity] : getEntitiesMutable()) {

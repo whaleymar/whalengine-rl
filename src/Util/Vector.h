@@ -98,6 +98,7 @@ Vector2i toIntVecRounded(const Vector2f floatVec);
 Vector2f fromRaylib(Vector2 rlVec);
 Vector2i fromRaylibInt(Vector2 rlVec);
 Vector2 toRaylib(Vector2i vec);
+Vector2 toRaylib(Vector2f vec);
 
 Vector2f angleToUnit(f32 angle);
 
