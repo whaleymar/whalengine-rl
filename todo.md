@@ -23,8 +23,11 @@
 ## Gfx 
 - like godot, should have tag components for {Blocks light, Blocks AI pathing}
 - draw with full resolution so rotations look better
-    - make things with PrecisePosition be drawn at their... precise position 
-    - make camera position not follow the pixel grid
+    - (DONE) make camera position not follow the pixel grid 
+    - it is SLOW
+    - (DONE) debug colliders
+    - re-enable lighting (layers not drawn && shadowlight system is stubbed)
+    - make things with PrecisePosition be drawn at their... precise position (low priority)
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light

@@ -41,11 +41,10 @@ static s32 mainTexUniform;
 
 // subtract height because opengl draws upside down
 // subtract half of width because we draw from left side
-static Vector2 toScreenCoord(Vector2f worldCoord, Vector2f cameraPos, Vector2f size = Vector2f::zero) {
+static Vector2f toScreenCoord(Vector2f worldCoord, Vector2f cameraPos, Vector2f size = Vector2f::zero) {
     Vector2f result = Vector2f(worldCoord.x - cameraPos.x - size.x * 0.5, cameraPos.y - worldCoord.y - size.y);
-    result *= VIRTUAL_SCREEN_RATIO;
 
-    return Vector2(result.x, result.y);
+    return result;
 }
 
 void GfxSystem::onEvent(ShaderReloadEvent) {
@@ -144,9 +143,8 @@ void GfxSystem::sortEntities(Vector2i cameraPos) {
     for (auto const [entityid, entity] : getEntitiesMutable()) {
         auto const trans = entity.get<Transform2D>();
         auto const draw = entity.get<Draw>();
-        // if (isInViewport(trans, draw, cameraViewBox)) {
         // TEMP TODO
-        if (entity.has<Player>()) {
+        if (entity.has<Player>() && isInViewport(trans, draw, cameraViewBox)) {
             mSortedEntities.push_back({trans, draw, entityid});
         }
     }
@@ -162,6 +160,28 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     // Draw to Effects Buffer
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
     ClearBackground(noEffect);
+    // worldCamera.offset.x += System::time.getFrame(); X offset goes up -> things move to the RIGHT
+    // worldCamera.offset.y += System::time.getFrame(); Y offset goes up -> things move DOWN
+    static int xOffset = 0;
+    static int yOffset = 0;
+    if (IsKeyDown(KEY_J)) {
+        xOffset -= 1;
+        print("X: ", xOffset);
+    }
+    if (IsKeyDown(KEY_L)) {
+        xOffset += 1;
+        print("X: ", xOffset);
+    }
+    if (IsKeyDown(KEY_K)) {
+        yOffset -= 1;
+        print("Y: ", yOffset);
+    }
+    if (IsKeyDown(KEY_I)) {
+        yOffset += 1;
+        print("Y: ", yOffset);
+    }
+    worldCamera.offset.x += xOffset;
+    worldCamera.offset.y += yOffset;
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Silhouette);
 
@@ -234,6 +254,15 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
 #endif
 }
 
+static Rectangle getDestRect(Vector2f position, Vector2f size) {
+    size *= VIRTUAL_SCREEN_RATIO;
+    position *= VIRTUAL_SCREEN_RATIO;
+    position += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+
+    return Rectangle(position.x, position.y, size.x, size.y);
+}
+
+// TODO gotta centralize this world-> screen coord stuff cause it's all over the place rn
 static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
     const Vector2i pos = trans.position;
     Vector2f posF = pos.as<f32>();
@@ -245,14 +274,15 @@ static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTex
         auto frameSize = rect.getFrameSizeTexels().as<f32>();
         Vector2f dstSize = {frameSize.x * rect.scale.x, frameSize.y * rect.scale.y};
 
+        // this stuff is in toScreenCoord rn
         // subtract size.y so we draw from bottom left instead of top left
         // Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y - dstSize.y};
         // add halfX to pos to match the origin thingy done w/ sprites
         // dstPosition -= {dstSize.x * 0.5f, 0};
 
         // TODO these should have rotation enabled
-        Vector2 dstPosition = toScreenCoord(posF, cameraPosF, dstSize);
-        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
+        Vector2f dstPosition = toScreenCoord(posF, cameraPosF, dstSize);
+        const Rectangle dstRect = getDestRect(dstPosition, dstSize);
         DrawRectangleRec(dstRect, rect.color);
         break;
     }
@@ -262,34 +292,32 @@ static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTex
         const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
         const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
 
-        Vector2f dstSize = {frameSize.x * sprite.scale.x, frameSize.y * sprite.scale.y};
+        Vector2f spriteSize = {frameSize.x * sprite.scale.x, frameSize.y * sprite.scale.y};
 
-        // TODO toScreenCoord. Not sure how to reconcile the isRotateAboutCenter thingy
-        Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
+        // TODO toScreenCoord. Not sure how to reconcile the isRotateAboutCenter thingy -- rects should also be able to rotate about their center
+        Vector2f spritePosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
 
         // rotate about center or transform
-        Vector2f origin = sprite.isRotateAboutCenter ? dstSize * Vector2f(0.5, 0.5) : Vector2f(dstSize.x * 0.5, dstSize.y);
+        Vector2f origin = sprite.isRotateAboutCenter ? spriteSize * Vector2f(0.5, 0.5) : Vector2f(spriteSize.x * 0.5, spriteSize.y);
         if (sprite.isRotateAboutCenter) {
-            dstPosition -= Vector2f(0, dstSize.y / 2.0f);
+            spritePosition -= Vector2f(0, spriteSize.y / 2.0f);
         }
 
-        print("FRAME", System::time.getFrame());
-        print("player small-screen position is", dstPosition);
-        // dstSize *= VIRTUAL_SCREEN_RATIO;
-        dstPosition *= VIRTUAL_SCREEN_RATIO;
+        const Rectangle dstRect = getDestRect(spritePosition, spriteSize);
         origin *= VIRTUAL_SCREEN_RATIO;
 
-        print("player screen position is ", dstPosition);
-        print("");
-        Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, dstSize.x, dstSize.y);
         DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x, origin.y}, trans.rotationDegrees, sprite.color);
         break;
     }
     case Draw::DrawTag::BezierQuad: {
         const DrawBezierQuad bezier = draw.getBezierQuad();
 
-        DrawSplineSegmentBezierQuadratic(toScreenCoord(posF, cameraPosF), toScreenCoord((pos + bezier.controlPointOffset).as<f32>(), cameraPosF),
-                                         toScreenCoord((pos + bezier.endPointOffset).as<f32>(), cameraPosF), bezier.thickness, bezier.color);
+        const Vector2f p1 = toScreenCoord(posF, cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+        const Vector2f controlPoint = toScreenCoord((pos + bezier.controlPointOffset).as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO +
+                                      Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+        const Vector2f p2 = toScreenCoord((pos + bezier.endPointOffset).as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO +
+                            Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+        DrawSplineSegmentBezierQuadratic(toRaylib(p1), toRaylib(controlPoint), toRaylib(p2), bezier.thickness, bezier.color);
         break;
     }
     case Draw::DrawTag::Line: {
@@ -307,7 +335,11 @@ static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTex
             endPos = pos + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
         }
 
-        DrawLineEx(toScreenCoord(startPos.as<f32>(), cameraPosF), toScreenCoord(endPos.as<f32>(), cameraPosF), line.thickness, line.color);
+        Vector2f p1 =
+            toScreenCoord(startPos.as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+        Vector2f p2 =
+            toScreenCoord(endPos.as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+        DrawLineEx(toRaylib(p1), toRaylib(p2), line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
         break;
     }
     }

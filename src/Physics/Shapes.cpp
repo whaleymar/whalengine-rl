@@ -6,6 +6,7 @@
 
 #include "Components/Transform.h"
 #include "Physics/HitInfo.h"
+#include "Settings.h"
 
 namespace whal {
 
@@ -56,12 +57,18 @@ bool AABB::contains(const AABB& other) const {
 }
 
 #ifndef NDEBUG
+
 void AABB::draw(Vector2f cameraPos, Color color) const {
     Vector2f position(left(), bottom());
     Vector2f size = Vector2f(mHalf.x, mHalf.y) * 2;
 
     // subtract size.y so we draw from bottom left instead of top left
     Vector2f dstPosition = {position.x - cameraPos.x, -1 * position.y + cameraPos.y - size.y};
+
+    dstPosition *= VIRTUAL_SCREEN_RATIO;
+    dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    size *= VIRTUAL_SCREEN_RATIO;
+
     DrawRectangleLines(dstPosition.x, dstPosition.y, size.x, size.y, color);
 }
 #endif
@@ -124,7 +131,9 @@ void Circle::setPosition(Transform2D transform) {
 #ifndef NDEBUG
 void Circle::draw(Vector2f cameraPos, Color color) const {
     Vector2f dstPosition = {mCenter.x - cameraPos.x, -1 * mCenter.y + cameraPos.y};
-    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius, color);
+    dstPosition *= VIRTUAL_SCREEN_RATIO;
+    dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);
 }
 #endif
 

@@ -10,7 +10,7 @@ void setCustomCursor(whal::Draw drawComponent);
 void setDefaultCursor();
 
 // Gfx
-void drawRenderTexture(RenderTexture renderTexture);
+void drawRenderTexture(RenderTexture renderTexture, Color color = WHITE);
 
 // Coordinates
 Vector2i getMouseWorldPosition();

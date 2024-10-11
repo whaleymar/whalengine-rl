@@ -23,6 +23,10 @@ Vector2 toRaylib(Vector2i vec) {
     return Vector2(vec.x, vec.y);
 }
 
+Vector2 toRaylib(Vector2f vec) {
+    return Vector2(vec.x, vec.y);
+}
+
 Vector2f angleToUnit(f32 angle) {
     f32 radians = angle * DEG2RAD;
     return {std::cos(radians), std::sin(radians)};
