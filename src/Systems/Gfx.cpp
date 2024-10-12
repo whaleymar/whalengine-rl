@@ -2,50 +2,39 @@
 
 #include <algorithm>
 #include <raylib.h>
-#include "Events/Events.h"
-#include "Sys/System.h"
-#include "Util/EngineUtil.h"
-#include "Util/Print.h"
-#include "raylib/src/raylib.h"
 #include "rlgl.h"
 
-#include "Components/Tags.h"
+#include "Events/Events.h"
+#include "Settings.h"
+#include "Sys/System.h"
+#include "Util/EngineUtil.h"
+#include "Util/Vector.h"
+
 #include "Gfx/Pipeline.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Physics/Shapes.h"
-#include "Settings.h"
 
-#include "Systems/CollisionManager.h"
 #include "Systems/TagTrackers.h"
-#include "Util/Vector.h"
 
+#include "Components/Collision.h"
 #include "Components/Draw.h"
+#include "Components/Tags.h"
 #include "Components/Transform.h"
+
+static constexpr bool S_USE_POSTPROCESSING = false;  // turning off right now bc it is SLOW
 
 namespace whal {
 
 static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint);
 static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                                     int selectStart, int selectLength, Color selectTint, Color selectBackTint);
-static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF);
+static void _drawSingleObject(const GfxSystem::PreciseTransform trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF);
 
 static Font DEFAULT_FONT;
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
 static s32 mainTexUniform;
-
-// static Vector2 toScreenCoord(Vector2i worldCoord, Vector2i cameraPos, Vector2i size = Vector2i::zero) {
-//     return Vector2(worldCoord.x - cameraPos.x - size.x / 2, cameraPos.y - worldCoord.y - size.y);
-// }
-
-// subtract height because opengl draws upside down
-// subtract half of width because we draw from left side
-static Vector2f toScreenCoord(Vector2f worldCoord, Vector2f cameraPos, Vector2f size = Vector2f::zero) {
-    Vector2f result = Vector2f(worldCoord.x - cameraPos.x - size.x * 0.5, cameraPos.y - worldCoord.y - size.y);
-
-    return result;
-}
 
 void GfxSystem::onEvent(ShaderReloadEvent) {
     mainTexUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
@@ -94,8 +83,6 @@ static bool isBelow(const GfxSystem::DrawInfo& drawInfo1, const GfxSystem::DrawI
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        // TODO need to take rotations into account :(
-        // return drawInfo1.trans.position.y > drawInfo2.trans.position.y;
         return getLowestPoint(drawInfo1) > getLowestPoint(drawInfo2);
     } else {
         return false;  // doesn't really matter for side scrollers
@@ -143,9 +130,12 @@ void GfxSystem::sortEntities(Vector2i cameraPos) {
     for (auto const [entityid, entity] : getEntitiesMutable()) {
         auto const trans = entity.get<Transform2D>();
         auto const draw = entity.get<Draw>();
-        // TEMP TODO
-        if (entity.has<Player>() && isInViewport(trans, draw, cameraViewBox)) {
-            mSortedEntities.push_back({trans, draw, entityid});
+        if (isInViewport(trans, draw, cameraViewBox)) {
+            if (entity.has<PrecisePosition>()) {
+                mSortedEntities.push_back({PreciseTransform::fromBoth(trans, entity.get<PrecisePosition>()), draw, entityid});
+            } else {
+                mSortedEntities.push_back({PreciseTransform::fromTrans(trans), draw, entityid});
+            }
         }
     }
     std::sort(mSortedEntities.begin(), mSortedEntities.end(), isBelow);
@@ -154,34 +144,12 @@ void GfxSystem::sortEntities(Vector2i cameraPos) {
 void GfxSystem::drawEntities(Camera2D worldCamera) {
     constexpr Color noEffect = Color(0, 0, 0, 0);
     const auto cameraPosF = getCameraPositionPrecise();
-    const Texture2D& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getTexture();
+    const Texture2D& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE).getTexture();
     sortEntities(cameraPosF.round());
 
-    // Draw to Effects Buffer
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::PostProcess));
+    // Draw to Effects Buffer (using main texture for this as it's unused at this point in the render pipeline)
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
     ClearBackground(noEffect);
-    // worldCamera.offset.x += System::time.getFrame(); X offset goes up -> things move to the RIGHT
-    // worldCamera.offset.y += System::time.getFrame(); Y offset goes up -> things move DOWN
-    static int xOffset = 0;
-    static int yOffset = 0;
-    if (IsKeyDown(KEY_J)) {
-        xOffset -= 1;
-        print("X: ", xOffset);
-    }
-    if (IsKeyDown(KEY_L)) {
-        xOffset += 1;
-        print("X: ", xOffset);
-    }
-    if (IsKeyDown(KEY_K)) {
-        yOffset -= 1;
-        print("Y: ", yOffset);
-    }
-    if (IsKeyDown(KEY_I)) {
-        yOffset += 1;
-        print("Y: ", yOffset);
-    }
-    worldCamera.offset.x += xOffset;
-    worldCamera.offset.y += yOffset;
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Silhouette);
 
@@ -191,11 +159,26 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
         }
         const Color flagsColor = packEffectFlags(draw, entityId);
         draw.setColor(flagsColor);
-        _draw(trans, draw, spriteTexture, cameraPosF);
+        _drawSingleObject(trans, draw, spriteTexture, cameraPosF);
     }
     EndShaderMode();
     EndMode2D();
     EndTextureMode();
+
+    // Draw downscaled version of the post-process texture
+    // makes it much faster since the PP shader is SLOW
+    {
+        const auto ppTex = TextureManager::getRenderTexture(TextureID::Main).texture;
+        const auto ppRTexDownscaled = TextureManager::getRenderTexture(TextureID::DownscaledPostProcess);
+        const Rectangle srcRect = Rectangle(0, 0, ppTex.width, -ppTex.height);
+        const Rectangle dstRect = Rectangle(0, 0, ppRTexDownscaled.texture.width, ppRTexDownscaled.texture.height);
+
+        BeginTextureMode(ppRTexDownscaled);
+        ClearBackground(Colors::Clear);
+        DrawTexturePro(ppTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+
+        EndTextureMode();
+    }
 
     // not working quite right
     // 2nd pass we re-draw the effects mask and take the max at each point, since obscured entities should still block light (and have other effects?)
@@ -216,108 +199,101 @@ void GfxSystem::drawEntities(Camera2D worldCamera) {
     // EndMode2D();
     // EndTextureMode();
 
-    // Normal drawing to main texture
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    // ClearBackground({0, 0, 0, 255});
+    // Drawing GAME OBJECTS
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
     ClearBackground({58, 57, 106, 255});
-    // drawRenderTexture(TextureManager::getRenderTexture(TextureID::Background)); // TODO not sure if i should deprecate?
+    // drawRenderTexture(TextureManager::getRenderTexture(TextureID::Background)); // RESEARCH thinking I should deprecate in favor of a ECS-based
+    // approach
     BeginMode2D(worldCamera);
     ShaderManager::activate(Shaders::Default);
     for (auto [trans, draw, entityId] : mSortedEntities) {
-        _draw(trans, draw, spriteTexture, cameraPosF);
+        _drawSingleObject(trans, draw, spriteTexture, cameraPosF);
     }
     EndShaderMode();
     EndMode2D();
 
     // Apply Post Processing Effects
-    ShaderManager::activate(Shaders::PostProcess);
-    BeginBlendMode(BLEND_ADDITIVE);
-    // this... isn't working like it did before, but regular additive blend seems to look good
-    // rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
-    // BeginBlendMode(BLEND_CUSTOM_SEPARATE);
-    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mainTexUniform, TextureManager::getRenderTexture(TextureID::Main).texture);
-    drawRenderTexture(TextureManager::getRenderTexture(TextureID::PostProcess));
-    EndBlendMode();
-    EndShaderMode();
-    EndTextureMode();
+    if (S_USE_POSTPROCESSING) {
+        ShaderManager::activate(Shaders::PostProcess);
+        BeginBlendMode(BLEND_ADDITIVE);
 
-    // Draw debug stuff
-#ifndef NDEBUG
-    if (System::input.isOn(InputType::DEBUG)) {
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-        BeginMode2D(worldCamera);
-        // System::world.getSystem<DrawDebugSystem>()->drawEntities();
-        drawColliders();
-        EndMode2D();
-        EndTextureMode();
+        // this... isn't working like it did before, but regular additive blend seems to look good
+        // rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
+        // BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+
+        SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mainTexUniform, TextureManager::getRenderTexture(TextureID::Staging).texture);
+        drawRenderTexture(TextureManager::getRenderTexture(TextureID::Main));
+        EndBlendMode();
+        EndShaderMode();
     }
-#endif
+
+    EndTextureMode();
 }
 
-static Rectangle getDestRect(Vector2f position, Vector2f size) {
+struct DrawParams {
+    Rectangle rect;  // includes position
+    Vector2 origin;
+    Vector2 position;  // for convenience
+};
+
+static DrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter) {
+    Vector2f size = frameSize * scale;
+    Vector2f screenPosition(position.x - cameraPosition.x, cameraPosition.y - position.y);
+
+    // rotate about center or transform
+    Vector2f origin;
+    if (isRotateAboutCenter) {
+        origin = size * Vector2f(0.5, 0.5);
+        screenPosition.y -= size.y * 0.5;
+    } else {
+        origin = Vector2f(size.x * 0.5, size.y);
+    }
+
+    // Scale everything up
+    screenPosition *= VIRTUAL_SCREEN_RATIO;
+    screenPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
     size *= VIRTUAL_SCREEN_RATIO;
-    position *= VIRTUAL_SCREEN_RATIO;
-    position += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    origin *= VIRTUAL_SCREEN_RATIO;
 
-    return Rectangle(position.x, position.y, size.x, size.y);
+    return DrawParams{
+        .rect = Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},
+        .origin = Vector2{origin.x, origin.y},
+        .position = Vector2{screenPosition.x, screenPosition.y},
+    };
 }
 
-// TODO gotta centralize this world-> screen coord stuff cause it's all over the place rn
-static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
-    const Vector2i pos = trans.position;
-    Vector2f posF = pos.as<f32>();
-    // const Vector2i cameraPos = cameraPosF.round();
+static void _drawSingleObject(const GfxSystem::PreciseTransform trans, Draw draw, const Texture2D& spriteTexture, const Vector2f cameraPosF) {
+    const Vector2i pos = trans.rounded;
+    const Vector2f posF = trans.position;
 
     switch (draw.getTag()) {
     case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
-        auto frameSize = rect.getFrameSizeTexels().as<f32>();
-        Vector2f dstSize = {frameSize.x * rect.scale.x, frameSize.y * rect.scale.y};
-
-        // this stuff is in toScreenCoord rn
-        // subtract size.y so we draw from bottom left instead of top left
-        // Vector2f dstPosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y - dstSize.y};
-        // add halfX to pos to match the origin thingy done w/ sprites
-        // dstPosition -= {dstSize.x * 0.5f, 0};
-
+        const auto frameSize = rect.getFrameSizeTexels().as<f32>();
         // TODO these should have rotation enabled
-        Vector2f dstPosition = toScreenCoord(posF, cameraPosF, dstSize);
-        const Rectangle dstRect = getDestRect(dstPosition, dstSize);
-        DrawRectangleRec(dstRect, rect.color);
+        const DrawParams params = getDrawParams(posF, frameSize, cameraPosF, rect.scale, false);
+        DrawRectanglePro(params.rect, params.origin, 0.0f, rect.color);
         break;
     }
     case Draw::DrawTag::Sprite: {
         const Sprite sprite = draw.getSprite();
-        const Vector2i frameSize = sprite.getFrameSizeTexels();
+        const Vector2f frameSize = sprite.getFrameSizeTexels().as<f32>();
         const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
         const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
 
-        Vector2f spriteSize = {frameSize.x * sprite.scale.x, frameSize.y * sprite.scale.y};
+        const DrawParams params = getDrawParams(posF, frameSize, cameraPosF, sprite.scale, sprite.isRotateAboutCenter);
 
-        // TODO toScreenCoord. Not sure how to reconcile the isRotateAboutCenter thingy -- rects should also be able to rotate about their center
-        Vector2f spritePosition = {posF.x - cameraPosF.x, -1.0f * posF.y + cameraPosF.y};
-
-        // rotate about center or transform
-        Vector2f origin = sprite.isRotateAboutCenter ? spriteSize * Vector2f(0.5, 0.5) : Vector2f(spriteSize.x * 0.5, spriteSize.y);
-        if (sprite.isRotateAboutCenter) {
-            spritePosition -= Vector2f(0, spriteSize.y / 2.0f);
-        }
-
-        const Rectangle dstRect = getDestRect(spritePosition, spriteSize);
-        origin *= VIRTUAL_SCREEN_RATIO;
-
-        DrawTexturePro(spriteTexture, srcRect, dstRect, {origin.x, origin.y}, trans.rotationDegrees, sprite.color);
+        DrawTexturePro(spriteTexture, srcRect, params.rect, params.origin, trans.rotationDegrees, sprite.color);
         break;
     }
     case Draw::DrawTag::BezierQuad: {
         const DrawBezierQuad bezier = draw.getBezierQuad();
 
-        const Vector2f p1 = toScreenCoord(posF, cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-        const Vector2f controlPoint = toScreenCoord((pos + bezier.controlPointOffset).as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO +
-                                      Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-        const Vector2f p2 = toScreenCoord((pos + bezier.endPointOffset).as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO +
-                            Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-        DrawSplineSegmentBezierQuadratic(toRaylib(p1), toRaylib(controlPoint), toRaylib(p2), bezier.thickness, bezier.color);
+        // TODO enable rotation
+        Vector2 p1 = getDrawParams(posF, Vector2f::zero, cameraPosF, Vector2f::zero, false).position;
+        Vector2 controlPoint = getDrawParams(posF + bezier.controlPointOffset.as<f32>(), Vector2f::zero, cameraPosF, Vector2f::zero, false).position;
+        Vector2 p2 = getDrawParams(posF + bezier.endPointOffset.as<f32>(), Vector2f::zero, cameraPosF, Vector2f::zero, false).position;
+        DrawSplineSegmentBezierQuadratic(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color);
         break;
     }
     case Draw::DrawTag::Line: {
@@ -335,11 +311,9 @@ static void _draw(const Transform2D trans, Draw draw, const Texture2D& spriteTex
             endPos = pos + (angleToUnit(trans.rotationDegrees) * (f32)line.length).round();
         }
 
-        Vector2f p1 =
-            toScreenCoord(startPos.as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-        Vector2f p2 =
-            toScreenCoord(endPos.as<f32>(), cameraPosF) * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-        DrawLineEx(toRaylib(p1), toRaylib(p2), line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
+        Vector2 p1 = getDrawParams(startPos.as<f32>(), Vector2f::zero, cameraPosF, Vector2f::zero, false).position;
+        Vector2 p2 = getDrawParams(endPos.as<f32>(), Vector2f::zero, cameraPosF, Vector2f::zero, false).position;
+        DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
         break;
     }
     }

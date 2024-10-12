@@ -76,7 +76,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     auto _ = ecs::DeferActivate(expected.value());
     auto particle = expected.value();
 
-    auto frame = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
+    auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
     particle.add(Draw(Sprite(depth, *frame)));
 
     s32 radius = TEXELS_PER_TILE * 1;

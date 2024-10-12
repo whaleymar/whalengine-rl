@@ -54,7 +54,7 @@ Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
     : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
 
 Expected<Sprite> Sprite::fromPath(const char* spritePath, Depth depth_, Color color_, Shaders shader_) {
-    const auto& spriteTexture = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE);
+    const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
     auto frame = spriteTexture.getFrame(spritePath);
     if (frame) {
         return Sprite(depth_, *frame, color_, shader_);

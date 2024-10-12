@@ -108,9 +108,6 @@ vec4 glow() {
 
 
 void main() {
-    // TODO write web version
-    // TODO dispatch correct effect based on flags
-
     vec4 sampleCol = texture(texture0, fragTexCoord);
     // this is crazy -- apparently sampleCol.r is more than 1 even though it *should* be normalized
     // int flags = int(sampleCol.r * 256.);

@@ -378,7 +378,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
         return;
     }
 
-    Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
+    Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
     if (!frameOpt) {
         return;
     }
@@ -443,7 +443,7 @@ const TileSet& getTileSet(const TileMap& map, s32 blockId) {
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     const TileSet& tset = getTileSet(map, blockId);
     std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
-    Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
+    Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
         return Error(whal_format("Couldn't find {} in sprite table", spritePath));

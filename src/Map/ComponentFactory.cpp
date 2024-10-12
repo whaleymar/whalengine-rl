@@ -571,7 +571,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         spritePath = values["Sprite"];
         std::replace(spritePath.begin(), spritePath.end(), '\\', '/');
     }
-    auto frameOpt = TextureManager::instance().getTextureAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
+    auto frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
     if (frameOpt) {
         sprite.depth = layerData.depth;
         sprite.setFrame(*frameOpt);

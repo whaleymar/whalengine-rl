@@ -58,6 +58,8 @@ bool AABB::contains(const AABB& other) const {
 
 #ifndef NDEBUG
 
+constexpr static f32 S_DEBUG_SHAPE_THICKNESS = 2.0f;
+
 void AABB::draw(Vector2f cameraPos, Color color) const {
     Vector2f position(left(), bottom());
     Vector2f size = Vector2f(mHalf.x, mHalf.y) * 2;
@@ -69,7 +71,7 @@ void AABB::draw(Vector2f cameraPos, Color color) const {
     dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
     size *= VIRTUAL_SCREEN_RATIO;
 
-    DrawRectangleLines(dstPosition.x, dstPosition.y, size.x, size.y, color);
+    DrawRectangleLinesEx(Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), S_DEBUG_SHAPE_THICKNESS, color);
 }
 #endif
 
@@ -133,7 +135,7 @@ void Circle::draw(Vector2f cameraPos, Color color) const {
     Vector2f dstPosition = {mCenter.x - cameraPos.x, -1 * mCenter.y + cameraPos.y};
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
-    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);
+    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);  // no thickness param :(
 }
 #endif
 

@@ -81,6 +81,9 @@ struct Transform2D {
     static Transform2D tiles(s32 x, s32 y);
 };
 
+// TODO thinking of making this an OPTIONAL REPLACEMENT for Transform2D (an entity would have one or the other), but using floats for position
+// and hopefully using CRTP to give this and Transform2D a common interface which works with the ECS
+// and then defining some ecs::Any<Transform2D, PreciseTransform2D> thingy which systems can use
 struct PrecisePosition {
     Vector2f position;
 

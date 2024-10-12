@@ -48,11 +48,13 @@ private:
 // RESEARCH other LayerXYZs I might want to do in the future:
 // - Outline
 enum class TextureID {
+    Staging,
+    // DownscaledMain,
     Main,
+    DownscaledPostProcess,
     Background,  // any repeating backgrounds use this
-    PostProcess,
-    // ColorGrade,  // this is a regular texture, not rendertexture, might remove
     Lighting,
+    UpscaledLighting,
     Radiance,
     BackgroundStatic,
     BackgroundFar,
@@ -81,19 +83,13 @@ public:
     Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);
     Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
 
-    // TODO static getters
-    const Texture2D& getTexture(const char* name);
-    const TextureAtlas& getTextureAtlas(const char* name);
-    std::vector<Texture2D>& getAllTextures() { return mTextures; };
-    std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
-
+    static const TextureAtlas& getAtlas(const char* name) { return instance()._getAtlas(name); }
+    static const Texture& getTexture(const char* name) { return instance()._getTexture(name); }
     static RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
 
     Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
     void renderBackgroundTextures();
-    void drawLightingTexture();
-    void drawRadianceTexture();
 
     void unloadAll();
 
@@ -104,6 +100,10 @@ private:
 
     s32 getTextureIndex(std::string name) const;
     s32 getTextureAtlasIndex(std::string name) const;
+    std::vector<Texture2D>& getAllTextures() { return mTextures; };
+    std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
+    const TextureAtlas& _getAtlas(const char* name);
+    const Texture2D& _getTexture(const char* name);
     RenderTexture2D& _getRenderTexture(TextureID id);
     void setRenderTexture(TextureID id, RenderTexture2D rTexture);
     bool isRenderTextureUsed(s32 ix) const;

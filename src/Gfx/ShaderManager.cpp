@@ -87,6 +87,7 @@ void ShaderManager::loadShaders() {
                                             {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
                                             {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
                                             {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
+                                            {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
                                             {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::Resolution},
                                             {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"}};
 
@@ -116,9 +117,10 @@ void ShaderManager::loadShaders() {
         if (S_UNIFORMS[ix].isSet(Uniforms::Time)) {
             S_UNIFORMS[ix].iTime = GetShaderLocation(shader, "iTime");
         }
-        if (S_UNIFORMS[ix].isSet(Uniforms::Resolution)) {
+        if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
             S_UNIFORMS[ix].iResolution = GetShaderLocation(shader, "iResolution");
         }
+
         // not working
         // if (S_UNIFORMS[ix].isSet(Uniforms::Palette)) {
         //     S_UNIFORMS[ix].iPalette = GetShaderLocation(shader, "iPalette");
