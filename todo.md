@@ -12,6 +12,12 @@
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
 - animation factory
 
+## Components (some of these are duplicates of other tasks)
+- BoxLight in map 
+- BlocksLight
+- dashed line
+- parallax factor
+
 ## Camera / Follow
 - pretty awful in general
 - different movement types (easein/out stuff)
@@ -22,12 +28,16 @@
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light, Blocks AI pathing}
+- honestly, some entities just need their own draw method. maybe can do this with CRTP?
 - draw with full resolution so rotations look better
     - (DONE) make camera position not follow the pixel grid 
-    - it is SLOW
+    - (done-ish) it is SLOW
+        - fix PP
     - (DONE) debug colliders
-    - re-enable lighting (layers not drawn && shadowlight system is stubbed)
-    - make things with PrecisePosition be drawn at their... precise position (low priority)
+    - (DONE) re-enable lighting (layers not drawn && shadowlight system is stubbed)
+    - (DONE) make things with PrecisePosition be drawn at their... precise position (low priority)
+    - (DONE) shit load of cleanup/todos
+    - go through and rename xyzTexels and xyzPixels to xyz
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
@@ -63,6 +73,7 @@
 - input remapping (saved to file too) (low priority)
 - dialogue system (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
+- faster sin/cosine (based on lookup table)
 
 ---------------------------------------------------------------------------------------------------------------------------
 

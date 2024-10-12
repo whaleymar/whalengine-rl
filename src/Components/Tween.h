@@ -34,6 +34,12 @@ public:
     f32 getProgress() const { return (mElapsedTime - mDelay) / mDuration; }
     T getValue() const { return ease(mStartValue, mEndValue, getProgress(), mEaseFunc); }
 
+    // for casting (not rounding)
+    template <typename NewType>
+    NewType getValueAs() const {
+        return ease(static_cast<NewType>(mStartValue), static_cast<NewType>(mEndValue), getProgress(), mEaseFunc);
+    }
+
     void tick(ecs::Entity entity) {
         const f32 dt = System::isPaused() && !isSet(TweenParams::IgnorePause) ? 0.0f :
                        isSet(TweenParams::IgnoreSlowdown)                     ? System::time.getUnmodified() :

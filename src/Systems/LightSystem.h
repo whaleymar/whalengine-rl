@@ -19,7 +19,7 @@ void drawLights(Camera2D worldCamera);
 
 class PointLightSystem : public ecs::ISystem<Transform2D, PointLight>, public IListen<ShaderReloadEvent, true> {
 public:
-    void update();
+    void drawEntities();
     void onEvent(ShaderReloadEvent) override;
 
 private:
@@ -28,7 +28,7 @@ private:
 
 class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public IListen<ShaderReloadEvent, true> {
 public:
-    void update();
+    void drawEntities();
     void onEvent(ShaderReloadEvent) override;
 
 private:
@@ -39,7 +39,7 @@ private:
 
 class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<ShaderReloadEvent, true> {
 public:
-    void update(Camera2D worldCamera);
+    void drawEntities(Camera2D worldCamera);
     void onEvent(ShaderReloadEvent) override;
 
 private:
@@ -48,7 +48,7 @@ private:
 
 class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public IListen<ShaderReloadEvent, true> {
 public:
-    void update();
+    void drawEntities();
     void onEvent(ShaderReloadEvent) override;
 
 private:

@@ -17,6 +17,7 @@ enum class Shaders : s16 {
     Glitch,
     ShadowLight,
     Blur,
+    BlurLowRes,
     PostProcess,
     EffectsMask,
     _Count_DO_NOT_USE_ME

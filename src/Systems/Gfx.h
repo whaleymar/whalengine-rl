@@ -23,8 +23,26 @@ struct Invisible;
 
 class GfxSystem : public ecs::ISystem<Transform2D, Draw, ecs::Exclude<Invisible>>, public IListen<ShaderReloadEvent, true> {
 public:
+    // hopefully will become its own component soon
+    struct PreciseTransform {
+        Vector2f position;
+        Vector2i rounded;
+        f32 rotationDegrees = 0.0;      // counterclockwise
+        Facing facing = Facing::Right;  // draw calls flipped if facing left
+
+        static PreciseTransform fromTrans(Transform2D trans) {
+            return PreciseTransform{
+                .position = trans.position.as<f32>(), .rounded = trans.position, .rotationDegrees = trans.rotationDegrees, .facing = trans.facing};
+        }
+
+        static PreciseTransform fromBoth(Transform2D trans, PrecisePosition pos) {
+            return PreciseTransform{
+                .position = pos.position, .rounded = trans.position, .rotationDegrees = trans.rotationDegrees, .facing = trans.facing};
+        }
+    };
+
     struct DrawInfo {
-        Transform2D trans;
+        PreciseTransform trans;
         Draw draw;
         ecs::EntityID id;
     };

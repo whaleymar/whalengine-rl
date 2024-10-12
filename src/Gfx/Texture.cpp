@@ -9,6 +9,7 @@
 #include "Components/Draw.h"
 #include "Settings.h"
 #include "Systems/TagTrackers.h"
+#include "Util/EngineUtil.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
@@ -27,25 +28,6 @@ void parse_error_handler(const char* what, void* where) {
 }  // namespace rapidxml
 
 #define NULLOPT Corrade::Containers::NullOpt;
-
-// unused:
-// #ifdef __EMSCRIPTEN__
-// #include <emscripten/emscripten.h>
-// EM_JS(void, idbfs_put, (const char* filename, const char* str), {
-//     FS.writeFile(UTF8ToString(filename), UTF8ToString(str));
-//     FS.syncfs(false, function(err) { assert(!err); });
-// });
-// EM_JS(char*, idbfs_get, (const char* filename), {
-//     var arr = FS.readFile(UTF8ToString(filename));
-//     var jsString = new TextDecoder().decode(arr);
-//     var lengthBytes = lengthBytesUTF8(jsString) + 1;
-//     // console.log(jsString);
-//     var stringOnWasmHeap = _malloc(lengthBytes);
-//     stringToUTF8(jsString, stringOnWasmHeap, lengthBytes);
-//     return stringOnWasmHeap;
-// });
-// EM_JS(void, idbfs_free, (char* str), { _free(str); });
-// #endif
 
 namespace whal {
 
@@ -128,15 +110,11 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     RenderTexture2D texture = LoadRenderTexture(width * PIXELS_PER_TEXEL, height * PIXELS_PER_TEXEL);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
-    // f32 heightDiff = WINDOW_HEIGHT_TEXELS - frameOpt->height;
-    // Rectangle dstRect = Rectangle(0, heightDiff * 2, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
     Rectangle dstRect = Rectangle(0, 0, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
+
     BeginTextureMode(texture);
-
     ClearBackground(Colors::Clear);
-
     DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
-
     EndTextureMode();
 
     return texture;
@@ -150,9 +128,14 @@ TextureManager::TextureManager() {
     };
 
     static const RenderTextureInfo sRenderTexInfo[] = {
-        {TextureID::Main, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},        {TextureID::Background, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
-        {TextureID::PostProcess, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL}, {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        {TextureID::Staging, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
+        {TextureID::Background, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
+        {TextureID::Main, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
+        {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
         {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        // {TextureID::DownscaledMain, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        {TextureID::DownscaledPostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        {TextureID::UpscaledLighting, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
@@ -162,6 +145,13 @@ TextureManager::TextureManager() {
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;
         setIsRenderTextureUsed(ix);
+
+        // use gl_nearest for scaling (this is a pixel art engine!)
+        if (rtInfo.id == TextureID::Main) {
+            SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_POINT);
+        } else if (rtInfo.id == TextureID::Lighting) {
+            SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_BILINEAR);
+        }
     }
 }
 
@@ -259,18 +249,18 @@ s32 TextureManager::getTextureAtlasIndex(std::string name) const {
     return -1;
 }
 
-const Texture2D& TextureManager::getTexture(const char* name) {
+const Texture2D& TextureManager::_getTexture(const char* name) {
     return mTextures[getTextureIndex(name)];
 }
 
-const TextureAtlas& TextureManager::getTextureAtlas(const char* name) {
+const TextureAtlas& TextureManager::_getAtlas(const char* name) {
     return mTextureAtlases[getTextureAtlasIndex(name)];
 }
 
 Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                                   Vector2f parallax, Vector2i offset, bool isRepeatX,
                                                                                   bool isRepeatY) {
-    Corrade::Containers::Optional<Rectangle> frameOpt = getTextureAtlas(atlasName).getFrame(spriteName);
+    Corrade::Containers::Optional<Rectangle> frameOpt = _getAtlas(atlasName).getFrame(spriteName);
     if (!frameOpt) {
         return Error(whal_format("Couldn't find {} in the atlas {}", spriteName, atlasName));
     }
@@ -303,7 +293,7 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
         break;
     }
 
-    auto rTexOpt = getTextureAtlas(atlasName).frameToBackgroundTexture(spriteName);
+    auto rTexOpt = _getAtlas(atlasName).frameToBackgroundTexture(spriteName);
     setRenderTexture(dstRenderTexture, *rTexOpt);
 
     if (pBGData != nullptr) {
@@ -448,42 +438,6 @@ void TextureManager::renderBackgroundTextures() {
     }
 
     EndTextureMode();
-}
-
-void TextureManager::drawLightingTexture() {
-    RenderTexture2D lightingTexture = getRenderTexture(TextureID::Lighting);
-    Rectangle screenSourceRec =
-        Rectangle(0.0f, 0.0f, static_cast<f32>(lightingTexture.texture.width), static_cast<f32>(lightingTexture.texture.height));
-    Rectangle dstRect(0, 0, lightingTexture.texture.width, lightingTexture.texture.height);
-
-    BeginBlendMode(BLEND_MULTIPLIED);
-    DrawTexturePro(lightingTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
-    EndBlendMode();
-}
-
-void TextureManager::drawRadianceTexture() {
-    // static int exposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
-    // static float exposure = 1.0;
-    //
-    // if (IsKeyPressed(KEY_UP)) {
-    //     exposure += 0.1;
-    //     print("exposure: ", exposure);
-    // } else if (IsKeyPressed(KEY_DOWN)) {
-    //     exposure -= 0.1;
-    //     print("exposure: ", exposure);
-    // }
-
-    BeginBlendMode(BLEND_ADDITIVE);
-    // BeginBlendMode(BLEND_MULTIPLIED);
-    RenderTexture2D radianceTexture = getRenderTexture(TextureID::Radiance);
-    DrawTexture(radianceTexture.texture, 0, 0, WHITE);
-    EndBlendMode();
-
-    // auto shader = ShaderManager::get(Shaders::ToneMap);
-    // BeginShaderMode(shader);
-    // SetShaderValue(shader, exposureUniform, &exposure, SHADER_UNIFORM_FLOAT);
-    // DrawTexture(getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
-    // EndShaderMode();
 }
 
 void TextureManager::unloadAll() {
