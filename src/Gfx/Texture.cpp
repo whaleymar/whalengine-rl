@@ -33,9 +33,9 @@ namespace whal {
 
 static std::array<RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
-Frame::Frame(Rectangle rect) : atlasPositionTexels(rect.x, rect.y), dimensionsTexels(rect.width, rect.height) {}
+Frame::Frame(Rectangle rect) : atlasPosition(rect.x, rect.y), size(rect.width, rect.height) {}
 
-Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPositionTexels(atlasPosition), dimensionsTexels(dimensions) {}
+Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPosition(atlasPosition), size(dimensions) {}
 
 Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
     using namespace rapidxml;
@@ -105,12 +105,12 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
         return NULLOPT;
     }
 
-    s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_TEXELS);
-    s32 height = std::max(frameOpt->height, FWINDOW_HEIGHT_TEXELS);
-    RenderTexture2D texture = LoadRenderTexture(width * PIXELS_PER_TEXEL, height * PIXELS_PER_TEXEL);
+    s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_GAME);
+    s32 height = std::max(frameOpt->height, FWINDOW_HEIGHT_GAME);
+    RenderTexture2D texture = LoadRenderTexture(width, height);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
-    Rectangle dstRect = Rectangle(0, 0, frameOpt->width * FPIXELS_PER_TEXEL, frameOpt->height * FPIXELS_PER_TEXEL);
+    Rectangle dstRect = Rectangle(0, 0, frameOpt->width, frameOpt->height);
 
     BeginTextureMode(texture);
     ClearBackground(Colors::Clear);
@@ -128,14 +128,14 @@ TextureManager::TextureManager() {
     };
 
     static const RenderTextureInfo sRenderTexInfo[] = {
-        {TextureID::Staging, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
-        {TextureID::Background, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
-        {TextureID::Main, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
-        {TextureID::Lighting, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
-        {TextureID::Radiance, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
+        {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+        {TextureID::Background, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+        {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+        {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+        {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
         // {TextureID::DownscaledMain, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
-        {TextureID::DownscaledPostProcess, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
-        {TextureID::UpscaledLighting, WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL},
+        {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+        {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
     };
 
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
@@ -323,7 +323,7 @@ void TextureManager::renderBackgroundTextures() {
     const Vector2f cameraPos = getCameraPosition().as<f32>();
 
     auto checkWrapping = [](const Vector2f cameraPos, const BGData bgdata, const s32 texWidth, const s32 texHeight, Vector2f& scrollVar) {
-        f32 distance = cameraPos.x - (bgdata.worldPosTopLeftTexels.x * FPIXELS_PER_TEXEL);
+        f32 distance = cameraPos.x - bgdata.worldPosTopLeft.x;
         s32 offset = std::round(std::lerp(static_cast<f32>(texWidth), static_cast<f32>(texWidth) / 2.0f, bgdata.parallax.x));
         s32 effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.x));
         if (bgdata.isRepeatX) {
@@ -334,7 +334,7 @@ void TextureManager::renderBackgroundTextures() {
 
         // I do NOT know why I have to subtract 3 here to get it to line up with the bottom of the screen
         s32 heightDiff = texHeight - bgdata.trueDimensions.y;
-        distance = cameraPos.y + texHeight + heightDiff - 3 - (bgdata.worldPosTopLeftTexels.y * FPIXELS_PER_TEXEL);
+        distance = cameraPos.y + texHeight + heightDiff - 3 - bgdata.worldPosTopLeft.y;
 
         offset = std::round(std::lerp(static_cast<f32>(texHeight), static_cast<f32>(texHeight) / 2.0f, bgdata.parallax.y));
         effectiveDistance = static_cast<s32>(std::round(distance * bgdata.parallax.y));

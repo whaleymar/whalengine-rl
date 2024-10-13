@@ -40,7 +40,7 @@ private:
     std::vector<CheckPoint> mCheckpoints;
 
 public:
-    f32 speed;  // texels per second
+    f32 speed;
     f32 waitTime;
     ArrivalCallback arrivalCallback;
 

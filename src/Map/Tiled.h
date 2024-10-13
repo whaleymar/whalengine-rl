@@ -25,7 +25,7 @@ struct ActiveLevel;
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
-Transform2D getTransformFromMapPosition(Vector2i mapCenterPositionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint);
+Transform2D getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const ActiveLevel& level, bool isPoint);
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
@@ -37,7 +37,7 @@ struct LayerData {
 
 struct EntityMapData {
     Vector2i position;  // top left of tile
-    Vector2i dimensionsTexels;
+    Vector2i size;
     s32 id;
     bool isPoint;
     bool isParsingTemplate = false;
@@ -54,8 +54,8 @@ struct TileLayer {
 struct TileSet {
     s32 firstgid;
     s32 tilecount;
-    s32 tileWidthTexels;
-    s32 tileHeightTexels;
+    s32 tileWidth;
+    s32 tileHeight;
     s32 widthTiles;
     s32 heightTiles;
     s32 margin;

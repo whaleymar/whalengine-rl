@@ -26,8 +26,8 @@ namespace whal {
 
 constexpr s32 MOMENTUM_LIFETIME_FRAMES = 10;
 constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
-constexpr s32 CORNERCORRECTIONWIGGLE = 3 * PIXELS_PER_TEXEL;
-constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bounce
+constexpr s32 CORNERCORRECTIONWIGGLE = 3;  // TODO should be defined in component
+constexpr s32 BOUNCE_THRESHOLD = 2;        // need to be moving at least 2px/sec to bounce
 
 // keep global reference to the game so we can get the current scene
 static IGame* P_GAME = nullptr;
@@ -211,8 +211,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
 
             // prevent repeated push forces from accumulating huge speed
             if (hasMomentum && momentumOpt->cooldownFrames <= 0) {
-                // convert to texels/sec
-                velocity.stable += momentumOpt->getMomentum() * FTEXELS_PER_PIXEL;
+                velocity.stable += momentumOpt->getMomentum();
                 momentumOpt->resetMomentum();
                 momentumOpt->cooldownFrames = MOMENTUM_COOLDOWN_FRAMES;
             } else if (momentumOpt && momentumOpt->cooldownFrames > 0) {
@@ -806,8 +805,7 @@ void Collider::squish(ecs::Entity other, Vector2i hitNormal) {
 // Could be a lot faster if I do a broad pass QuadTree check like i do for normal movement
 bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2i moveNormal) {
     if (moveSignX >= 0) {
-        // if we are on a half texel x coord, start at 0.5 texels of movement
-        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
+        for (s32 i = 1 - nextPosition.x; i <= CORNERCORRECTIONWIGGLE; i += 1) {
             Vector2i nextPos = nextPosition + Vector2i(i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
                 mShape.setPosition(nextPos);
@@ -816,8 +814,7 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2
         }
     }
     if (moveSignX <= 0) {
-        // if we are on a half texel x coord, start at 0.5 texels of movement
-        for (s32 i = PIXELS_PER_TEXEL - nextPosition.x % PIXELS_PER_TEXEL; i <= CORNERCORRECTIONWIGGLE; i += PIXELS_PER_TEXEL) {
+        for (s32 i = 1 - nextPosition.x; i <= CORNERCORRECTIONWIGGLE; i += 1) {
             Vector2i nextPos = nextPosition + Vector2i(-i, 0);
             if (!checkCollisionQT(nextPos, moveNormal)) {
                 mShape.setPosition(nextPos);

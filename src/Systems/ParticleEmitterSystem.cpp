@@ -5,7 +5,6 @@
 #include "Components/Velocity.h"
 #include "Entities/Particle.h"
 #include "Physics/Shapes.h"
-#include "Settings.h"
 #include "Sys/System.h"
 #include "Util/Vector.h"
 
@@ -33,12 +32,11 @@ void ParticleEmitterSystem::update() {
             continue;
         }
 
-        const AABB spawnZone(trans, emitter.aabbHalfTexels * PIXELS_PER_TEXEL);
+        const AABB spawnZone(trans, emitter.aabbHalf);
         const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
 
-        // Vector2f velocity = speedSample * emitter.maxSpeedTexelsPerSecond;
-        Vector2f velocity = sampleSpeed * emitter.maxSpeedTexelsPerSecond;
+        Vector2f velocity = sampleSpeed * emitter.maxSpeed;
         Vector2i spawnLocation;
         if (emitter.direction == CollisionDir::UP) {
             spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
@@ -72,7 +70,7 @@ void ParticleEmitterSystem::update() {
             spawnLocation = spawnZone.getPosition() + Vector2i(spawnOffsetX, spawnOffsetY);
         }
 
-        spawnLocation += emitter.offsetTexels * PIXELS_PER_TEXEL;
+        spawnLocation += emitter.offset;
         for (s32 i = 0; i < nParticles; i++) {
             auto eParticle = createParticle(Transform2D(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
             if (!eParticle.isExpected()) {

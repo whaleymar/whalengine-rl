@@ -16,8 +16,8 @@ struct Frame {
     Frame() = default;
     Frame(Rectangle rect);
     Frame(Vector2i, Vector2i);
-    Vector2i atlasPositionTexels;
-    Vector2i dimensionsTexels;
+    Vector2i atlasPosition;
+    Vector2i size;
 };
 
 static const char* TEXNAME_SPRITE = "sprite";
@@ -66,7 +66,7 @@ enum class TextureID {
 class TextureManager {
     struct BGData {
         Vector2f parallax;
-        Vector2i worldPosTopLeftTexels;
+        Vector2i worldPosTopLeft;
         Vector2i trueDimensions;
         bool isRepeatX;
         bool isRepeatY;

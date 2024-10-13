@@ -8,7 +8,6 @@
 #include "Components/Light.h"
 #include "Components/Transform.h"
 #include "Gfx/Texture.h"
-#include "Settings.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
@@ -27,23 +26,19 @@ Color hexStringARGBToColor(std::string hexString) {
     return Color(r, g, b, 255);
 }
 
-constexpr f32 getPixelSize(const s32 frameSize, const f32 scale) {
-    return static_cast<f32>(frameSize) * PIXELS_PER_TEXEL * scale;
-}
-
-IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_)
-    : color(color_), depth(depth_), shader(shader_), mFrameSizeTexels(frameSizeTexels) {};
+IDraw::IDraw(Depth depth_, Color color_, Vector2i frameSize, Shaders shader_)
+    : color(color_), depth(depth_), shader(shader_), mFrameSize(frameSize) {};
 
 void IDraw::setAlpha(u8 alpha) {
     color.a = alpha;
 }
 
 void IDraw::setFrameSize(s32 frameSizeX, s32 frameSizeY) {
-    mFrameSizeTexels = {frameSizeX, frameSizeY};
+    mFrameSize = {frameSizeX, frameSizeY};
 }
 
 void IDraw::setFrameSize(Vector2i frameSize) {
-    mFrameSizeTexels = frameSize;
+    mFrameSize = frameSize;
 }
 
 void IDraw::setColor(Color rgb) {
@@ -51,7 +46,7 @@ void IDraw::setColor(Color rgb) {
 }
 
 Sprite::Sprite(Depth depth_, Frame frame, Color color_, Shaders shader_)
-    : IDraw(depth_, color_, frame.dimensionsTexels, shader_), atlasPositionTexels(frame.atlasPositionTexels) {}
+    : IDraw(depth_, color_, frame.size, shader_), atlasPosition(frame.atlasPosition) {}
 
 Expected<Sprite> Sprite::fromPath(const char* spritePath, Depth depth_, Color color_, Shaders shader_) {
     const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
@@ -63,17 +58,17 @@ Expected<Sprite> Sprite::fromPath(const char* spritePath, Depth depth_, Color co
 }
 
 void Sprite::setFrame(Frame frame) {
-    setFrameSize(frame.dimensionsTexels);
-    atlasPositionTexels = frame.atlasPositionTexels;
+    setFrameSize(frame.size);
+    atlasPosition = frame.atlasPosition;
 }
 
-DrawRect::DrawRect(Color color_, Vector2i frameSizeTexels_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSizeTexels_, shader_) {}
+DrawRect::DrawRect(Color color_, Vector2i frameSize_, Depth depth_, Shaders shader_) : IDraw(depth_, color_, frameSize_, shader_) {}
 
-DrawText::DrawText(const char* string, Color color_, Vector2i frameSizeTexels_, bool centered)
-    : text(string), color(color_), frameSizeTexels(frameSizeTexels_), isCentered(centered) {}
+DrawText::DrawText(const char* string, Color color_, Vector2i frameSize_, bool centered)
+    : text(string), color(color_), frameSize(frameSize_), isCentered(centered) {}
 
 // rect by default
-Draw::Draw(Depth depth, Vector2i frameSizeTexels, Shaders shader, Color color) : mRect(color, frameSizeTexels, depth, shader), mTag(DrawTag::Rect) {}
+Draw::Draw(Depth depth, Vector2i frameSize, Shaders shader, Color color) : mRect(color, frameSize, depth, shader), mTag(DrawTag::Rect) {}
 
 Draw::Draw(DrawRect rect, u32 flags) : mRect(rect), mTag(DrawTag::Rect), mPostProcessFlags(flags) {}
 
@@ -115,12 +110,12 @@ DrawStraightLine& Draw::getLine() {
     return mLine;
 }
 
-Vector2i Draw::getFrameSizeTexels() const {
+Vector2i Draw::getFrameSize() const {
     switch (mTag) {
     case DrawTag::Rect:
-        return mRect.getFrameSizeTexels();
+        return mRect.getFrameSize();
     case DrawTag::Sprite:
-        return mSprite.getFrameSizeTexels();
+        return mSprite.getFrameSize();
     case DrawTag::BezierQuad:
         return Vector2i();  // unused so idc that it's inaccurate
     case DrawTag::Line:
@@ -280,7 +275,7 @@ Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
 
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(sprite.getFrameSizeTexels().x, sprite.getFrameSizeTexels().y), sprite.getFrameSizeTexels().y / 2});
+    sil.add(PointLight{std::max(sprite.getFrameSize().x, sprite.getFrameSize().y), sprite.getFrameSize().y / 2});
 
     return sil;
 }
@@ -305,8 +300,8 @@ Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, C
 
     sil.add(FadeOut(lifetime));
     sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(draw.getFrameSizeTexels().x, draw.getFrameSizeTexels().y), draw.getFrameSizeTexels().y / 2});
-    sil.add(Radiance({std::max(draw.getFrameSizeTexels().x, draw.getFrameSizeTexels().y), draw.getFrameSizeTexels().y / 2, draw.color}));
+    sil.add(PointLight{std::max(draw.getFrameSize().x, draw.getFrameSize().y), draw.getFrameSize().y / 2});
+    sil.add(Radiance({std::max(draw.getFrameSize().x, draw.getFrameSize().y), draw.getFrameSize().y / 2, draw.color}));
 
     return sil;
 }

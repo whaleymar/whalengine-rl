@@ -52,7 +52,7 @@ void render(Camera2D worldCamera) {
 
     // 3. ? Apply post processing
     // TODO this should be accessible by the game
-    static Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL}, {
+    static Pipeline postProcessPipeline = Pipeline({WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER}, {
                                                                                                     // Shaders::Glitch,
                                                                                                     // Shaders::Quantize,
                                                                                                 });

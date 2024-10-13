@@ -79,7 +79,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
     particle.add(Draw(Sprite(depth, *frame)));
 
-    s32 radius = TEXELS_PER_TILE * 1;
+    s32 radius = PIXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});
     if (fullRadiance) {
         particle.add(Radiance{radius / 2, 0, color});

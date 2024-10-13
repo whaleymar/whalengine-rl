@@ -21,8 +21,8 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
     block.add(transform);
     block.add(Draw(DrawRect()));
 
-    const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
+    const s32 widthTileHL = PIXELS_PER_TILE / 2;
+    const s32 heightTileHL = PIXELS_PER_TILE / 2;
     block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
 
     return block;
@@ -39,8 +39,8 @@ Expected<ecs::Entity> createBlock(Transform2D transform, DrawRect rect) {
     block.add(transform);
     block.add(Draw(rect));
 
-    const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
+    const s32 widthTileHL = PIXELS_PER_TILE / 2;
+    const s32 heightTileHL = PIXELS_PER_TILE / 2;
     block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
 
     return block;
@@ -57,8 +57,8 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
     block.add(transform);
     block.add(Draw(sprite));
 
-    const s32 widthTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
-    const s32 heightTileHL = PIXELS_PER_TEXEL * TEXELS_PER_TILE / 2;
+    const s32 widthTileHL = PIXELS_PER_TILE / 2;
+    const s32 heightTileHL = PIXELS_PER_TILE / 2;
     block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL), material));
 
     return block;

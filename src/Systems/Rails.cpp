@@ -122,7 +122,7 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
                 // add tween
                 const Vector2f targetPosF = rails.getTarget().position.as<f32>();
                 const f32 segmentDistance = (targetPosF - rails.startPosition).len();
-                const f32 time = segmentDistance / (rails.speed * FPIXELS_PER_TEXEL);  // speed is in texels/sec, but pos is in pixels
+                const f32 time = segmentDistance / rails.speed;
 
                 TweenManager::add(
                     TweenVec2i(rails.getTarget().position, time, [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform2D>().position; })

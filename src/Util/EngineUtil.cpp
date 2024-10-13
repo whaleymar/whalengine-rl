@@ -23,7 +23,7 @@ void setCustomCursor(Draw drawComponent) {
             Vector2i position = getMouseWorldPosition();
 
             // correct for cursor height
-            const auto height = self.get<Draw>().getFrameSizeTexels().y;
+            const auto height = self.get<Draw>().getFrameSize().y;
             position -= Vector2i(0, height / 2);
 
             // update transform

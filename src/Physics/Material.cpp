@@ -29,12 +29,12 @@ Color MaterialData::getColor() const {
     return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
 }
 
-void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier) const {
+void MaterialData::addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier) const {
     const f32 lifetime = getDecayTime() * lifetimeMultiplier;
     entity.add(Lifetime(lifetime));
 
     if (isFlagSet(Collision)) {
-        auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLenTexels, halfLenTexels}));
+        auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLen, halfLen}));
         collider.setMaterial(id);
         entity.add(collider);
     }
@@ -47,7 +47,7 @@ void MaterialData::addComponents(ecs::Entity entity, s32 halfLenTexels, Color co
     }
 
     if (isFlagSet(Light)) {
-        entity.add(PointLight{halfLenTexels * 2});
+        entity.add(PointLight{halfLen * 2});
     }
 
     if (isFlagSet(DecaySpeed)) {

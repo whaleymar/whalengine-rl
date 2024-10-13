@@ -26,7 +26,7 @@ public:
     bool start() {
         // RAYLIB INITIALIZATION
         SetTraceLogLevel(LOG_WARNING);
-        InitWindow(WINDOW_WIDTH_ACTUAL, WINDOW_HEIGHT_ACTUAL, WINDOW_TITLE);
+        InitWindow(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, WINDOW_TITLE);
         SetExitKey(KEY_NULL);  // Escape quits by default
 
         SetTargetFPS(FPS_TARGET);

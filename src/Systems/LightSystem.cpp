@@ -41,7 +41,7 @@ void drawLights(Camera2D worldCamera) {
     EndTextureMode();
 
     // blur the lighting texture
-    static Pipeline lightingPipeline({WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS}, {Shaders::BlurLowRes});
+    static Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::BlurLowRes});
     lightingPipeline.process(TextureID::Lighting);
 
     // upscale the lighting to full resolution
@@ -78,15 +78,15 @@ void PointLightSystem::drawEntities() {
         }
         PointLight light = entity.get<PointLight>();
         const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
         const Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2);
+            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
         constexpr f32 defaultFadeTime = 0.25f;
         f32 intensity = 1.0;
-        s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
+        s32 radius = light.radius;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
             intensity = fadeoutOpt->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
@@ -130,14 +130,14 @@ void BoxLightSystem::drawEntities() {
 
         BoxLight light = entity.get<BoxLight>();
         const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
         // Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y); // OLD
         Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2);
+            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         f32 intensity = 1.0;
-        s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
+        s32 radius = light.radius;
 
         // for entities with lifetimes, fade out in last moments
         constexpr f32 defaultFadeTime = 0.25f;
@@ -156,13 +156,13 @@ void BoxLightSystem::drawEntities() {
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
 
         Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        Vector2 halfLenV(light.halfLenTexels.x * PIXELS_PER_TEXEL, light.halfLenTexels.y * PIXELS_PER_TEXEL);
+        Vector2 halfLenV(light.halfLen.x, light.halfLen.y);
         f32 fRadius = static_cast<f32>(radius);
         SetShaderValue(shader, mPositionUniform, &screenPosV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mHalflenUniform, &halfLenV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mRadiusUniform, &fRadius, SHADER_UNIFORM_FLOAT);
 
-        const Vector2i lightBounds(radius + light.halfLenTexels.x * PIXELS_PER_TEXEL, radius + light.halfLenTexels.y * PIXELS_PER_TEXEL);
+        const Vector2i lightBounds(radius + light.halfLen.x, radius + light.halfLen.y);
         const Vector2i destPosition = screenPosition - lightBounds;
         const Vector2i destSize = lightBounds * 2;
 
@@ -196,14 +196,14 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
 
         Radiance light = entity.get<Radiance>();
         const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightTexels * PIXELS_PER_TEXEL);
+            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
         const Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2);
+            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
         // for entities with lifetimes, fade out in last moments
         f32 intensity = 1.0;
-        s32 radius = light.radiusTexels * PIXELS_PER_TEXEL;
+        s32 radius = light.radius;
         if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
             intensity = fadeoutOpt->getIntensity();
         } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
@@ -239,11 +239,11 @@ void ShadowLightSystem::drawEntities() {
 
         const auto light = entity.get<ShadowLight>();
         const Vector2i entityPos = entity.get<Transform2D>().position;
-        const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightTexels * PIXELS_PER_TEXEL));
+        const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));
         const Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
         SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
 
-        const f32 lightRadiusPixels = light.radiusTexels * PIXELS_PER_TEXEL;
+        const f32 lightRadiusPixels = light.radius;
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
         const auto& tex = TextureManager::getRenderTexture(TextureID::DownscaledPostProcess).texture;
         DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), light.color);

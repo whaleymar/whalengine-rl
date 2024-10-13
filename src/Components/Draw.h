@@ -59,20 +59,20 @@ enum Flags : u32 {
 
 // hard coded as rectangles until I need something else
 struct IDraw {
-    IDraw(Depth depth_, Color color_, Vector2i frameSizeTexels, Shaders shader_);
+    IDraw(Depth depth_, Color color_, Vector2i frameSize, Shaders shader_);
     Color color;
     Vector2f scale = {1, 1};
     Depth depth;
     Shaders shader;
 
-    Vector2i getFrameSizeTexels() const { return mFrameSizeTexels; }
+    Vector2i getFrameSize() const { return mFrameSize; }
     void setAlpha(u8 alpha);
     void setFrameSize(s32 x, s32 y);
     void setFrameSize(Vector2i frameSize);
     void setColor(Color color_);
 
 protected:
-    Vector2i mFrameSizeTexels;
+    Vector2i mFrameSize;
 };
 
 struct Sprite : public IDraw {
@@ -80,12 +80,12 @@ struct Sprite : public IDraw {
     static Expected<Sprite> fromPath(const char* spritePath, Depth depth_ = Depth::Player, Color color_ = WHITE, Shaders shader_ = Shaders::Default);
     void setFrame(Frame frame);
 
-    Vector2i atlasPositionTexels;
+    Vector2i atlasPosition;
     bool isRotateAboutCenter = false;
 };
 
 struct DrawRect : public IDraw {
-    DrawRect(Color color_ = WHITE, Vector2i frameSizeTexels_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
+    DrawRect(Color color_ = WHITE, Vector2i frameSize_ = {8, 8}, Depth depth_ = Depth::Player, Shaders shader_ = Shaders::Default);
 };
 
 struct DrawBezierQuad {
@@ -115,7 +115,7 @@ public:
     // probably won't get rid of other version, because I can use that for dialogue system?
     enum class DrawTag { Rect, Sprite, BezierQuad, Line };  // text too?
 
-    Draw(Depth depth = Depth::Player, Vector2i frameSizeTexels = {TEXELS_PER_TILE, TEXELS_PER_TILE}, Shaders shader = Shaders::Default,
+    Draw(Depth depth = Depth::Player, Vector2i frameSize = {PIXELS_PER_TILE, PIXELS_PER_TILE}, Shaders shader = Shaders::Default,
          Color color = WHITE);
     Draw(DrawRect rect, u32 flags = 0);
     Draw(Sprite sprite, u32 flags = 0);
@@ -131,7 +131,7 @@ public:
     DrawBezierQuad& getBezierQuad();
     DrawStraightLine& getLine();
 
-    Vector2i getFrameSizeTexels() const;
+    Vector2i getFrameSize() const;
     Depth getDepth() const;
     Shaders getShader() const;
     bool isPostProcessFlagSet(PostProcessFlag::Flags flag) const { return (mPostProcessFlags & flag) > 0; }
@@ -155,12 +155,12 @@ private:
 };
 
 struct DrawText {
-    DrawText(const char* string = "", Color color_ = WHITE, Vector2i frameSizeTexels = {8, 8}, bool centered = false);
+    DrawText(const char* string = "", Color color_ = WHITE, Vector2i frameSize = {8, 8}, bool centered = false);
 
     std::string text;
     Color color;
     Vector2f scale = {1, 1};
-    Vector2i frameSizeTexels;
+    Vector2i frameSize;
     bool isCentered;
 };
 

@@ -69,9 +69,9 @@ static s32 getLowestPoint(const GfxSystem::DrawInfo& drawInfo) {
     f32 lowestHeight = 0.5f * (std::cos(radians) - 1.0f);
     f32 offset;
     if (lowestWidth <= lowestHeight) {
-        offset = drawInfo.draw.getFrameSizeTexels().x * lowestWidth;
+        offset = drawInfo.draw.getFrameSize().x * lowestWidth;
     } else {
-        offset = drawInfo.draw.getFrameSizeTexels().y * lowestHeight;
+        offset = drawInfo.draw.getFrameSize().y * lowestHeight;
     }
 
     return drawInfo.trans.position.y + offset;
@@ -95,8 +95,8 @@ static bool isInViewport(const Transform2D& trans, Draw draw, const AABB viewpor
     switch (draw.getTag()) {
     case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
-        auto frameSize = rect.getFrameSizeTexels().as<f32>();
-        Vector2f dstSize = {frameSize.x * rect.scale.x * FPIXELS_PER_TEXEL, frameSize.y * rect.scale.y * FPIXELS_PER_TEXEL};
+        auto frameSize = rect.getFrameSize().as<f32>();
+        Vector2f dstSize = {frameSize.x * rect.scale.x, frameSize.y * rect.scale.y};
         if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !viewport.isOverlapping(drawBox)) {
             return false;
         }
@@ -104,8 +104,8 @@ static bool isInViewport(const Transform2D& trans, Draw draw, const AABB viewpor
     }
     case Draw::DrawTag::Sprite: {
         const Sprite sprite = draw.getSprite();
-        const Vector2i frameSize = sprite.getFrameSizeTexels();
-        Vector2f dstSize = {frameSize.x * sprite.scale.x * FPIXELS_PER_TEXEL, frameSize.y * sprite.scale.y * FPIXELS_PER_TEXEL};
+        const Vector2i frameSize = sprite.getFrameSize();
+        Vector2f dstSize = {frameSize.x * sprite.scale.x, frameSize.y * sprite.scale.y};
 
         if (AABB drawBox = AABB(pos, dstSize.as<s32>()); !viewport.isOverlapping(drawBox)) {
             return false;
@@ -126,7 +126,7 @@ static bool isInViewport(const Transform2D& trans, Draw draw, const AABB viewpor
 void GfxSystem::sortEntities(Vector2i cameraPos) {
     mSortedEntities.clear();                               // .clear() doesn't affect capacity
     mSortedEntities.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
-    const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_PIXELS / 2, WINDOW_HEIGHT_PIXELS / 2});
+    const AABB cameraViewBox(cameraPos, {WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2});
     for (auto const [entityid, entity] : getEntitiesMutable()) {
         auto const trans = entity.get<Transform2D>();
         auto const draw = entity.get<Draw>();
@@ -251,7 +251,7 @@ static DrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f 
 
     // Scale everything up
     screenPosition *= VIRTUAL_SCREEN_RATIO;
-    screenPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    screenPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
     size *= VIRTUAL_SCREEN_RATIO;
     origin *= VIRTUAL_SCREEN_RATIO;
 
@@ -269,7 +269,7 @@ static void _drawSingleObject(const GfxSystem::PreciseTransform trans, Draw draw
     switch (draw.getTag()) {
     case Draw::DrawTag::Rect: {
         const DrawRect rect = draw.getRect();
-        const auto frameSize = rect.getFrameSizeTexels().as<f32>();
+        const auto frameSize = rect.getFrameSize().as<f32>();
         // TODO these should have rotation enabled
         const DrawParams params = getDrawParams(posF, frameSize, cameraPosF, rect.scale, false);
         DrawRectanglePro(params.rect, params.origin, 0.0f, rect.color);
@@ -277,9 +277,9 @@ static void _drawSingleObject(const GfxSystem::PreciseTransform trans, Draw draw
     }
     case Draw::DrawTag::Sprite: {
         const Sprite sprite = draw.getSprite();
-        const Vector2f frameSize = sprite.getFrameSizeTexels().as<f32>();
+        const Vector2f frameSize = sprite.getFrameSize().as<f32>();
         const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
-        const Rectangle srcRect = Rectangle(sprite.atlasPositionTexels.x, sprite.atlasPositionTexels.y, flipModifier * frameSize.x, frameSize.y);
+        const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
 
         const DrawParams params = getDrawParams(posF, frameSize, cameraPosF, sprite.scale, sprite.isRotateAboutCenter);
 
@@ -335,12 +335,12 @@ void DrawTextSystem::drawEntities(Color tint) {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawText draw = entity.get<DrawText>();
 
-        Vector2f frameSize = draw.frameSizeTexels.as<f32>() * FPIXELS_PER_TEXEL * VIRTUAL_SCREEN_RATIO * draw.scale;
+        Vector2f frameSize = draw.frameSize.as<f32>() * VIRTUAL_SCREEN_RATIO * draw.scale;
 
         // text is drawn at full resolution
         Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y};
         dstPosition *= VIRTUAL_SCREEN_RATIO;
-        dstPosition += Vector2f(WINDOW_WIDTH_ACTUAL / 2, WINDOW_HEIGHT_ACTUAL / 2);
+        dstPosition += Vector2f(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 
         // drawing one line:
         // Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, draw.text, FONT_SIZE, spacing);
@@ -365,8 +365,8 @@ void DrawDebugSystem::drawEntities() {
         const Transform2D trans = entity.get<Transform2D>();
         const DrawDebug draw = entity.get<DrawDebug>();
 
-        auto frameSize = draw.getFrameSizeTexels().as<f32>();
-        Vector2f dstSize = {frameSize.x * draw.scale.x * FPIXELS_PER_TEXEL, frameSize.y * draw.scale.y * FPIXELS_PER_TEXEL};
+        auto frameSize = draw.getFrameSize().as<f32>();
+        Vector2f dstSize = {frameSize.x * draw.scale.x, frameSize.y * draw.scale.y};
 
         // subtract size.y so we draw from bottom left instead of top left
         Vector2f dstPosition = {trans.position.x - cameraPosF.x, -1 * trans.position.y + cameraPosF.y - dstSize.y};
