@@ -46,10 +46,10 @@ static void ActivateShader(Shaders shaderEnum) {
     }
 
     if (uniforms.isSet(Uniforms::VirtualResolution)) {
-        const f32 iResolution[2] = {FWINDOW_WIDTH_PIXELS, FWINDOW_HEIGHT_PIXELS};
+        const f32 iResolution[2] = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
         SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
     } else if (uniforms.isSet(Uniforms::Resolution)) {
-        const f32 iResolution[2] = {FWINDOW_WIDTH_ACTUAL, FWINDOW_HEIGHT_ACTUAL};
+        const f32 iResolution[2] = {FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER};
         SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
     }
 

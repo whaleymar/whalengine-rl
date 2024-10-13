@@ -80,7 +80,7 @@ void TileSet::addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLeve
         isMissingTsetProps = true;
     }
 
-    const EntityMapData mapData = {mapPosition, {TEXELS_PER_TILE, TEXELS_PER_TILE}, 0, false, true};
+    const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
 
     // don't need values for allObjects or idToIndex since tiles (should be) standalone entities
     const nlohmann::json emptyJson;
@@ -145,10 +145,9 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
-        lightEntity.add(Transform2D(level.worldOffsetPixels +
-                                    (level.sizeTexels * 0.5 + Vector2f(-FTEXELS_PER_TILE / 2, FTEXELS_PER_TILE)).as<s32>() * PIXELS_PER_TEXEL));
+        lightEntity.add(Transform2D(level.worldOffsetPixels + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>()));
 
-        BoxLight boxLight = {{3 * TEXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, (level.sizeTexels * 0.5).as<s32>()};
+        BoxLight boxLight = {{3 * PIXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
 
         level.childEntities.insert(lightEntity);
@@ -279,14 +278,14 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             continue;
         }
         if (pPrefab) {
-            if (tryReadVector2i(*pPrefab, "width", "height", &entityData.dimensionsTexels))
+            if (tryReadVector2i(*pPrefab, "width", "height", &entityData.size))
                 entityData.isPoint = false;
         }
-        if (tryReadVector2i(object, "width", "height", &entityData.dimensionsTexels))
+        if (tryReadVector2i(object, "width", "height", &entityData.size))
             entityData.isPoint = false;
 
         // add transform
-        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint);
+        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
         entity.add(trans);
 
         // add name
@@ -329,7 +328,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     Vector2i offset;
     tryReadVector2i(layer, "offsetx", "offsety", &offset);
 
-    position += offset + level.worldPosOriginTexels.as<s32>();
+    position += offset + level.worldPosOrigin.as<s32>();
 
     bool isRepeatX = false;
     tryReadBool(layer, "repeatx", &isRepeatX);
@@ -392,7 +391,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     ecs::Entity entity = eEntity.value();
     level.childEntities.insert(entity);
 
-    Transform2D trans = getTransformFromMapPosition(position + offset, frame.dimensionsTexels, level, false);
+    Transform2D trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
     entity.add(trans);
 
     entity.add(Draw(Sprite(layerData.depth, frame)));
@@ -409,11 +408,11 @@ TileSet parseTileset(const std::string& basename, s32 firstgid) {
 
     s32 tileWidth = readInt(data, "tilewidth");
     s32 tileHeight = readInt(data, "tileheight");
-    s32 widthTexels = readInt(data, "imagewidth");
-    s32 heightTexels = readInt(data, "imageheight");
+    s32 width = readInt(data, "imagewidth");
+    s32 height = readInt(data, "imageheight");
 
-    s32 widthTiles = widthTexels / tileWidth;
-    s32 heightTiles = heightTexels / tileHeight;
+    s32 widthTiles = width / tileWidth;
+    s32 heightTiles = height / tileHeight;
     s32 tilecount = readInt(data, "tilecount");
 
     std::vector<s32> idToIx(tilecount, -1);
@@ -457,9 +456,8 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     s32 colIx = blockIx % tset.widthTiles;
 
     Frame fullFrame = *tsetFrameOpt;
-    Frame newFrame = {
-        {fullFrame.atlasPositionTexels.x + colIx * tset.tileWidthTexels, fullFrame.atlasPositionTexels.y + rowIx * tset.tileHeightTexels},
-        {tset.tileWidthTexels, tset.tileHeightTexels}};
+    Frame newFrame = {{fullFrame.atlasPosition.x + colIx * tset.tileWidth, fullFrame.atlasPosition.y + rowIx * tset.tileHeight},
+                      {tset.tileWidth, tset.tileHeight}};
     return newFrame;
 }
 
@@ -534,16 +532,15 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 }
 
 // convert top-left coordinate to bottom-middle
-Transform2D getTransformFromMapPosition(Vector2i positionTexels, Vector2i dimensionsTexels, const ActiveLevel& level, bool isPoint) {
+Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
     // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
     // heights to match tiles, but points need manual adjustment
 
     if (isPoint) {
-        positionTexels.y += TEXELS_PER_TILE / 2;
+        position.y += PIXELS_PER_TILE / 2;
     }
-    Transform2D trans = Transform2D::texels(positionTexels.x + dimensionsTexels.x * 0.5 - TEXELS_PER_TILE / 2,
-                                            level.sizeTexels.y - positionTexels.y - dimensionsTexels.y + TEXELS_PER_TILE);
+    Transform2D trans = Transform2D::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y + PIXELS_PER_TILE);
     trans.position += level.worldOffsetPixels;
     return trans;
 }

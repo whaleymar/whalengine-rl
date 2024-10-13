@@ -142,7 +142,7 @@ void PhysicsSystem::update() {
         }
 
         const Vector2f totalVelocity = vel.stable + impulse;
-        const Vector2f move = {totalVelocity.x * dt * PIXELS_PER_TEXEL, totalVelocity.y * dt * PIXELS_PER_TEXEL};
+        const Vector2f move = totalVelocity * dt;
 
         vel.residualImpulse = {approach(impulse.x, 0, frictionStepGround), approach(impulse.y, 0, gravityStep)};
         vel.impulse = {0, 0};

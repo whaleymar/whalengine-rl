@@ -17,7 +17,7 @@ void AnimationSystem::update() {
         if ((*anim.brain)(anim, entity)) {
             // frame changed
             const Frame frame = anim.getFrame();
-            sprite.atlasPositionTexels = frame.atlasPositionTexels;
+            sprite.atlasPosition = frame.atlasPosition;
         }
     }
 }

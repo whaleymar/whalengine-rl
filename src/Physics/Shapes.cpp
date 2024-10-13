@@ -68,7 +68,7 @@ void AABB::draw(Vector2f cameraPos, Color color) const {
     Vector2f dstPosition = {position.x - cameraPos.x, -1 * position.y + cameraPos.y - size.y};
 
     dstPosition *= VIRTUAL_SCREEN_RATIO;
-    dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    dstPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
     size *= VIRTUAL_SCREEN_RATIO;
 
     DrawRectangleLinesEx(Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), S_DEBUG_SHAPE_THICKNESS, color);
@@ -134,7 +134,7 @@ void Circle::setPosition(Transform2D transform) {
 void Circle::draw(Vector2f cameraPos, Color color) const {
     Vector2f dstPosition = {mCenter.x - cameraPos.x, -1 * mCenter.y + cameraPos.y};
     dstPosition *= VIRTUAL_SCREEN_RATIO;
-    dstPosition += Vector2f(FWINDOW_WIDTH_ACTUAL / 2, FWINDOW_HEIGHT_ACTUAL / 2);
+    dstPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
     DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);  // no thickness param :(
 }
 #endif

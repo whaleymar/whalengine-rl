@@ -49,7 +49,7 @@ void AttachSystem::update() {
                                                 targetTrans.facing == Facing::Left ?
                                             Vector2i(-1, 1) :
                                             Vector2i(1, 1);
-        const Vector2i targetPosition = targetTrans.position + attach.offsetTexels * PIXELS_PER_TEXEL * offsetModifier;
+        const Vector2i targetPosition = targetTrans.position + attach.offset * offsetModifier;
         if (targetPosition == trans.position) {
             continue;
         }
@@ -100,8 +100,8 @@ void FollowSystem::update() {
         ecs::Entity targetEntity(follow.targetEntityID);
         Transform2D targetTrans = targetEntity.get<Transform2D>();
         // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
-        f32 lookAheadX = follow.lookAheadTexels.x;
-        f32 lookAheadY = follow.lookAheadTexels.y;
+        f32 lookAheadX = follow.lookAhead.x;
+        f32 lookAheadY = follow.lookAhead.y;
         bool isTargetMovingX = false;
         bool isTargetMovingY = false;
         bool isMovingUp = false;
@@ -118,14 +118,14 @@ void FollowSystem::update() {
         s32 target;
         if (follow.isMovingX && isTargetMovingX) {
             s32 direction = targetTrans.facing == Facing::Right ? 1 : -1;
-            target = targetTrans.position.x + direction * lookAheadX * PIXELS_PER_TEXEL;
+            target = targetTrans.position.x + direction * lookAheadX;
         } else {
             target = targetTrans.position.x;
         }
-        s32 min = follow.boundsXTexels.x * PIXELS_PER_TEXEL;
-        s32 max = follow.boundsXTexels.y * PIXELS_PER_TEXEL;
+        s32 min = follow.boundsX.x;
+        s32 max = follow.boundsX.y;
         s32 currentTarget = clamp(target, min, max);
-        s32 distanceFromTarget = abs(currentTarget - trans.position.x) * PIXELS_PER_TEXEL;
+        s32 distanceFromTarget = abs(currentTarget - trans.position.x);
 
         // if the target is not moving, we shouldn't move away from it
         if (follow.isMovingX && !isTargetMovingX &&
@@ -133,23 +133,23 @@ void FollowSystem::update() {
              (targetTrans.position.x >= trans.position.x && trans.position.x >= follow.currentTarget.x))) {
             follow.currentTarget.x = trans.position.x;
             follow.isMovingX = false;
-        } else if (distanceFromTarget > follow.deadZoneTexels.x) {
+        } else if (distanceFromTarget > follow.deadZone.x) {
             follow.currentTarget.x = currentTarget;
             follow.isMovingX = true;
         }
 
         if (follow.isMovingY && isTargetMovingY) {
             s32 direction = isMovingUp ? 1 : -1;
-            target = targetTrans.position.y + direction * lookAheadY * PIXELS_PER_TEXEL;
+            target = targetTrans.position.y + direction * lookAheadY;
         } else {
             target = targetTrans.position.y;
         }
-        min = follow.boundsYTexels.x * PIXELS_PER_TEXEL;
-        max = follow.boundsYTexels.y * PIXELS_PER_TEXEL;
+        min = follow.boundsY.x;
+        max = follow.boundsY.y;
         currentTarget = clamp(target, min, max);
-        distanceFromTarget = abs(currentTarget - trans.position.y) * PIXELS_PER_TEXEL;
+        distanceFromTarget = abs(currentTarget - trans.position.y);
 
-        if (distanceFromTarget > follow.deadZoneTexels.y) {
+        if (distanceFromTarget > follow.deadZone.y) {
             follow.currentTarget.y = currentTarget;
             follow.isMovingY = true;
         }
@@ -157,8 +157,8 @@ void FollowSystem::update() {
         // TEMP
         Velocity& vel = entity.get<Velocity>();
         // Velocity vel = entity.get<Velocity>();
-        f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x - trans.position.x)) * FTEXELS_PER_PIXEL;
-        f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y - trans.position.y) * FTEXELS_PER_PIXEL;
+        f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x - trans.position.x));
+        f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y - trans.position.y);
 
         if (abs(targetSpeedX) > abs(vel.stable.x)) {
             targetSpeedX = myLerp(vel.stable.x, targetSpeedX, follow.damping.x);

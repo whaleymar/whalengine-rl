@@ -78,7 +78,7 @@ Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
 
 Vector2i Scene::getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i referencePoint) {
     if (activeLevel.spawnPoints.size() == 0) {
-        return activeLevel.worldPosOriginTexels.as<s32>();
+        return activeLevel.worldPosOrigin.as<s32>();
     }
 
     Vector2i closestPoint = activeLevel.spawnPoints[0];
@@ -97,10 +97,10 @@ Vector2i Scene::getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i referenc
 }
 
 Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
-    Vector2f worldPosTexels = worldPos.as<f32>() * FTEXELS_PER_PIXEL;
+    Vector2f worldPosF = worldPos.as<f32>();
     for (Level lvl : allLevels) {
-        if (worldPosTexels.x >= lvl.worldPosOriginTexels.x && worldPosTexels.x < (lvl.worldPosOriginTexels.x + lvl.sizeTexels.x) &&
-            worldPosTexels.y < lvl.worldPosOriginTexels.y && worldPosTexels.y >= (lvl.worldPosOriginTexels.y - lvl.sizeTexels.y)) {
+        if (worldPosF.x >= lvl.worldPosOrigin.x && worldPosF.x < (lvl.worldPosOrigin.x + lvl.size.x) && worldPosF.y < lvl.worldPosOrigin.y &&
+            worldPosF.y >= (lvl.worldPosOrigin.y - lvl.size.y)) {
             return lvl;
         }
     }
@@ -108,24 +108,23 @@ Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const 
 }
 
 Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
-    Vector2i worldPosTexels = (worldPos.as<f32>() * FTEXELS_PER_PIXEL).round();
     s32 minDistance = 999999;
     Vector2i closestPosition;
     for (Level lvl : allLevels) {
-        const AABB lvlBox((lvl.worldPosOriginTexels + lvl.sizeTexels * Vector2f(0.5, -0.5)).as<s32>(), (lvl.sizeTexels * 0.5).as<s32>());
+        const AABB lvlBox((lvl.worldPosOrigin + lvl.size * Vector2f(0.5, -0.5)).as<s32>(), (lvl.size * 0.5).as<s32>());
 
-        const auto delta = worldPosTexels - lvlBox.getPosition();
+        const auto delta = worldPos - lvlBox.getPosition();
         const auto half = lvlBox.getHalf();
         const auto closestPoint = lvlBox.getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
 
-        s32 distance = (closestPoint - worldPosTexels).len();
+        s32 distance = (closestPoint - worldPos).len();
         if (distance < minDistance) {
             minDistance = distance;
             closestPosition = closestPoint;
         }
     }
 
-    return closestPosition * PIXELS_PER_TEXEL;
+    return closestPosition;
 }
 
 Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
@@ -161,7 +160,7 @@ static Tile getTile(u32 tileMask) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffsetPixels = Transform2D::texels(level.worldPosOriginTexels.x, level.worldPosOriginTexels.y - level.sizeTexels.y).position;
+    Vector2i worldOffsetPixels = Transform2D::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
     ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
@@ -171,7 +170,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
         // std::vector<s32> collisionColumn;
         for (s32 y = 0; y < map.heightTiles; y++) {
             Transform2D trans = Transform2D(Transform2D::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
-            Vector2i mapPosition = Vector2i(x * TEXELS_PER_TILE, y * TEXELS_PER_TILE);  // no idea if this is correct
+            Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);  // no idea if this is correct
             trans.facing = Facing::Right;
             s32 ix = map.widthTiles * y + x;
 
@@ -281,10 +280,10 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     s32 meshWidthTiles = endPoint.first - startPoint.first + 1;
     s32 meshHeightTiles = endPoint.second - startPoint.second + 1;
 
-    s32 centerX = lvl.worldPosOriginTexels.x * PIXELS_PER_TEXEL + startPoint.first * PIXELS_PER_TILE + (meshWidthTiles - 1) * PIXELS_PER_TILE / 2;
-    s32 centerY = lvl.worldPosOriginTexels.y * PIXELS_PER_TEXEL - startPoint.second * PIXELS_PER_TILE - (meshHeightTiles - 2) * PIXELS_PER_TILE / 2;
+    s32 centerX = lvl.worldPosOrigin.x + startPoint.first + (meshWidthTiles - 1) / 2;
+    s32 centerY = lvl.worldPosOrigin.y - startPoint.second - (meshHeightTiles - 2) / 2;
 
-    Vector2i halflen = {meshWidthTiles * PIXELS_PER_TILE / 2, meshHeightTiles * PIXELS_PER_TILE / 2};
+    Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
     auto collider = Collider::Solid(Transform2D({centerX, centerY}), halflen);
 
     auto eEntity = System::world.entity();

@@ -10,7 +10,6 @@
 
 #include "Gfx/Texture.h"
 #include "Physics/CollisionLayer.h"
-#include "Settings.h"
 
 #include "Map/Level.h"
 #include "Map/Tiled.h"
@@ -273,9 +272,9 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 std::string hexString = member[KEY_VALUE];
                 DefaultPointLight.color = hexStringARGBToColor(hexString);
             } else if (memberName == "heightTexels") {
-                DefaultPointLight.heightTexels = member[KEY_VALUE];
+                DefaultPointLight.heightOffset = member[KEY_VALUE];
             } else if (memberName == "radiusTexels") {
-                DefaultPointLight.radiusTexels = member[KEY_VALUE];
+                DefaultPointLight.radius = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -289,9 +288,9 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 std::string hexString = member[KEY_VALUE];
                 DefaultRadiance.color = hexStringARGBToColor(hexString);
             } else if (memberName == "heightTexels") {
-                DefaultRadiance.heightTexels = member[KEY_VALUE];
+                DefaultRadiance.heightOffset = member[KEY_VALUE];
             } else if (memberName == "radiusTexels") {
-                DefaultRadiance.radiusTexels = member[KEY_VALUE];
+                DefaultRadiance.radius = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -374,13 +373,13 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "lookAheadX") {
-                DefaultFollow.lookAheadTexels.x = member[KEY_VALUE];
+                DefaultFollow.lookAhead.x = member[KEY_VALUE];
             } else if (memberName == "lookAheadY") {
-                DefaultFollow.lookAheadTexels.y = member[KEY_VALUE];
+                DefaultFollow.lookAhead.y = member[KEY_VALUE];
             } else if (memberName == "deadZoneX") {
-                DefaultFollow.deadZoneTexels.x = member[KEY_VALUE];
+                DefaultFollow.deadZone.x = member[KEY_VALUE];
             } else if (memberName == "deadZoneY") {
-                DefaultFollow.deadZoneTexels.y = member[KEY_VALUE];
+                DefaultFollow.deadZone.y = member[KEY_VALUE];
             } else if (memberName == "dampingX") {
                 DefaultFollow.damping.x = member[KEY_VALUE];
             } else if (memberName == "dampingY") {
@@ -388,9 +387,9 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             } else if (memberName == "FollowTarget") {
                 // do nothing
             } else if (memberName == "boundsHalflenX") {
-                DefaultFollow.boundsXTexels = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
+                DefaultFollow.boundsX = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
             } else if (memberName == "boundsHalflenY") {
-                DefaultFollow.boundsYTexels = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
+                DefaultFollow.boundsY = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -417,7 +416,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "maxSpeed") {
-                DefaultParticleEmitter.maxSpeedTexelsPerSecond = member[KEY_VALUE];
+                DefaultParticleEmitter.maxSpeed = member[KEY_VALUE];
 
             } else if (memberName == "particlesPerSecond") {
                 DefaultParticleEmitter.particlesPerSecond = member[KEY_VALUE];
@@ -530,7 +529,7 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
                       ecs::Entity entity, LayerData layerData) {
     DrawRect draw = entity.has<Draw>() ? entity.get<Draw>().getRect() : DefaultDraw;
     draw.depth = layerData.depth;
-    draw.setFrameSize(entityData.dimensionsTexels);
+    draw.setFrameSize(entityData.size);
 
     // ARGB
     if (values.contains("Color")) {
@@ -580,7 +579,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         print("Coudn't find frame for sprite:", spritePath);
         // add draw instead
         DrawRect draw = DefaultDraw;
-        draw.setFrameSize(entityData.dimensionsTexels);
+        draw.setFrameSize(entityData.size);
         entity.add(Draw(draw, flags));
     }
 }
@@ -643,13 +642,13 @@ void addComponentLight(const nlohmann::json& values, const nlohmann::json& allOb
                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                        ecs::Entity entity, LayerData layerData) {
     PointLight light = entity.has<PointLight>() ? entity.get<PointLight>() : DefaultPointLight;
-    if (!tryReadVal(values, "radiusTexels", &light.radiusTexels)) {
+    if (!tryReadVal(values, "radiusTexels", &light.radius)) {
         // by default, use bigger dimension
-        light.radiusTexels = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y);
+        light.radius = std::max(entityData.size.x, entityData.size.y);
     }
-    if (!tryReadVal(values, "heightTexels", &light.heightTexels)) {
+    if (!tryReadVal(values, "heightTexels", &light.heightOffset)) {
         // by default, use half of entity height
-        light.heightTexels = entityData.dimensionsTexels.y / 2;
+        light.heightOffset = entityData.size.y / 2;
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
@@ -662,13 +661,13 @@ void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& al
                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                           ecs::Entity entity, LayerData layerData) {
     Radiance light = entity.has<Radiance>() ? entity.get<Radiance>() : DefaultRadiance;
-    if (!tryReadVal(values, "radiusTexels", &light.radiusTexels)) {
+    if (!tryReadVal(values, "radiusTexels", &light.radius)) {
         // by default, use bigger dimension
-        light.radiusTexels = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y);
+        light.radius = std::max(entityData.size.x, entityData.size.y);
     }
-    if (!tryReadVal(values, "heightTexels", &light.heightTexels)) {
+    if (!tryReadVal(values, "heightTexels", &light.heightOffset)) {
         // by default, use half of entity height
-        light.heightTexels = entityData.dimensionsTexels.y / 2;
+        light.heightOffset = entityData.size.y / 2;
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
@@ -708,11 +707,11 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
         s32 shapeId = readInt(values, "Shape");
         // calc distance between this object and Shape for the offset
         const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
-        const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
-        const Vector2i halflenTexels = otherDimsTexels / 2;
-        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+        const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
+        const Vector2i halflen = otherDims / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint).position;
 
-        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
+        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, level, false).position;
 
         const auto offset = otherTrans - thisTrans;
         Transform2D transOffset = entity.get<Transform2D>();
@@ -720,10 +719,10 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
             entity.add(ColliderOffset(offset));
             transOffset.position += offset;
         }
-        collider.setShape(AABB(transOffset, halflenTexels * PIXELS_PER_TEXEL));
+        collider.setShape(AABB(transOffset, halflen));
     } else {
         // there's no default shape object. Instead use the entity's dimensions
-        collider.setShape(AABB(entity.get<Transform2D>(), entityData.dimensionsTexels * PIXELS_PER_TEXEL / 2));
+        collider.setShape(AABB(entity.get<Transform2D>(), entityData.size / 2));
     }
     entity.add(collider);
 }
@@ -742,29 +741,28 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
         s32 shapeId = readInt(values, "Shape");
         // calc distance between this object and Shape for the offset
         const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
-        const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
-        const Vector2i halflenTexels = otherDimsTexels / 2;
-        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+        const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
+        const Vector2i halflen = otherDims / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint).position;
 
-        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
+        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, level, false).position;
 
         trigger.offset = otherTrans - thisTrans;
 
         if (shapeObj.contains("ellipse")) {
-            const s32 radius = std::max(halflenTexels.x, halflenTexels.y) * PIXELS_PER_TEXEL;
-            trigger.shape = Circle(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y * PIXELS_PER_TEXEL), radius);
+            const s32 radius = std::max(halflen.x, halflen.y);
+            trigger.shape = Circle(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflen.y), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflenTexels.y * PIXELS_PER_TEXEL),
-                                 halflenTexels * PIXELS_PER_TEXEL);
+            trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflen.y), halflen);
         }
     } else {
         if (allObjects[idToIndex.at(entityData.id).first].contains("ellipse")) {
-            const s32 radius = std::max(entityData.dimensionsTexels.x, entityData.dimensionsTexels.y) * PIXELS_PER_TEXEL / 2;
+            const s32 radius = std::max(entityData.size.x, entityData.size.y) / 2;
             trigger.shape = Circle(entity.get<Transform2D>(), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>(), entityData.dimensionsTexels * PIXELS_PER_TEXEL / 2);
+            trigger.shape = AABB(entity.get<Transform2D>(), entityData.size / 2);
         }
     }
 
@@ -797,10 +795,10 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
 
     // other isn't guaranteed to have been parsed. Calculate its transform manually
     const auto& targetObj = allObjects[idToIndex.at(targetId).first];
-    Vector2i otherDimsTexels = getObjectSize(targetObj);
-    const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDimsTexels, level, false).position;
+    Vector2i otherDims = getObjectSize(targetObj);
+    const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDims, level, false).position;
 
-    attach.offsetTexels = (thisPosition - otherPosition) / PIXELS_PER_TEXEL;
+    attach.offset = (thisPosition - otherPosition);
     entity.add(attach);
 }
 
@@ -848,16 +846,15 @@ Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& leve
     }
 
     tryReadVector2f(values, "dampingX", "dampingY", &follow.damping);
-    tryReadVector2i(values, "deadZoneX", "deadZoneY", &follow.deadZoneTexels);
-    tryReadVector2i(values, "lookAheadX", "lookAheadY", &follow.lookAheadTexels);
-    tryReadVector2i(values, "boundsHalflenX", "boundsHalflenX", &follow.boundsXTexels);
-    tryReadVector2i(values, "boundsHalflenY", "boundsHalflenY", &follow.boundsYTexels);
+    tryReadVector2i(values, "deadZoneX", "deadZoneY", &follow.deadZone);
+    tryReadVector2i(values, "lookAheadX", "lookAheadY", &follow.lookAhead);
+    tryReadVector2i(values, "boundsHalflenX", "boundsHalflenX", &follow.boundsX);
+    tryReadVector2i(values, "boundsHalflenY", "boundsHalflenY", &follow.boundsY);
 
     // convert bounds from local half length to world coords
-    Vector2i levelPosTexels = Vector2i(level.worldOffsetPixels.x / PIXELS_PER_TEXEL, level.worldOffsetPixels.y / PIXELS_PER_TEXEL) +
-                              Vector2i(level.sizeTexels.x / 2, level.sizeTexels.y / 2);
-    follow.boundsXTexels = {levelPosTexels.x - follow.boundsXTexels.x, levelPosTexels.x + follow.boundsXTexels.x};
-    follow.boundsYTexels = {levelPosTexels.y - follow.boundsYTexels.y, levelPosTexels.y + follow.boundsYTexels.y};
+    Vector2i levelPos = Vector2i(level.worldOffsetPixels.x, level.worldOffsetPixels.y) + Vector2i(level.size.x / 2, level.size.y / 2);
+    follow.boundsX = {levelPos.x - follow.boundsX.x, levelPos.x + follow.boundsX.x};
+    follow.boundsY = {levelPos.y - follow.boundsY.y, levelPos.y + follow.boundsY.y};
     return follow;
 }
 
@@ -945,7 +942,7 @@ void addComponentText(const nlohmann::json& values, const nlohmann::json& allObj
 
     tryReadString(values, "text", &text.text);
     tryReadBool(values, "center", &text.isCentered);
-    text.frameSizeTexels = entityData.dimensionsTexels;
+    text.frameSize = entityData.size;
     entity.add(text);
 }
 
@@ -954,7 +951,7 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData) {
     ParticleEmitter emitter = entity.has<ParticleEmitter>() ? entity.get<ParticleEmitter>() : DefaultParticleEmitter;
 
-    tryReadFloat(values, "maxSpeed", &emitter.maxSpeedTexelsPerSecond);
+    tryReadFloat(values, "maxSpeed", &emitter.maxSpeed);
     tryReadInt(values, "particlesPerSecond", &emitter.particlesPerSecond);
     tryReadVal(values, "Direction", &emitter.direction);
     tryReadVal(values, "Material", &emitter.material);
@@ -965,18 +962,18 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
         s32 shapeId = readInt(values, "Shape");
 
         // calc distance between this object and Shape for the offset
-        Vector2i halflenTexels = readVector2i(allObjects[idToIndex.at(shapeId).first], "width", "height") / 2;
-        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.dimensionsTexels, level, entityData.isPoint).position;
+        Vector2i halflen = readVector2i(allObjects[idToIndex.at(shapeId).first], "width", "height") / 2;
+        const Vector2i thisTrans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint).position;
 
         const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
-        const Vector2i otherDimsTexels = readVector2i(shapeObj, "width", "height");
-        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimsTexels, level, false).position;
+        const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
+        const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, level, false).position;
 
-        emitter.offsetTexels = otherTrans - thisTrans + Vector2i(0, halflenTexels.y);
-        emitter.aabbHalfTexels = halflenTexels;
+        emitter.offset = otherTrans - thisTrans + Vector2i(0, halflen.y);
+        emitter.aabbHalf = halflen;
     } else {
-        // emitter.offsetTexels = Vector2i(0, entityData.dimensionsTexels.y / 2);
-        emitter.aabbHalfTexels = entityData.dimensionsTexels / 2;
+        // emitter.offset = Vector2i(0, entityData.dimensions.y / 2);
+        emitter.aabbHalf = entityData.size / 2;
     }
 
     entity.add(emitter);
@@ -989,7 +986,7 @@ void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allOb
 
     tryReadFloat(values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
-    const Vector2i entityDimensions = entityData.dimensionsTexels;
+    const Vector2i entityDimensions = entityData.size;
     const Vector2i entityTrans = entity.get<Transform2D>().position;
 
     if (!values.contains("Target")) {

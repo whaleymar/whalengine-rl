@@ -4,8 +4,8 @@
 
 namespace whal {
 
-Transform2D Transform2D::texels(s32 x, s32 y) {
-    return Transform2D({x * PIXELS_PER_TEXEL, y * PIXELS_PER_TEXEL});
+Transform2D Transform2D::pixels(s32 x, s32 y) {
+    return Transform2D({x, y});
 }
 
 Transform2D Transform2D::tiles(s32 x, s32 y) {

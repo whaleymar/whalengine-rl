@@ -29,9 +29,9 @@ struct Level {
         bool isWorldEntryPoint = false;
         LevelLighting lighting = LevelLighting::Normal;
     };
-    std::string filepath;           // used for level comparisons
-    Vector2f worldPosOriginTexels;  // top left
-    Vector2f sizeTexels;
+    std::string filepath;     // used for level comparisons
+    Vector2f worldPosOrigin;  // top left
+    Vector2f size;
     LevelInfo lvlInfo;
 
     bool operator==(const Level& other) const { return filepath == other.filepath; }

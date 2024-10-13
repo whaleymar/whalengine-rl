@@ -8,8 +8,8 @@
 namespace whal {
 
 struct IEmitLight {
-    s32 radiusTexels = 1;
-    s32 heightTexels = 0;  // offset from transform
+    s32 radius = 1;
+    s32 heightOffset = 0;
     Color color = WHITE;
 };
 
@@ -23,7 +23,7 @@ struct PointLight : public IEmitLight {};
 
 // slower than pointlight, but more control over shape
 struct BoxLight : public IEmitLight {
-    Vector2i halfLenTexels;
+    Vector2i halfLen;
 };
 
 struct Radiance : public IEmitLight {};

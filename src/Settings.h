@@ -26,40 +26,29 @@ inline const char* WINDOW_TITLE = "whalengine";
 inline constexpr s32 FPS_TARGET = 60;
 
 // 3 window sizes I use:
-// Actual: The actual window size on a computer
-// Pixels: Window size that OpenGL uses
-// Texels: Window size in in-game texel units
+// Render: The actual window size on your screen
+// Pixels: Window size that the game uses
 
 // TODO should have a resizable window that triggers some event
 
-inline constexpr s32 WINDOW_WIDTH_ACTUAL = 1280;
-inline constexpr s32 WINDOW_HEIGHT_ACTUAL = 720;
+inline constexpr s32 WINDOW_WIDTH_RENDER = 1280;
+inline constexpr s32 WINDOW_HEIGHT_RENDER = 720;
 
-inline constexpr s32 WINDOW_WIDTH_PIXELS = 320;
-inline constexpr s32 WINDOW_HEIGHT_PIXELS = 180;
-inline constexpr s32 PIXELS_PER_TEXEL = 1;  // TODO deprecate this and the float version
+inline constexpr s32 WINDOW_WIDTH_GAME = 320;
+inline constexpr s32 WINDOW_HEIGHT_GAME = 180;
 
-inline constexpr s32 TEXELS_PER_TILE = 8;
+inline constexpr s32 PIXELS_PER_TILE = 8;
 
 // DERIVED STUFF
-inline constexpr f32 FWINDOW_WIDTH_ACTUAL = WINDOW_WIDTH_ACTUAL;
-inline constexpr f32 FWINDOW_HEIGHT_ACTUAL = WINDOW_HEIGHT_ACTUAL;
+inline constexpr f32 FWINDOW_WIDTH_RENDER = WINDOW_WIDTH_RENDER;
+inline constexpr f32 FWINDOW_HEIGHT_RENDER = WINDOW_HEIGHT_RENDER;
 
-inline constexpr f32 FWINDOW_WIDTH_PIXELS = WINDOW_WIDTH_PIXELS;
-inline constexpr f32 FWINDOW_HEIGHT_PIXELS = WINDOW_HEIGHT_PIXELS;
+inline constexpr f32 FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
+inline constexpr f32 FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
 
-inline constexpr f32 VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_ACTUAL / FWINDOW_WIDTH_PIXELS;
+inline constexpr f32 VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
 
-inline constexpr f32 FPIXELS_PER_TEXEL = PIXELS_PER_TEXEL;
-inline constexpr f32 FTEXELS_PER_TILE = TEXELS_PER_TILE;
-inline constexpr f32 FTEXELS_PER_PIXEL = 1 / FPIXELS_PER_TEXEL;
-inline constexpr s32 PIXELS_PER_TILE = PIXELS_PER_TEXEL * TEXELS_PER_TILE;
-inline constexpr f32 FPIXELS_PER_TILE = FPIXELS_PER_TEXEL * FTEXELS_PER_TILE;
-
-inline constexpr s32 WINDOW_WIDTH_TEXELS = WINDOW_WIDTH_PIXELS / PIXELS_PER_TEXEL;
-inline constexpr f32 FWINDOW_WIDTH_TEXELS = FWINDOW_WIDTH_PIXELS / FPIXELS_PER_TEXEL;
-inline constexpr s32 WINDOW_HEIGHT_TEXELS = WINDOW_HEIGHT_PIXELS / PIXELS_PER_TEXEL;
-inline constexpr f32 FWINDOW_HEIGHT_TEXELS = FWINDOW_HEIGHT_PIXELS / FPIXELS_PER_TEXEL;
+inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
 
 /////////////////////////////////////////////////////////////
 ////////////////////// FILE PATHS ///////////////////////////

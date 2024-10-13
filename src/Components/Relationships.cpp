@@ -7,7 +7,7 @@
 namespace whal {
 
 Attach::Attach(ecs::Entity target_, Vector2i offset_, DirectionParam directionParam_)
-    : targetEntityID(target_.id()), offsetTexels(offset_), directionParam(directionParam_) {}
+    : targetEntityID(target_.id()), offset(offset_), directionParam(directionParam_) {}
 
 void Attach::initTarget(ecs::Entity self) {
     // adds self as child of target

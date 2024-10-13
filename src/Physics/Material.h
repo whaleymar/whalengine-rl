@@ -40,7 +40,7 @@ struct MaterialData {
     bool isFlagSet(Flags flag) const { return (flags & flag) > 0; }
     f32 getDecayTime() const;
     Color getColor() const;
-    void addComponents(ecs::Entity entity, s32 halfLenTexels, Color color, f32 lifetimeMultiplier = 1.0) const;
+    void addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier = 1.0) const;
 
     const char* name;
     WorldMaterial id;

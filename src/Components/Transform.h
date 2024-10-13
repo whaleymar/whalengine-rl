@@ -77,7 +77,7 @@ struct Transform2D {
     Facing facing = Facing::Right;  // draw calls flipped if facing left
     bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
 
-    static Transform2D texels(s32 x, s32 y);
+    static Transform2D pixels(s32 x, s32 y);
     static Transform2D tiles(s32 x, s32 y);
 };
 

@@ -65,14 +65,14 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
     const Vector2f targetPosf = getTarget().position.as<f32>();
 
     const f32 segmentDistance = (targetPosf - startPosition).len();
-    const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in texels/sec, but pos is in pixels
+    const f32 expectedSegmentTime = segmentDistance / speed;
     f32 progress = ease(0.0f, 1.0f, curActionTime / expectedSegmentTime, getTarget().movement);
 
     if ((1 - progress) < SPEED_CURVE_EPSILON) {
         isVelocityUpdateNeeded = false;
     }
     const Vector2f newPos = lerp(startPosition, targetPosf, progress);
-    return (newPos - currentPosition.as<f32>()).len() * TEXELS_PER_TILE;  // idfk why this works
+    return (newPos - currentPosition.as<f32>()).len() * PIXELS_PER_TILE;  // idfk why this works
 }
 
 f32 RailsControl::getSpeedNew() {
@@ -80,7 +80,7 @@ f32 RailsControl::getSpeedNew() {
     // these can be calced once per segment
     const Vector2f targetPosf = getTarget().position.as<f32>();
     const f32 segmentDistance = (targetPosf - startPosition).len();
-    const f32 expectedSegmentTime = segmentDistance / (speed * FPIXELS_PER_TEXEL);  // speed is in tiles/sec, but pos is in pixels
+    const f32 expectedSegmentTime = segmentDistance / speed;  // speed is in tiles/sec, but pos is in pixels
     f32 newSpeed = ease(0.0f, speed, curActionTime / expectedSegmentTime, getTarget().movement);
 
     return newSpeed;
