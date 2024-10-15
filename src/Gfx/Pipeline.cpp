@@ -8,11 +8,34 @@
 
 namespace whal {
 
+Pipeline::Pipeline(Pipeline&& other)
+    : mShaders(std::move(other.mShaders)), mSwapBuffer(other.mSwapBuffer), mResolution(other.mResolution),
+      mIsSwapBufferLoaded(other.mIsSwapBufferLoaded) {
+    other.mIsSwapBufferLoaded = false;
+}
+
+Pipeline& Pipeline::operator=(Pipeline&& other) {
+    if (this != &other) {
+        if (mIsSwapBufferLoaded) {
+            UnloadRenderTexture(mSwapBuffer);
+        }
+        mShaders = std::move(other.mShaders);
+        mSwapBuffer = other.mSwapBuffer;
+        mResolution = other.mResolution;
+        mIsSwapBufferLoaded = other.mIsSwapBufferLoaded;
+
+        other.mIsSwapBufferLoaded = false;
+    }
+    return *this;
+}
+
 Pipeline::Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders)
-    : mShaders(shaders), mSwapBuffer(LoadRenderTexture(resolution.x, resolution.y)), mResolution(resolution) {}
+    : mShaders(shaders), mSwapBuffer(LoadRenderTexture(resolution.x, resolution.y)), mResolution(resolution), mIsSwapBufferLoaded(true) {}
 
 Pipeline::~Pipeline() {
-    UnloadRenderTexture(mSwapBuffer);
+    if (mIsSwapBufferLoaded) {
+        UnloadRenderTexture(mSwapBuffer);
+    }
 }
 
 void Pipeline::process(TextureID textureID) {

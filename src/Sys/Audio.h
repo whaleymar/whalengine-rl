@@ -126,35 +126,4 @@ private:
     bool mIsPlayingChannels = false;
 };
 
-class Sfx {
-public:
-    static Sfx& instance() {
-        static Sfx instance_;
-        return instance_;
-    }
-
-    inline static AudioClip GAMEOVER;
-    inline static AudioClip EXPLOSION;
-    inline static AudioClip FOOTSTEPTEST;
-    inline static AudioClip SHOTFIRED;
-    inline static AudioClip JUMP;
-    inline static AudioClip LAND;
-    inline static AudioClip DEATH;
-    inline static AudioClip MENU_MOVE;
-    inline static AudioClip MENU_SELECT;
-    inline static AudioClip MENU_OPEN;
-    inline static AudioClip MENU_CLOSE;
-    inline static AudioClip MAJOR_ITEM_GET;
-    inline static AudioClip SWITCH_FLIP;
-    inline static AudioClip DOOR_OPEN;
-
-    Corrade::Containers::Optional<Error> load();
-
-private:
-    Sfx() = default;
-    Sfx(Sfx& other) = delete;
-
-    inline static bool mIsLoaded = false;
-};
-
 }  // namespace whal

@@ -1,12 +1,12 @@
 #include "Shapes.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <raylib.h>
 
 #include "Components/Transform.h"
 #include "Physics/HitInfo.h"
-#include "Settings.h"
 
 namespace whal {
 
@@ -35,6 +35,41 @@ Vector2i centerToTrans(Vector2i center, Vector2i half, f32 rotationDegrees) {
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
 AABB::AABB(Transform2D transform, Vector2i half) : mCenter(transToCenter(transform, half)), mHalf(half) {}
+
+AABB AABB::fromPoints(Vector2i p1, Vector2i p2) {
+    Vector2i min;
+    Vector2i max;
+    if (p1.x < p2.x) {
+        min.x = p1.x;
+        max.x = p2.x;
+    } else {
+        min.x = p2.x;
+        max.x = p1.x;
+    }
+
+    if (p1.y < p2.y) {
+        min.y = p1.y;
+        max.y = p2.y;
+    } else {
+        min.y = p2.y;
+        max.y = p1.y;
+    }
+
+    Vector2i half = ((max - min).as<f32>() * 0.5).round();
+    return AABB(min + half, half);
+}
+
+AABB AABB::fromPoints(Vector2i p1, Vector2i p2, Vector2i p3) {
+    s32 minX = std::min({p1.x, p2.x, p3.x});
+    s32 maxX = std::max({p1.x, p2.x, p3.x});
+    s32 minY = std::min({p1.y, p2.y, p3.y});
+    s32 maxY = std::max({p1.y, p2.y, p3.y});
+    Vector2i minV(minX, minY);
+    Vector2i maxV(maxX, maxY);
+
+    Vector2i half = ((maxV - minV).as<f32>() * 0.5).round();
+    return AABB(minV + half, half);
+}
 
 void AABB::setPosition(Vector2i center) {
     mCenter = center;

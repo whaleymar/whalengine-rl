@@ -130,10 +130,6 @@ Corrade::Containers::Optional<Error> AudioPlayer::init() {
     mIsValid = true;
 
 #endif
-    // Init Sfx Clips
-    if (auto errOpt = Sfx::instance().load(); errOpt) {
-        return errOpt;
-    }
 
     return NULLOPT;
 }
@@ -541,86 +537,5 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel)
     }
 }
 #endif
-
-Corrade::Containers::Optional<Error> Sfx::load() {
-    if (mIsLoaded) {
-        print("Already loaded sound effects. Skipping reload");
-        return NULLOPT;
-    }
-    mIsLoaded = true;
-    Corrade::Containers::Optional<Error> errOpt;
-
-    const auto sfxPath = [](const char* fileName) { return whal_format("src/Game/data/audio/sfx/{}", fileName); };
-
-    errOpt = GAMEOVER.load(sfxPath("zeldaGameOverSound.mp3").c_str());
-    if (errOpt)
-        return errOpt;
-
-    errOpt = EXPLOSION.load(sfxPath("explosion.wav").c_str());
-    if (errOpt)
-        return errOpt;
-
-    errOpt = FOOTSTEPTEST.load(sfxPath("test-footstep.mp3").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = SHOTFIRED.load(sfxPath("shotfired.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = JUMP.load(sfxPath("jump.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = LAND.load(sfxPath("land.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = DEATH.load(sfxPath("death.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = MENU_MOVE.load(sfxPath("menu_move.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = MENU_OPEN.load(sfxPath("menu_open.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = MENU_CLOSE.load(sfxPath("menu_close.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = MENU_SELECT.load(sfxPath("menu_choose.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = SWITCH_FLIP.load(sfxPath("switch_flip.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = DOOR_OPEN.load(sfxPath("door_open.wav").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    errOpt = MAJOR_ITEM_GET.load(sfxPath("major_item_get.mp3").c_str());
-    if (errOpt) {
-        return errOpt;
-    }
-
-    return NULLOPT;
-}
 
 }  // namespace whal

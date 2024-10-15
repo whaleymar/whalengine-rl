@@ -11,6 +11,11 @@ enum class TextureID;
 
 class Pipeline {
 public:
+    Pipeline() = default;
+    Pipeline(const Pipeline&) = delete;
+    Pipeline& operator=(const Pipeline&) = delete;
+    Pipeline(Pipeline&& other);
+    Pipeline& operator=(Pipeline&&);
     Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders);
     ~Pipeline();
 
@@ -25,8 +30,9 @@ private:
     RenderTexture2D mSwapBuffer;
     RenderTexture2D mActiveBuffer;
     RenderTexture2D* mTargetTexture = nullptr;
-    const Vector2i mResolution;
+    Vector2i mResolution;
     bool mIsDrawingToSwapBuffer;
+    bool mIsSwapBufferLoaded = false;
 };
 
 }  // namespace whal

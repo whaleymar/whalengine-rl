@@ -15,8 +15,7 @@
 #include "Events/Events.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
-#include "Physics/Material.h"
-#include "Settings.h"
+#include "Physics/MaterialData.h"
 
 #include "Physics/HitInfo.h"
 #include "Sys/System.h"

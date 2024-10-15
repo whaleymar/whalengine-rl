@@ -6,7 +6,7 @@
 typedef struct RenderTexture RenderTexture;
 
 // Cursor
-void setCustomCursor(whal::Draw drawComponent);
+void setCustomCursor(whal::Sprite drawComponent);
 void setDefaultCursor();
 
 // Gfx

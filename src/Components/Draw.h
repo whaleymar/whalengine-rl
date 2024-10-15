@@ -48,15 +48,6 @@ inline Color lerp(Color first, Color second, f32 t) {
 
 }  // namespace Colors
 
-namespace PostProcessFlag {
-
-enum Flags : u32 {
-    Bloom = 1,
-    Glow = 1 << 1,
-};
-
-}
-
 // hard coded as rectangles until I need something else
 struct IDraw {
     IDraw(Depth depth_, Color color_, Vector2i frameSize, Shaders shader_);
@@ -101,8 +92,7 @@ struct DrawStraightLine {
     s32 length;
     Color color = WHITE;
     f32 thickness = 1.0;
-    f32 scaleLength = 1.0;
-    f32 scaleWidth = 1.0;
+    Vector2f scale = Vector2f::one;
     Depth depth = Depth::Level;
     bool isRotateAboutCenter = false;
     Shaders shader = Shaders::Default;
@@ -134,7 +124,6 @@ public:
     Vector2i getFrameSize() const;
     Depth getDepth() const;
     Shaders getShader() const;
-    bool isPostProcessFlagSet(PostProcessFlag::Flags flag) const { return (mPostProcessFlags & flag) > 0; }
     void setPostProcessFlags(u32 flags) { mPostProcessFlags = flags; }
     void setAlpha(u8 alpha);
     void setFrameSize(s32 x, s32 y);
@@ -162,61 +151,7 @@ struct DrawText {
     Vector2f scale = {1, 1};
     Vector2i frameSize;
     bool isCentered;
+    Depth depth = Depth::Debug;
 };
-
-struct DrawDebug : public DrawRect {};
-
-// component which lerps an entity's draw component's alpha from one value to another over time.
-// If an entity also has a light/radiance component, this affects their radius values as well
-struct FadeOut {
-    FadeOut(f32 time_ = 1.0, f32 startAlpha_ = 1.0, f32 endAlpha_ = 0.0)
-        : time(time_), startAlpha(startAlpha_), endAlpha(endAlpha_), secondsRemaining(time_) {}
-
-    f32 getIntensity() const;
-    u8 getAlpha() const;
-    bool isDone() const { return time <= 0; }
-
-    f32 time;
-    f32 startAlpha;  // between 0-1
-    f32 endAlpha;    // between 0-1
-
-    // managed:
-    f32 secondsRemaining;
-};
-
-// component which lerps an entity's draw component's color from one value to another over time.
-struct ColorLerp {
-    Color startColor;
-    Color endColor;
-    f32 duration;
-
-    ColorLerp(Color startColor_ = WHITE, Color endColor_ = Color(255, 255, 255, 0), f32 duration_ = 1.0)
-        : startColor(startColor_), endColor(endColor_), duration(duration_) {}
-    Color getColor() const { return Colors::lerp(endColor, startColor, mTimeRemaining / duration); }
-    void tick(f32 dt) { mTimeRemaining -= dt; }
-    bool isDone() const { return mTimeRemaining <= 0; }
-
-private:
-    f32 mTimeRemaining = duration;
-};
-
-struct ScaleLerp {
-    Vector2f startScale;
-    Vector2f endScale;
-    f32 duration;
-
-    ScaleLerp(Vector2f start = {1.0, 1.0}, Vector2f end = {0.0, 0.0}, f32 time = 1.0) : startScale(start), endScale(end), duration(time) {}
-    Vector2f getScale() const { return lerp(endScale, startScale, mTimeRemaining / duration); }
-    void tick(f32 dt) { mTimeRemaining -= dt; }
-    bool isDone() const { return mTimeRemaining <= 0; }
-
-private:
-    f32 mTimeRemaining = duration;
-};
-
-Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime,
-                                               Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
-Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime,
-                                             Corrade::Containers::Optional<Color> color = Corrade::Containers::NullOpt);
 
 }  // namespace whal

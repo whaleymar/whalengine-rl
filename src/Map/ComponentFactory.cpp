@@ -1,5 +1,6 @@
 #include "ComponentFactory.h"
 
+#include "Components/GfxFlags.h"
 #include "CorradeOptional.h"
 #include "json.hpp"
 
@@ -80,9 +81,6 @@ static void addComponentAnimator(const nlohmann::json& values, const nlohmann::j
 static void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                          ecs::Entity entity, LayerData layerData);
-static void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
-                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                                const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 static void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects,
                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                               const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -122,7 +120,6 @@ static Jumper DefaultJumper;
 static DrawRect DefaultDraw;
 static Sprite DefaultSprite;
 static Sprite DefaultAnimatedSprite;
-static FadeOut DefaultFadeout;
 static Follow DefaultFollow;
 static Attach DefaultAttach;
 static PointLight DefaultPointLight;
@@ -140,7 +137,6 @@ static const NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_Sprite_NoAnim", addComponentSprite},
     {"Component_Sprite_Animated", addComponentAnimator},
     {"Component_DrawLayer_TileOnly", addDrawLayer},
-    {"Component_FadeOut", addComponentFadeout},
     {"Component_PointLight", addComponentLight},
     {"Component_Radiance", addComponentRadiance},
     {"Component_Lifetime", addComponentLifetime},
@@ -302,21 +298,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "seconds") {
                 DefaultLifeTime.secondsRemaining = member[KEY_VALUE];
-            } else {
-                print("Skipping member ", memberName, "for", componentName);
-            }
-        }
-
-    } else if (componentName == "Component_FadeOut") {
-        DefaultFadeout = FadeOut();
-        for (const auto& member : property[KEY_MEMBERS]) {
-            std::string memberName = member[KEY_NAME];
-            if (memberName == "seconds") {
-                DefaultFadeout.time = member[KEY_VALUE];
-            } else if (memberName == "startAlpha") {
-                DefaultFadeout.startAlpha = member[KEY_VALUE];
-            } else if (memberName == "endAlpha") {
-                DefaultFadeout.endAlpha = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -516,9 +497,9 @@ static u32 parseGfxEffects(const nlohmann::json& values) {
     if (values.contains("Layer")) {
         std::string textureLayer = values["Layer"];
         if (textureLayer == "Bloom") {
-            flags |= PostProcessFlag::Bloom;
+            flags |= GfxFlags::Bloom;
         } else if (textureLayer == "Glow") {
-            flags |= PostProcessFlag::Glow;
+            flags |= GfxFlags::Glow;
         }
     }
     return flags;
@@ -527,7 +508,7 @@ static u32 parseGfxEffects(const nlohmann::json& values) {
 void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects,
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
-    DrawRect draw = entity.has<Draw>() ? entity.get<Draw>().getRect() : DefaultDraw;
+    DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DefaultDraw;
     draw.depth = layerData.depth;
     draw.setFrameSize(entityData.size);
 
@@ -540,13 +521,14 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
     }
 
     u32 flags = parseGfxEffects(values);
-    entity.add(Draw(draw, flags));
+    entity.add(GfxFlags{flags});
+    entity.add(draw);
 }
 
 void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allObjects,
                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
-    Sprite sprite = entity.has<Draw>() ? entity.get<Draw>().getSprite() : DefaultSprite;
+    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : DefaultSprite;
 
     s32 rotationDegrees;
     if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
@@ -564,6 +546,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     }
 
     u32 flags = parseGfxEffects(values);
+    entity.add(GfxFlags{flags});
 
     std::string spritePath = "";
     if (values.contains("Sprite")) {
@@ -574,20 +557,16 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (frameOpt) {
         sprite.depth = layerData.depth;
         sprite.setFrame(*frameOpt);
-        entity.add(Draw(sprite, flags));
+        entity.add(sprite);
     } else {
-        print("Coudn't find frame for sprite:", spritePath);
-        // add draw instead
-        DrawRect draw = DefaultDraw;
-        draw.setFrameSize(entityData.size);
-        entity.add(Draw(draw, flags));
+        print("Error: Coudn't find frame for sprite:", spritePath);
     }
 }
 
 void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& allObjects,
                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                           ecs::Entity entity, LayerData layerData) {
-    Sprite sprite = entity.has<Draw>() ? entity.get<Draw>().getSprite() : DefaultAnimatedSprite;
+    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : DefaultAnimatedSprite;
     std::string animatorName = readString(values, "Animator");
     Animator animator = getAnimator(animatorName.c_str());
     entity.add(animator);
@@ -609,33 +588,23 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     }
 
     u32 flags = parseGfxEffects(values);
+    entity.add(GfxFlags{flags});
 
     sprite.depth = layerData.depth;
-    entity.add(Draw(sprite, flags));
+    entity.add(sprite);
 }
 
 // this is only intended to be used on tiles (which already have a sprite), not objects
 void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
                   const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                   ecs::Entity entity, LayerData layerData) {
-    if (!entity.has<Draw>()) {
+    if (!entity.has<Sprite>()) {
         print("can't add draw layer for entity", entityData.id, "without Draw component");
         return;
     }
 
     u32 flags = parseGfxEffects(values);
-    entity.get<Draw>().setPostProcessFlags(flags);
-}
-
-void addComponentFadeout(const nlohmann::json& values, const nlohmann::json& allObjects,
-                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                         ecs::Entity entity, LayerData layerData) {
-    FadeOut fadeout = entity.has<FadeOut>() ? entity.get<FadeOut>() : DefaultFadeout;
-    tryReadFloat(values, "seconds", &fadeout.time);
-    tryReadFloat(values, "startAlpha", &fadeout.startAlpha);
-    tryReadFloat(values, "endAlpha", &fadeout.endAlpha);
-
-    entity.add(fadeout);
+    entity.add(GfxFlags{flags});
 }
 
 void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -923,6 +892,11 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
 
     if (tryReadBool(values, "Invisible", &hasTag) && hasTag) {
         entity.add<Invisible>();
+        hasTag = false;
+    }
+
+    if (tryReadBool(values, "BlocksLight", &hasTag) && hasTag) {
+        entity.add<BlocksLight>();
         hasTag = false;
     }
 }

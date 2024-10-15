@@ -11,10 +11,10 @@
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
 - animation factory
+- Settings.h -> put in game? Or don't define anything && put the .cpp file in Game/ ?
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
-- BlocksLight
 - dashed line
 - parallax factor
 
@@ -25,19 +25,20 @@
 
 ## Tweens
 - should be able to cancel them
+    - each tween would need a reference to its entity
 
 ## Gfx 
-- like godot, should have tag components for {Blocks light, Blocks AI pathing}
-- honestly, some entities just need their own draw method. maybe can do this with CRTP?
+- like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
+- (DONE) honestly, some entities just need their own draw method. maybe can do this with CRTP?
 - draw with full resolution so rotations look better
     - (DONE) make camera position not follow the pixel grid 
-    - (done-ish) it is SLOW
-        - fix PP
+    - (DONE) it is SLOW
     - (DONE) debug colliders
     - (DONE) re-enable lighting (layers not drawn && shadowlight system is stubbed)
     - (DONE) make things with PrecisePosition be drawn at their... precise position (low priority)
     - (DONE) shit load of cleanup/todos
-    - go through and rename xyzTexels and xyzPixels to xyz
+    - (DONE) go through and rename xyzTexels and xyzPixels to xyz
+- bloom shader is a little broken (reloading makes it look wildly different)
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light

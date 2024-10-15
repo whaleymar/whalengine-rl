@@ -224,8 +224,7 @@ void Draw::setScale(Vector2f scale) {
     case DrawTag::BezierQuad:
         break;
     case DrawTag::Line:
-        mLine.scaleLength = scale.x;
-        mLine.scaleWidth = scale.y;
+        mLine.scale = scale;
         break;
     }
 }
@@ -238,72 +237,8 @@ Vector2f Draw::getScale() const {
         return mSprite.scale;
     case DrawTag::BezierQuad:
     case DrawTag::Line:
-        return Vector2f(mLine.scaleLength, mLine.scaleWidth);
+        return mLine.scale;
     }
-}
-
-f32 FadeOut::getIntensity() const {
-    f32 t = secondsRemaining / time;
-    if (secondsRemaining <= 0) {
-        t = 0;
-    }
-    return t;
-}
-
-u8 FadeOut::getAlpha() const {
-    f32 t = getIntensity();
-    return static_cast<u8>(clamp(255.0f * myLerp(startAlpha, endAlpha, 1 - t), 0.0f, 255.0f));
-}
-
-Expected<ecs::Entity> makeSilhouetteFromSprite(ecs::Entity entity, f32 lifetime, Corrade::Containers::Optional<Color> color) {
-    auto eEntity = System::world.entity();
-    if (!eEntity.isExpected()) {
-        return eEntity.error();
-    }
-
-    auto sil = eEntity.value();
-    auto _ = ecs::DeferActivate(sil);
-
-    sil.add(entity.get<Transform2D>());
-    auto sprite = entity.get<Draw>().getSprite();
-    if (color) {
-        sprite.color = *color;
-    }
-    sprite.shader = Shaders::Silhouette;
-    sprite.depth = Depth::BehindPlayer;
-    sil.add(Draw(sprite));
-
-    sil.add(FadeOut(lifetime));
-    sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(sprite.getFrameSize().x, sprite.getFrameSize().y), sprite.getFrameSize().y / 2});
-
-    return sil;
-}
-
-Expected<ecs::Entity> makeSilhouetteFromDraw(ecs::Entity entity, f32 lifetime, Corrade::Containers::Optional<Color> color) {
-    auto eEntity = System::world.entity();
-    if (!eEntity.isExpected()) {
-        return eEntity.error();
-    }
-
-    auto sil = eEntity.value();
-    auto _ = ecs::DeferActivate(sil);
-
-    sil.add(entity.get<Transform2D>());
-    auto draw = entity.get<Draw>().getRect();
-    if (color) {
-        draw.color = *color;
-    }
-    draw.shader = Shaders::Silhouette;
-    draw.depth = Depth::BehindPlayer;
-    sil.add(Draw(draw));
-
-    sil.add(FadeOut(lifetime));
-    sil.add(Lifetime(lifetime));
-    sil.add(PointLight{std::max(draw.getFrameSize().x, draw.getFrameSize().y), draw.getFrameSize().y / 2});
-    sil.add(Radiance({std::max(draw.getFrameSize().x, draw.getFrameSize().y), draw.getFrameSize().y / 2, draw.color}));
-
-    return sil;
 }
 
 }  // namespace whal

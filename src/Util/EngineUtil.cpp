@@ -13,7 +13,7 @@ using namespace whal;
 static ecs::Entity sCursorEntity;
 static bool isCursorAlive = false;
 
-void setCustomCursor(Draw drawComponent) {
+void setCustomCursor(Sprite drawComponent) {
     if (!isCursorAlive) {
         sCursorEntity = System::world.entity().value();
         isCursorAlive = true;
@@ -23,14 +23,14 @@ void setCustomCursor(Draw drawComponent) {
             Vector2i position = getMouseWorldPosition();
 
             // correct for cursor height
-            const auto height = self.get<Draw>().getFrameSize().y;
+            const auto height = self.get<Sprite>().getFrameSize().y;
             position -= Vector2i(0, height / 2);
 
             // update transform
             self.get<Transform2D>().position = position;
         }});
-    } else if (sCursorEntity.has<Draw>()) {
-        sCursorEntity.remove<Draw>();
+    } else if (sCursorEntity.has<Sprite>()) {
+        sCursorEntity.remove<Sprite>();
     }
 
     sCursorEntity.add(drawComponent);

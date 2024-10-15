@@ -23,19 +23,23 @@ out vec4 finalColor;
 // const int BLUR_EFFECT    = 8;  // 1000
 
 // BLOOM
-const float samples = 13.;          // finalColors per axis; higher = bigger glow, worse performance. MIN 3
+// const float samples = 13.;          // finalColors per axis; higher = bigger glow, worse performance. MIN 3
+const float samples = 5.;
 const float quality = 1.;          // Defines size factor: Lower = smaller glow, better quality
 const float maxAlpha = 1.1; // can set this below 1. if i only want to bloom the outside of the object
 
 vec4 bloom() {
     vec4 sum = vec4(0.);
     vec2 sizeFactor = vec2(1)/iResolution*quality;
+    // vec2 sizeFactor = vec2(1)/iResolution*quality * 0.125;
     vec4 source = texture(iMainTex, fragTexCoord);
 
     // Texel color fetching from texture sampler
     if (source.a >= maxAlpha) {
         return vec4(0.);
     } 
+
+    float nSamples = 0.;
 
     const int range = int(samples - 1.)/2;
     for (int x = -range; x <= range; x++)
@@ -50,20 +54,19 @@ vec4 bloom() {
             if (mask.r > 0.) { // r == bloom
                 vec4 sampleCol = texture(iMainTex, coord);
                 sum += sampleCol;
+                nSamples += 1.;
             }
         }
     }
 
     // Calculate final fragment color
-
-    vec4 toAdd = (sum/(samples*samples));
-    // toAdd = pow(toAdd, vec4(0.5));
-
-    // finalColor = (toAdd + source)*colDiffuse;
-    // finalColor = (toAdd + finalSourceCol)*colDiffuse;
+    // vec4 toAdd = (sum/(samples*samples));
+    vec4 toAdd = (sum/(samples*samples * 0.25));
+    // float alpha = 0.4;
+    float alpha = 1 - clamp(nSamples /(samples * samples), 0., 0.4) ;
 
     // just include the stuff to add, and let the normal part of the texture be drawn separately
-    return toAdd * colDiffuse;
+    return toAdd * colDiffuse * vec4(1., 1., 1., alpha);
 }
 
 // GLOW 
@@ -125,6 +128,7 @@ void main() {
     // r == bloom 
     // g == glow
     // b == occlusion (not used in this shader)
+
     finalColor += bloom();
     finalColor += glow();
 }
