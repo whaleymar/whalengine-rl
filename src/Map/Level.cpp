@@ -1,5 +1,6 @@
 #include "Level.h"
 
+#include "Components/Tags.h"
 #include "IGame.h"
 #include "Settings.h"
 
@@ -223,17 +224,23 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                             print(eEntity.error());
                             continue;
                         }
+                        ecs::Entity e = *eEntity;
                         const TileSet& tset = getTileSet(map, blockID);
                         // TODO collider position not matching rotation -- rotateAboutCenter should be a transform component and then change that AABB
                         // constructor that takes transforms
                         s32 tileID = blockID - tset.firstgid;
-                        tset.addTileComponents(*eEntity, tileID, lvl, layer.metadata, mapPosition);
+                        tset.addTileComponents(e, tileID, lvl, layer.metadata, mapPosition);
 
-                        (*eEntity).activate();
+                        // For simplicity, tiles with collision also block light
+                        if (e.has<Collider>()) {
+                            e.add<BlocksLight>();
+                        }
+
+                        e.activate();
                         // if ((*eEntity).has<Collider>()) {
                         //     collisionColumn.push_back(1);
                         // }
-                        lvl.childEntities.insert(*eEntity);
+                        lvl.childEntities.insert(e);
                     }
                 } else {
                     // collisionColumn.push_back(0);

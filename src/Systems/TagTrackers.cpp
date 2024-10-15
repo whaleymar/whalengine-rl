@@ -81,6 +81,7 @@ Vector2i getCameraPosition() {
     return lastPos;
 }
 
+// TODO I don't think I need this jank now that I'm rendering at full resolution
 Vector2f getCameraPositionPrecise() {
     static Vector2f lastPos;
     auto eOpt = getCamera();

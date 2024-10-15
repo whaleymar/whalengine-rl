@@ -38,7 +38,6 @@ DECLARE_COMPONENT(whal::RigidBody);
 DECLARE_COMPONENT(whal::PlayerControl);
 DECLARE_COMPONENT(whal::Jumper);
 DECLARE_COMPONENT(whal::Draw);
-DECLARE_COMPONENT(whal::FadeOut);
 DECLARE_COMPONENT(whal::Follow);
 DECLARE_COMPONENT(whal::Attach);
 DECLARE_COMPONENT(whal::PointLight);

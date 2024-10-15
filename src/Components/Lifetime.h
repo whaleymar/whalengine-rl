@@ -15,9 +15,4 @@ struct Lifetime {
     Callback onDeath = nullptr;
 };
 
-struct DieWhenSpeedBelow {
-    f32 minSpeed;
-    ColorLerp colorFade;
-};
-
 }  // namespace whal

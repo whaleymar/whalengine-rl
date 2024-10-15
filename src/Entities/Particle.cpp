@@ -10,7 +10,7 @@
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
 
-#include "Physics/Material.h"
+#include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
 
 #include "Settings.h"
@@ -56,13 +56,14 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add(PrecisePosition::fromTrans(transform));
     particle.add<Particle>();
     particle.add<Velocity>();
-    materialData.addComponents(particle, 1, color, lifetimeMultiplier);
 
     if (materialData.particleShape == Draw::DrawTag::Line) {
-        particle.add(Draw(DrawStraightLine(3, color, 1.0, 1.0, 1.0, depth, true)));
+        particle.add(DrawStraightLine(3, color, 1.0, {1.0, 1.0}, depth, true));
+        materialData.addComponents<DrawStraightLine>(particle, 1, color, lifetimeMultiplier);
         particle.add<AngularVelocity>();
     } else {
-        particle.add(Draw(DrawRect(color, Vector2i(1, 1), depth)));
+        particle.add(DrawRect(color, Vector2i(1, 1), depth));
+        materialData.addComponents<DrawRect>(particle, 1, color, lifetimeMultiplier);
     }
 
     return particle;
@@ -77,7 +78,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     auto particle = expected.value();
 
     auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
-    particle.add(Draw(Sprite(depth, *frame)));
+    particle.add(Sprite(depth, *frame));
 
     s32 radius = PIXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});

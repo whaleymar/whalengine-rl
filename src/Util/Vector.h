@@ -8,7 +8,7 @@
 
 typedef struct Vector2 Vector2;
 
-template <Number T>
+template <typename T>
 struct Vector2T {
     T x, y;
 
@@ -18,11 +18,12 @@ struct Vector2T {
 
     Vector2T(const Vector2T<T>& other) : x(other.x), y(other.y) {}
 
-    static inline Vector2T<T> unitUp = {0, 1};
-    static inline Vector2T<T> unitDown = {0, -1};
+    static inline Vector2T<T> unitUp{0, 1};
+    static inline Vector2T<T> unitDown{0, -1};
     static inline Vector2T<T> unitLeft{-1, 0};
     static inline Vector2T<T> unitRight{1, 0};
     static inline Vector2T<T> zero{0, 0};
+    static inline Vector2T<T> one{1, 1};
 
     inline Vector2T<T>& operator=(const Vector2T<T>& other) {
         x = other.x;

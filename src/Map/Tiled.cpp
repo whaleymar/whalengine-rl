@@ -14,7 +14,6 @@
 #include "Gfx/Texture.h"
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
-#include "Physics/Material.h"
 #include "Sys/System.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
@@ -394,7 +393,7 @@ void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
     Transform2D trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
     entity.add(trans);
 
-    entity.add(Draw(Sprite(layerData.depth, frame)));
+    entity.add(Sprite(layerData.depth, frame));
 }
 
 TileSet parseTileset(const std::string& basename, s32 firstgid) {

@@ -28,6 +28,7 @@ class Tween {
 public:
     using ValueGetter = T& (*)(ecs::Entity);
     using TweenCallback = void (*)(ecs::Entity, const Tween<T>&);
+    using BoolTweenCallback = bool (*)(ecs::Entity, const Tween<T>&);
 
     Tween(T target, f32 duration, ValueGetter getter) : mDuration(duration), mTweenValue(target), mGetter(getter) {}
 
@@ -49,6 +50,7 @@ public:
             mElapsedTime += dt;
             return;
         }
+        mIsStarted = true;
 
         if (mGetter) {
             mGetter(entity) = getValue();
@@ -73,6 +75,12 @@ public:
         }
     }
 
+    void onStart(ecs::Entity entity) {
+        if (mOnStart) {
+            mOnStart(entity, *this);
+        }
+    }
+
     void onEnd(ecs::Entity entity) {
         if (mOnEnd) {
             mOnEnd(entity, *this);
@@ -85,7 +93,13 @@ public:
         }
     }
 
+    bool isStarted() const { return mIsStarted; }
     bool isDone() const { return mIsDone; }
+
+    Tween<T>& setOnStart(TweenCallback onStart_) {
+        mOnStart = onStart_;
+        return *this;
+    }
 
     Tween<T>& setOnEnd(TweenCallback onEnd_) {
         mOnEnd = onEnd_;
@@ -95,6 +109,22 @@ public:
     Tween<T>& setOnUpdate(TweenCallback onUpdate_) {
         mOnUpdate = onUpdate_;
         return *this;
+    }
+
+    Tween<T>& setDelayCondition(BoolTweenCallback delayCB) {
+        mDelayCallback = delayCB;
+        return *this;
+    }
+
+    bool isDelayCondition(ecs::Entity entity) {
+        if (mDelayCallback == nullptr) {
+            return false;
+        }
+        bool isDelayed = mDelayCallback(entity, *this);
+        if (!isDelayed) {
+            mDelayCallback = nullptr;
+        }
+        return isDelayed;
     }
 
     Tween<T>& setDelay(f32 delay = 0.0) {
@@ -162,10 +192,13 @@ private:
     T mEndValue;
     T mTweenValue;
     ValueGetter mGetter;
+    TweenCallback mOnStart = nullptr;
     TweenCallback mOnEnd = nullptr;
     TweenCallback mOnUpdate = nullptr;
+    BoolTweenCallback mDelayCallback = nullptr;
     u8 mFlags = TweenParams::None;
     bool mIsDone = false;
+    bool mIsStarted = false;
 };
 
 typedef Tween<f32> TweenFloat;

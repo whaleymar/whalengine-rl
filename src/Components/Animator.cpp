@@ -27,13 +27,10 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
 }
 
 bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
-    Draw& draw = entity.get<Draw>();
+    Sprite& sprite = entity.get<Sprite>();
 
-    if (draw.getTag() == Draw::DrawTag::Sprite) {
-        Sprite& sprite = draw.getSprite();
-        const f32 unsquishStep = System::dt();
-        sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
-    }
+    const f32 unsquishStep = System::dt();
+    sprite.scale = {approach(sprite.scale.x, 1.0, unsquishStep), approach(sprite.scale.y, 1.0, unsquishStep)};
     return basicAnimation(animator, entity);
 }
 

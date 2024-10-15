@@ -9,13 +9,21 @@ void TweenManager::onEvent(DeathEvent, ecs::Entity entity) {
 template <typename T>
 static void updateTweens(ecs::Entity entity, std::vector<Tween<T>>& tweens) {
     for (auto it = tweens.begin(); it != tweens.end();) {
-        (*it).tick(entity);
-        if ((*it).isDone()) {
-            (*it).onEnd(entity);
-            it = tweens.erase(it);
-        } else {
-            (*it).onUpdate(entity);
+        if (it->isDelayCondition(entity)) {
             ++it;
+        } else {
+            bool isStarted = it->isStarted();
+            it->tick(entity);
+            if (!isStarted && it->isStarted()) {
+                it->onStart(entity);
+            }
+            if (it->isDone()) {
+                it->onEnd(entity);
+                it = tweens.erase(it);
+            } else {
+                it->onUpdate(entity);
+                ++it;
+            }
         }
     }
 }

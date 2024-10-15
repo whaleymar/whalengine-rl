@@ -4,7 +4,6 @@
 #include <raylib.h>
 
 #include "Components/Draw.h"
-#include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
@@ -83,17 +82,9 @@ void PointLightSystem::drawEntities() {
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
-        // for entities with lifetimes, fade out in last moments
-        constexpr f32 defaultFadeTime = 0.25f;
-        f32 intensity = 1.0;
+        // RESEARCH may want to put this as a param in the component
+        constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
-        if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = fadeoutOpt->getIntensity();
-        } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if (lifetimeOpt->secondsRemaining < defaultFadeTime) {
-                intensity = lifetimeOpt->secondsRemaining / defaultFadeTime;
-            }
-        }
 
         color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
@@ -136,18 +127,9 @@ void BoxLightSystem::drawEntities() {
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
-        f32 intensity = 1.0;
+        // RESEARCH may want to put this as a param in the component
+        constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
-
-        // for entities with lifetimes, fade out in last moments
-        constexpr f32 defaultFadeTime = 0.25f;
-        if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = fadeoutOpt->getIntensity();
-        } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if (lifetimeOpt->secondsRemaining < defaultFadeTime) {
-                intensity = lifetimeOpt->secondsRemaining / defaultFadeTime;
-            }
-        }
 
         // apply fading
         color = Colors::lerp(COLOR_AMBIENT, color, intensity);
@@ -201,16 +183,9 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
 
-        // for entities with lifetimes, fade out in last moments
-        f32 intensity = 1.0;
+        // RESEARCH may want to add this as a param in the component
+        constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
-        if (auto fadeoutOpt = entity.tryGet<FadeOut>(); fadeoutOpt) {
-            intensity = fadeoutOpt->getIntensity();
-        } else if (auto lifetimeOpt = entity.tryGet<Lifetime>(); lifetimeOpt) {
-            if (lifetimeOpt->secondsRemaining < 0.25) {
-                intensity = lifetimeOpt->secondsRemaining / 0.25;
-            }
-        }
         radius = ease(0, radius, intensity, Ease::OutQuad);
 
         Vector2 screenPosV(screenPosition.x, screenPosition.y);

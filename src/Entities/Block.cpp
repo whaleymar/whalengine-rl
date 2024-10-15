@@ -19,7 +19,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform) {
     auto block = expected.value();
 
     block.add(transform);
-    block.add(Draw(DrawRect()));
+    block.add(DrawRect());
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
@@ -37,7 +37,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, DrawRect rect) {
     auto block = expected.value();
 
     block.add(transform);
-    block.add(Draw(rect));
+    block.add(rect);
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
@@ -55,7 +55,7 @@ Expected<ecs::Entity> createBlock(Transform2D transform, Sprite sprite, WorldMat
     auto block = expected.value();
 
     block.add(transform);
-    block.add(Draw(sprite));
+    block.add(sprite);
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
@@ -72,7 +72,7 @@ Expected<ecs::Entity> createDecal(Transform2D transform, Sprite sprite, bool act
     auto decal = expected.value();
 
     decal.add(transform);
-    decal.add(Draw(sprite));
+    decal.add(sprite);
     if (activate) {
         decal.activate();
     }

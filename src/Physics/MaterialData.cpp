@@ -1,13 +1,8 @@
-#include "Material.h"
+#include "MaterialData.h"
 
 #include <cmath>
 
-#include "Components/Collision.h"
 #include "Components/Draw.h"
-#include "Components/Lifetime.h"
-#include "Components/Light.h"
-#include "Components/RigidBody.h"
-#include "Components/Transform.h"
 #include "Physics/Shapes.h"
 #include "Sys/System.h"
 
@@ -27,50 +22,6 @@ f32 MaterialData::getDecayTime() const {
 
 Color MaterialData::getColor() const {
     return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
-}
-
-void MaterialData::addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier) const {
-    const f32 lifetime = getDecayTime() * lifetimeMultiplier;
-    entity.add(Lifetime(lifetime));
-
-    if (isFlagSet(Collision)) {
-        auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLen, halfLen}));
-        collider.setMaterial(id);
-        entity.add(collider);
-    }
-
-    if (isFlagSet(RigidBodyFlag)) {
-        auto rigidBody = RigidBody();
-        rigidBody.gravityMultiplier = gravityCoef;
-        rigidBody.frictionMultiplier = frictionCoefs;
-        entity.add(rigidBody);
-    }
-
-    if (isFlagSet(Light)) {
-        entity.add(PointLight{halfLen * 2});
-    }
-
-    if (isFlagSet(DecaySpeed)) {
-        // want to add this one after some delay, in case particle gains speed in first few frames (like from gravity or something)
-        System::schedule.eventFlow({entity}).addWait(0.5).add(
-            [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, Color color, Color fadeColor) {
-                e.add(DieWhenSpeedBelow(minSpeedTPS, ColorLerp(color, fadeColor, decaySeconds)));
-            },
-            entity, decayParams.decaySpeed.minSpeedTPS, decayParams.decaySpeed.decaySeconds, color, fadeColor);
-    }
-
-    if (isFlagSet(FadeOutFlag)) {
-        // entity.add(FadeOut(lifetime));
-        entity.add(ColorLerp(color, fadeColor, lifetime));
-    }
-
-    if (isFlagSet(RadianceFlag)) {
-        entity.add(Radiance{2, 0, color});
-    }
-
-    if (startScale != 1.0) {
-        entity.add(ScaleLerp(Vector2f(1.0, 1.0) * startScale, {1.0, 1.0}, lifetime / 2));
-    }
 }
 
 static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",

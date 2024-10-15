@@ -5,6 +5,7 @@
 namespace whal {
 
 // any changes to this needs to be mirrored in the Tiled project
+// TODO add UI depth (before debug)
 enum class Depth : u8 {
     BackgroundStatic,
     BackgroundFar,
