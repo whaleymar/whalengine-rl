@@ -32,13 +32,19 @@
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
 - rotations: some iRender stuff doesn't do it, others should rotate about their center (or some arbitrary point)
 - bloom shader is a little broken (reloading makes it look wildly different)
+    - kinda want to get rid of my fake bloom entirely and implement HDR + tone mapping
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
     - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
 - player sprite should NOT affect shadows!!!
 
+## Web 
+- getting mouse position does not work
+
 ## Map 
+- would like to do away with the default component function if possible
+- the process of adding a new component is still annoying. Using a reflection library to improve that would be nice.
 - things not on the tile grid have their collision/trigger boxes messed up
 - respawn map objects
 - object layers

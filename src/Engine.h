@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 #include <type_traits>
+
 #include "Components/Collision.h"
 #include "IGame.h"
 #include "Map/Level.h"
@@ -12,15 +13,16 @@
 #include "Sys/System.h"
 #include "Util/Print.h"
 
+// WEB BUILD STUFF
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+// /WEB
+
 namespace whal {
 
-template <typename T>
-concept Singleton = requires {
-    { T::instance() } -> std::same_as<T&>;  // Checks that T::instance() returns T&
-};
-
 template <class T>
-    requires std::is_base_of_v<IGame, T> && Singleton<T>
+    requires std::is_base_of_v<IGame, T> && Singleton<T> && StaticUpdate<T>
 class Engine {
 public:
     bool start() {
@@ -63,7 +65,17 @@ public:
         return T::instance().start();
     }
 
-    void mainloop() { T::instance().mainloop(); }
+    void mainloop() {
+#ifdef __EMSCRIPTEN__
+        EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
+        System::time.sleep(1);
+        emscripten_set_main_loop(T::update, 0, 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
+#else
+        while (!WindowShouldClose() && !System::isQuit()) {
+            T::update();
+        }
+#endif
+    }
 
     void end() {
         // GAME END

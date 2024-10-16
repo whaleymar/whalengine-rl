@@ -10,7 +10,6 @@
 #include "whalECS/src/Expected.h"
 
 #include "Gfx/Depth.h"
-#include "Physics/Material.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -21,6 +20,10 @@ struct TileSet;
 struct Scene;
 struct Transform2D;
 struct ActiveLevel;
+
+namespace ecs {
+class Entity;
+}
 
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
