@@ -69,7 +69,7 @@ static const MaterialData S_MATERIAL_GRASS = {
     .gravityCoef = 0.0,
     .frictionCoefs = {0.0, 0.5},
     .decayParams = {.decayTime = {.decaySecondsMin = 5.0, .decaySecondsMax = 10.0}},
-    .particleShape = Draw::DrawTag::Line,
+    .particleShape = DrawTag::Line,
 };
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",

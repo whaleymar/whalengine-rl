@@ -60,8 +60,6 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
     // I feel like I should be using deltatime but it breaks things
     // but idk it Just Works
 
-    // TODO use derivates of easein/out functions
-
     const Vector2f targetPosf = getTarget().position.as<f32>();
 
     const f32 segmentDistance = (targetPosf - startPosition).len();
@@ -73,17 +71,6 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
     }
     const Vector2f newPos = lerp(startPosition, targetPosf, progress);
     return (newPos - currentPosition.as<f32>()).len() * PIXELS_PER_TILE;  // idfk why this works
-}
-
-f32 RailsControl::getSpeedNew() {
-    // this isn't working for some reason
-    // these can be calced once per segment
-    const Vector2f targetPosf = getTarget().position.as<f32>();
-    const f32 segmentDistance = (targetPosf - startPosition).len();
-    const f32 expectedSegmentTime = segmentDistance / speed;  // speed is in tiles/sec, but pos is in pixels
-    f32 newSpeed = ease(0.0f, speed, curActionTime / expectedSegmentTime, getTarget().movement);
-
-    return newSpeed;
 }
 
 bool RailsControl::isValid() const {

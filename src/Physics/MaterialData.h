@@ -128,7 +128,7 @@ struct MaterialData {
         DecaySpeedParams decaySpeed;
     } decayParams;
     f32 startScale = 1.0;
-    Draw::DrawTag particleShape = Draw::DrawTag::Rect;
+    DrawTag particleShape = DrawTag::Rect;
 };
 
 }  // namespace whal
