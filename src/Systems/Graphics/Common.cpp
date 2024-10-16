@@ -1,5 +1,7 @@
 #include "Common.h"
 
+#include "Settings.h"
+
 namespace whal {
 
 RaylibDrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter) {

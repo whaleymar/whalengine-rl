@@ -7,6 +7,7 @@
 
 #include "Components/Transform.h"
 #include "Physics/HitInfo.h"
+#include "Settings.h"
 
 namespace whal {
 

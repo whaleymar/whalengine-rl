@@ -5,6 +5,7 @@
 #include "Gfx/Depth.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal {
 
