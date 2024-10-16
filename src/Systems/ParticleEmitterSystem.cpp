@@ -16,7 +16,7 @@ void ParticleEmitterSystem::update() {
     const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
     const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
 
-    const Vector2f sampleSpeed = angleToUnit(360.0f * System::rng.uniform());
+    const Vector2f sampleSpeed = angleToUnitFast(360.0f * System::rng.uniform());
 
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto trans = entity.get<Transform2D>();

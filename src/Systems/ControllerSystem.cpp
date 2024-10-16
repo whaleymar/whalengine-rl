@@ -37,15 +37,15 @@ void ControllerSystem::update() {
         if (impulseX != 0) {
             f32 approachFrom;
             approachFrom = vel.stable.x;
-            if (sign(impulseX) == sign(vel.stable.x)) {
-                if (abs(approachFrom) < control.moveSpeed) {
+            if (math::sign(impulseX) == math::sign(vel.stable.x)) {
+                if (math::abs(approachFrom) < control.moveSpeed) {
                     // approach max move speed
-                    impulseX = approach(approachFrom, impulseX, approachSpeed);
+                    impulseX = math::approach(approachFrom, impulseX, approachSpeed);
                     vel.stable.x = impulseX;
                 }
             } else {
                 approachFrom = 0;
-                impulseX = approach(approachFrom, impulseX, approachSpeed);
+                impulseX = math::approach(approachFrom, impulseX, approachSpeed);
                 vel.stable.x += impulseX;
             }
         }

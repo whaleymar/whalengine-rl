@@ -47,7 +47,7 @@ enum class Ease {
 f32 getEaseProgress(f32 t, Ease easeFunc);
 
 inline f32 ease(const f32 n1, const f32 n2, f32 t, Ease easeFunc) {
-    return myLerp(n1, n2, getEaseProgress(t, easeFunc));
+    return math::lerp(n1, n2, getEaseProgress(t, easeFunc));
 }
 
 inline Vector2f ease(const Vector2f n1, const Vector2f n2, f32 t, Ease easeFunc) {
@@ -55,7 +55,7 @@ inline Vector2f ease(const Vector2f n1, const Vector2f n2, f32 t, Ease easeFunc)
 }
 
 inline s32 ease(const s32 n1, const s32 n2, f32 t, Ease easeFunc) {
-    return std::round(myLerp(static_cast<f32>(n1), static_cast<f32>(n2), getEaseProgress(t, easeFunc)));
+    return std::round(math::lerp(static_cast<f32>(n1), static_cast<f32>(n2), getEaseProgress(t, easeFunc)));
 }
 
 inline Vector2i ease(const Vector2i n1, Vector2i n2, f32 t, Ease easeFunc) {

@@ -1,17 +1,17 @@
 # To Do 
 
-## Current Goal: 
-- gfx system rework 
-    - make silhouette shader effect work on individual entities again (basically need to store more info per channel for this to work, and also need to get the right color there)
-        - the dead-simple temp solution is to swap shaders when drawing those entities and then go back to the default shader
-    - add an outline shader
-
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
 - animation factory
 - Settings.h -> put in game? Or don't define anything && put the .cpp file in Game/ ?
+
+## Cleanup
+- consistent System naming (files and classes)
+    - "XyzSystem"
+- Put all systems in the Systems/ dir. Some are in component files
+- One file per system
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
@@ -72,7 +72,6 @@
 - input remapping (saved to file too) (low priority)
 - dialogue system (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
-- faster sin/cosine (based on lookup table)
 
 ---------------------------------------------------------------------------------------------------------------------------
 

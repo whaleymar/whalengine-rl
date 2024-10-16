@@ -1,7 +1,6 @@
 #include "RelationshipManager.h"
 
 #include "Components/Name.h"
-#include "Settings.h"
 
 #include "Components/Relationships.h"
 #include "Components/Transform.h"
@@ -108,9 +107,9 @@ void FollowSystem::update() {
         if (auto velOpt = targetEntity.tryGet<Velocity>(); velOpt) {
             f32 velx = velOpt->total.x;
             f32 vely = velOpt->total.y;
-            lookAheadX *= clamp(abs(velx) * 0.1f, 0.0f, 1.0f);
-            lookAheadY *= clamp(abs(vely) * 0.1f, 0.0f, 1.0f);
-            isTargetMovingX = abs(velx) > 1;
+            lookAheadX *= math::clamp(math::abs(velx) * 0.1f, 0.0f, 1.0f);
+            lookAheadY *= math::clamp(math::abs(vely) * 0.1f, 0.0f, 1.0f);
+            isTargetMovingX = math::abs(velx) > 1;
             isTargetMovingY = vely != 0;
             isMovingUp = vely > 0;
         }
@@ -124,8 +123,8 @@ void FollowSystem::update() {
         }
         s32 min = follow.boundsX.x;
         s32 max = follow.boundsX.y;
-        s32 currentTarget = clamp(target, min, max);
-        s32 distanceFromTarget = abs(currentTarget - trans.position.x);
+        s32 currentTarget = math::clamp(target, min, max);
+        s32 distanceFromTarget = math::abs(currentTarget - trans.position.x);
 
         // if the target is not moving, we shouldn't move away from it
         if (follow.isMovingX && !isTargetMovingX &&
@@ -146,8 +145,8 @@ void FollowSystem::update() {
         }
         min = follow.boundsY.x;
         max = follow.boundsY.y;
-        currentTarget = clamp(target, min, max);
-        distanceFromTarget = abs(currentTarget - trans.position.y);
+        currentTarget = math::clamp(target, min, max);
+        distanceFromTarget = math::abs(currentTarget - trans.position.y);
 
         if (distanceFromTarget > follow.deadZone.y) {
             follow.currentTarget.y = currentTarget;
@@ -160,11 +159,11 @@ void FollowSystem::update() {
         f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x - trans.position.x));
         f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y - trans.position.y);
 
-        if (abs(targetSpeedX) > abs(vel.stable.x)) {
-            targetSpeedX = myLerp(vel.stable.x, targetSpeedX, follow.damping.x);
+        if (math::abs(targetSpeedX) > math::abs(vel.stable.x)) {
+            targetSpeedX = math::lerp(vel.stable.x, targetSpeedX, follow.damping.x);
         }
-        if (abs(targetSpeedY) > abs(vel.stable.y)) {
-            targetSpeedY = myLerp(vel.stable.y, targetSpeedY, follow.damping.y);
+        if (math::abs(targetSpeedY) > math::abs(vel.stable.y)) {
+            targetSpeedY = math::lerp(vel.stable.y, targetSpeedY, follow.damping.y);
         }
 
         vel.stable = {targetSpeedX, targetSpeedY};

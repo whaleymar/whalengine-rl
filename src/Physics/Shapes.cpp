@@ -8,6 +8,7 @@
 #include "Components/Transform.h"
 #include "Physics/HitInfo.h"
 #include "Settings.h"
+#include "Util/MathUtil.h"
 
 namespace whal {
 
@@ -22,7 +23,7 @@ Vector2i getRotationCorrection(Vector2i half, f32 rotationDegrees) {
         return {0, half.y};
     }
     const f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
-    return (Vector2f(-0.5, -1.0) * half.as<f32>() * Vector2f(std::cos(correctRadians), std::sin(correctRadians))).round();
+    return (Vector2f(-0.5, -1.0) * half.as<f32>() * Vector2f(math::fast_cos(correctRadians), math::fast_sin(correctRadians))).round();
 }
 
 Vector2i transToCenter(Transform2D trans, Vector2i half) {
@@ -126,21 +127,21 @@ HitInfo AABB::collide(const AABB& other) const {
     }
 
     if (px == py) {
-        const s32 signX = sign(delta.x);
-        const s32 signY = sign(delta.y);
+        const s32 signX = math::sign(delta.x);
+        const s32 signY = math::sign(delta.y);
         // Vector2i hitPos(center.x + half.x * signX, center.y + half.y * signY);
         // Vector2i hitDelta(px * signX, py * signY);
         Vector2i hitNormal(signX, signY);
         return HitInfo(hitNormal, true);
     }
     if (px < py) {
-        const s32 signX = sign(delta.x);
+        const s32 signX = math::sign(delta.x);
         // Vector2i hitPos(center.x + half.x * signX, other.center.y);
         // Vector2i hitDelta(px * signX, 0);
         Vector2i hitNormal(signX, 0);
         return HitInfo(hitNormal, true);
     } else {
-        const s32 signY = sign(delta.y);
+        const s32 signY = math::sign(delta.y);
         // Vector2i hitPos(other.center.x, center.y + half.y * signY);
         // Vector2i hitDelta(0, py * signY);
         Vector2i hitNormal(0, signY);
@@ -180,7 +181,7 @@ f32 Circle::getDistanceFromCenter(const AABB* aabb) const {
 
     // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
     const auto half = aabb->getHalf();
-    const auto closestPoint = aabb->getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
+    const auto closestPoint = aabb->getPosition() + Vector2i(math::clamp(delta.x, -half.x, half.x), math::clamp(delta.y, -half.y, half.y));
     return (getPosition() - closestPoint).as<f32>().len();
 }
 
@@ -194,7 +195,7 @@ Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
 
     // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
     const auto half = aabb.getHalf();
-    const auto closestPoint = aabb.getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
+    const auto closestPoint = aabb.getPosition() + Vector2i(math::clamp(delta.x, -half.x, half.x), math::clamp(delta.y, -half.y, half.y));
     return (closestPoint - getPosition()).as<f32>();
 }
 

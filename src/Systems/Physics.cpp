@@ -5,7 +5,6 @@
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
-#include "Settings.h"
 #include "Systems/CollisionManager.h"
 
 #include "Components/Collision.h"
@@ -35,13 +34,14 @@ using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::E
 static CallbackMap S_CALLBACK_QUEUE;
 
 void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {
-    bool isInJumpPeak = isJumping && isBetween(velocity.total.y, JUMP_PEAK_SPEED_MAX, 0.0f);
+    bool isInJumpPeak = isJumping && math::isBetween(velocity.total.y, JUMP_PEAK_SPEED_MAX, 0.0f);
     f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - JUMP_PEAK_GRAVITY_MULT);
-    velocity.stable.y = approach(velocity.stable.y, gravityMultiplier * TERMINAL_VELOCITY_Y, abs(gravityMultiplier) * GRAVITY * peakMultiplier * dt);
+    velocity.stable.y =
+        math::approach(velocity.stable.y, gravityMultiplier * TERMINAL_VELOCITY_Y, math::abs(gravityMultiplier) * GRAVITY * peakMultiplier * dt);
 }
 
 void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
-    velocity.x = approach(velocity.x, 0, frictionMultiplier);
+    velocity.x = math::approach(velocity.x, 0, frictionMultiplier);
 }
 
 // Any type of collision (regular, push, carry) is emitted as an event and received here.
@@ -134,17 +134,17 @@ void PhysicsSystem::update() {
 
         // if impulse ends, use residual
         Vector2f impulse = vel.impulse;
-        if (!impulse.x && !isNearZero(vel.residualImpulse.x, MOVE_EPSILON)) {
+        if (!impulse.x && !math::isNearZero(vel.residualImpulse.x, MOVE_EPSILON)) {
             impulse.x += vel.residualImpulse.x;
         }
-        if (!impulse.y && !isNearZero(vel.residualImpulse.y, MOVE_EPSILON)) {
+        if (!impulse.y && !math::isNearZero(vel.residualImpulse.y, MOVE_EPSILON)) {
             impulse.y += vel.residualImpulse.y;
         }
 
         const Vector2f totalVelocity = vel.stable + impulse;
         const Vector2f move = totalVelocity * dt;
 
-        vel.residualImpulse = {approach(impulse.x, 0, frictionStepGround), approach(impulse.y, 0, gravityStep)};
+        vel.residualImpulse = {math::approach(impulse.x, 0, frictionStepGround), math::approach(impulse.y, 0, gravityStep)};
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
@@ -184,7 +184,7 @@ void PhysicsSystem::update() {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
-                    vel.residualImpulse.x = approach(impulse.x, 0, frictionStepAir);  // recalced
+                    vel.residualImpulse.x = math::approach(impulse.x, 0, frictionStepAir);  // recalced
                 }
             }
 

@@ -32,6 +32,11 @@ Vector2f angleToUnit(f32 angle) {
     return {std::cos(radians), std::sin(radians)};
 }
 
+Vector2f angleToUnitFast(f32 angle) {
+    f32 radians = angle * DEG2RAD;
+    return {math::fast_cos(radians), math::fast_sin(radians)};
+}
+
 f32 getAngleClockwise(Vector2f vec, Vector2f reference) {
     vec = vec.norm();
     reference = reference.norm();
@@ -39,7 +44,7 @@ f32 getAngleClockwise(Vector2f vec, Vector2f reference) {
     f32 dot = vec.dot(reference);
     f32 det = vec.det(reference);
     f32 angleRadians = std::atan2(det, dot);
-    f32 angleDegrees = angleRadians * RAD_TO_DEG;
+    f32 angleDegrees = angleRadians * math::RAD_TO_DEG;
 
     // angles >180 are negative. clamp between 0 and 360
     if (angleDegrees < 0.0f) {
@@ -55,7 +60,7 @@ f32 getAngle(Vector2f vec, Vector2f reference) {
     f32 dot = vec.dot(reference);
     f32 det = vec.det(reference);
     f32 angleRadians = -1.0f * std::atan2(det, dot);
-    f32 angleDegrees = angleRadians * RAD_TO_DEG;
+    f32 angleDegrees = angleRadians * math::RAD_TO_DEG;
 
     // angles >180 are negative. clamp between 0 and 360
     if (angleDegrees < 0.0f) {
