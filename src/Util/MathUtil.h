@@ -11,6 +11,7 @@ namespace math {
 
 inline constexpr f32 PI_C = 3.14159265358979323846;
 inline constexpr f32 RAD_TO_DEG = 180.0f / PI_C;
+inline constexpr f32 DEG_TO_RAD = PI_C / 180.0f;
 
 template <class T>
 concept Number = std::integral<T> || std::floating_point<T>;
@@ -60,7 +61,14 @@ inline f32 approach(const f32 val, const f32 target, const f32 move) {
 }
 
 // fast constexpr sin/cos using lookup table
+// note: marking them constexpr makes linking fail for some reason
 f32 fast_sin(f32 radians);
 f32 fast_cos(f32 radians);
+inline f32 sin(f32 radians) {
+    return std::sin(radians);
+}
+inline f32 cos(f32 radians) {
+    return std::cos(radians);
+}
 
 }  // namespace math

@@ -82,11 +82,29 @@ struct Vector2T {
     inline bool isZero() const { return x == 0 && y == 0; }
 
     template <typename Type>
-    Vector2T<Type> as() const {
+    inline Vector2T<Type> as() const {
         return Vector2T<Type>(static_cast<Type>(x), static_cast<Type>(y));
     }
 
-    Vector2T<s32> round() const { return Vector2T<s32>(std::roundf(x), std::roundf(y)); }
+    inline Vector2T<s32> round() const { return Vector2T<s32>(std::roundf(x), std::roundf(y)); }
+
+    // from https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
+    inline Vector2T<T> rotate(f32 angleDegrees, Vector2T<T> about) const {
+        const f32 radians = math::DEG_TO_RAD * angleDegrees;
+        const f32 sin = math::sin(radians);
+        const f32 cos = math::cos(radians);
+
+        // translate point back to origin:
+        f32 originX = x - about.x;
+        f32 originY = y - about.y;
+
+        // rotate point:
+        const f32 xnew = originX * cos - originY * sin;
+        const f32 ynew = originX * sin + originY * cos;
+
+        // translate point back:
+        return Vector2T<T>{xnew + about.x, ynew + about.y};
+    }
 };
 
 template <typename T>
