@@ -48,6 +48,8 @@ inline Color lerp(Color first, Color second, f32 t) {
 
 }  // namespace Colors
 
+enum class DrawTag { Rect, Sprite, BezierQuad, Line };
+
 // hard coded as rectangles until I need something else
 struct IDraw {
     IDraw(Depth depth_, Color color_, Vector2i frameSize, Shaders shader_);
@@ -96,51 +98,6 @@ struct DrawStraightLine {
     Depth depth = Depth::Level;
     bool isRotateAboutCenter = false;
     Shaders shader = Shaders::Default;
-};
-
-// NOTE: modifying Depth or Target Texture requires the component to be removed and re-added
-class Draw {
-public:
-    // TODO text can go here once I have a font that matches the target resolution
-    // probably won't get rid of other version, because I can use that for dialogue system?
-    enum class DrawTag { Rect, Sprite, BezierQuad, Line };  // text too?
-
-    Draw(Depth depth = Depth::Player, Vector2i frameSize = {PIXELS_PER_TILE, PIXELS_PER_TILE}, Shaders shader = Shaders::Default,
-         Color color = WHITE);
-    Draw(DrawRect rect, u32 flags = 0);
-    Draw(Sprite sprite, u32 flags = 0);
-    Draw(DrawBezierQuad bezier, u32 flags = 0);
-    Draw(DrawStraightLine line, u32 flags = 0);
-
-    Draw(const Draw& other);
-    Draw& operator=(const Draw& other);
-
-    DrawTag getTag() const { return mTag; }
-    DrawRect& getRect();
-    Sprite& getSprite();
-    DrawBezierQuad& getBezierQuad();
-    DrawStraightLine& getLine();
-
-    Vector2i getFrameSize() const;
-    Depth getDepth() const;
-    Shaders getShader() const;
-    void setPostProcessFlags(u32 flags) { mPostProcessFlags = flags; }
-    void setAlpha(u8 alpha);
-    void setFrameSize(s32 x, s32 y);
-    void setFrameSize(Vector2i frameSize);
-    void setColor(Color color_);
-    void setScale(Vector2f scale);
-    Vector2f getScale() const;
-
-private:
-    union {
-        DrawRect mRect;
-        Sprite mSprite;
-        DrawBezierQuad mBezierQuad;
-        DrawStraightLine mLine;
-    };
-    DrawTag mTag;
-    u32 mPostProcessFlags = 0;
 };
 
 struct DrawText {

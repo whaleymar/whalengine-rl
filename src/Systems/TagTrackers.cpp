@@ -81,7 +81,6 @@ Vector2i getCameraPosition() {
     return lastPos;
 }
 
-// TODO I don't think I need this jank now that I'm rendering at full resolution
 Vector2f getCameraPositionPrecise() {
     static Vector2f lastPos;
     auto eOpt = getCamera();
@@ -89,27 +88,6 @@ Vector2f getCameraPositionPrecise() {
         lastPos = eOpt->get<PrecisePosition>().position;
     }
 
-    // getting weird floating point precision errors when camera position is very close to X.5
-    // y
-    f32 whole, fractional;
-    fractional = std::modf(lastPos.y, &whole);
-    if (fractional > 0.47 && fractional < 0.53) {
-        fractional = 0.46;
-        lastPos.y = (whole + fractional);
-    } else if (fractional < -0.47 && fractional > -0.53) {
-        fractional = -0.46;
-        lastPos.y = (whole + fractional);
-    }
-
-    // x
-    fractional = std::modf(lastPos.x, &whole);
-    if (fractional > 0.47 && fractional < 0.53) {
-        fractional = 0.46;
-        lastPos.x = (whole + fractional);
-    } else if (fractional < -0.47 && fractional > -0.53) {
-        fractional = -0.46;
-        lastPos.x = (whole + fractional);
-    }
     return lastPos;
 }
 

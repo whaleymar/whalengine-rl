@@ -57,7 +57,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add<Particle>();
     particle.add<Velocity>();
 
-    if (materialData.particleShape == Draw::DrawTag::Line) {
+    if (materialData.particleShape == DrawTag::Line) {
         particle.add(DrawStraightLine(3, color, 1.0, {1.0, 1.0}, depth, true));
         materialData.addComponents<DrawStraightLine>(particle, 1, color, lifetimeMultiplier);
         particle.add<AngularVelocity>();

@@ -134,9 +134,6 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     for (const auto& property : data["properties"]) {
         std::string propName = readString(property, "name");
         // std::string propType = readString(property, "type");
-        if (propName == "CameraFollowParams") {
-            level.cameraFollow = loadFollowComponent(property["value"], level);
-        }
     }
 
     // add ambient lighting for the level

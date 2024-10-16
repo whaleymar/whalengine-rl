@@ -90,9 +90,6 @@ static void addComponentRadiance(const nlohmann::json& values, const nlohmann::j
 static void addComponentLifetime(const nlohmann::json& values, const nlohmann::json& allObjects,
                                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-static void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects,
-                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                               const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 static void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allObjects,
                                const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -120,7 +117,6 @@ static Jumper DefaultJumper;
 static DrawRect DefaultDraw;
 static Sprite DefaultSprite;
 static Sprite DefaultAnimatedSprite;
-static Follow DefaultFollow;
 static Attach DefaultAttach;
 static PointLight DefaultPointLight;
 static Radiance DefaultRadiance;
@@ -140,7 +136,6 @@ static const NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_PointLight", addComponentLight},
     {"Component_Radiance", addComponentRadiance},
     {"Component_Lifetime", addComponentLifetime},
-    {"Component_Follow", addComponentFollow},
     {"Component_Attach", addComponentAttach},
     {"Component_RigidBody", addComponentRigidBody},
     {"Component_PlayerControl", addComponentPlayerControl},
@@ -345,32 +340,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultVelocity.stable.x = member[KEY_VALUE];
             } else if (memberName == "velY") {
                 DefaultVelocity.stable.y = member[KEY_VALUE];
-            } else {
-                print("Skipping member ", memberName, "for", componentName);
-            }
-        }
-    } else if (componentName == "Component_Follow") {
-        DefaultFollow = Follow();
-        for (const auto& member : property[KEY_MEMBERS]) {
-            std::string memberName = member[KEY_NAME];
-            if (memberName == "lookAheadX") {
-                DefaultFollow.lookAhead.x = member[KEY_VALUE];
-            } else if (memberName == "lookAheadY") {
-                DefaultFollow.lookAhead.y = member[KEY_VALUE];
-            } else if (memberName == "deadZoneX") {
-                DefaultFollow.deadZone.x = member[KEY_VALUE];
-            } else if (memberName == "deadZoneY") {
-                DefaultFollow.deadZone.y = member[KEY_VALUE];
-            } else if (memberName == "dampingX") {
-                DefaultFollow.damping.x = member[KEY_VALUE];
-            } else if (memberName == "dampingY") {
-                DefaultFollow.damping.y = member[KEY_VALUE];
-            } else if (memberName == "FollowTarget") {
-                // do nothing
-            } else if (memberName == "boundsHalflenX") {
-                DefaultFollow.boundsX = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
-            } else if (memberName == "boundsHalflenY") {
-                DefaultFollow.boundsY = Vector2i(member[KEY_VALUE], member[KEY_VALUE]);
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -738,12 +707,6 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
     entity.add(trigger);
 }
 
-void addComponentFollow(const nlohmann::json& values, const nlohmann::json& allObjects,
-                        const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                        ecs::Entity entity, LayerData layerData) {
-    entity.add(loadFollowComponent(values, level));
-}
-
 void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allObjects,
                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                         ecs::Entity entity, LayerData layerData) {
@@ -802,29 +765,6 @@ void addComponentJumper(const nlohmann::json& values, const nlohmann::json& allO
     tryReadFloat(values, "coyoteTimeSecondsMax", &jumper.coyoteTimeSecondsMax);
 
     entity.add(jumper);
-}
-
-// TODO bad signature
-Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& level) {
-    // Follow follow = entity.has<Follow>() ? entity.get<Follow>() : ComponentFactory::DefaultFollow;
-    Follow follow = DefaultFollow;
-    if (values.contains("FollowTarget")) {
-        if (auto pPlayerSystem = System::world.getSystem<PlayerSystem>(); !pPlayerSystem->getEntitiesMutable().empty()) {
-            follow.targetEntityID = pPlayerSystem->first().id();
-        }
-    }
-
-    tryReadVector2f(values, "dampingX", "dampingY", &follow.damping);
-    tryReadVector2i(values, "deadZoneX", "deadZoneY", &follow.deadZone);
-    tryReadVector2i(values, "lookAheadX", "lookAheadY", &follow.lookAhead);
-    tryReadVector2i(values, "boundsHalflenX", "boundsHalflenX", &follow.boundsX);
-    tryReadVector2i(values, "boundsHalflenY", "boundsHalflenY", &follow.boundsY);
-
-    // convert bounds from local half length to world coords
-    Vector2i levelPos = Vector2i(level.worldOffsetPixels.x, level.worldOffsetPixels.y) + Vector2i(level.size.x / 2, level.size.y / 2);
-    follow.boundsX = {levelPos.x - follow.boundsX.x, levelPos.x + follow.boundsX.x};
-    follow.boundsY = {levelPos.y - follow.boundsY.y, levelPos.y + follow.boundsY.y};
-    return follow;
 }
 
 // returns true if checkpoints form a cycle

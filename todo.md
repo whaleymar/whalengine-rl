@@ -15,6 +15,7 @@
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
+- BlocksAiPathing?
 - dashed line
 - parallax factor
 
@@ -29,21 +30,12 @@
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
-- (DONE) honestly, some entities just need their own draw method. maybe can do this with CRTP?
-- draw with full resolution so rotations look better
-    - (DONE) make camera position not follow the pixel grid 
-    - (DONE) it is SLOW
-    - (DONE) debug colliders
-    - (DONE) re-enable lighting (layers not drawn && shadowlight system is stubbed)
-    - (DONE) make things with PrecisePosition be drawn at their... precise position (low priority)
-    - (DONE) shit load of cleanup/todos
-    - (DONE) go through and rename xyzTexels and xyzPixels to xyz
+- rotations: some iRender stuff doesn't do it, others should rotate about their center (or some arbitrary point)
 - bloom shader is a little broken (reloading makes it look wildly different)
 
 ## Lighting 
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
     - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
-    - includes Debug/UI stuff -- I don't want that to be affected by lighting
 - player sprite should NOT affect shadows!!!
 
 ## Map 
