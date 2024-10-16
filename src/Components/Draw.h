@@ -5,7 +5,6 @@
 #include "Gfx/Depth.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
-#include "Settings.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
@@ -40,10 +39,10 @@ inline static Color Pink = {255, 170, 255, 255};
 inline static Color LightBlue = {85, 255, 255, 255};
 
 inline Color lerp(Color first, Color second, f32 t) {
-    return Color{static_cast<u8>(myLerp(static_cast<f32>(first.r), static_cast<f32>(second.r), t)),
-                 static_cast<u8>(myLerp(static_cast<f32>(first.g), static_cast<f32>(second.g), t)),
-                 static_cast<u8>(myLerp(static_cast<f32>(first.b), static_cast<f32>(second.b), t)),
-                 static_cast<u8>(myLerp(static_cast<f32>(first.a), static_cast<f32>(second.a), t))};
+    return Color{static_cast<u8>(math::lerp(static_cast<f32>(first.r), static_cast<f32>(second.r), t)),
+                 static_cast<u8>(math::lerp(static_cast<f32>(first.g), static_cast<f32>(second.g), t)),
+                 static_cast<u8>(math::lerp(static_cast<f32>(first.b), static_cast<f32>(second.b), t)),
+                 static_cast<u8>(math::lerp(static_cast<f32>(first.a), static_cast<f32>(second.a), t))};
 }
 
 }  // namespace Colors

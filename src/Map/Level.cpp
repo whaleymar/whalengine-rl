@@ -116,7 +116,7 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
 
         const auto delta = worldPos - lvlBox.getPosition();
         const auto half = lvlBox.getHalf();
-        const auto closestPoint = lvlBox.getPosition() + Vector2i(clamp(delta.x, -half.x, half.x), clamp(delta.y, -half.y, half.y));
+        const auto closestPoint = lvlBox.getPosition() + Vector2i(math::clamp(delta.x, -half.x, half.x), math::clamp(delta.y, -half.y, half.y));
 
         s32 distance = (closestPoint - worldPos).len();
         if (distance < minDistance) {

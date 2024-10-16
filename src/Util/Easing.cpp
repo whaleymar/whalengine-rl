@@ -1,5 +1,7 @@
 #include "Easing.h"
 
+#include "Util/MathUtil.h"
+
 /*
 
 GODOT TRANSLATION KEY
@@ -26,7 +28,7 @@ inline f32 easeInOutBezierDt(const f32 t) {
 
 inline f32 easeInOutSineDt(const f32 t) {
     // trough @ t=0, crest @ t=0.5, trough @ t=1
-    return 0.5 * MATH_PI * std::cos(MATH_PI * (t - 0.5));
+    return 0.5 * math::PI_C * math::fast_cos(math::PI_C * (t - 0.5));
 }
 
 inline f32 easeInQuadDt(const f32 t) {
@@ -103,15 +105,15 @@ using real_t = f32;
 
 namespace sine {
 static real_t in(real_t t, real_t b, real_t c, real_t d) {
-    return -c * cos(t / d * (MATH_PI / 2)) + c + b;
+    return -c * math::fast_cos(t / d * (math::PI_C / 2)) + c + b;
 }
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
-    return c * sin(t / d * (MATH_PI / 2)) + b;
+    return c * math::fast_sin(t / d * (math::PI_C / 2)) + b;
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-    return -c / 2 * (cos(MATH_PI * t / d) - 1) + b;
+    return -c / 2 * (math::fast_cos(math::PI_C * t / d) - 1) + b;
 }
 
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
@@ -262,7 +264,7 @@ static real_t in(real_t t, real_t b, real_t c, real_t d) {
     float a = c * pow(2, 10 * t);
     float s = p / 4;
 
-    return -(a * sin((t * d - s) * (2 * MATH_PI) / p)) + b;
+    return -(a * math::fast_sin((t * d - s) * (2 * math::PI_C) / p)) + b;
 }
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
@@ -278,7 +280,7 @@ static real_t out(real_t t, real_t b, real_t c, real_t d) {
     float p = d * 0.3f;
     float s = p / 4;
 
-    return (c * pow(2, -10 * t) * sin((t * d - s) * (2 * MATH_PI) / p) + c + b);
+    return (c * pow(2, -10 * t) * math::fast_sin((t * d - s) * (2 * math::PI_C) / p) + c + b);
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
@@ -297,12 +299,12 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
     if (t < 1) {
         t -= 1;
         a *= pow(2, 10 * t);
-        return -0.5f * (a * sin((t * d - s) * (2 * MATH_PI) / p)) + b;
+        return -0.5f * (a * math::fast_sin((t * d - s) * (2 * math::PI_C) / p)) + b;
     }
 
     t -= 1;
     a *= pow(2, -10 * t);
-    return a * sin((t * d - s) * (2 * MATH_PI) / p) * 0.5f + c + b;
+    return a * math::fast_sin((t * d - s) * (2 * math::PI_C) / p) * 0.5f + c + b;
 }
 
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
@@ -457,7 +459,7 @@ namespace spring {
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
     t /= d;
     real_t s = 1.0 - t;
-    t = (sin(t * MATH_PI * (0.2 + 2.5 * t * t * t)) * pow(s, 2.2) + t) * (1.0 + (1.2 * s));
+    t = (math::fast_sin(t * math::PI_C * (0.2 + 2.5 * t * t * t)) * pow(s, 2.2) + t) * (1.0 + (1.2 * s));
     return c * t + b;
 }
 

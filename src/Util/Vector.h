@@ -78,7 +78,7 @@ struct Vector2T {
         return Vector2T<T>(x * divisor, y * divisor);
     }
 
-    inline Vector2T<T> absolute() const { return Vector2T<T>(abs(x), abs(y)); }
+    inline Vector2T<T> absolute() const { return Vector2T<T>(math::abs(x), math::abs(y)); }
     inline bool isZero() const { return x == 0 && y == 0; }
 
     template <typename Type>
@@ -102,6 +102,7 @@ Vector2 toRaylib(Vector2i vec);
 Vector2 toRaylib(Vector2f vec);
 
 Vector2f angleToUnit(f32 angle);
+Vector2f angleToUnitFast(f32 angle);
 
 // inputs do not need to be normalized
 f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::unitRight);
@@ -110,10 +111,11 @@ f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::unitRight);
 f32 getAngle(Vector2f vec, Vector2f reference = Vector2f::unitRight);
 
 inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
-    return Vector2f(myLerp(vec1.x, vec2.x, t), myLerp(vec1.y, vec2.y, t));
+    return Vector2f(math::lerp(vec1.x, vec2.x, t), math::lerp(vec1.y, vec2.y, t));
 }
 
 inline Vector2i lerp(const Vector2i vec1, const Vector2i vec2, const f32 t) {
-    return Vector2f(myLerp(static_cast<f32>(vec1.x), static_cast<f32>(vec2.x), t), myLerp(static_cast<f32>(vec1.y), static_cast<f32>(vec2.y), t))
+    return Vector2f(math::lerp(static_cast<f32>(vec1.x), static_cast<f32>(vec2.x), t),
+                    math::lerp(static_cast<f32>(vec1.y), static_cast<f32>(vec2.y), t))
         .round();
 }

@@ -50,7 +50,7 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 
 // try wiggling out of upward collision.
 bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount) {
-    const s32 moveSign = moveNormal.x != 0 ? sign(moveNormal.x) : sign(moveNormal.y);
+    const s32 moveSign = moveNormal.x != 0 ? math::sign(moveNormal.x) : math::sign(moveNormal.y);
     auto nextPos = callbackCollider->getShape().getPosition() + moveNormal;
     if (hitinfo.isUp() && moveSign == 1 && (hitinfo.otherLayer & (callbackCollider->getCollisionLayersThatCanStopMe())) > 0) {
         return callbackCollider->tryCornerCorrection(nextPos, fullMoveAmount.x, moveNormal);
@@ -239,28 +239,28 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         const f32 otherBounciness = MaterialData::get(hitinfo.otherMaterial).bounciness;
         const f32 bounciness = mSelf.has<IsIdealSpring>() ? 1.0f : (selfBounciness + otherBounciness) / 2.0f;
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
-            if ((isX && abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
+            if ((isX && math::abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && math::abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
                 // stable can be negative (like for gravity) when impulse makes total velocity positive.
                 // in that case we don't want to do anything
                 if (isX) {
-                    if (sign(velocity.stable.x) == sign(velocity.total.x)) {
+                    if (math::sign(velocity.stable.x) == math::sign(velocity.total.x)) {
                         velocity.stable.x = velocity.stable.x * -bounciness;
                     }
 
                 } else {
-                    if (sign(velocity.stable.y) == sign(velocity.total.y)) {
+                    if (math::sign(velocity.stable.y) == math::sign(velocity.total.y)) {
                         velocity.stable.y = velocity.stable.y * -bounciness;
                     }
                 }
 
                 // do a post check in case an external force like gravity makes the first check always pass
                 if (isX) {
-                    if (abs(velocity.stable.x) < BOUNCE_THRESHOLD) {
+                    if (math::abs(velocity.stable.x) < BOUNCE_THRESHOLD) {
                         velocity.stable.x = 0;
                     }
 
                 } else {
-                    if (abs(velocity.stable.y) < BOUNCE_THRESHOLD) {
+                    if (math::abs(velocity.stable.y) < BOUNCE_THRESHOLD) {
                         velocity.stable.y = 0;
                     }
                 }
@@ -269,12 +269,12 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             // zero velocity in collision direction
             constexpr f32 maxSpeedPostCollision = 20.0f;
             if (hitinfo.isVertical() && !isX) {
-                if (abs(velocity.stable.y) > maxSpeedPostCollision) {
-                    velocity.stable.y = maxSpeedPostCollision * sign(velocity.stable.y);
+                if (math::abs(velocity.stable.y) > maxSpeedPostCollision) {
+                    velocity.stable.y = maxSpeedPostCollision * math::sign(velocity.stable.y);
                 }
             } else if (hitinfo.isHorizontal() && isX) {
-                if (abs(velocity.stable.x) > maxSpeedPostCollision) {
-                    velocity.stable.x = maxSpeedPostCollision * sign(velocity.stable.x);
+                if (math::abs(velocity.stable.x) > maxSpeedPostCollision) {
+                    velocity.stable.x = maxSpeedPostCollision * math::sign(velocity.stable.x);
                 }
             }
         }
@@ -372,7 +372,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
     }
 
     const AABB originalShape = mShape;
-    const s32 moveSign = sign(toMove);
+    const s32 moveSign = math::sign(toMove);
     const auto moveNormal = Vector2i(moveSign, 0);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
@@ -426,7 +426,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     }
 
     const AABB originalShape = mShape;
-    const s32 moveSign = sign(toMove);
+    const s32 moveSign = math::sign(toMove);
     const auto moveNormal = Vector2i(0, moveSign);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
@@ -566,7 +566,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     const auto prevColliderPos = AABB(mShape.getPosition() - moveVec, mShape.getHalf());
     const auto prevColliderState = Collider(prevColliderPos, mCollisionLayer, mMaterial, nullptr, mCollisionDir);
 
-    assert(abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
+    assert(math::abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 
     const f32 dt = System::dt();
     std::vector<Collider*> toCarry = riding;
@@ -777,8 +777,8 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
         yPadding = 1;
     }
     const auto bigCollider =
-        AABB(mShape.getPosition() + toMove / 2,
-             mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(abs(toMove.x)) / 2), std::ceil(static_cast<f32>(abs(toMove.y)) / 2) + yPadding));
+        AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(math::abs(toMove.x)) / 2),
+                                                                            std::ceil(static_cast<f32>(math::abs(toMove.y)) / 2) + yPadding));
 
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
     for (auto entity : QuadTreeSystem::query(bigCollider)) {
