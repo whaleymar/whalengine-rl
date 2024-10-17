@@ -230,8 +230,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 // do nothing
             } else if (memberName == "rotationDegrees") {
                 // do nothing, affects Transform
-            } else if (memberName == "rotateAboutCenter") {
-                DefaultSprite.isRotateAboutCenter = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -248,8 +246,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 // do nothing
             } else if (memberName == "rotationDegrees") {
                 // do nothing, affects Transform
-            } else if (memberName == "rotateAboutCenter") {
-                DefaultAnimatedSprite.isRotateAboutCenter = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -504,8 +500,6 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         entity.get<Transform2D>().rotationDegrees = rotationDegrees;
     }
 
-    tryReadBool(values, "rotateAboutCenter", &sprite.isRotateAboutCenter);
-
     // ARGB
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
@@ -545,8 +539,6 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
         entity.get<Transform2D>().rotationDegrees = rotationDegrees;
     }
-
-    tryReadBool(values, "rotateAboutCenter", &sprite.isRotateAboutCenter);
 
     // ARGB
     if (values.contains("Color")) {

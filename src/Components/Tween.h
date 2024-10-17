@@ -63,7 +63,9 @@ public:
                 mElapsedTime = mDelay;  // delay only affects first iteration
                 resetFlag(TweenParams::CustomOrigin);
                 if (isSet(TweenParams::Bounce)) {
-                    mTweenValue *= -1.0f;
+                    auto tmp = mTweenValue;
+                    mTweenValue = mStartValue;
+                    mStartValue = tmp;
                 }
                 init(entity);
             } else {

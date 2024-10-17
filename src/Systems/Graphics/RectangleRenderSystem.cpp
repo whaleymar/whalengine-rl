@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Physics/Box.h"
 
 namespace whal {
 
@@ -10,21 +11,27 @@ void RectangleRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) co
     const DrawRect rect = entity.get<DrawRect>();
     const Transform2D trans = entity.get<Transform2D>();
 
-    Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
+    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
+    if (entity.has<PreciseTransform2D>()) {
+        pTrans.position = entity.get<PrecisePosition>().position;
+    }
 
     const auto frameSize = rect.getFrameSize().as<f32>();
-    // TODO these should have rotation enabled
-    const RaylibDrawParams params = getDrawParams(position, frameSize, ctx.cameraPosition, rect.scale, false);
+    const RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
-    DrawRectanglePro(params.rect, params.origin, 0.0f, color);
+    DrawRectanglePro(params.rect, params.origin, pTrans.rotationDegrees, color);
 }
 
 void RectangleRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawRect>();
+        const auto trans = entity.get<Transform2D>();
+        const auto bb = trans.rotationDegrees == 0.0f ?
+                            AABB(entity.get<Transform2D>(), draw.getFrameSize() / 2) :
+                            Box(trans.getRotatedPosition(), draw.getFrameSize() / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{
-            .boundingBox = AABB(entity.get<Transform2D>(), draw.getFrameSize() / 2),
+            .boundingBox = bb,
             .depth = draw.depth,
             .entity = entity,
             .piRender = this,

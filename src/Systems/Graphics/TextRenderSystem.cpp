@@ -23,7 +23,7 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     const Transform2D trans = entity.get<Transform2D>();
     const DrawText draw = entity.get<DrawText>();
 
-    Vector2f frameSize = draw.frameSize.as<f32>() * VIRTUAL_SCREEN_RATIO * draw.scale;
+    Vector2f frameSize = draw.frameSize.as<f32>() * VIRTUAL_SCREEN_RATIO * trans.scale;
 
     // text is drawn at full resolution
     Vector2f dstPosition = {trans.position.x - ctx.cameraPosition.x, -1 * trans.position.y + ctx.cameraPosition.y};

@@ -73,12 +73,15 @@ enum Facing : u8 {
 // entity position in pixels
 struct Transform2D {
     Vector2i position;
-    f32 rotationDegrees = 0.0;      // counterclockwise
-    Facing facing = Facing::Right;  // draw calls flipped if facing left
-    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
+    f32 rotationDegrees = 0.0;              // counterclockwise
+    Facing facing = Facing::Right;          // draw calls flipped if facing left
+    bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
+    Vector2i pivotOffset = Vector2i::zero;  // used for rotation
+    Vector2f scale = Vector2f::one;
 
     static Transform2D pixels(s32 x, s32 y);
     static Transform2D tiles(s32 x, s32 y);
+    Vector2i getRotatedPosition() const;
 };
 
 // TODO thinking of making this an OPTIONAL REPLACEMENT for Transform2D (an entity would have one or the other), but using floats for position
@@ -88,6 +91,28 @@ struct PrecisePosition {
     Vector2f position;
 
     static PrecisePosition fromTrans(Transform2D trans) { return PrecisePosition{trans.position.as<f32>()}; }
+};
+
+struct PreciseTransform2D {
+    Vector2f position;
+
+    f32 rotationDegrees = 0.0;              // counterclockwise
+    Facing facing = Facing::Right;          // draw calls flipped if facing left
+    bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
+    Vector2i pivotOffset = Vector2i::zero;  // used for rotation
+    Vector2f scale = Vector2f::one;
+
+    static PreciseTransform2D pixels(s32 x, s32 y);
+    static PreciseTransform2D tiles(s32 x, s32 y);
+    static PreciseTransform2D fromTrans(Transform2D trans) {
+        return PreciseTransform2D{.position = trans.position.as<f32>(),
+                                  .rotationDegrees = trans.rotationDegrees,
+                                  .facing = trans.facing,
+                                  .isManuallyMoved = trans.isManuallyMoved,
+                                  .pivotOffset = trans.pivotOffset,
+                                  .scale = trans.scale};
+    }
+    Vector2f getRotatedPosition() const;
 };
 
 }  // namespace whal

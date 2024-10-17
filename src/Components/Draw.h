@@ -53,7 +53,6 @@ enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 struct IDraw {
     IDraw(Depth depth_, Color color_, Vector2i frameSize, Shaders shader_);
     Color color;
-    Vector2f scale = {1, 1};
     Depth depth;
     Shaders shader;
 
@@ -73,7 +72,6 @@ struct Sprite : public IDraw {
     void setFrame(Frame frame);
 
     Vector2i atlasPosition;
-    bool isRotateAboutCenter = false;
 };
 
 struct DrawRect : public IDraw {
@@ -93,7 +91,6 @@ struct DrawStraightLine {
     s32 length;
     Color color = WHITE;
     f32 thickness = 1.0;
-    Vector2f scale = Vector2f::one;
     Depth depth = Depth::Level;
     bool isRotateAboutCenter = false;
     Shaders shader = Shaders::Default;
@@ -104,7 +101,6 @@ struct DrawText {
 
     std::string text;
     Color color;
-    Vector2f scale = {1, 1};
     Vector2i frameSize;
     bool isCentered;
     Depth depth = Depth::Debug;

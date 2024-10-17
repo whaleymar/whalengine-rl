@@ -34,5 +34,6 @@ struct EntityRenderInfo {
 };
 
 RaylibDrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter);
+RaylibDrawParams getDrawParamsNew(PreciseTransform2D transform, Vector2f frameSize, Vector2f cameraPosition);
 
 }  // namespace whal
