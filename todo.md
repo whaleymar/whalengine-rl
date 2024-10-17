@@ -19,18 +19,13 @@
 - dashed line
 - parallax factor
 
-## Camera / Follow
-- pretty awful in general
-- different movement types (easein/out stuff)
-- be affected by momentum (maybe momentum should be added to velocity.total?)
-
 ## Tweens
 - should be able to cancel them
     - each tween would need a reference to its entity
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
-- rotations: some iRender stuff doesn't do it, others should rotate about their center (or some arbitrary point)
+- rotations: TextRenderSystem doesn't do it. Kinda involved since DrawCodepoint raylib function doesn't take a rotation param
 - bloom shader is a little broken (reloading makes it look wildly different)
     - kinda want to get rid of my fake bloom entirely and implement HDR + tone mapping
 

@@ -217,7 +217,6 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         continue;
                     } else {
                         Sprite sprite = Sprite(layer.metadata.depth, *frame);
-                        sprite.isRotateAboutCenter = true;
 
                         auto eEntity = createDecal(trans, sprite, false);
                         if (!eEntity.isExpected()) {

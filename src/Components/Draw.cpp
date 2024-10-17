@@ -4,15 +4,10 @@
 #include <raylib.h>
 #include <sstream>
 
-#include "Components/Lifetime.h"
-#include "Components/Light.h"
-#include "Components/Transform.h"
 #include "Gfx/Texture.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
-
-#include "Sys/System.h"
 
 namespace whal {
 

@@ -109,9 +109,10 @@ struct MaterialData {
         }
 
         if (startScale != 1.0) {
-            TweenManager::add(TweenVec2f(Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<T>().scale; })
-                                  .from(Vector2f(1.0, 1.0) * startScale),
-                              entity);
+            TweenManager::add(
+                TweenVec2f(Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<Transform2D>().scale; })
+                    .from(Vector2f(1.0, 1.0) * startScale),
+                entity);
         }
     }
 
