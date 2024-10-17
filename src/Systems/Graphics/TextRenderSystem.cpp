@@ -8,9 +8,10 @@ namespace whal {
 
 static Font DEFAULT_FONT;
 static constexpr s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
-static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint);
-static void DrawTextBoxedSelectable(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                                    int selectStart, int selectLength, Color selectTint, Color selectBackTint);
+static void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
+                          float angle);
+static void DrawTextBoxedSelectable(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
+                                    Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint, float angle);
 
 TextRenderSystem::TextRenderSystem() {
     DEFAULT_FONT = LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
@@ -23,6 +24,11 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     const Transform2D trans = entity.get<Transform2D>();
     const DrawText draw = entity.get<DrawText>();
 
+    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
+    if (entity.has<PreciseTransform2D>()) {
+        pTrans.position = entity.get<PrecisePosition>().position;
+    }
+
     Vector2f frameSize = draw.frameSize.as<f32>() * VIRTUAL_SCREEN_RATIO * trans.scale;
 
     // text is drawn at full resolution
@@ -30,18 +36,31 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     dstPosition += Vector2f(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 
-    // drawing one line:
-    // Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, draw.text, FONT_SIZE, spacing);
-    // dstPosition -= Vector2f(textDimensions.x / 2, textDimensions.y);
-    // DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x, dstPosition.y), FONT_SIZE, spacing, ColorTint(draw.color, tint));
+    // UNUSED
+    // {
+    //  drawing one line:
+    //  Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, draw.text, FONT_SIZE, spacing);
+    //  dstPosition -= Vector2f(textDimensions.x / 2, textDimensions.y);
+    //  DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x, dstPosition.y), FONT_SIZE, spacing, ColorTint(draw.color, tint));
+    // }
 
-    // TODO rotations
     // drawing wrapped:
     dstPosition -= frameSize * Vector2f(0.5, 1);
     dstPosition +=
         Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);  // needs half tile offset for some reason; might be an issue with map data
     Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
-    DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), dstRect, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint));
+    RaylibDrawParams params = RaylibDrawParams{
+        .rect = dstRect,
+        .origin = Vector2{0, 0},
+        .position = toRaylib(dstPosition),
+    };
+    DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
+                  trans.rotationDegrees);
+
+    // NEW (position wrong)
+    // RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    // DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
+    //               trans.rotationDegrees);
 }
 
 void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
@@ -59,14 +78,39 @@ void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
 }
 
 // Draw text using font inside rectangle limits
-static void DrawTextBoxed(Font font, const char* text, Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center, Color tint) {
-    DrawTextBoxedSelectable(font, text, rec, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, WHITE);
+static void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
+                          float angle) {
+    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, WHITE, angle);
+}
+
+// added rotation support :)
+static void DrawTextCodepoint2(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin) {
+    // Character index position in sprite font
+    // NOTE: In case a codepoint is not available in the font, index returned points to '?'
+    int index = GetGlyphIndex(font, codepoint);
+    float scaleFactor = fontSize / font.baseSize;  // Character quad scaling factor
+
+    // Character destination rectangle on screen
+    // NOTE: We consider glyphPadding on drawing
+    Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                        position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                        (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
+                        (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
+
+    // Character source rectangle from font texture atlas
+    // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects
+    Rectangle srcRec = {font.recs[index].x - (float)font.glyphPadding, font.recs[index].y - (float)font.glyphPadding,
+                        font.recs[index].width + 2.0f * font.glyphPadding, font.recs[index].height + 2.0f * font.glyphPadding};
+
+    // Draw the character texture on the screen
+    DrawTexturePro(font.texture, srcRec, dstRec, origin, angle, tint);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
-static void DrawTextBoxedSelectable(Font font, const char* text, const Rectangle rec, float fontSize, float spacing, bool wordWrap, bool center,
-                                    Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint) {
+static void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap,
+                                    bool center, Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint, float angle) {
     int length = TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
+    const auto rec = params.rect;
 
     float textOffsetY = 0;     // Offset between lines (on line break '\n')
     float textOffsetX = 0.0f;  // Offset X to next character to draw
@@ -83,6 +127,8 @@ static void DrawTextBoxedSelectable(Font font, const char* text, const Rectangle
     int startLine = -1;  // Index where to begin drawing (where a line begins)
     int endLine = -1;    // Index where to stop drawing (where a line ends)
     int lastk = -1;      // Holds last value of the character position
+
+    Vector2f centerpoint = Vector2f(rec.x + rec.width / 2.0f, rec.y - rec.height / 2.0f);
 
     for (int i = 0, k = 0; i < length; i++, k++) {
         // Get next codepoint from byte string and glyph index in font
@@ -172,8 +218,14 @@ static void DrawTextBoxedSelectable(Font font, const char* text, const Rectangle
 
                 // Draw current character glyph
                 if ((codepoint != ' ') && (codepoint != '\t')) {
-                    DrawTextCodepoint(font, codepoint, (Vector2){rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY}, fontSize,
-                                      isGlyphSelected ? selectTint : tint);
+                    Vector2f pos = Vector2f(rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY).rotate(-angle, centerpoint);
+                    // position is right, but not letter rotation
+                    // DrawTextCodepoint(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint);
+                    DrawTextCodepoint2(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint, angle, Vector2{0, 0});
+
+                    // original
+                    // DrawTextCodepoint(font, codepoint, (Vector2){rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY}, fontSize,
+                    //                   isGlyphSelected ? selectTint : tint);
                 }
             }
 

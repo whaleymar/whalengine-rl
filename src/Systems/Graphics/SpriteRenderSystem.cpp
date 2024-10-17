@@ -20,8 +20,7 @@ void SpriteRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const
 
     const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
-    RaylibDrawParams params;
-    params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : sprite.color;
     DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, trans.rotationDegrees, color);
 }
