@@ -23,8 +23,6 @@ void BufferedInput::notUsed() {
     framesLeft--;
 }
 
-PlayerControl::PlayerControl(f32 moveSpeed_) : moveSpeed(moveSpeed_) {}
-
 bool Jumper::isTryingJump() const {
     return buffer.isActive;
 }

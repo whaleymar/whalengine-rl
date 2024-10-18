@@ -19,9 +19,7 @@ struct BufferedInput {
 };
 
 struct PlayerControl {
-    PlayerControl(f32 moveSpeed_ = 80);
-
-    f32 moveSpeed;
+    f32 moveSpeed = 80;
 };
 
 struct Jumper {

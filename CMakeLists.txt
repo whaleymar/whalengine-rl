@@ -37,6 +37,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC src
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/RapidXML"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/json"
+    PUBLIC "${PROJECT_SOURCE_DIR}/lib/reflect-cpp/include"
     PUBLIC "${FMOD_DIR}/api/core/inc"
     PUBLIC "${FMOD_DIR}/api/studio/inc"
     PUBLIC "${PROJECT_SOURCE_DIR}/lib/magnum-singles"
@@ -46,6 +47,7 @@ include_directories(lib)
 
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
+
 if (EMSCRIPTEN)
     # find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
     target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/lib/raylib/src")

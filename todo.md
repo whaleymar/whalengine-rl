@@ -54,6 +54,7 @@
 - background/foreground layers should be written to a texture?
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
+- reflect-cpp string -> enum transformations when parsing Tiled map data 
 
 ## Sprite Editing workflow
 - .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
