@@ -3,7 +3,9 @@
 #include <cstring>
 #include <raylib.h>
 
+#include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
+
 #include "Util/Print.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"

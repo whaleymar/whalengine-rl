@@ -33,10 +33,6 @@ namespace whal {
 
 static std::array<RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
-Frame::Frame(Rectangle rect) : atlasPosition(rect.x, rect.y), size(rect.width, rect.height) {}
-
-Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPosition(atlasPosition), size(dimensions) {}
-
 Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
     using namespace rapidxml;
 

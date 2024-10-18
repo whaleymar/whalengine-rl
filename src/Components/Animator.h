@@ -2,8 +2,9 @@
 
 #include <vector>
 
-#include "Gfx/Texture.h"
 #include "Util/Types.h"
+
+#include "Gfx/Frame.h"
 
 namespace whal {
 

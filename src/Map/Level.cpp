@@ -1,6 +1,7 @@
 #include "Level.h"
 
 #include "Components/Tags.h"
+#include "Gfx/Frame.h"
 #include "IGame.h"
 #include "Settings.h"
 
@@ -9,7 +10,6 @@
 #include "Components/Transform.h"
 #include "Entities/Block.h"
 
-#include "Gfx/Texture.h"
 #include "Sys/System.h"
 #include "Tiled.h"
 #include "Util/Print.h"

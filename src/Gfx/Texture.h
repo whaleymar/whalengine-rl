@@ -12,14 +12,6 @@
 
 namespace whal {
 
-struct Frame {
-    Frame() = default;
-    Frame(Rectangle rect);
-    Frame(Vector2i, Vector2i);
-    Vector2i atlasPosition;
-    Vector2i size;
-};
-
 static const char* TEXNAME_SPRITE = "sprite";
 static const char* TEXNAME_PALETTE = "palette";
 

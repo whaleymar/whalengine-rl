@@ -10,6 +10,7 @@
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
 
+#include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
 
 #include "Physics/MaterialData.h"

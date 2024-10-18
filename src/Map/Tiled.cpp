@@ -1,17 +1,19 @@
 #include "Tiled.h"
 
-#include "Components/Draw.h"
-#include "Components/Light.h"
-#include "Gfx/Depth.h"
+#include "Gfx/Texture.h"
 #include "Map/EntityFactory.h"
 #include "json.hpp"
 
 #include "Settings.h"
 
+// #include "Components/Draw.h"   // for background sprites
+#include "Components/Light.h"  // for level ambient lighting
 #include "Components/Name.h"
 #include "Components/Transform.h"
 
-#include "Gfx/Texture.h"
+#include "Gfx/Depth.h"
+#include "Gfx/Frame.h"
+
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
 #include "Sys/System.h"
@@ -32,8 +34,8 @@ static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
 static TileSet parseTileset(const std::string& basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
 static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
-static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
-static std::string getSpriteKeyFromPath(const std::string& spritePath);
+// static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
+// static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
@@ -129,7 +131,8 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         } else if (type == "objectgroup") {
             parseObjectLayer(layer, level);
         } else if (type == "imagelayer") {
-            parseImageLayer(layer, level);
+            // parseImageLayer(layer, level);
+            print("parseImageLayer disabled!");
         } else {
             print("unrecognized layer: ", type, "\nSkipping for now");
         }
@@ -327,83 +330,83 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     }
 }
 
-void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
-    Depth layerDepth = getLayerDepth(layer, Depth::Level);
-    LayerData layerData = {layerDepth};
-
-    Vector2i position = readVector2i(layer);
-
-    Vector2i offset;
-    tryReadVector2i(layer, "offsetx", "offsety", &offset);
-
-    position += offset + level.worldPosOrigin.as<s32>();
-
-    bool isRepeatX = false;
-    tryReadBool(layer, "repeatx", &isRepeatX);
-
-    bool isRepeatY = false;
-    tryReadBool(layer, "repeaty", &isRepeatY);
-
-    Vector2f parallax = {1.0, 1.0};
-    tryReadVector2f(layer, "parallaxx", "parallaxy", &parallax);
-
-    // std::string name = readString(layer, "name");
-    std::string imgPath = readString(layer, "image");
-    std::string spriteKey = getSpriteKeyFromPath(imgPath);
-
-    if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
-        // use background textures instead of an entity
-        BGTexture bgEnum;
-        switch (layerDepth) {
-        case Depth::BackgroundStatic:
-            bgEnum = BGTexture::STATIC;
-            break;
-
-        case Depth::BackgroundFar:
-            bgEnum = BGTexture::FAR;
-            break;
-
-        case Depth::BackgroundMid:
-            bgEnum = BGTexture::MID;
-            break;
-
-        case Depth::BackgroundNear:
-            bgEnum = BGTexture::NEAR;
-            break;
-
-        default:
-            print("Found Depth enum value which doesn't match one of {Static, Far, Mid, Near}. Defeaulting to Mid");
-            bgEnum = BGTexture::MID;
-        }
-
-        auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
-                                                                              isRepeatX, isRepeatY);
-        if (errOpt) {
-            print("Got error: ", *errOpt);
-        }
-
-        return;
-    }
-
-    Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
-    if (!frameOpt) {
-        return;
-    }
-
-    auto eEntity = System::world.entity();
-    if (!eEntity.isExpected()) {
-        return;
-    }
-
-    Frame frame(*frameOpt);
-    ecs::Entity entity = eEntity.value();
-    level.childEntities.insert(entity);
-
-    Transform2D trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
-    entity.add(trans);
-
-    entity.add(Sprite(layerData.depth, frame));
-}
+// void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
+//     Depth layerDepth = getLayerDepth(layer, Depth::Level);
+//     LayerData layerData = {layerDepth};
+//
+//     Vector2i position = readVector2i(layer);
+//
+//     Vector2i offset;
+//     tryReadVector2i(layer, "offsetx", "offsety", &offset);
+//
+//     position += offset + level.worldPosOrigin.as<s32>();
+//
+//     bool isRepeatX = false;
+//     tryReadBool(layer, "repeatx", &isRepeatX);
+//
+//     bool isRepeatY = false;
+//     tryReadBool(layer, "repeaty", &isRepeatY);
+//
+//     Vector2f parallax = {1.0, 1.0};
+//     tryReadVector2f(layer, "parallaxx", "parallaxy", &parallax);
+//
+//     // std::string name = readString(layer, "name");
+//     std::string imgPath = readString(layer, "image");
+//     std::string spriteKey = getSpriteKeyFromPath(imgPath);
+//
+//     if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
+//         // use background textures instead of an entity
+//         BGTexture bgEnum;
+//         switch (layerDepth) {
+//         case Depth::BackgroundStatic:
+//             bgEnum = BGTexture::STATIC;
+//             break;
+//
+//         case Depth::BackgroundFar:
+//             bgEnum = BGTexture::FAR;
+//             break;
+//
+//         case Depth::BackgroundMid:
+//             bgEnum = BGTexture::MID;
+//             break;
+//
+//         case Depth::BackgroundNear:
+//             bgEnum = BGTexture::NEAR;
+//             break;
+//
+//         default:
+//             print("Found Depth enum value which doesn't match one of {Static, Far, Mid, Near}. Defeaulting to Mid");
+//             bgEnum = BGTexture::MID;
+//         }
+//
+//         auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
+//                                                                               isRepeatX, isRepeatY);
+//         if (errOpt) {
+//             print("Got error: ", *errOpt);
+//         }
+//
+//         return;
+//     }
+//
+//     Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
+//     if (!frameOpt) {
+//         return;
+//     }
+//
+//     auto eEntity = System::world.entity();
+//     if (!eEntity.isExpected()) {
+//         return;
+//     }
+//
+//     Frame frame(*frameOpt);
+//     ecs::Entity entity = eEntity.value();
+//     level.childEntities.insert(entity);
+//
+//     Transform2D trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
+//     entity.add(trans);
+//
+//     entity.add(Sprite(layerData.depth, frame));
+// }
 
 TileSet parseTileset(const std::string& basename, s32 firstgid) {
     const auto data = getMapFile(basename);
@@ -555,16 +558,17 @@ Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const 
 
 // converts a relative sprite path to a valid GLResourceManager key
 // example: "../sprite/actor/player-run1.png" -> "actor/player-run1"
-std::string getSpriteKeyFromPath(const std::string& spritePath) {
-    const char* spriteDir = "sprite/";
-    constexpr s32 substrLen = 7;
-    const auto ix = spritePath.find(spriteDir);
-    if (ix == std::string::npos) {
-        return "";
-    }
-    const auto extensionIx = spritePath.find(".", ix + substrLen);
-    return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
-}
+// commented because i also commented out image-layer parsing
+// std::string getSpriteKeyFromPath(const std::string& spritePath) {
+//     const char* spriteDir = "sprite/";
+//     constexpr s32 substrLen = 7;
+//     const auto ix = spritePath.find(spriteDir);
+//     if (ix == std::string::npos) {
+//         return "";
+//     }
+//     const auto extensionIx = spritePath.find(".", ix + substrLen);
+//     return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
+// }
 
 // MAP LOADING STUFF
 
