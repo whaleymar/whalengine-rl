@@ -2,6 +2,8 @@
 
 typedef struct Rectangle Rectangle;
 
+#include "Util/Vector.h"
+
 namespace whal {
 
 struct Frame {

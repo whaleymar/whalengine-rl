@@ -68,7 +68,11 @@ if (EMSCRIPTEN)
     # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
 
     # single threaded build:
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=0 -fsanitize=undefined")
+    endif()
 
 
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
