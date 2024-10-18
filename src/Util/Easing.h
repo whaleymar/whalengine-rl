@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/Draw.h"
+#include "Util/Color.h"
 #include "Util/Vector.h"
 
 enum class Ease {

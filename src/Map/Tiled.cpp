@@ -18,6 +18,8 @@
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
 
+#include <sstream>
+
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
@@ -40,6 +42,16 @@ static std::string getTypeFromTemplate(const std::string& templateFile);
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
     S_TEMPLATE_MANAGER.clearCache();
+}
+
+Color parseColor(const std::string& hexString) {
+    s32 r, g, b;
+    // first 3 chars is "#" and alpha
+    std::istringstream(hexString.substr(3, 2)) >> std::hex >> r;
+    std::istringstream(hexString.substr(5, 2)) >> std::hex >> g;
+    std::istringstream(hexString.substr(7, 2)) >> std::hex >> b;
+
+    return Color(r, g, b, 255);
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,

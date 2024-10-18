@@ -211,7 +211,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultDraw.setColor(hexStringARGBToColor(hexString));
+                DefaultDraw.color = parseColor(hexString);
             } else if (memberName == "Layer") {
                 // do nothing
             } else {
@@ -225,7 +225,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultSprite.setColor(hexStringARGBToColor(hexString));
+                DefaultSprite.color = parseColor(hexString);
             } else if (memberName == "Sprite") {
                 // do nothing
             } else if (memberName == "rotationDegrees") {
@@ -241,7 +241,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultAnimatedSprite.setColor(hexStringARGBToColor(hexString));
+                DefaultAnimatedSprite.color = parseColor(hexString);
             } else if (memberName == "Sprite") {
                 // do nothing
             } else if (memberName == "rotationDegrees") {
@@ -257,7 +257,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultPointLight.color = hexStringARGBToColor(hexString);
+                DefaultPointLight.color = parseColor(hexString);
             } else if (memberName == "heightTexels") {
                 DefaultPointLight.heightOffset = member[KEY_VALUE];
             } else if (memberName == "radiusTexels") {
@@ -273,7 +273,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "Color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultRadiance.color = hexStringARGBToColor(hexString);
+                DefaultRadiance.color = parseColor(hexString);
             } else if (memberName == "heightTexels") {
                 DefaultRadiance.heightOffset = member[KEY_VALUE];
             } else if (memberName == "radiusTexels") {
@@ -342,14 +342,14 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
         }
 
     } else if (componentName == "Component_Text") {
-        DefaultDrawText = DrawText();
+        DefaultDrawText = DrawText{};
         for (const auto& member : property[KEY_MEMBERS]) {
             std::string memberName = member[KEY_NAME];
             if (memberName == "text") {
                 DefaultDrawText.text = member[KEY_VALUE];
             } else if (memberName == "color") {
                 std::string hexString = member[KEY_VALUE];
-                DefaultDrawText.color = hexStringARGBToColor(hexString);
+                DefaultDrawText.color = parseColor(hexString);
             } else if (memberName == "center") {
                 DefaultDrawText.isCentered = member[KEY_VALUE];
             } else {
@@ -475,14 +475,14 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
                       ecs::Entity entity, LayerData layerData) {
     DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DefaultDraw;
     draw.depth = layerData.depth;
-    draw.setFrameSize(entityData.size);
+    draw.frameSize = entityData.size;
 
     // ARGB
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = hexStringARGBToColor(hexcode);
-        draw.setColor(color);
+        Color color = parseColor(hexcode);
+        draw.color = color;
     }
 
     u32 flags = parseGfxEffects(values);
@@ -504,8 +504,8 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = hexStringARGBToColor(hexcode);
-        sprite.setColor(color);
+        Color color = parseColor(hexcode);
+        sprite.color = color;
     }
 
     u32 flags = parseGfxEffects(values);
@@ -544,8 +544,8 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = hexStringARGBToColor(hexcode);
-        sprite.setColor(color);
+        Color color = parseColor(hexcode);
+        sprite.color = color;
     }
 
     u32 flags = parseGfxEffects(values);
@@ -582,7 +582,7 @@ void addComponentLight(const nlohmann::json& values, const nlohmann::json& allOb
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
-        light.color = hexStringARGBToColor(hexString);
+        light.color = parseColor(hexString);
     }
     entity.add(light);
 }
@@ -601,7 +601,7 @@ void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& al
     }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
-        light.color = hexStringARGBToColor(hexString);
+        light.color = parseColor(hexString);
     }
     entity.add(light);
 }
@@ -842,7 +842,7 @@ void addComponentText(const nlohmann::json& values, const nlohmann::json& allObj
     if (values.contains("color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["color"];
-        Color color = hexStringARGBToColor(hexcode);
+        Color color = parseColor(hexcode);
         text.color = color;
     }
 

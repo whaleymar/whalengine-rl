@@ -3,11 +3,14 @@
 #include <algorithm>
 #include <raylib.h>
 #include "raylib/src/rlgl.h"
+#include "whalECS/src/ECS.h"
 
 #include "Components/GfxFlags.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
+
 #include "Gfx/Pipeline.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 
 #include "Settings.h"
@@ -15,10 +18,10 @@
 
 #include "Systems/CollisionManager.h"
 #include "Systems/LightSystem.h"
-
 #include "Systems/TagTrackers.h"
+
+#include "Util/Color.h"
 #include "Util/EngineUtil.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 

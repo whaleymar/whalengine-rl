@@ -5,6 +5,7 @@
 #include "Components/Draw.h"
 #include "Physics/Shapes.h"
 #include "Sys/System.h"
+#include "Util/Color.h"
 
 namespace whal {
 

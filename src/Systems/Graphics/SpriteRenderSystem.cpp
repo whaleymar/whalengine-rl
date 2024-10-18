@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Gfx/Texture.h"
 #include "Physics/Box.h"
 
 namespace whal {
@@ -16,7 +17,7 @@ void SpriteRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const
         pTrans.position = entity.get<PrecisePosition>().position;
     }
 
-    const auto frameSize = sprite.getFrameSize().as<f32>();
+    const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
@@ -31,8 +32,8 @@ void SpriteRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const 
         const auto sprite = entity.get<Sprite>();
         const auto trans = entity.get<Transform2D>();
         const auto bb = trans.rotationDegrees == 0.0f ?
-                            AABB(trans, sprite.getFrameSize() / 2) :
-                            Box(trans.getRotatedPosition(), sprite.getFrameSize() / 2, trans.rotationDegrees).getBoundingAABB();
+                            AABB(trans, sprite.frameSize / 2) :
+                            Box(trans.getRotatedPosition(), sprite.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = bb,
