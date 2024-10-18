@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Util/Vector.h"
+
 namespace whal {
 
 class AABB;
