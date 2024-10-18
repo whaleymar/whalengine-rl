@@ -1,6 +1,5 @@
 #include "ComponentFactory.h"
 
-#include "Components/GfxFlags.h"
 #include "CorradeOptional.h"
 #include "json.hpp"
 
@@ -9,15 +8,10 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
-#include "Gfx/Texture.h"
-#include "Physics/CollisionLayer.h"
-
-#include "Map/Level.h"
-#include "Map/Tiled.h"
-
 #include "Components/Animator.h"
 #include "Components/Collision.h"
 #include "Components/Draw.h"
+#include "Components/GfxFlags.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/ParticleEmitter.h"
@@ -28,7 +22,11 @@
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
-#include "Systems/TagTrackers.h"
+
+#include "Map/Level.h"
+#include "Map/Tiled.h"
+
+#include "Physics/CollisionLayer.h"
 
 #include "Util/DebugUtil.h"
 #include "Util/Print.h"
@@ -516,10 +514,11 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         spritePath = values["Sprite"];
         std::replace(spritePath.begin(), spritePath.end(), '\\', '/');
     }
-    auto frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
-    if (frameOpt) {
+    auto eSprite = Sprite::fromPath(spritePath.c_str());
+    if (eSprite.isExpected()) {
+        sprite.frameSize = eSprite.value().frameSize;
+        sprite.atlasPosition = eSprite.value().atlasPosition;
         sprite.depth = layerData.depth;
-        sprite.setFrame(*frameOpt);
         entity.add(sprite);
     } else {
         print("Error: Coudn't find frame for sprite:", spritePath);

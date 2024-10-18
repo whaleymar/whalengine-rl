@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Components/Draw.h"
 #include "Util/Types.h"
 
 namespace whal {

@@ -6,7 +6,6 @@
 #include "Components/Draw.h"
 #include "whalECS/src/ECS.h"
 
-#include "Gfx/Texture.h"
 #include "Sys/System.h"
 #include "Util/Print.h"
 

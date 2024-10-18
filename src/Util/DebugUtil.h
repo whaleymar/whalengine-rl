@@ -6,6 +6,7 @@
 
 #include "Components/Animator.h"
 #include "Components/Collision.h"
+#include "Components/Draw.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/Name.h"
