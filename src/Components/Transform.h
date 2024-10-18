@@ -65,7 +65,7 @@ inline f32 directionToAngle(Direction direction) {
     }
 }
 
-enum Facing : u8 {
+enum class Facing : u8 {
     Left = 0,
     Right = 1,
 };

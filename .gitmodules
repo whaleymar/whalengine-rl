@@ -13,3 +13,6 @@
 [submodule "src/Game"]
 	path = src/Game
 	url = git@github.com:whaleymar/Game.git
+[submodule "lib/reflect-cpp"]
+	path = lib/reflect-cpp
+	url = https://github.com/whaleymar/reflect-cpp.git

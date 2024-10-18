@@ -54,7 +54,10 @@ void AttachSystem::update() {
         }
 
         if (attach.directionParam == Attach::DirectionParam::UseFacingForAll) {
-            entity.set(Transform2D(targetPosition, targetTrans.facing));
+            Transform2D newTrans;
+            newTrans.position = targetPosition;
+            newTrans.facing = targetTrans.facing;
+            entity.set(newTrans);
         } else {
             entity.set(Transform2D(targetPosition));
         }
