@@ -1,9 +1,11 @@
 #include "Pipeline.h"
 
 #include <raylib.h>
-#include "Components/Draw.h"
+
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
+
+#include "Util/Color.h"
 #include "Util/EngineUtil.h"
 
 namespace whal {

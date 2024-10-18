@@ -16,7 +16,7 @@ void RectangleRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) co
         pTrans.position = entity.get<PrecisePosition>().position;
     }
 
-    const auto frameSize = rect.getFrameSize().as<f32>();
+    const auto frameSize = rect.frameSize.as<f32>();
     const RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
     DrawRectanglePro(params.rect, params.origin, pTrans.rotationDegrees, color);
@@ -26,9 +26,8 @@ void RectangleRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) con
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawRect>();
         const auto trans = entity.get<Transform2D>();
-        const auto bb = trans.rotationDegrees == 0.0f ?
-                            AABB(trans, draw.getFrameSize() / 2) :
-                            Box(trans.getRotatedPosition(), draw.getFrameSize() / 2, trans.rotationDegrees).getBoundingAABB();
+        const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2) :
+                                                        Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = bb,

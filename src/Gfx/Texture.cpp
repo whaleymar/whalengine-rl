@@ -6,13 +6,14 @@
 #include <raylib.h>
 #include <string>
 
-#include "Components/Draw.h"
 #include "Settings.h"
+
 #include "Systems/TagTrackers.h"
+
+#include "Util/Color.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
-#include "raylib/src/raylib.h"
 
 #define RAPIDXML_NO_EXCEPTIONS
 #include "RapidXML/rapidxml.hpp"

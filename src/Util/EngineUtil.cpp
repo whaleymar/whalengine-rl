@@ -23,7 +23,7 @@ void setCustomCursor(Sprite drawComponent) {
             Vector2i position = getMouseWorldPosition();
 
             // correct for cursor height
-            const auto height = self.get<Sprite>().getFrameSize().y;
+            const auto height = self.get<Sprite>().frameSize.y;
             position -= Vector2i(0, height / 2);
 
             // update transform

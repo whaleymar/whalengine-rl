@@ -12,6 +12,8 @@
 #include "Gfx/Depth.h"
 #include "Util/Types.h"
 
+typedef struct Color Color;
+
 namespace whal {
 
 struct Frame;
@@ -32,6 +34,7 @@ Transform2D getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
+Color parseColor(const std::string& hexString);
 
 struct LayerData {
     Depth depth;

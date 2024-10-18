@@ -48,8 +48,7 @@ struct MaterialData {
     f32 getDecayTime() const;
     Color getColor() const;
 
-    // TODO `requires std::isbaseof<IDraw, T>` and use common interface
-    // T is the draw component
+    // T is a draw-like component. Must have a member called ".color"
     template <typename T>
     void addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier = 1.0) const {
         const f32 lifetime = getDecayTime() * lifetimeMultiplier;
