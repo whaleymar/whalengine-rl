@@ -3,15 +3,19 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Physics/Box.h"
+#include "Settings.h"
+#include "Util/Vector.h"
+#include "raylib/src/raylib.h"
 
 namespace whal {
 
 static Font DEFAULT_FONT;
 static constexpr s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 static void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                          float angle);
+                          float angle, Vector2f pivotOffset);
 static void DrawTextBoxedSelectable(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
-                                    Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint, float angle);
+                                    Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset);
 
 TextRenderSystem::TextRenderSystem() {
     DEFAULT_FONT = LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
@@ -29,10 +33,13 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
         pTrans.position = entity.get<PrecisePosition>().position;
     }
 
-    Vector2f frameSize = draw.frameSize.as<f32>() * VIRTUAL_SCREEN_RATIO * trans.scale;
+    // rotation pivot correction
+    Vector2f pivotOffsetScreen = pTrans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
+    Vector2f frameSize = draw.frameSize.as<f32>();
 
-    // text is drawn at full resolution
-    Vector2f dstPosition = {trans.position.x - ctx.cameraPosition.x, -1 * trans.position.y + ctx.cameraPosition.y};
+    // scale to full resolution
+    frameSize = frameSize * VIRTUAL_SCREEN_RATIO * pTrans.scale;
+    Vector2f dstPosition = {pTrans.position.x - ctx.cameraPosition.x, -1 * pTrans.position.y + ctx.cameraPosition.y};
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     dstPosition += Vector2f(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 
@@ -44,32 +51,34 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     //  DrawTextEx(DEFAULT_FONT, draw.text, Vector2(dstPosition.x, dstPosition.y), FONT_SIZE, spacing, ColorTint(draw.color, tint));
     // }
 
+    // TODO needs adjustment based on rotation? Currently not working for multi-line text
     // drawing wrapped:
-    dstPosition -= frameSize * Vector2f(0.5, 1);
-    dstPosition +=
-        Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);  // needs half tile offset for some reason; might be an issue with map data
+    dstPosition -= frameSize * Vector2f(0.5, 1);  // original
+    // needs half tile offset for some reason; might be an issue with map data:
+    dstPosition += Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
+
     Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
+
     RaylibDrawParams params = RaylibDrawParams{
         .rect = dstRect,
         .origin = Vector2{0, 0},
         .position = toRaylib(dstPosition),
     };
     DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-                  trans.rotationDegrees);
-
-    // NEW (position wrong)
-    // RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
-    // DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-    //               trans.rotationDegrees);
+                  pTrans.rotationDegrees, pivotOffsetScreen);
 }
 
 void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
     queue.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawText>();
+        const auto trans = entity.get<Transform2D>();
+
+        const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2) :
+                                                        Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{
-            .boundingBox = AABB(entity.get<Transform2D>(), draw.frameSize / 2),  // TODO this doesn't account for rotations
+            .boundingBox = bb,
             .depth = draw.depth,
             .entity = entity,
             .piRender = this,
@@ -79,12 +88,12 @@ void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
 
 // Draw text using font inside rectangle limits
 static void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                          float angle) {
-    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, WHITE, angle);
+                          float angle, Vector2f pivotOffset) {
+    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, angle, pivotOffset);
 }
 
 // added rotation support :)
-static void DrawTextCodepoint2(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin) {
+static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin) {
     // Character index position in sprite font
     // NOTE: In case a codepoint is not available in the font, index returned points to '?'
     int index = GetGlyphIndex(font, codepoint);
@@ -108,7 +117,7 @@ static void DrawTextCodepoint2(Font font, int codepoint, Vector2 position, float
 
 // Draw text using font inside rectangle limits with support for text selection
 static void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap,
-                                    bool center, Color tint, int selectStart, int selectLength, Color selectTint, Color selectBackTint, float angle) {
+                                    bool center, Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset) {
     int length = TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
     const auto rec = params.rect;
 
@@ -128,7 +137,7 @@ static void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDra
     int endLine = -1;    // Index where to stop drawing (where a line ends)
     int lastk = -1;      // Holds last value of the character position
 
-    Vector2f centerpoint = Vector2f(rec.x + rec.width / 2.0f, rec.y - rec.height / 2.0f);
+    Vector2f centerpoint = Vector2f(rec.x + rec.width / 2.0f, rec.y - rec.height / 2.0f) + pivotOffset;
 
     for (int i = 0, k = 0; i < length; i++, k++) {
         // Get next codepoint from byte string and glyph index in font
@@ -211,21 +220,13 @@ static void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDra
                 // Draw selection background
                 bool isGlyphSelected = false;
                 if ((selectStart >= 0) && (k >= selectStart) && (k < (selectStart + selectLength))) {
-                    DrawRectangleRec((Rectangle){rec.x + textOffsetX - 1, rec.y + textOffsetY, glyphWidth, (float)font.baseSize * scaleFactor},
-                                     selectBackTint);
                     isGlyphSelected = true;
                 }
 
                 // Draw current character glyph
                 if ((codepoint != ' ') && (codepoint != '\t')) {
                     Vector2f pos = Vector2f(rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY).rotate(-angle, centerpoint);
-                    // position is right, but not letter rotation
-                    // DrawTextCodepoint(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint);
-                    DrawTextCodepoint2(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint, angle, Vector2{0, 0});
-
-                    // original
-                    // DrawTextCodepoint(font, codepoint, (Vector2){rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY}, fontSize,
-                    //                   isGlyphSelected ? selectTint : tint);
+                    DrawTextCodepointPro(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint, angle, Vector2{0, 0});
                 }
             }
 

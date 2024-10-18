@@ -27,7 +27,7 @@ void RectangleRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) con
         const auto draw = entity.get<DrawRect>();
         const auto trans = entity.get<Transform2D>();
         const auto bb = trans.rotationDegrees == 0.0f ?
-                            AABB(entity.get<Transform2D>(), draw.getFrameSize() / 2) :
+                            AABB(trans, draw.getFrameSize() / 2) :
                             Box(trans.getRotatedPosition(), draw.getFrameSize() / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{

@@ -1,6 +1,7 @@
 #include "Common.h"
 #include <raylib.h>
 
+#include "Components/Transform.h"
 #include "Settings.h"
 
 namespace whal {

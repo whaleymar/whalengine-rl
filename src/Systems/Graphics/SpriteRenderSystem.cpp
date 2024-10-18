@@ -31,7 +31,7 @@ void SpriteRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const 
         const auto sprite = entity.get<Sprite>();
         const auto trans = entity.get<Transform2D>();
         const auto bb = trans.rotationDegrees == 0.0f ?
-                            AABB(entity.get<Transform2D>(), sprite.getFrameSize() / 2) :
+                            AABB(trans, sprite.getFrameSize() / 2) :
                             Box(trans.getRotatedPosition(), sprite.getFrameSize() / 2, trans.rotationDegrees).getBoundingAABB();
 
         queue.emplace_back(EntityRenderInfo{

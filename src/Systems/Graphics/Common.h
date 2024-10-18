@@ -10,6 +10,7 @@
 namespace whal {
 
 class TextureAtlas;
+struct PreciseTransform2D;
 
 struct RaylibDrawParams {
     Rectangle rect;  // includes position
