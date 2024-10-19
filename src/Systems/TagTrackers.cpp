@@ -3,10 +3,12 @@
 #include "Components/RailsControl.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Components/Tween.h"
+
 #include "Entities/Camera.h"
 #include "Map/Level.h"
+
 #include "Sys/System.h"
+#include "Sys/Tween.h"
 
 namespace whal {
 
@@ -31,14 +33,12 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        TweenManager::add(TweenVec2f(focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> Vector2f& { return self.get<PrecisePosition>().position; })
-                              .setTransition(Ease::InOutQuad)
-                              .asIgnoreSlowdown()
-                              .setOnUpdate([](ecs::Entity self, const TweenVec2f&) {
-                                  self.get<Transform2D>().position = self.get<PrecisePosition>().position.round();
-                              })
-                              .setOnEnd([](ecs::Entity self, const TweenVec2f&) { System::time.setMultiplier(1.0); }),
-                          camera);
+        TweenManager::create(camera, focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> auto& { return self.get<PrecisePosition>().position; })
+            .setTransition(Ease::InOutQuad)
+            .asIgnoreSlowdown()
+            .setOnUpdate([](ecs::Entity self, const TweenVec2f&) { self.get<Transform2D>().position = self.get<PrecisePosition>().position.round(); })
+
+            .setOnEnd([](ecs::Entity self, const TweenVec2f&) { System::time.setMultiplier(1.0); });
         System::time.setMultiplier(0.0);
         return;
     }

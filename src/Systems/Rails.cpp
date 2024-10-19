@@ -4,10 +4,10 @@
 #include "Components/RailsControl.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Components/Tween.h"
 #include "Components/Velocity.h"
 
 #include "Sys/System.h"
+#include "Sys/Tween.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
@@ -124,19 +124,18 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
                 const f32 segmentDistance = (targetPosF - rails.startPosition).len();
                 const f32 time = segmentDistance / rails.speed;
 
-                TweenManager::add(
-                    TweenVec2i(rails.getTarget().position, time, [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform2D>().position; })
-                        .setTransition(rails.getTarget().movement)
-                        .setOnEnd([](ecs::Entity entity, const TweenVec2i&) {
-                            auto& rails = entity.get<RailsControl>();
-                            rails.isWaiting = true;
-                            rails.curActionTime = 0;
-                            rails.isVelocityUpdateNeeded = false;
-                            if (rails.arrivalCallback != nullptr) {
-                                rails.arrivalCallback(entity, rails);
-                            }
-                        }),
-                    entity);
+                TweenManager::create(entity, rails.getTarget().position, time,
+                                     [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform2D>().position; })
+                    .setTransition(rails.getTarget().movement)
+                    .setOnEnd([](ecs::Entity entity, const TweenVec2i&) {
+                        auto& rails = entity.get<RailsControl>();
+                        rails.isWaiting = true;
+                        rails.curActionTime = 0;
+                        rails.isVelocityUpdateNeeded = false;
+                        if (rails.arrivalCallback != nullptr) {
+                            rails.arrivalCallback(entity, rails);
+                        }
+                    });
 
             } else {
                 rails.curActionTime += dt;

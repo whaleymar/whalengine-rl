@@ -19,10 +19,6 @@
 - dashed line
 - parallax factor
 
-## Tweens
-- should be able to cancel them
-    - each tween would need a reference to its entity
-
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
 - bloom shader is a little broken (reloading makes it look wildly different)
