@@ -1,5 +1,5 @@
 #include "System.h"
-#include "Components/Tween.h"
+#include "Tween.h"
 
 namespace whal {
 
