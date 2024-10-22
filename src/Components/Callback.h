@@ -17,4 +17,8 @@ struct CustomUpdate {
     Callback callback;
 };
 
+struct OnDeath {
+    Callback callback = nullptr;
+};
+
 }  // namespace whal
