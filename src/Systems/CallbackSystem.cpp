@@ -26,4 +26,10 @@ void CustomUpdateSystem::update() {
     }
 }
 
+void OnDeathSystem::onRemove(ecs::Entity entity) {
+    // not bothering with a null check
+    const auto onDeath = entity.get<OnDeath>();
+    onDeath.callback(entity);
+}
+
 }  // namespace whal
