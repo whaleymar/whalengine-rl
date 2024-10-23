@@ -180,7 +180,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         if (rigidbody.isGrounded) {
             rigidbody.isLanding = !wasGrounded;
             if (rigidbody.isLanding) {
-                System::eventMgr.triggerEvent<LandingEvent>(mSelf);
+                System::eventMgr.emit<LandingEvent>(mSelf);
                 rigidbody.framesSinceLanding = 0;
             }
 
@@ -630,7 +630,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
-            System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
+            System::eventMgr.emit<CollisionEvent>(mSelf, hitinfo);
 
             if (other->mSelf.has<Momentum>()) {
                 // set momentum if this movement was part of the physics system
@@ -668,7 +668,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         hitinfo.setOther(other->getEntity());
         hitinfo.otherMaterial = other->getMaterial();
         hitinfo.otherLayer = other->getCollisionLayer();
-        System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitinfo);
+        System::eventMgr.emit<CollisionEvent>(mSelf, hitinfo);
 
         if (other->getEntity().has<Momentum>()) {
             // set momentum if this movement was part of the physics system
@@ -720,7 +720,7 @@ HitInfo Collider::checkCollisionInMoveArea(const Vector2i newPosition, const Vec
 
             hitInfoToReturn = hitInfo;
             if (triggerCollisionEvents) {
-                System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitInfo);
+                System::eventMgr.emit<CollisionEvent>(mSelf, hitInfo);
             }
         }
     }
@@ -755,7 +755,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
 
             hitInfoToReturn = hitInfo;
             if (triggerCollisionEvents) {
-                System::eventMgr.triggerEvent<CollisionEvent>(mSelf, hitInfo);
+                System::eventMgr.emit<CollisionEvent>(mSelf, hitInfo);
             }
         }
     }

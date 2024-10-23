@@ -75,6 +75,21 @@ void JobScheduler::end() {
 #endif
 }
 
+void JobScheduler::clear() {
+    mEventFlowsToAdd.clear();
+    mEventFlows.clear();
+
+#ifdef USE_THREADS
+    if (mQueue.size() > 0) {
+        std::unique_lock<std::mutex> lock(mMutex);
+        mCondition.wait(lock, [this] { return (!mQueue.empty() && mQueue.begin()->second <= 0) || mIsTerminated; });
+        mQueue.clear();
+    }
+#else
+    mQueue.clear();
+#endif
+}
+
 evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
     mEventFlowsToAdd.push_back(evfl::EventFlow(evfl::EVFL_ID++, requiredEntities));
     return mEventFlowsToAdd.back();

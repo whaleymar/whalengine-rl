@@ -68,7 +68,7 @@ public:
 
     template <typename E, typename... T>
         requires(is_base_of_template<IEvent, E>::value)
-    void triggerEvent(T... args) {
+    void emit(T... args) {
         const EventId eventId = getEventId<E>();
         if (!mListeners.contains(eventId)) {
             return;

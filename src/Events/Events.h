@@ -18,6 +18,7 @@ class ButtonPressOrReleaseEvent : public IEvent<InputType, bool> {};
 class LandingEvent : public IEvent<ecs::Entity> {};
 class EnteredLevelEvent : public IEvent<ecs::Entity, ActiveLevel&> {};
 class ShaderReloadEvent : public IEvent<> {};
+class RestartEvent : public IEvent<bool> {};
 class PauseEvent : public IEvent<bool> {};
 
 }  // namespace whal
