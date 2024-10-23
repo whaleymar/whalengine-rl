@@ -27,6 +27,13 @@ namespace Collision {
 void registerGame(IGame* const pGame);
 }
 
+struct Wiggle;
+using WiggleCallback = bool (*)(Wiggle, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
+struct Wiggle {
+    Vector2i wiggleAmount;
+    WiggleCallback callback;
+};
+
 // currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
     friend PhysicsSystem;
@@ -104,7 +111,7 @@ public:
     std::vector<std::pair<ecs::Entity, Collider>> getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask = CollisionLayer::ALL,
                                                                          bool updateRigidBodyFlags = false) const;
     void squish(ecs::Entity other, Vector2i hitNormal);
-    bool tryCornerCorrection(Vector2i nextPos, s32 moveSignX, Vector2i moveNormal);
+    bool tryCornerCorrection(Vector2i nextPos, s32 moveSign, Vector2i moveNormal, Vector2i correctionBuffer);
 
 protected:
     void updateEntityPosition();
@@ -127,12 +134,7 @@ protected:
     CollisionDir mCollisionDir;
 };
 
-using WiggleCallback = bool (*)(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
-
-bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
-struct Wiggle {
-    WiggleCallback callback = &defaultWiggle;
-};
+bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 
 // since movement is pixel perfect, rounding can have big effect on momentum
 // so track the previous 5 momentum values and use their average
