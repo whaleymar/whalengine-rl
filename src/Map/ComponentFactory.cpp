@@ -1,9 +1,8 @@
 #include "ComponentFactory.h"
 
 #include "CorradeOptional.h"
+#include "Map/AnimationFactory.h"
 #include "json.hpp"
-
-#include "Game/Entities/Animations.h"  // TODO remove
 
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
@@ -530,7 +529,7 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
                           ecs::Entity entity, LayerData layerData) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : DefaultAnimatedSprite;
     std::string animatorName = readString(values, "Animator");
-    Animator animator = getAnimator(animatorName.c_str());
+    Animator animator = AnimationFactory::get(animatorName.c_str());
     entity.add(animator);
     sprite.setFrame(animator.getFrame());
 

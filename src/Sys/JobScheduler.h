@@ -113,6 +113,7 @@ public:
     void start();
     void await();
     void end();
+    void clear();
 
     template <typename... T>
     void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);

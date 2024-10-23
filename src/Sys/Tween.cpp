@@ -49,4 +49,9 @@ void TweenManager::update() {
     mKilledEntities.clear();
 }
 
+void TweenManager::clear() {
+    mTweens.clear();
+    mKilledEntities.clear();
+}
+
 }  // namespace whal

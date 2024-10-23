@@ -40,7 +40,6 @@ static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 
-// TODO this should be an event listener. Currently being called from game code
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
     S_TEMPLATE_MANAGER.clearCache();

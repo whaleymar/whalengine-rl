@@ -134,6 +134,7 @@ public:
 
     void onEvent(DeathEvent, ecs::Entity entity) override;
     void update();
+    void clear();
 
     // have to use `auto` for the getter, otherwise the compiler can't infer T for some reason.
     // static_cast still enforces compile-time type safety

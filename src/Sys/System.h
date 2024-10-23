@@ -27,12 +27,12 @@ struct System {
             time.setMultiplier(0.0);
             audio.pauseClips(true);
             world.pause();
-            eventMgr.triggerEvent<PauseEvent>(true);
+            eventMgr.emit<PauseEvent>(true);
         } else {
             time.setMultiplier(1.0);
             audio.pauseClips(false);
             world.unpause();
-            eventMgr.triggerEvent<PauseEvent>(false);
+            eventMgr.emit<PauseEvent>(false);
         }
     }
 
@@ -42,6 +42,7 @@ struct System {
     static bool isPaused() { return IsPaused; }
     static void quit() { IsQuit = true; }
     static bool isQuit() { return IsQuit; }
+    static void restart(bool resetPlayers);
 
 private:
     inline static bool IsPaused = false;
