@@ -3,10 +3,10 @@
 #include <raylib.h>
 
 #include "IGame.h"
-#include "Settings.h"
 
 #include "Events/Listeners.h"
 #include "Gfx/ShaderManager.h"
+#include "Settings.h"
 #include "Sys/System.h"
 #include "Util/Print.h"
 

@@ -57,6 +57,10 @@ AudioClip::AudioClip(const char* path) {
 }
 
 AudioClip::~AudioClip() {
+    unload();
+}
+
+void AudioClip::unload() {
     if (isValid()) {
 #ifndef __EMSCRIPTEN__
         mSound->release();
@@ -67,6 +71,7 @@ AudioClip::~AudioClip() {
 }
 
 Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
+    unload();
 #ifndef __EMSCRIPTEN__
     auto result = System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
                                                          &mSound);  // looping on by default bc documentation recommends it
