@@ -195,6 +195,17 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const 
     return registerTextureAtlas(texture, atlasDataPath, name);
 }
 
+Corrade::Containers::Optional<Error> TextureManager::removeAtlas(const char* name) {
+    s32 ix = getTextureAtlasIndex(name);
+    if (ix == -1) {
+        return Error("Atlas not registered");
+    }
+    UnloadTexture(mTextureAtlases[ix].getTexture());
+    mTextureAtlases.erase(mTextureAtlases.begin() + ix);
+    mTextureAtlasNames.erase(mTextureAtlasNames.begin() + ix);
+    return NULLOPT;
+}
+
 RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {
     s32 ix = static_cast<s32>(id);
     assert(isRenderTextureUsed(ix));
