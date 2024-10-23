@@ -74,6 +74,7 @@ public:
     Corrade::Containers::Optional<Error> registerTextureAtlas(const Texture2D texture, const char* altasDataPath, const char* name);
     Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);
     Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
+    Corrade::Containers::Optional<Error> removeAtlas(const char* name);
 
     static const TextureAtlas& getAtlas(const char* name) { return instance()._getAtlas(name); }
     static const Texture& getTexture(const char* name) { return instance()._getTexture(name); }
