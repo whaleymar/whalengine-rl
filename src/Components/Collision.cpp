@@ -27,17 +27,6 @@ constexpr s32 MOMENTUM_LIFETIME_FRAMES = 10;
 constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
 constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bounce
 
-// keep global reference to the game so we can get the current scene
-static IGame* P_GAME = nullptr;
-
-namespace Collision {
-
-void registerGame(IGame* const pGame) {
-    P_GAME = pGame;
-}
-
-}  // namespace Collision
-
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
     auto& callbackEntityCollider = callbackEntity.get<Collider>();
     if (callbackEntityCollider.isSemiSolid() && other.get<Collider>().isSemiSolid()) {
@@ -124,11 +113,11 @@ void Collider::updateEntityPosition() {
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {
-        if (P_GAME->getScene().getLevelAt(newPosition)) {
+        if (System::getGame().getScene().getLevelAt(newPosition)) {
             trans.position = newPosition;
         } else {
             // tried to go out of bounds. simulate fake collision with world boundary
-            auto closestPointInBounds = P_GAME->getScene().getClosestPositionInBounds(newPosition);
+            auto closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
             trans.position = closestPointInBounds;
             QuadTreeSystem::updatePosition(mSelf, getShapeMutable(), trans);
         }

@@ -20,15 +20,6 @@
 
 namespace whal {
 
-// keep global reference to the game so we can get the current scene
-static IGame* P_GAME = nullptr;
-
-namespace Map {
-void registerGame(IGame* const pGame) {
-    P_GAME = pGame;
-}
-}  // namespace Map
-
 Color getLightColor(LevelLighting lightLevel) {
     switch (lightLevel) {
     case LevelLighting::Normal:
@@ -252,7 +243,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     // std::vector<SolidCollider> mesh;
     // makeCollisionMesh(collisionGrid, lvl);
 
-    P_GAME->getScene().loadedLevels.push_back(lvl);
+    System::getGame().getScene().loadedLevels.push_back(lvl);
 
     return NULLOPT;
 }
@@ -263,7 +254,7 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
     // also copy it so erasing it doesn't invalidate our pointer
 
     ActiveLevel copy = level;
-    Scene& scene = P_GAME->getScene();
+    Scene& scene = System::getGame().getScene();
     for (auto it = scene.loadedLevels.begin(); it != scene.loadedLevels.end(); ++it) {
         auto& lvl = *it;
         if (lvl == level) {

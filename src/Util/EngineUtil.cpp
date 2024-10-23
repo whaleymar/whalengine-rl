@@ -8,7 +8,7 @@
 
 #include "Components/Name.h"
 
-using namespace whal;
+namespace whal {
 
 static ecs::Entity sCursorEntity;
 static bool isCursorAlive = false;
@@ -55,3 +55,5 @@ void drawRenderTexture(RenderTexture renderTexture, Color color) {
 Vector2i getMouseWorldPosition() {
     return screenToWorldCoords(System::input.MousePosition);
 }
+
+}  // namespace whal
