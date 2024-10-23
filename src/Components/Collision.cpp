@@ -25,8 +25,7 @@ namespace whal {
 
 constexpr s32 MOMENTUM_LIFETIME_FRAMES = 10;
 constexpr s32 MOMENTUM_COOLDOWN_FRAMES = 10;
-constexpr s32 CORNERCORRECTIONWIGGLE = 3;  // TODO should be defined in component
-constexpr s32 BOUNCE_THRESHOLD = 2;        // need to be moving at least 2px/sec to bounce
+constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bounce
 
 // keep global reference to the game so we can get the current scene
 static IGame* P_GAME = nullptr;
@@ -49,11 +48,10 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 }
 
 // try wiggling out of upward collision.
-bool defaultWiggle(Collider* callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount) {
-    const s32 moveSign = moveNormal.x != 0 ? math::sign(moveNormal.x) : math::sign(moveNormal.y);
-    auto nextPos = callbackCollider->getShape().getPosition() + moveNormal;
-    if (hitinfo.isUp() && moveSign == 1 && (hitinfo.otherLayer & (callbackCollider->getCollisionLayersThatCanStopMe())) > 0) {
-        return callbackCollider->tryCornerCorrection(nextPos, fullMoveAmount.x, moveNormal);
+bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount) {
+    auto nextPos = callbackCollider.getShape().getPosition() + moveNormal;
+    if ((hitinfo.otherLayer & (callbackCollider.getCollisionLayersThatCanStopMe())) > 0) {
+        return callbackCollider.tryCornerCorrection(nextPos, fullMoveAmount.x, moveNormal, wiggleComponent.wiggleAmount);
     }
     return false;
 }
@@ -383,7 +381,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
-                if (wiggleOpt->callback(this, hitInfo, moveNormal, amount)) {
+                if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
@@ -437,7 +435,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
-                if (wiggleOpt->callback(this, hitInfo, moveNormal, amount)) {
+                if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
@@ -802,22 +800,26 @@ void Collider::squish(ecs::Entity other, Vector2i hitNormal) {
 // Try to wiggle out of collision if barely clipping another collider.
 // Returns true if successful.
 // Could be a lot faster if I do a broad pass QuadTree check like i do for normal movement
-bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSignX, Vector2i moveNormal) {
-    if (moveSignX >= 0) {
-        for (s32 i = 1 - nextPosition.x; i <= CORNERCORRECTIONWIGGLE; i += 1) {
-            Vector2i nextPos = nextPosition + Vector2i(i, 0);
-            if (!checkCollisionQT(nextPos, moveNormal)) {
-                mShape.setPosition(nextPos);
-                return true;
+bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSign, Vector2i moveNormal, Vector2i correctionBuffer) {
+    assert(correctionBuffer.x >= 0 && correctionBuffer.y >= 0 && "Corner correction buffer should only have positive integers");
+    if (moveNormal.y != 0) {
+        for (s32 i = 1; i <= correctionBuffer.x; i += 1) {
+            for (s32 mult : {-1, 1}) {
+                Vector2i nextPos = nextPosition + Vector2i(i * mult, 0);
+                if (!checkCollisionQT(nextPos, moveNormal)) {
+                    mShape.setPosition(nextPos);
+                    return true;
+                }
             }
         }
-    }
-    if (moveSignX <= 0) {
-        for (s32 i = 1 - nextPosition.x; i <= CORNERCORRECTIONWIGGLE; i += 1) {
-            Vector2i nextPos = nextPosition + Vector2i(-i, 0);
-            if (!checkCollisionQT(nextPos, moveNormal)) {
-                mShape.setPosition(nextPos);
-                return true;
+    } else if (moveNormal.x != 0) {
+        for (s32 i = 1; i <= correctionBuffer.y; i += 1) {
+            for (s32 mult : {-1, 1}) {
+                Vector2i nextPos = nextPosition + Vector2i(0, i * mult);
+                if (!checkCollisionQT(nextPos, moveNormal)) {
+                    mShape.setPosition(nextPos);
+                    return true;
+                }
             }
         }
     }
