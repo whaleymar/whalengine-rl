@@ -1,14 +1,14 @@
 #include "Engine.h"
-#include "Game/Game.h"
 
 int main() {
-    whal::Engine<Game> engine;
+    whal::Engine engine;
 
-    if (engine.start()) {
+    if (engine.start() || engine.loadGame()) {
         return 1;
     }
 
     engine.mainloop();
+    engine.unloadGame();
     engine.end();
 
     return 0;

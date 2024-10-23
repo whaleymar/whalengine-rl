@@ -1,11 +1,8 @@
 #pragma once
 
 #include <raylib.h>
-#include <type_traits>
 
-#include "Components/Collision.h"
 #include "IGame.h"
-#include "Map/Level.h"
 #include "Settings.h"
 
 #include "Events/Listeners.h"
@@ -19,10 +16,10 @@
 #endif
 // /WEB
 
+#include "Game/Game.h"  // TEMP
+
 namespace whal {
 
-template <class T>
-    requires std::is_base_of_v<IGame, T> && Singleton<T> && StaticUpdate<T>
 class Engine {
 public:
     bool start() {
@@ -57,30 +54,44 @@ public:
             return true;
         }
 
-        // GLOBAL REFS INITIALIZATION
-        Collision::registerGame(&T::instance());
-        Map::registerGame(&T::instance());
+        return false;
+    }
 
-        // GAME INITIALIZATION
-        return T::instance().start();
+    bool loadGame() {
+        mGame = new Game();
+        System::setGame(*mGame);
+        if (mGame->start()) {
+            print("Error initializing game");
+            return true;
+        }
+
+        if (!System::IsValid()) {
+            print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
+            return true;
+        }
+
+        return false;
+    }
+
+    void unloadGame() {
+        mGame->end();
+        delete mGame;
+        mGame = nullptr;
     }
 
     void mainloop() {
 #ifdef __EMSCRIPTEN__
         EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
         System::time.sleep(1);
-        emscripten_set_main_loop(T::update, 0, 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
+        emscripten_set_main_loop(System::Update, 0, 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
 #else
         while (!WindowShouldClose() && !System::isQuit()) {
-            T::update();
+            System::Update();
         }
 #endif
     }
 
     void end() {
-        // GAME END
-        T::instance().end();
-
         // SYSTEM END
         System::schedule.end();
         System::schedule.await();
@@ -99,6 +110,7 @@ public:
 
 private:
     Image mIconImage;
+    IGame* mGame;
 };
 
 }  // namespace whal

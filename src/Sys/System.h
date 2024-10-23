@@ -11,7 +11,13 @@
 
 namespace whal {
 
+class IGame;
+class Engine;
+
 struct System {
+    friend Engine;
+
+    using UpdateFunction = void (*)();
     inline static InputHandler input;
     inline static Time time;
     inline static RNG rng;
@@ -37,16 +43,23 @@ struct System {
     }
 
     static void Update();
+    static bool IsValid();
+
     static f32 dt() { return time.getDeltaTime(); }
     static void togglePause() { setPaused(!IsPaused); }
     static bool isPaused() { return IsPaused; }
     static void quit() { IsQuit = true; }
     static bool isQuit() { return IsQuit; }
     static void restart(bool resetPlayers);
+    static IGame& getGame();
+    static void setGameUpdate(UpdateFunction updateFunc);
 
 private:
+    static void setGame(IGame& game);
+
     inline static bool IsPaused = false;
     inline static bool IsQuit = false;
+    inline static UpdateFunction mUpdateFunction = nullptr;
 };
 
 // An interface for ECS Systems, but it's here to avoid circlular imports.

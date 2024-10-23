@@ -5,6 +5,8 @@
 
 typedef struct RenderTexture RenderTexture;
 
+namespace whal {
+
 // Cursor
 void setCustomCursor(whal::Sprite drawComponent);
 void setDefaultCursor();
@@ -14,3 +16,4 @@ void drawRenderTexture(RenderTexture renderTexture, Color color = WHITE);
 
 // Coordinates
 Vector2i getMouseWorldPosition();
+}  // namespace whal
