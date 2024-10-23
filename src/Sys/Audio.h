@@ -41,6 +41,7 @@ public:
     void operator=(const AudioClip&) = delete;
 
     Corrade::Containers::Optional<Error> load(const char* path);
+    void unload();
 
 #ifndef __EMSCRIPTEN__
     bool isValid() const { return mSound != nullptr; }

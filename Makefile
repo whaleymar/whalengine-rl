@@ -16,5 +16,5 @@ singlethread:
 	cmake . -DCMAKE_BUILD_TYPE=Debug -B build -G Ninja && cd build && cmake --build . && cd ..
 
 clean:
-	(rm -r build || true) && (rm engined || true) && (rm engine || true) && (rm engined.js || true) && (rm engined.wasm || true) && (rm engined.data || true) && (rm engined.html || true)
+	(rm -r build || true) && (rm engined engine engined.js engined.wasm engined.data engined.html engine.js engine.wasm engine.data engine.html || true)
 
