@@ -1,11 +1,30 @@
 #include "System.h"
+
+#include "Events/Listeners.h"
+#include "IGame.h"
 #include "Tween.h"
 
-#include "IGame.h"
+#include "Gfx/ShaderManager.h"
+#include "Util/Print.h"
 
 namespace whal {
 
 static IGame* S_PGAME = nullptr;
+
+void System::setPaused(bool pause) {
+    IsPaused = pause;
+    if (pause) {
+        time.setMultiplier(0.0);
+        audio.pauseClips(true);
+        world.pause();
+        event.emit<PauseEvent>(true);
+    } else {
+        time.setMultiplier(1.0);
+        audio.pauseClips(false);
+        world.unpause();
+        event.emit<PauseEvent>(false);
+    }
+}
 
 void System::Update() {
     // Engine Update
@@ -32,11 +51,38 @@ void System::resetManagers() {
     schedule.clear();
     audio.stopAll();
     TweenManager::instance().clear();
+    ShaderManager::instance().reloadShaders();
+}
+
+bool System::start() {
+    assert(!IsStarted);
+    IsStarted = true;
+
+    ShaderManager::instance().loadShaders();
+    input.loadMappings();
+    world.setEntityDeathCallback(&emitEntityDeathEvent);
+    schedule.start();
+    if (auto err = audio.init(); err) {
+        print(*err);
+        return true;
+    }
+    if (!audio.isValid()) {
+        print("Error initializing audio manager");
+        return true;
+    }
+
+    return false;
+}
+
+void System::end() {
+    schedule.end();
+    schedule.await();
+    ShaderManager::instance().unloadAll();
 }
 
 void System::restart(bool resetPlayers) {
     resetManagers();
-    eventMgr.emit<RestartEvent>(resetPlayers);
+    event.emit<RestartEvent>(resetPlayers);
 }
 
 IGame& System::getGame() {

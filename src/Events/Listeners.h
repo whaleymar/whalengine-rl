@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Events.h"
-
 namespace whal {
 namespace ecs {
 class Entity;
