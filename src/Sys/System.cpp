@@ -24,7 +24,7 @@ bool System::IsValid() {
     return S_PGAME != nullptr && mUpdateFunction != nullptr;
 }
 
-void System::restart(bool resetPlayers) {
+void System::resetManagers() {
     time.mFrame = 0;
     time.mTimeElapsed = 0.0f;
     time.mTimeMultiplier = 1.0f;
@@ -32,6 +32,10 @@ void System::restart(bool resetPlayers) {
     schedule.clear();
     audio.stopAll();
     TweenManager::instance().clear();
+}
+
+void System::restart(bool resetPlayers) {
+    resetManagers();
     eventMgr.emit<RestartEvent>(resetPlayers);
 }
 

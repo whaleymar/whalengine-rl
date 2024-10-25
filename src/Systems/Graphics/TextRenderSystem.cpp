@@ -6,11 +6,11 @@
 #include "Physics/Box.h"
 #include "Settings.h"
 #include "Util/Vector.h"
-#include "raylib/src/raylib.h"
+
+#include "raylib.h"
 
 namespace whal {
 
-static Font DEFAULT_FONT;
 static constexpr s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 static void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                           float angle, Vector2f pivotOffset);
@@ -18,7 +18,13 @@ static void DrawTextBoxedSelectable(Font font, const char* text, RaylibDrawParam
                                     Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset);
 
 TextRenderSystem::TextRenderSystem() {
-    DEFAULT_FONT = LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
+    mFont = new Font();
+    *mFont = LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
+}
+
+TextRenderSystem::~TextRenderSystem() {
+    UnloadFont(*mFont);
+    delete mFont;
 }
 
 void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
@@ -64,8 +70,8 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
         .origin = Vector2{0, 0},
         .position = toRaylib(dstPosition),
     };
-    DrawTextBoxed(DEFAULT_FONT, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-                  pTrans.rotationDegrees, pivotOffsetScreen);
+    DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint), pTrans.rotationDegrees,
+                  pivotOffsetScreen);
 }
 
 void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
@@ -197,7 +203,7 @@ static void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDra
                 const std::string lineStr = endLine == -1 ? std::string(text).substr(startLine == -1 ? 0 : startLine + 1) :
                                                             std::string(text).substr(startLine == -1 ? 0 : startLine + 1, endLine - startLine);
 
-                Vector2 textDimensions = MeasureTextEx(DEFAULT_FONT, lineStr.c_str(), FONT_SIZE, spacing);
+                Vector2 textDimensions = MeasureTextEx(font, lineStr.c_str(), FONT_SIZE, spacing);
                 centerOffsetX = (rec.width - textDimensions.x) / 2;
 
                 isLineMeasureNeeded = false;

@@ -2,45 +2,36 @@
 
 #include <raylib.h>
 #include "Components/Callback.h"
+#include "Components/Tags.h"
 #include "Gfx/Coordinates.h"
 #include "Sys/System.h"
+#include "Systems/MouseCursorSystem.h"
 #include "whalECS/src/ECS.h"
 
 #include "Components/Name.h"
 
 namespace whal {
 
-static ecs::Entity sCursorEntity;
-static bool isCursorAlive = false;
-
 void setCustomCursor(Sprite drawComponent) {
-    if (!isCursorAlive) {
-        sCursorEntity = System::world.entity().value();
-        isCursorAlive = true;
-        sCursorEntity.add(Name("Cursor"));
-        sCursorEntity.add<Transform2D>();
-        sCursorEntity.add<CustomUpdate>({[](ecs::Entity self) {
-            Vector2i position = getMouseWorldPosition();
-
-            // correct for cursor height
-            const auto height = self.get<Sprite>().frameSize.y;
-            position -= Vector2i(0, height / 2);
-
-            // update transform
-            self.get<Transform2D>().position = position;
-        }});
-    } else if (sCursorEntity.has<Sprite>()) {
-        sCursorEntity.remove<Sprite>();
+    const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
+    if (!isCustomCursorActive) {
+        auto entity = System::world.entity().value();
+        entity.add(Name("Cursor"));
+        entity.add<Transform2D>();
+        entity.add(drawComponent);
+        entity.add<MouseCursor>();
+    } else {
+        auto entity = MouseCursorSystem::first();
+        entity.remove<Sprite>();
+        entity.add(drawComponent);
     }
-
-    sCursorEntity.add(drawComponent);
     HideCursor();
 }
 
 void setDefaultCursor() {
-    if (isCursorAlive) {
-        sCursorEntity.kill();
-        isCursorAlive = false;
+    const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
+    if (isCustomCursorActive) {
+        MouseCursorSystem::first().kill();
     }
     ShowCursor();
 }

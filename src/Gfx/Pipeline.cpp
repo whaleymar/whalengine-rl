@@ -40,12 +40,12 @@ Pipeline::~Pipeline() {
     }
 }
 
-void Pipeline::process(TextureID textureID) {
+void Pipeline::process(TextureID textureID) const {
     RenderTexture& processTexture = TextureManager::getRenderTexture(textureID);
     process(processTexture);
 }
 
-void Pipeline::process(RenderTexture2D& processTexture) {
+void Pipeline::process(RenderTexture2D& processTexture) const {
     assert(processTexture.texture.width == mResolution.x && processTexture.texture.height == mResolution.y &&
            "Pipeline resolution does not match passed RenderTexture");
 
@@ -65,16 +65,16 @@ void Pipeline::process(RenderTexture2D& processTexture) {
     if (!mIsDrawingToSwapBuffer) {
         // last draw was to mSwapBuffer, so need to update processTexture
         BeginTextureMode(processTexture);
-        ClearBackground(Colors::Clear);
+        ClearBackground(Colors::CLEAR);
         drawRenderTexture(mSwapBuffer);
         EndTextureMode();
     }
 }
 
-void Pipeline::swapBuffer() {
+void Pipeline::swapBuffer() const {
     RenderTexture& processTexture = *mTargetTexture;
 
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     if (mIsDrawingToSwapBuffer) {
         drawRenderTexture(processTexture);
     } else {

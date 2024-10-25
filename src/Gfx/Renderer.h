@@ -38,6 +38,7 @@ private:
     Pipeline mPostProcessSteps;
     std::vector<EntityRenderInfo> mRenderQueue;
     std::vector<EntityRenderInfo> mUIRenderQueue;  // UI is stored in a separate queue so it's not affected by lighting
+    s32 mMainTextureUniform;
 };
 
 }  // namespace whal

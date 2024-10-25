@@ -4,6 +4,7 @@
 
 #include "IGame.h"
 
+#include "Events/Events.h"
 #include "Events/Listeners.h"
 #include "Gfx/ShaderManager.h"
 #include "Settings.h"
@@ -16,7 +17,15 @@
 #endif
 // /WEB
 
-#include "Game/Game.h"  // TEMP
+// TEMP
+// these will eventually be extern
+#include "Game/Game.h"
+whal::IGame* CreateGame() {
+    return new Game();
+}
+void DestroyGame(whal::IGame* game) {
+    delete game;
+}
 
 namespace whal {
 
@@ -58,7 +67,7 @@ public:
     }
 
     bool loadGame() {
-        mGame = new Game();
+        mGame = CreateGame();
         System::setGame(*mGame);
         if (mGame->start()) {
             print("Error initializing game");
@@ -69,14 +78,18 @@ public:
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
             return true;
         }
+        System::eventMgr.emit<RestartEvent>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
+                                                // regular start)
 
         return false;
     }
 
     void unloadGame() {
         mGame->end();
-        delete mGame;
+        DestroyGame(mGame);
         mGame = nullptr;
+        System::resetManagers();
+        System::world.clear();
     }
 
     void mainloop() {
@@ -87,6 +100,11 @@ public:
 #else
         while (!WindowShouldClose() && !System::isQuit()) {
             System::Update();
+            // for testing
+            // if (IsKeyPressed(KEY_R)) {
+            //     unloadGame();
+            //     loadGame();
+            // }
         }
 #endif
     }

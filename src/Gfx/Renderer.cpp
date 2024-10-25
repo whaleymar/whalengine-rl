@@ -25,7 +25,6 @@
 
 namespace whal {
 
-static s32 mainTexUniform;
 static Color getPostProcessFlags(EntityRenderInfo renderInfo);
 
 Renderer::Renderer() {
@@ -43,7 +42,7 @@ void Renderer::setPostEffects(Pipeline pipeline) {
 }
 
 void Renderer::onEvent(ShaderReloadEvent) {
-    mainTexUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
+    mMainTextureUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
 }
 
 void Renderer::_render() {
@@ -63,7 +62,7 @@ void Renderer::_render() {
 
     // 2. Renders everything to TextureID::Main
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
 
     // Game Objects.
     drawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
@@ -138,7 +137,7 @@ void Renderer::_drawEntities(RenderContext renderContext) const {
 
     // Drawing GAME OBJECTS
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     BeginMode2D(renderContext.camera);
     ShaderManager::activate(Shaders::Default);
     for (auto renderInfo : mRenderQueue) {
@@ -157,17 +156,17 @@ void Renderer::_drawEntities(RenderContext renderContext) const {
     RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
 
     BeginTextureMode(downscaledTarget);
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     DrawTexturePro(fullResTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
     EndTextureMode();
     // /1.
 
     // 2. Render effects to new buffer
     BeginTextureMode(effectsTarget);
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     ShaderManager::activate(Shaders::PostProcess);
 
-    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mainTexUniform, downscaledTarget.texture);
+    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledTarget.texture);
     drawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
     EndShaderMode();
     EndTextureMode();

@@ -39,28 +39,28 @@ void ParticleEmitterSystem::update() {
         Vector2f velocity = sampleSpeed * emitter.maxSpeed;
         Vector2i spawnLocation;
         if (emitter.direction == CollisionDir::UP) {
-            spawnLocation = spawnZone.getPositionEdge(Vector2i::unitUp) + Vector2i(spawnOffsetX, 0);
+            spawnLocation = spawnZone.getPositionEdge(Vector2i::UP) + Vector2i(spawnOffsetX, 0);
             velocity.x *= PERPENDICULAR_DAMPING;
             if (velocity.y < 0) {
                 velocity.y *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::LEFT) {
-            spawnLocation = spawnZone.getPositionEdge(Vector2i::unitLeft) + Vector2i(0, spawnOffsetY);
+            spawnLocation = spawnZone.getPositionEdge(Vector2i::LEFT) + Vector2i(0, spawnOffsetY);
             velocity.y *= PERPENDICULAR_DAMPING;
             if (velocity.x > 0) {
                 velocity.x *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::RIGHT) {
-            spawnLocation = spawnZone.getPositionEdge(Vector2i::unitRight) + Vector2i(0, spawnOffsetY);
+            spawnLocation = spawnZone.getPositionEdge(Vector2i::RIGHT) + Vector2i(0, spawnOffsetY);
             velocity.y *= PERPENDICULAR_DAMPING;
             if (velocity.x < 0) {
                 velocity.x *= -1;
             }
 
         } else if (emitter.direction == CollisionDir::DOWN) {
-            spawnLocation = spawnZone.getPositionEdge(Vector2i::unitDown) + Vector2i(spawnOffsetX, 0);
+            spawnLocation = spawnZone.getPositionEdge(Vector2i::DOWN) + Vector2i(spawnOffsetX, 0);
             velocity.x *= PERPENDICULAR_DAMPING;
             if (velocity.y > 0) {
                 velocity.y *= -1;

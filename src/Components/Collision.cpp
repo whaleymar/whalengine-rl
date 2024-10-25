@@ -490,8 +490,8 @@ bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i
 
 // Check for collision 1 unit down.
 HitInfo Collider::checkIsGrounded(const bool triggerCollisionEvents, const std::vector<std::pair<ecs::Entity, Collider>>& groundColliders) {
-    const Vector2i nextPos = mShape.getPosition() + Vector2i::unitDown;
-    return checkCollisionInMoveArea(nextPos, Vector2i::unitDown, groundColliders, triggerCollisionEvents);
+    const Vector2i nextPos = mShape.getPosition() + Vector2i::DOWN;
+    return checkCollisionInMoveArea(nextPos, Vector2i::DOWN, groundColliders, triggerCollisionEvents);
 }
 
 // check other's collision layer and direction.
@@ -506,7 +506,7 @@ bool Collider::isOtherGround(const Collider& other) const {
 // collision into account.
 std::vector<Collider*> Collider::getRidingCollidersQT() const {
     std::vector<Collider*> riding;
-    const auto movedCollider = AABB(mShape.getPosition() + Vector2i::unitUp, mShape.getHalf());
+    const auto movedCollider = AABB(mShape.getPosition() + Vector2i::UP, mShape.getHalf());
     const auto layerMask = getCollisionLayersThatCanRideMe();
 
     for (auto entity : QuadTreeSystem::query(movedCollider)) {

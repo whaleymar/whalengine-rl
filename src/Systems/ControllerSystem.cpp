@@ -68,18 +68,18 @@ void FreeControlSystem::update() {
         auto& trans = entity.get<Transform2D>();
         Vector2f delta;
         if (System::input.isOn(InputType::LEFT)) {
-            delta += Vector2f::unitLeft;
+            delta += Vector2f::LEFT;
             trans.facing = Facing::Left;
         }
         if (System::input.isOn(InputType::RIGHT)) {
-            delta += Vector2f::unitRight;
+            delta += Vector2f::RIGHT;
             trans.facing = Facing::Right;
         }
         if (System::input.isOn(InputType::UP)) {
-            delta += Vector2f::unitUp;
+            delta += Vector2f::UP;
         }
         if (System::input.isOn(InputType::DOWN)) {
-            delta += Vector2f::unitDown;
+            delta += Vector2f::DOWN;
         }
 
         if (!delta.isZero()) {

@@ -19,13 +19,11 @@ namespace whal {
 
 namespace Colors {
 
-inline static Color Clear = {0, 0, 0, 0};
-inline static Color Magenta = {255, 0, 255, 255};
-inline static Color Emerald = {80, 204, 96, 255};
-inline static Color Purple = {198, 51, 242, 255};
-// inline static Color Pink = {242, 116, 217, 255};
-inline static Color Pink = {255, 170, 255, 255};
-inline static Color LightBlue = {85, 255, 255, 255};
+inline static const Color CLEAR = {0, 0, 0, 0};
+inline static const Color EMERALD = {80, 204, 96, 255};
+inline static const Color WHAL_PURPLE = {198, 51, 242, 255};
+inline static const Color WHAL_PINK = {255, 170, 255, 255};
+inline static const Color LIGHT_BLUE = {85, 255, 255, 255};
 
 inline Color lerp(Color first, Color second, f32 t) {
     return Color{static_cast<u8>(math::lerp(static_cast<f32>(first.r), static_cast<f32>(second.r), t)),

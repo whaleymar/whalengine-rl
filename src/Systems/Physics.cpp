@@ -31,6 +31,7 @@ constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no l
 
 using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, Vector2i>>, ecs::EntityHash>;
 
+// this gets cleared at the beginning of PhsyicsSystem::update
 static CallbackMap S_CALLBACK_QUEUE;
 
 void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {

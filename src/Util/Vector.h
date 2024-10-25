@@ -18,12 +18,12 @@ struct Vector2T {
 
     Vector2T(const Vector2T<T>& other) : x(other.x), y(other.y) {}
 
-    static inline Vector2T<T> unitUp{0, 1};
-    static inline Vector2T<T> unitDown{0, -1};
-    static inline Vector2T<T> unitLeft{-1, 0};
-    static inline Vector2T<T> unitRight{1, 0};
-    static inline Vector2T<T> zero{0, 0};
-    static inline Vector2T<T> one{1, 1};
+    static inline const Vector2T<T> UP{0, 1};
+    static inline const Vector2T<T> DOWN{0, -1};
+    static inline const Vector2T<T> LEFT{-1, 0};
+    static inline const Vector2T<T> RIGHT{1, 0};
+    static inline const Vector2T<T> ZERO{0, 0};
+    static inline const Vector2T<T> ONE{1, 1};
 
     inline Vector2T<T>& operator=(const Vector2T<T>& other) {
         x = other.x;
@@ -123,10 +123,10 @@ Vector2f angleToUnit(f32 angle);
 Vector2f angleToUnitFast(f32 angle);
 
 // inputs do not need to be normalized
-f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::unitRight);
+f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::RIGHT);
 
 // counter clockwise (like unit circle)
-f32 getAngle(Vector2f vec, Vector2f reference = Vector2f::unitRight);
+f32 getAngle(Vector2f vec, Vector2f reference = Vector2f::RIGHT);
 
 inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
     return Vector2f(math::lerp(vec1.x, vec2.x, t), math::lerp(vec1.y, vec2.y, t));

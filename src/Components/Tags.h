@@ -10,5 +10,6 @@ struct Invisible {};
 struct IgnoreTimeModifiers {};
 struct IsIdealSpring {};
 struct BlocksLight {};
+struct MouseCursor {};
 
 }  // namespace whal

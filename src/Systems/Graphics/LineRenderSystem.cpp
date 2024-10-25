@@ -37,8 +37,8 @@ void LineRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     }
 
     const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
-    const Vector2 p1 = getDrawParams(points.p1.as<f32>(), Vector2f::zero, ctx.cameraPosition, Vector2f::zero, false).position;
-    const Vector2 p2 = getDrawParams(points.p2.as<f32>(), Vector2f::zero, ctx.cameraPosition, Vector2f::zero, false).position;
+    const Vector2 p1 = getDrawParams(points.p1.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    const Vector2 p2 = getDrawParams(points.p2.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
 }
 
