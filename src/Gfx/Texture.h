@@ -88,6 +88,7 @@ public:
 
 private:
     TextureManager();
+    ~TextureManager();
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 

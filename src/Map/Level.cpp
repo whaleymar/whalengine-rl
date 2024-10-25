@@ -20,6 +20,7 @@
 
 namespace whal {
 
+// TODO should just use a color datatype in the level instead of an enum
 Color getLightColor(LevelLighting lightLevel) {
     switch (lightLevel) {
     case LevelLighting::Normal:
@@ -289,7 +290,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     } else {
         auto entity = eEntity.value();
         entity.add(collider);
-        entity.add(Transform2D(collider.getShape().getPositionEdge(Vector2i::unitDown)));
+        entity.add(Transform2D(collider.getShape().getPositionEdge(Vector2i::DOWN)));
         lvl.childEntities.insert(entity);
     }
 }

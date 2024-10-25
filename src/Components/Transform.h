@@ -22,15 +22,15 @@ template <typename T>
 inline Vector2T<T> directionToVector(Direction direction) {
     switch (direction) {
     case Direction::Neutral:
-        return Vector2T<T>::zero;
+        return Vector2T<T>::ZERO;
     case Direction::N:
-        return Vector2T<T>::unitUp;
+        return Vector2T<T>::UP;
     case Direction::S:
-        return Vector2T<T>::unitDown;
+        return Vector2T<T>::DOWN;
     case Direction::E:
-        return Vector2T<T>::unitRight;
+        return Vector2T<T>::RIGHT;
     case Direction::W:
-        return Vector2T<T>::unitLeft;
+        return Vector2T<T>::LEFT;
     case Direction::NE:
         return Vector2T<T>{1, 1};
     case Direction::SE:
@@ -76,8 +76,8 @@ struct Transform2D {
     f32 rotationDegrees = 0.0;              // counterclockwise
     Facing facing = Facing::Right;          // draw calls flipped if facing left
     bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
-    Vector2i pivotOffset = Vector2i::zero;  // used for rotation
-    Vector2f scale = Vector2f::one;
+    Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
+    Vector2f scale = Vector2f::ONE;
 
     static Transform2D pixels(s32 x, s32 y);
     static Transform2D tiles(s32 x, s32 y);
@@ -99,8 +99,8 @@ struct PreciseTransform2D {
     f32 rotationDegrees = 0.0;              // counterclockwise
     Facing facing = Facing::Right;          // draw calls flipped if facing left
     bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
-    Vector2i pivotOffset = Vector2i::zero;  // used for rotation
-    Vector2f scale = Vector2f::one;
+    Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
+    Vector2f scale = Vector2f::ONE;
 
     static PreciseTransform2D pixels(s32 x, s32 y);
     static PreciseTransform2D tiles(s32 x, s32 y);

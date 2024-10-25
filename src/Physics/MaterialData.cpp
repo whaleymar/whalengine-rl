@@ -75,7 +75,7 @@ static const MaterialData S_MATERIAL_GRASS = {
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",
                                               .id = WorldMaterial::Water,
-                                              .colorRange = {DARKBLUE, Colors::LightBlue},
+                                              .colorRange = {DARKBLUE, Colors::LIGHT_BLUE},
                                               .flags = MaterialData::Liquid | MaterialData::Collision | MaterialData::RigidBodyFlag |
                                                        MaterialData::DecayTime | MaterialData::FadeOutFlag,
                                               .bounciness = 0.0,

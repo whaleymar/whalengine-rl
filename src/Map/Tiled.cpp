@@ -211,6 +211,8 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             break;
         }
         ecs::Entity entity = eEntity.value();
+        level.childEntities.insert(entity);
+        level.objects.push_back(entity);
         idToIndex.insert({id, {ix, entity}});
     }
 
@@ -322,10 +324,6 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // add object components with factory
         addComponents(entity, entityData, object, objects, idToIndex, level, layerData);
-
-        level.childEntities.insert(entity);
-        level.objects.push_back(entity);
-        // entity.activate();
     }
 }
 

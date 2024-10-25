@@ -16,6 +16,7 @@ struct Transform2D;
 
 class QuadTreeSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
+    QuadTreeSystem();
     static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition);
     static void updateShape(ecs::Entity entity, const AABB& previousShape, const AABB& newShape);
     static std::vector<ecs::Entity> query(const AABB& aabb);

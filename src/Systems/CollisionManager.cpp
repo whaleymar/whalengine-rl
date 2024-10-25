@@ -17,7 +17,15 @@ namespace whal {
 
 constexpr s32 WORLD_HALFLEN_PIXELS_DEFAULT = 10000;
 
-static qtree::QuadTree QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(WORLD_HALFLEN_PIXELS_DEFAULT, WORLD_HALFLEN_PIXELS_DEFAULT)));
+static qtree::QuadTree makeDefaultQuadtree() {
+    return qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(WORLD_HALFLEN_PIXELS_DEFAULT, WORLD_HALFLEN_PIXELS_DEFAULT)));
+}
+
+static qtree::QuadTree QUAD_TREE = makeDefaultQuadtree();
+
+QuadTreeSystem::QuadTreeSystem() {
+    QUAD_TREE = makeDefaultQuadtree();
+}
 
 #ifndef NDEBUG
 void drawColliders() {
@@ -27,11 +35,11 @@ void drawColliders() {
         const auto collider = entity.get<Collider>();
         Color color;
         if (collider.isActor()) {
-            color = Colors::Magenta;
+            color = MAGENTA;
         } else if (collider.isSolid()) {
             color = RED;
         } else if (collider.isSemiSolid()) {
-            color = Colors::Pink;
+            color = Colors::WHAL_PINK;
         } else {
             color = BLUE;
         }
@@ -39,7 +47,7 @@ void drawColliders() {
     }
 
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesMutable()) {
-        entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
+        entity.get<Trigger>().shape.draw(cameraPos, Colors::EMERALD);
     }
 }
 #endif

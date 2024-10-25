@@ -13,10 +13,10 @@ void BezierRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const
     const Transform2D trans = entity.get<Transform2D>();
     const Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
 
-    Vector2 p1 = getDrawParams(position, Vector2f::zero, ctx.cameraPosition, Vector2f::zero, false).position;
+    Vector2 p1 = getDrawParams(position, Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     Vector2 controlPoint =
-        getDrawParams(position + bezier.controlPointOffset.as<f32>(), Vector2f::zero, ctx.cameraPosition, Vector2f::zero, false).position;
-    Vector2 p2 = getDrawParams(position + bezier.endPointOffset.as<f32>(), Vector2f::zero, ctx.cameraPosition, Vector2f::zero, false).position;
+        getDrawParams(position + bezier.controlPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    Vector2 p2 = getDrawParams(position + bezier.endPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     DrawSplineSegmentBezierQuadratic(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color);
 }
 

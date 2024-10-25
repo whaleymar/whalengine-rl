@@ -109,7 +109,7 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     Rectangle dstRect = Rectangle(0, 0, frameOpt->width, frameOpt->height);
 
     BeginTextureMode(texture);
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
     EndTextureMode();
 
@@ -147,6 +147,16 @@ TextureManager::TextureManager() {
             SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_POINT);
         } else if (rtInfo.id == TextureID::Lighting) {
             SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_BILINEAR);
+        }
+    }
+}
+
+TextureManager::~TextureManager() {
+    unloadAll();
+    constexpr s32 rtLen = static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME);
+    for (size_t i = 0; i < rtLen; i++) {
+        if (isRenderTextureUsed(i)) {
+            UnloadRenderTexture(S_RENDER_TEXTURES[i]);
         }
     }
 }
@@ -323,7 +333,7 @@ Corrade::Containers::Optional<Error> TextureManager::setBackgroundTextureToSprit
 
 void TextureManager::renderBackgroundTextures() {
     BeginTextureMode(getRenderTexture(TextureID::Background));
-    ClearBackground(Colors::Clear);
+    ClearBackground(Colors::CLEAR);
     Rectangle screenSourceRec;
 
     // const Vector2f cameraPos = getCameraPositionPrecise();
@@ -455,12 +465,10 @@ void TextureManager::unloadAll() {
         UnloadTexture(atlas.getTexture());
     }
 
-    constexpr s32 rtLen = static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME);
-    for (size_t i = 0; i < rtLen; i++) {
-        if (isRenderTextureUsed(i)) {
-            UnloadRenderTexture(S_RENDER_TEXTURES[i]);
-        }
-    }
+    mTextureAtlases.clear();
+    mTextureAtlasNames.clear();
+    mTextures.clear();
+    mTextureNames.clear();
 }
 
 }  // namespace whal

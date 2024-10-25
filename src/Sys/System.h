@@ -56,6 +56,7 @@ struct System {
 
 private:
     static void setGame(IGame& game);
+    static void resetManagers();
 
     inline static bool IsPaused = false;
     inline static bool IsQuit = false;

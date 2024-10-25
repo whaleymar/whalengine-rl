@@ -40,7 +40,7 @@ void drawLights(Camera2D worldCamera) {
     EndTextureMode();
 
     // blur the lighting texture
-    static Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::BlurLowRes});
+    static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::BlurLowRes});
     lightingPipeline.process(TextureID::Lighting);
 
     // upscale the lighting to full resolution

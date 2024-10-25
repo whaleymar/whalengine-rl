@@ -900,7 +900,7 @@ void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allOb
 
     s32 shapeId = readInt(values, "Target");
     const auto& shapeObj = allObjects[idToIndex.at(shapeId).first];
-    Vector2i otherDimensions = Vector2i::zero;
+    Vector2i otherDimensions = Vector2i::ZERO;
     bool isPoint = true;
     if (tryReadVector2i(shapeObj, "width", "height", &otherDimensions)) {
         isPoint = false;
