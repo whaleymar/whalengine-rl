@@ -1,15 +1,11 @@
 #pragma once
 
 #include <raylib.h>
-
 #include "IGame.h"
-
-#include "Events/Events.h"
-#include "Events/Listeners.h"
-#include "Gfx/ShaderManager.h"
 #include "Settings.h"
-#include "Sys/System.h"
 #include "Util/Print.h"
+
+#include "Sys/System.h"
 
 // WEB BUILD STUFF
 #ifdef __EMSCRIPTEN__
@@ -29,10 +25,12 @@ void DestroyGame(whal::IGame* game) {
 
 namespace whal {
 
+class RestartEvent;
+
 class Engine {
 public:
     bool start() {
-        // RAYLIB INITIALIZATION
+        // Raylib initialization
         SetTraceLogLevel(LOG_WARNING);
         InitWindow(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, WINDOW_TITLE);
         SetExitKey(KEY_NULL);  // Escape quits by default
@@ -40,6 +38,7 @@ public:
         SetTargetFPS(FPS_TARGET);
         // SetTargetFPS(144); // for testing
 
+        // Set application icon for desktop builds
 #ifndef __EMSCRIPTEN__
         if (FileExists(ICON_IMAGE_PATH)) {
             mIconImage = LoadImage(ICON_IMAGE_PATH);
@@ -47,23 +46,8 @@ public:
         }
 #endif
 
-        // GRAPHICS INITIALIZATION
-        ShaderManager::instance().loadShaders();
-
-        // SYSTEM INITIALIZATION
-        System::input.loadMappings();
-        System::world.setEntityDeathCallback(&emitEntityDeathEvent);
-        System::schedule.start();
-        if (auto err = System::audio.init(); err) {
-            print(*err);
-            return true;
-        }
-        if (!System::audio.isValid()) {
-            print("Error initializing audio manager");
-            return true;
-        }
-
-        return false;
+        // Init modules
+        return System::start();
     }
 
     bool loadGame() {
@@ -78,8 +62,8 @@ public:
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
             return true;
         }
-        System::eventMgr.emit<RestartEvent>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
-                                                // regular start)
+        System::event.emit<RestartEvent>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
+                                             // regular start)
 
         return false;
     }
@@ -110,14 +94,10 @@ public:
     }
 
     void end() {
-        // SYSTEM END
-        System::schedule.end();
-        System::schedule.await();
+        // Delete modules
+        System::end();
 
-        // GRAPHICS END
-        ShaderManager::instance().unloadAll();
-
-        // RAYLIB END
+        // Raylib end
 #ifndef __EMSCRIPTEN__
         if (FileExists(ICON_IMAGE_PATH)) {
             UnloadImage(mIconImage);
