@@ -61,6 +61,19 @@ void Renderer::_render() {
     System::world.getSystem<RadianceLightSystem>()->drawEntities(worldCamera);  // drawn to TextureID::Radiance
 
     // 2. Renders everything to TextureID::Main
+
+    // TEMP -- visualizing the post-process map
+    // BeginTextureMode(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
+    // ClearBackground(Colors::CLEAR);
+    // drawRenderTexture(TextureManager::getRenderTexture(TextureID::Main));
+    // EndTextureMode();
+    // BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    // ClearBackground(Colors::CLEAR);
+    // drawRenderTexture(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
+    // EndTextureMode();
+    // return;
+    // /TEMP
+
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
     ClearBackground(Colors::CLEAR);
 

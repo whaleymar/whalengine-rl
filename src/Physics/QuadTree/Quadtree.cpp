@@ -79,9 +79,9 @@ RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) {
         const RaycastHit curHitInfo = ray.collide(shape);
         if (curHitInfo.distance < closestDistance) {
             closestDistance = curHitInfo.distance;
-
-            // Properly calculate float distance
             hitinfo = curHitInfo;
+
+            // Add the entity info (has placeholder value)
             hitinfo.setOther(entity);
             hitinfo.otherLayer = collider.getCollisionLayer();
             hitinfo.otherMaterial = collider.getMaterial();
