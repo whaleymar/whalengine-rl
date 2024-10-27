@@ -23,15 +23,11 @@ out vec4 finalColor;
 // can handle 5+ lights
 // set steps to 100 for slightly less chunky shadows
 const float STEPS = 80.;
+// const float STEPS = 200.;
 const int LIGHTPASSES = 10;
 
 const vec3 wallColor = vec3(0.0);
-
-//random function not by me, found it somewhere on the internet!
-float rand(vec2 n) {
-  return 1. * 
-     fract(sin(dot(n.xy, vec2(12.9898, 78.233)))* 43758.5453);
-}
+const float pi = 3.1415926;
 
 bool isWall(vec2 p) {
     vec4 sampleCol = texture(texture0, p);
@@ -44,19 +40,17 @@ vec3 getColor(vec2 p) {
     return step(MIN_OCCLUSION_VAL, sampleCol.b) * wallColor + (1. - step(MIN_OCCLUSION_VAL, sampleCol.b)) * vec3(1.);
 }
 
-
 vec3 getLighting(vec2 p, vec2 lp) {
 	vec2 samplePixel = p;
     float distance = length(p - lp);
 
+    // do fewer steps for smaller distances
     int nSteps = int(STEPS * distance);
 	vec2 step = (lp-p)/float(nSteps);
 
-    // vec3 wallVal = distance/vec3(1.,1.,1.) + 1./distance*0.075*vec3(1.0,0.5,0.6);
-
-    // this is better. before, the shadows seemed to get brighter the further they were from the light, which made no sense
-    vec3 wallVal = 1./distance*0.075*vec3(1.0,0.5,0.6);
-    vec3 airVal = vec3(1.0,1.0,1.0) + 1./distance*0.075*vec3(1.0,0.5,0.6);
+    // This makes sure that pixels further from the light source get less light.
+    vec3 wallVal = 1./distance*0.075*vec3(0.0,0.0,0.0);
+    vec3 airVal = vec3(1.0,1.0,1.0) + 1./distance*0.075*vec3(1.0,1.0,1.0);
 
 	for (int i = 0 ; i < nSteps; i++) {
 		if (isWall(samplePixel)) {
@@ -68,30 +62,40 @@ vec3 getLighting(vec2 p, vec2 lp) {
 	return airVal;
 }
 
-vec3 blendLighting(vec2 p, vec2 lp) {	
+// p = pixel position 
+// lp = light position
+vec3 blendLighting(const vec2 p, vec2 lp) {	
 	vec2 r;
 	vec3 c = vec3(0.,0.,0.);
     const float recip = 1./float(LIGHTPASSES);
 	
-	// for (int i = 1 ; i <= LIGHTPASSES ; i++) {
-	// 	// r = vec2(rand(sin(iTime*float(i))+p.xy)*0.03-0.015,rand(cos(iTime*float(i))+p.yx)*0.03-0.015);
-	// 	r = vec2(rand(sin(float(i))+p.xy)*0.03-0.015,rand(cos(float(i))+p.yx)*0.03-0.015);
-	// 	c += getLighting(p,lp+r) * recip;
-	// }
-
-
     const float step = 2./float(LIGHTPASSES);
     float valX = -1.;
     float valY = -1.;
 
-    const float SCALAR = 0.03;
-    const float BIAS = -0.015;
-	for (int i = 1 ; i <= LIGHTPASSES; i++) {
-		r = vec2(valX * SCALAR + BIAS, valY * SCALAR + BIAS);
+    // const float SCALAR = 0.05;
+    vec2 SCALAR = 2. / iResolution;
+    const float BIAS = 0.;
+    const float t_denom = 1. / float(LIGHTPASSES);
+    float t = 0.0;
+	for (int i = 0; i < LIGHTPASSES; i++) {
+        r = vec2(cos(2. * t * pi), sin(2. * t * pi)) * SCALAR;
 		c += getLighting(p,lp+r) * recip;
         valX += step;
         valY += step;
+        t += t_denom;
 	}
+	
+	return c;
+}
+
+// p = pixel position 
+// lp = light position
+// this does one pass instead of adding some offsets to the lighting pass and then averaging the light values
+// sacrifices soft shadows, but is much faster
+vec3 blendLightingSimple(const vec2 p, vec2 lp) {	
+    vec3 c = vec3(0., 0., 0.);
+    c += getLighting(p, lp);
 	
 	return c;
 }
@@ -108,6 +112,8 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     float fraction = pixelDistance/radiusPixels;
     float weight = mix(0., 1., sqrt(fraction));
     vec3 shadow = blendLighting(p, lightPos);
+    // vec3 shadow = blendLightingSimple(p, lightPos);
+    // vec3 shadow = blendLightingQuad(p, lightPos);
     shadow = mix(shadow, vec3(0.), weight);
     return shadow;
 }

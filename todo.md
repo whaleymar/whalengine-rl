@@ -27,6 +27,9 @@
 - shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
     - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
 - player sprite should NOT affect shadows!!!
+    - this is because post-process effects are drawn in order and i use this texture for light occlusion, so if something without a collider does *not* occlude light (like the player's head) then it makes a head-shaped hole in the occlusion map, allowing more light to pass through
+    - to start, I think the occlusion map should be on a separate texture 
+    - i think it also needs a depth buffer to get rid of all these schenanigans
 
 ## Web 
 - getting mouse position does not work
