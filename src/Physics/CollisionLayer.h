@@ -17,12 +17,14 @@ enum Layer : u16 {
     SemiSolid = 1 << 2,
     TriggerPhysics = 1 << 3,
     TriggerActors = 1 << 4,
-    PlayerFriendlyFire = 1 << 5,
+    PlayerFriendlyFire = 1 << 5,  // interacts with solids and itself, but not actors. Good for player projectiles that spawn inside the player.
+
+    // These are basically tags that affect the physics system (think raycasts - maybe you want to check if something will hit an enemy)
     Player = 1 << 6,
     Enemy = 1 << 7,
     Npc = 1 << 8,
     Light = 1 << 9,
-    Vision = 1 << 10,
+    BlocksVision = 1 << 10,
 };
 
 Layer fromString(const char* layer);

@@ -22,7 +22,7 @@ Layer fromString(const char* layer) {
     RETURN_IF(layer, Enemy);
     RETURN_IF(layer, Npc);
     RETURN_IF(layer, Light);
-    RETURN_IF(layer, Vision);
+    RETURN_IF(layer, BlocksVision);
 
     return None;
 }
@@ -34,16 +34,16 @@ Layer fromString(const char* layer) {
 static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {None, None},
     {Layer::Actor, Solid | SemiSolid | TriggerActors | TriggerPhysics},
-    {Layer::Solid, SemiSolid | Light | Vision | TriggerPhysics | PlayerFriendlyFire | Player | Enemy | Npc},
-    {Layer::SemiSolid, SemiSolid | Light | Vision | TriggerPhysics | PlayerFriendlyFire | Player | Enemy | Npc},
+    {Layer::Solid, SemiSolid | Light | TriggerPhysics | PlayerFriendlyFire},
+    {Layer::SemiSolid, SemiSolid | Light | TriggerPhysics | PlayerFriendlyFire},
     {Layer::TriggerPhysics, None},
     {Layer::TriggerActors, None},
-    {Layer::PlayerFriendlyFire, PlayerFriendlyFire | Player | Enemy | Npc},
-    {Layer::Player, Enemy | Npc},  // thinking of using this for player actions? not sure
+    {Layer::PlayerFriendlyFire, PlayerFriendlyFire},
+    {Layer::Player, None},
     {Layer::Enemy, None},
     {Layer::Npc, None},
     {Layer::Light, None},
-    {Layer::Vision, None},
+    {Layer::BlocksVision, None},
 };
 
 LayerMatrix::LayerMatrix() {

@@ -3,6 +3,7 @@
 #include "Components/Tags.h"
 #include "Gfx/Frame.h"
 #include "IGame.h"
+#include "Physics/CollisionLayer.h"
 #include "Settings.h"
 
 #include "Components/Collision.h"
@@ -222,9 +223,10 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         s32 tileID = blockID - tset.firstgid;
                         tset.addTileComponents(e, tileID, lvl, layer.metadata, mapPosition);
 
-                        // For simplicity, tiles with collision also block light
+                        // For simplicity, tiles with collision also block light and vision
                         if (e.has<Collider>()) {
                             e.add<BlocksLight>();
+                            e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
                         }
 
                         e.activate();
