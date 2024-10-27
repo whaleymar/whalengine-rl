@@ -1,7 +1,6 @@
 # To Do 
 
 ## Separating Game vs Engine 
-- !!! anything that's static and not const could cause a crash and needs to be reset on game unload
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)

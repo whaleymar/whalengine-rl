@@ -1,10 +1,12 @@
 #include "CollisionManager.h"
 #include <raylib.h>
 
+#include "Components/Collision.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 
 #include "Physics/CollisionLayer.h"
+#include "Physics/HitInfo.h"
 #include "Physics/QuadTree/Quadtree.h"
 
 #include "Systems/TagTrackers.h"
@@ -65,6 +67,14 @@ void QuadTreeSystem::updateShape(ecs::Entity entity, const AABB& previousShape, 
 
 std::vector<ecs::Entity> QuadTreeSystem::query(const AABB& aabb) {
     return QUAD_TREE.query(aabb);
+}
+
+RaycastHit QuadTreeSystem::raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask) {
+    return QUAD_TREE.raycast(origin, direction, maxDistance, layerMask);
+}
+
+RaycastHit QuadTreeSystem::circlecast(Vector2f origin, Vector2f direction, f32 maxDistance, f32 radius, u16 layerMask) {
+    return QUAD_TREE.circlecast(origin, direction, maxDistance, radius, layerMask);
 }
 
 void QuadTreeSystem::rebuild(s32 width, s32 height) {

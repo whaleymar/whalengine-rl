@@ -37,7 +37,7 @@ struct HitInfo {
     WorldMaterial otherMaterial = WorldMaterial::None;
     CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
 
-    HitInfo();
+    HitInfo() = default;
     HitInfo(Vector2i normal, bool isCollision = false, bool isPush = false, bool isCarry = false);
 
     operator bool() const { return flags & CollisionInfo::Hit; }
@@ -50,6 +50,47 @@ struct HitInfo {
     bool isHorizontal() const { return flags & (CollisionInfo::HORIZONTAL); }
     void clearVerticalFlags() { flags = flags & ~CollisionInfo::VERTICAL; }
     void clearHorizontalFlags() { flags = flags & ~CollisionInfo::HORIZONTAL; }
+
+    ecs::Entity getOther() const;
+    void setOther(ecs::Entity);
+};
+
+namespace RayCollisionInfo {
+
+enum Flags : u8 {
+    Hit = 1,
+    Above = 1 << 1,
+    Below = 1 << 2,
+    Left = 1 << 3,
+    Right = 1 << 4,
+};
+
+constexpr u8 VERTICAL = Above | Below;
+constexpr u8 HORIZONTAL = Right | Left;
+
+}  // namespace RayCollisionInfo
+
+struct RaycastHit {
+    ecs::EntityID otherID;
+    Vector2i point;  // intersection point
+    f32 distance;    // distance from ray's origin to the impact point
+    u8 flags = 0;
+    WorldMaterial otherMaterial = WorldMaterial::None;
+    CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
+
+    RaycastHit() = default;
+    RaycastHit(ecs::Entity other, Vector2i point, f32 distance, Vector2i normal);
+
+    operator bool() const { return flags & RayCollisionInfo::Hit; }
+    Vector2i toVec() const;
+    bool isUp() const { return flags & RayCollisionInfo::Above; }
+    bool isDown() const { return flags & RayCollisionInfo::Below; }
+    bool isRight() const { return flags & RayCollisionInfo::Right; }
+    bool isLeft() const { return flags & RayCollisionInfo::Left; }
+    bool isVertical() const { return flags & (RayCollisionInfo::VERTICAL); }
+    bool isHorizontal() const { return flags & (RayCollisionInfo::HORIZONTAL); }
+    void clearVerticalFlags() { flags = flags & ~RayCollisionInfo::VERTICAL; }
+    void clearHorizontalFlags() { flags = flags & ~RayCollisionInfo::HORIZONTAL; }
 
     ecs::Entity getOther() const;
     void setOther(ecs::Entity);

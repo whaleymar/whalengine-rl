@@ -93,6 +93,10 @@ bool AABB::contains(const AABB& other) const {
     return left() <= other.left() && other.right() <= right() && other.top() <= top() && bottom() <= other.bottom();
 }
 
+bool AABB::contains(Vector2i point) const {
+    return left() <= point.x && point.x <= right() && point.y <= top() && bottom() <= point.y;
+}
+
 #ifndef NDEBUG
 
 constexpr static f32 S_DEBUG_SHAPE_THICKNESS = 2.0f;
@@ -153,6 +157,13 @@ Vector2i AABB::getPositionEdge(Vector2i unitDir) const {
     return mCenter + mHalf * unitDir;
 }
 
+Vector2i AABB::getClosestPointTo(Vector2i point) const {
+    const auto delta = point - mCenter;  // vector from center to point
+
+    // clamp to be on the AABB's boundary
+    return mCenter + Vector2i(math::clamp(delta.x, -mHalf.x, mHalf.x), math::clamp(delta.y, -mHalf.y, mHalf.y));
+}
+
 Circle::Circle(Vector2i center, s32 radius) : mCenter(center), mRadius(radius) {}
 
 Circle::Circle(Transform2D transform, s32 radius) : mCenter(transform.position.x, transform.position.y + radius), mRadius(radius) {}
@@ -177,11 +188,7 @@ void Circle::draw(Vector2f cameraPos, Color color) const {
 #endif
 
 f32 Circle::getDistanceFromCenter(const AABB* aabb) const {
-    const auto delta = getPosition() - aabb->getPosition();  // vector from AABB's center to circle's
-
-    // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
-    const auto half = aabb->getHalf();
-    const auto closestPoint = aabb->getPosition() + Vector2i(math::clamp(delta.x, -half.x, half.x), math::clamp(delta.y, -half.y, half.y));
+    const auto closestPoint = aabb->getClosestPointTo(getPosition());
     return (getPosition() - closestPoint).as<f32>().len();
 }
 
