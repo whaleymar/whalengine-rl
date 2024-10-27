@@ -28,12 +28,14 @@ public:
     Vector2i getHalf() const { return mHalf; }
     void setHalf(Vector2i half) { mHalf = half; }
     Vector2i getPositionEdge(Vector2i unitDir) const;
+    Vector2i getClosestPointTo(Vector2i point) const;
     HitInfo collide(const AABB& other) const;
 
     // NOT used by Shape, but is used by Collider
     bool isOverlapping(const AABB* other) const;
     bool isOverlapping(const AABB& other) const;
     bool contains(const AABB& other) const;
+    bool contains(Vector2i point) const;
 #ifndef NDEBUG
     void draw(Vector2f cameraPos, Color color) const;
 #endif
