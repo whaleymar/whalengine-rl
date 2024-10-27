@@ -61,12 +61,12 @@ void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other
 Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
                    CollisionCallback squish_)
     : mShape(shape), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
-      mCollisionDir(collisionDir) {}
+      mCollisionDir(collisionDir), mCollisionMask(layer) {}
 
 Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
                    CollisionDir collisionDir, CollisionCallback squish_)
     : mShape(AABB(transform, halflen)), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
-      mCollisionDir(collisionDir) {}
+      mCollisionDir(collisionDir), mCollisionMask(layer) {}
 
 Collider Collider::Actor(AABB shape, CollisionCallback squish_) {
     auto collider = Collider(shape, CollisionLayer::Actor);

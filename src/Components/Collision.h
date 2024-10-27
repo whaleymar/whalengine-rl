@@ -29,7 +29,6 @@ struct Wiggle {
     WiggleCallback callback;
 };
 
-// currently 64 bytes, don't want to make it bigger for cache reasons
 class Collider {
     friend PhysicsSystem;
     friend TweenPositionSystem;
@@ -72,6 +71,13 @@ public:
     void setCollisionDir(CollisionDir dir) { mCollisionDir = dir; }
     CollisionLayer::Layer getCollisionLayer() const { return mCollisionLayer; }
     void setCollisionLayer(CollisionLayer::Layer layer) { mCollisionLayer = layer; }
+
+    // Only intended for "tag" layers that don't affect physics collisions.
+    void setCollisionMask(u16 mask) { mCollisionMask = mask; }
+
+    // Resets collision mask to the collision layer.
+    void clearCollisionMask() { mCollisionMask = 0; }
+    u16 getCollisionMask() const { return mCollisionMask | mCollisionLayer; }
 
     ecs::Entity getEntity() const { return mSelf; }
     void setEntity(ecs::Entity entity) { mSelf = entity; }
@@ -127,6 +133,7 @@ protected:
     f32 mYRemainder = 0.0;
     WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
+    u16 mCollisionMask = 0;
 };
 
 bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
