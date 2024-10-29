@@ -155,7 +155,9 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
-        lightEntity.add(Transform2D(level.worldOffsetPixels + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>()));
+        auto trans = Transform2D(level.worldOffsetPixels + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
+        trans.depth = Depth::Foreground1;
+        lightEntity.add(trans);
 
         BoxLight boxLight = {{3 * PIXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
@@ -298,6 +300,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // add transform
         Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
+        trans.depth = layerData.depth;
         entity.add(trans);
 
         // add name

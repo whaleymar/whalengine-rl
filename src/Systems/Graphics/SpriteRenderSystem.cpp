@@ -37,7 +37,7 @@ void SpriteRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const 
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = bb,
-            .depth = sprite.depth,
+            .depth = trans.depth,
             .entity = entity,
             .piRender = this,
         });

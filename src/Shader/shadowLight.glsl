@@ -48,9 +48,8 @@ vec3 getLighting(vec2 p, vec2 lp) {
     int nSteps = int(STEPS * distance);
 	vec2 step = (lp-p)/float(nSteps);
 
-    // This makes sure that pixels further from the light source get less light.
-    vec3 wallVal = 1./distance*0.075*vec3(0.0,0.0,0.0);
-    vec3 airVal = vec3(1.0,1.0,1.0) + 1./distance*0.075*vec3(1.0,1.0,1.0);
+    vec3 wallVal = vec3(0.);
+    vec3 airVal = vec3(1.0);
 
 	for (int i = 0 ; i < nSteps; i++) {
 		if (isWall(samplePixel)) {
@@ -109,11 +108,12 @@ vec3 processLight(vec2 p, vec2 lightPos) {
         return vec3(0.);
     }
     // 0.0 == full light; 1.0 == full shadow
-    float fraction = pixelDistance/radiusPixels;
-    float weight = mix(0., 1., sqrt(fraction));
     vec3 shadow = blendLighting(p, lightPos);
     // vec3 shadow = blendLightingSimple(p, lightPos);
-    // vec3 shadow = blendLightingQuad(p, lightPos);
+
+    // This makes sure the pixel is lit less based on distance from light.
+    float fraction = pixelDistance/radiusPixels;
+    float weight = mix(0., 1., sqrt(fraction));
     shadow = mix(shadow, vec3(0.), weight);
     return shadow;
 }

@@ -77,19 +77,21 @@ void ShaderManager::loadShaders() {
         u32 uniformFlags = Uniforms::None;
     };
 
-    static const ShaderInfo shaderInfo[] = {{Shaders::Default, 0, 0},
-                                            {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
-                                            {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
-                                            {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
-                                            {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
-                                            {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
-                                            // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
-                                            {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
-                                            {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
-                                            {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
-                                            {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
-                                            {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
-                                            {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"}};
+    static const ShaderInfo shaderInfo[] = {
+        {Shaders::Default, 0, 0},
+        {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
+        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
+        {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
+        {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
+        {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
+        // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
+        {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
+        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
+        {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
+        {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
+        {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
+        {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"},
+    };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
 
