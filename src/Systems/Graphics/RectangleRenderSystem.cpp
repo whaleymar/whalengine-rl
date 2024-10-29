@@ -31,7 +31,7 @@ void RectangleRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) con
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = bb,
-            .depth = draw.depth,
+            .depth = trans.depth,
             .entity = entity,
             .piRender = this,
         });

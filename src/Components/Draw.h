@@ -17,17 +17,16 @@ enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
 struct IDraw {
     IDraw() = default;
-    IDraw(Depth depth_, Color color_);
+    IDraw(Color color_);
 
     Color color = WHITE;
-    Depth depth = Depth::Level;
 };
 
 struct Sprite : public IDraw {
     Sprite() = default;
-    Sprite(Depth depth_, Frame frame, Color color_ = WHITE);
+    Sprite(Frame frame, Color color_ = WHITE);
 
-    static Expected<Sprite> fromPath(const char* spritePath, Depth depth_ = Depth::Player, Color color_ = WHITE);
+    static Expected<Sprite> fromPath(const char* spritePath, Color color_ = WHITE);
     void setFrame(Frame frame);
 
     Vector2i frameSize;
@@ -35,7 +34,7 @@ struct Sprite : public IDraw {
 };
 
 struct DrawRect : public IDraw {
-    DrawRect(Color color_ = WHITE, Vector2i frameSize_ = {8, 8}, Depth depth_ = Depth::Player);
+    DrawRect(Color color_ = WHITE, Vector2i frameSize_ = {8, 8});
 
     Vector2i frameSize;
 };
@@ -52,7 +51,6 @@ struct DrawStraightLine {
     s32 length;
     Color color = WHITE;
     f32 thickness = 1.0;
-    Depth depth = Depth::Level;
     bool isRotateAboutCenter = false;
 };
 
@@ -61,7 +59,6 @@ struct DrawText {
     Vector2i frameSize;
     Color color = WHITE;
     bool isCentered = false;
-    Depth depth = Depth::Debug;
 };
 
 }  // namespace whal

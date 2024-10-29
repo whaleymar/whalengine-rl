@@ -6,6 +6,7 @@
 #include <raylib.h>
 #include <string>
 
+#include "Gfx/RaylibUtil.h"
 #include "Settings.h"
 
 #include "Systems/TagTrackers.h"
@@ -129,7 +130,6 @@ TextureManager::TextureManager() {
         {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
         {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
         {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-        // {TextureID::DownscaledMain, WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS},
         {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
         {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
     };
@@ -137,16 +137,23 @@ TextureManager::TextureManager() {
     constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
     for (size_t i = 0; i < len; i++) {
         const auto rtInfo = sRenderTexInfo[i];
-        RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
-        s32 ix = static_cast<s32>(rtInfo.id);
-        S_RENDER_TEXTURES[ix] = renderTexture;
-        setIsRenderTextureUsed(ix);
-
-        // use gl_nearest for scaling (this is a pixel art engine!)
-        if (rtInfo.id == TextureID::Main) {
-            SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_POINT);
-        } else if (rtInfo.id == TextureID::Lighting) {
+        if (rtInfo.id == TextureID::Lighting) {
+            // RenderTexture2D renderTexture = LoadRenderTextureDepthTex(rtInfo.width, rtInfo.height);
+            RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
+            s32 ix = static_cast<s32>(rtInfo.id);
+            S_RENDER_TEXTURES[ix] = renderTexture;
+            setIsRenderTextureUsed(ix);
             SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_BILINEAR);
+        } else {
+            RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
+            s32 ix = static_cast<s32>(rtInfo.id);
+            S_RENDER_TEXTURES[ix] = renderTexture;
+            setIsRenderTextureUsed(ix);
+
+            // use gl_nearest for scaling (this is a pixel art engine!)
+            if (rtInfo.id == TextureID::Main) {
+                SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_POINT);
+            }
         }
     }
 }

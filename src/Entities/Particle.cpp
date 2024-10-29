@@ -54,6 +54,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     auto particle = expected.value();
     auto _ = ecs::DeferActivate(particle);
 
+    transform.depth = depth;
     particle.add(transform);
     particle.add(Name("particle"));
     particle.add(PrecisePosition::fromTrans(transform));
@@ -61,18 +62,18 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     particle.add<Velocity>();
 
     if (materialData.particleShape == DrawTag::Line) {
-        particle.add(DrawStraightLine(3, color, 1.0, depth, true));
+        particle.add(DrawStraightLine(3, color, 1.0, true));
         materialData.addComponents<DrawStraightLine>(particle, 1, color, lifetimeMultiplier);
         particle.add<AngularVelocity>();
     } else {
-        particle.add(DrawRect(color, Vector2i(1, 1), depth));
+        particle.add(DrawRect(color, Vector2i(1, 1)));
         materialData.addComponents<DrawRect>(particle, 1, color, lifetimeMultiplier);
     }
 
     return particle;
 }
 
-Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime, bool fullRadiance, Depth depth) {
+Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime, bool fullRadiance) {
     auto expected = createParticleBase(transform, color, lifetime);
     if (!expected.isExpected()) {
         return expected;
@@ -81,7 +82,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
     auto particle = expected.value();
 
     auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
-    particle.add(Sprite(depth, *frame));
+    particle.add(Sprite(*frame));
 
     s32 radius = PIXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});

@@ -28,7 +28,7 @@ void BezierRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const 
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = AABB::fromPoints(position, position + line.controlPointOffset, position + line.endPointOffset),
-            .depth = line.depth,
+            .depth = trans.depth,
             .entity = entity,
             .piRender = this,
         });

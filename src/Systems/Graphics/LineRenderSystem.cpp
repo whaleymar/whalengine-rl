@@ -51,7 +51,7 @@ void LineRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
 
         queue.emplace_back(EntityRenderInfo{
             .boundingBox = AABB::fromPoints(points.p1, points.p2),
-            .depth = line.depth,
+            .depth = trans.depth,
             .entity = entity,
             .piRender = this,
         });

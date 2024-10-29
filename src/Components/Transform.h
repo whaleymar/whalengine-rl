@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Gfx/Depth.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -73,9 +74,10 @@ enum class Facing : u8 {
 // entity position in pixels
 struct Transform2D {
     Vector2i position;
-    f32 rotationDegrees = 0.0;              // counterclockwise
-    Facing facing = Facing::Right;          // draw calls flipped if facing left
-    bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
+    f32 rotationDegrees = 0.0;      // counterclockwise
+    Facing facing = Facing::Right;  // draw calls flipped if facing left
+    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
+    Depth depth = Depth::Level;
     Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
     Vector2f scale = Vector2f::ONE;
 

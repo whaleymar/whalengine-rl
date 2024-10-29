@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <raylib.h>
+#include <rlgl.h>
 
 #include "Components/Light.h"
 #include "Components/Tags.h"
@@ -10,6 +11,7 @@
 #include "Events/Events.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/Pipeline.h"
+#include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
@@ -76,8 +78,8 @@ void PointLightSystem::drawEntities() {
             continue;
         }
         PointLight light = entity.get<PointLight>();
-        const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
+        const auto trans = entity.get<Transform2D>();
+        const Vector2i worldPosition = trans.position + getLightOffset(trans.rotationDegrees, light.heightOffset);
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
@@ -95,6 +97,7 @@ void PointLightSystem::drawEntities() {
         const Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
         const Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
+        // DrawTextureDepth(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color, depthToFloat(trans.depth));
     }
 }
 

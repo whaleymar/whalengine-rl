@@ -471,7 +471,6 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
     DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DefaultDraw;
-    draw.depth = layerData.depth;
     draw.frameSize = entityData.size;
 
     // ARGB
@@ -517,7 +516,6 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (eSprite.isExpected()) {
         sprite.frameSize = eSprite.value().frameSize;
         sprite.atlasPosition = eSprite.value().atlasPosition;
-        sprite.depth = layerData.depth;
         entity.add(sprite);
     } else {
         print("Error: Coudn't find frame for sprite:", spritePath);
@@ -549,7 +547,6 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     u32 flags = parseGfxEffects(values);
     entity.add(GfxFlags{flags});
 
-    sprite.depth = layerData.depth;
     entity.add(sprite);
 }
 
