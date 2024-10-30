@@ -1,4 +1,5 @@
 #include "RectangleRenderSystem.h"
+#include <raylib.h>
 
 #include "Common.h"
 #include "Components/Draw.h"

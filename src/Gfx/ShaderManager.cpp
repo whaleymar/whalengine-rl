@@ -91,6 +91,7 @@ void ShaderManager::loadShaders() {
         {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
         {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"},
+        {Shaders::Test, 0, "src/Shader/test.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);

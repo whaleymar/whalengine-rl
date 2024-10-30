@@ -24,6 +24,8 @@ public:
 
 private:
     int mPositionUniform;
+    // int mLightDepthUniform;
+    // int mOcclusionDepthUniform;
 };
 
 class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public IListen<ShaderReloadEvent, true> {
@@ -35,6 +37,8 @@ private:
     int mPositionUniform;
     int mHalflenUniform;
     int mRadiusUniform;
+    int mLightDepthUniform;
+    int mOcclusionDepthUniform;
 };
 
 class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<ShaderReloadEvent, true> {
@@ -54,6 +58,8 @@ public:
 private:
     int mLightPosUniform;
     int mRadiusUniform;
+    int mLightDepthUniform;
+    int mOcclusionDepthUniform;
 };
 
 }  // namespace whal

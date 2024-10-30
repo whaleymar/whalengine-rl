@@ -117,26 +117,28 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     return texture;
 }
 
+// RESEARCH add a data point for Texture Filter?
+struct RenderTextureInfo {
+    TextureID id;
+    s32 width;
+    s32 height;
+};
+
+static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
+    {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+    {TextureID::Background, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+    {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+    {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+    {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+    {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
+    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+};
+
 TextureManager::TextureManager() {
-    struct RenderTextureInfo {
-        TextureID id;
-        s32 width;
-        s32 height;
-    };
-
-    static const RenderTextureInfo sRenderTexInfo[] = {
-        {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-        {TextureID::Background, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-        {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-        {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-        {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-        {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-        {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-    };
-
-    constexpr s32 len = sizeof(sRenderTexInfo) / sizeof(RenderTextureInfo);
-    for (size_t i = 0; i < len; i++) {
-        const auto rtInfo = sRenderTexInfo[i];
+    for (auto rtInfo : S_RENDER_TEX_INFO) {
+        // These blocks are identical aside from the bilinear filter on lighting. I split them when experimenting w/ depth buffers
         if (rtInfo.id == TextureID::Lighting) {
             // RenderTexture2D renderTexture = LoadRenderTextureDepthTex(rtInfo.width, rtInfo.height);
             RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
@@ -166,6 +168,16 @@ TextureManager::~TextureManager() {
             UnloadRenderTexture(S_RENDER_TEXTURES[i]);
         }
     }
+}
+
+Vector2i TextureManager::getSize(TextureID id) {
+    for (auto rtInfo : S_RENDER_TEX_INFO) {
+        if (id == rtInfo.id) {
+            return Vector2i(rtInfo.width, rtInfo.height);
+        }
+    }
+    assert(false && "can't get size of texture because it's not in S_RENDER_TEX_INFO");
+    return Vector2i();
 }
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {

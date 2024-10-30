@@ -6,15 +6,28 @@ in vec4 fragColor;
 
 // Input uniform values
 // default:
-uniform sampler2D texture0;
+uniform sampler2D texture0; // occlusion color texture
 uniform vec4 colDiffuse;
 // mine:
 uniform vec2 lightpos;
+// uniform float lightDepth;
+// uniform sampler2D occlusionDepthTex;
 
 // Output fragment color
 out vec4 finalColor;
 
-void main() {
+// bool isWall(vec2 p) {
+//     vec4 sampleDepth = texture(occlusionDepthTex, p);
+//     float depth = sampleDepth.r;
+//
+//     return lightDepth < depth;
+// }
+//
+// vec4 getWallColor(vec2 p) {
+//     return texture(texture0, p);
+// }
+
+vec4 getLighting() {
     vec2 adj = vec2(fragTexCoord.x - 0.5, fragTexCoord.y - 0.5);
     float distance = length(adj - lightpos);
 
@@ -24,11 +37,11 @@ void main() {
     intensity = intensity * step(0.5, intensity); 
     intensity = (intensity - 0.5) * 2.;
 
-    finalColor = vec4(fragColor * intensity);
+    return vec4(fragColor * intensity);
 
     // full lighting if pretty close. This is like a 1.5 tile radius
     // if (distance < 0.1) {
-    //     finalColor = fragColor;
+    //     return fragColor;
     // } else {
     //     float intensity = 1. - distance + 0.1;
     //
@@ -36,6 +49,17 @@ void main() {
     //     intensity = intensity * step(0.5, intensity); 
     //     intensity = (intensity - 0.5) * 2.;
     //
-    //     finalColor = vec4(fragColor * intensity);
+    //     return vec4(fragColor * intensity);
+    // }
+}
+
+void main() {
+    // Checking the occlusion texture doesn't work because fragTexCoord is not actually the screen coord, but the uv of the light (because I'm drawing it as a rect)
+    // I'm thinking I keep this as-is and add a switch to shadowLight if I want it to behave like a point light
+
+    // if (isWall(fragTexCoord)) {
+        // finalColor = vec4(0.);
+    // } else {
+    finalColor = getLighting();
     // }
 }

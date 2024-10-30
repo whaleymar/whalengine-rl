@@ -36,7 +36,7 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
 
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        const Transform2D trans = entity.get<Transform2D>();
+        Transform2D& trans = entity.get<Transform2D>();
         Attach& attach = entity.get<Attach>();
         if (!attach.isTargetInitialized) {
             attach.initTarget(entity);
@@ -54,12 +54,10 @@ void AttachSystem::update() {
         }
 
         if (attach.directionParam == Attach::DirectionParam::UseFacingForAll) {
-            Transform2D newTrans;
-            newTrans.position = targetPosition;
-            newTrans.facing = targetTrans.facing;
-            entity.set(newTrans);
+            trans.position = targetPosition;
+            trans.facing = targetTrans.facing;
         } else {
-            entity.set(Transform2D(targetPosition));
+            trans.position = targetPosition;
         }
     }
 }

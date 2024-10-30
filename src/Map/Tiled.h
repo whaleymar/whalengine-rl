@@ -35,6 +35,7 @@ const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
 Color parseColor(const std::string& hexString);
+bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst);
 
 struct LayerData {
     Depth depth;

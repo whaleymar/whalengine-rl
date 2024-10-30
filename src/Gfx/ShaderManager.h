@@ -20,7 +20,7 @@ enum class Shaders : s16 {
     BlurLowRes,
     PostProcess,
     EffectsMask,
-    DepthTestTemp,
+    Test,
     _Count_DO_NOT_USE_ME
 };
 

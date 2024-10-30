@@ -13,11 +13,24 @@ uniform vec2 lightpos;
 uniform vec2 lighthalflen;
 uniform float lightradius;
 uniform vec2 iResolution;
+// uniform float lightDepth;
+// uniform sampler2D occlusionDepthTex;
 
 // Output fragment color
 out vec4 finalColor;
 
-void main() {
+// bool isWall(vec2 p) {
+//     vec4 sampleDepth = texture(occlusionDepthTex, p);
+//     float depth = sampleDepth.r;
+//
+//     return lightDepth < depth;
+// }
+//
+// vec4 getWallColor(vec2 p) {
+//     return texture(texture0, p);
+// }
+
+vec4 getLighting() {
     // Get the position of the current fragment (screen coordinates!)
     vec2 position = vec2( gl_FragCoord.x, iResolution.y - gl_FragCoord.y);
 
@@ -32,7 +45,22 @@ void main() {
     // outside of light's bounds, decrease intensity until radius
     float intensity = clamp(1. - dist/lightradius, 0., 1.);
 
-    finalColor = vec4(fragColor * intensity);
+    return vec4(fragColor * intensity);
+}
+
+void main() {
+    // check if behind an occluder 
+    // if (isWall(fragTexCoord)) {
+        // finalColor = vec4(0.);
+    // } else {
+        // vec2 p = fragTexCoord * iResolution / (lighthalflen * 2);
+        // vec2 p = fragTexCoord * (lighthalflen * 2) / iResolution;
+        // vec4 sampleDepth = texture(occlusionDepthTex, p);
+        // finalColor = vec4(sampleDepth.r, 0., 0., 1.);
+    finalColor = getLighting();
+    // }
+
+
 
     // testing
     // finalColor = vec4(intensity, 0., 0., 1.);

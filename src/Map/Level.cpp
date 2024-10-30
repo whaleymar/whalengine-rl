@@ -21,18 +21,6 @@
 
 namespace whal {
 
-// TODO should just use a color datatype in the level instead of an enum
-Color getLightColor(LevelLighting lightLevel) {
-    switch (lightLevel) {
-    case LevelLighting::Normal:
-        return WHITE;
-    case LevelLighting::Dark:
-        return BLACK;
-    case LevelLighting::Dim:
-        return Color(125, 125, 125, 255);
-    }
-}
-
 void ActiveLevel::activateObjects() {
     for (auto entity : objects) {
         entity.activate();

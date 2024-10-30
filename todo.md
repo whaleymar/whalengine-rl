@@ -22,20 +22,19 @@
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
 - bloom shader is a little broken (reloading makes it look wildly different)
     - kinda want to get rid of my fake bloom entirely and implement HDR + tone mapping
+- fully in-shadow translucent objects are still visible, as well as text
 
 ## Lighting 
-- shouldn't be able to illuminate things that are closer to camera than the light -- is possible right now because we draw everything and *then* draw the light
-    - but i can't just draw the light to the main tex after each Depth layer, because then some things which would be lit by foreground would be dark
-- player sprite should NOT affect shadows!!!
-    - this is because post-process effects are drawn in order and i use this texture for light occlusion, so if something without a collider does *not* occlude light (like the player's head) then it makes a head-shaped hole in the occlusion map, allowing more light to pass through
-    - to start, I think the occlusion map should be on a separate texture 
-    - i think it also needs a depth buffer to get rid of all these schenanigans
+- issue with `iRender::draw` not being designed for outside shader use, but I'm using it for the occlusion depth + effect maps
+    - instead of isPostProcessingUsed, have a separate `draw` call called `drawSilhouette` where you swearzies to not use a custom shader (and use a custom color)
+- PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
 
 ## Web 
 - getting mouse position does not work
 
 ## Map 
 - would like to do away with the default component function if possible
+    - might be able to do this if I export the map project instead of saving https://discourse.mapeditor.org/t/is-it-possible-to-force-tiled-to-output-a-custom-property-even-when-default-value-is-selected/6272/6
 - the process of adding a new component is still annoying. Using a reflection library to improve that would be nice.
 - things not on the tile grid have their collision/trigger boxes messed up
 - respawn map objects
