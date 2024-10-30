@@ -10,6 +10,7 @@
 
 #include "Events/Events.h"
 #include "Gfx/Coordinates.h"
+#include "Gfx/Depth.h"
 #include "Gfx/Pipeline.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
@@ -63,16 +64,18 @@ static Vector2i getLightOffset(f32 rotationDegrees, s32 lightHeightPixels) {
 
 void PointLightSystem::onEvent(ShaderReloadEvent) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
+    // mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
+    // mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
 }
 
 void PointLightSystem::drawEntities() {
     auto cameraPos = getCameraPositionPrecise();
-    // auto cameraPos = toFloatVec(getCameraPosition());
 
     Shader shader = ShaderManager::get(Shaders::PointLight);
     ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::PointLight);
 
-    const Texture& randomTexture = TextureManager::getAtlas(TEXNAME_SPRITE).getTexture();
+    // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
     for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
@@ -94,10 +97,13 @@ void PointLightSystem::drawEntities() {
         Vector2 screenPosV(screenPosition.x, screenPosition.y);
         SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
 
-        const Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
+        // const f32 lightDepth = depthToFloat(trans.depth);
+        // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
+        // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
+
+        const Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
         const Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
-        DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
-        // DrawTextureDepth(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color, depthToFloat(trans.depth));
+        DrawTexturePro(colorTex, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
 }
 
@@ -106,13 +112,16 @@ void BoxLightSystem::onEvent(ShaderReloadEvent) {
     mPositionUniform = GetShaderLocation(shader, "lightpos");
     mHalflenUniform = GetShaderLocation(shader, "lighthalflen");
     mRadiusUniform = GetShaderLocation(shader, "lightradius");
+    // mLightDepthUniform = GetShaderLocation(shader, "lightDepth");
+    // mOcclusionDepthUniform = GetShaderLocation(shader, "occlusionDepthTex");
 }
 
 void BoxLightSystem::drawEntities() {
     auto cameraPos = getCameraPositionPrecise();
     Shader shader = ShaderManager::get(Shaders::BoxLight);
 
-    Texture randomTexture = TextureManager::getRenderTexture(TextureID::Lighting).texture;
+    // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto randomTexture = TextureManager::getRenderTexture(TextureID::Lighting).texture;
     for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
@@ -123,9 +132,8 @@ void BoxLightSystem::drawEntities() {
         ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::BoxLight);
 
         BoxLight light = entity.get<BoxLight>();
-        const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
-        // Vector2i screenPosition(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y); // OLD
+        const auto trans = entity.get<Transform2D>();
+        const Vector2i worldPosition = trans.position + getLightOffset(trans.rotationDegrees, light.heightOffset);
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
@@ -146,6 +154,10 @@ void BoxLightSystem::drawEntities() {
         SetShaderValue(shader, mPositionUniform, &screenPosV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mHalflenUniform, &halfLenV.x, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mRadiusUniform, &fRadius, SHADER_UNIFORM_FLOAT);
+
+        // const f32 lightDepth = depthToFloat(trans.depth);
+        // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
+        // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
 
         const Vector2i lightBounds(radius + light.halfLen.x, radius + light.halfLen.y);
         const Vector2i destPosition = screenPosition - lightBounds;
@@ -206,25 +218,37 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
 void ShadowLightSystem::onEvent(ShaderReloadEvent) {
     mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
     mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
+    mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
+    mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
 }
 
 void ShadowLightSystem::drawEntities() {
     // RESEARCH maybe pass angle/spread uniform?
+    // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
-    auto shader = ShaderManager::get(Shaders::ShadowLight);
+    const auto shader = ShaderManager::get(Shaders::ShadowLight);
+    const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
+
     for (auto [entityid, entity] : getEntitiesMutable()) {
         ShaderManager::activate(Shaders::ShadowLight);
 
         const auto light = entity.get<ShadowLight>();
-        const Vector2i entityPos = entity.get<Transform2D>().position;
+        const auto trans = entity.get<Transform2D>();
+
+        const Vector2i entityPos = trans.position;
         const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));
         const Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
-        SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
-
         const f32 lightRadiusPixels = light.radius;
+        const f32 lightDepth = depthToFloat(trans.depth);
+
+        // Set shader values
+        SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
-        const auto& tex = TextureManager::getRenderTexture(TextureID::DownscaledPostProcess).texture;
-        DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), light.color);
+        SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
+        SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
+
+        DrawTextureRec(colorTex, Rectangle(0, 0, colorTex.width, -colorTex.height), Vector2(0, 0), light.color);
         EndShaderMode();
     }
 }

@@ -113,16 +113,40 @@ void Renderer::_render() {
 #endif
 }
 
-// this does what the old Mega-GraphicsSystem used to do.
-void Renderer::_drawEntities(RenderContext renderContext) const {
+static void scaleTexture(TextureID src, TextureID dst, BlendMode blendMode = BLEND_ALPHA /*, TextureFilter filter*/) {
+    const auto srcTex = TextureManager::getRenderTexture(src);
+    const auto dstTex = TextureManager::getRenderTexture(dst);
+    const Rectangle srcRect = Rectangle(0, 0, srcTex.texture.width, -srcTex.texture.height);
+    const Rectangle dstRect = Rectangle(0, 0, dstTex.texture.width, dstTex.texture.height);
+
+    // TODO not sure whether I should apply this to src or dst
+    // TODO this has side effects, figure out how to undo the filter change afterwards
+    // SetTextureFilter(fullResTex.texture, filter);
+
+    BeginTextureMode(dstTex);
+    BeginBlendMode(blendMode);
+    ClearBackground(Colors::CLEAR);
+    DrawTexturePro(srcTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+    EndBlendMode();
+    EndTextureMode();
+}
+
+// This draws the effects mask to TextureID::DownscaledPostProcess.
+// It also populates mOcclusionQueue
+void Renderer::_drawEffectsMask(RenderContext renderContext) {
     // Draw to Effects Buffer (using main texture for this as it's unused at this point in the render pipeline)
     constexpr Color NO_EFFECT = Color{0, 0, 0, 0};
+    mOcclusionQueue.clear();
+
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
     ClearBackground(NO_EFFECT);
     BeginMode2D(renderContext.camera);
     ShaderManager::activate(Shaders::Silhouette);
     for (auto renderInfo : mRenderQueue) {
         if (renderInfo.piRender->isPostProcessingUsed()) {
+            if (renderInfo.entity.has<BlocksLight>()) {
+                mOcclusionQueue.push_back(renderInfo);
+            }
             const Color flags = getPostProcessFlags(renderInfo);
             renderContext.colorOverride = flags;
             renderInfo.piRender->draw(renderInfo.entity, renderContext);
@@ -135,28 +159,59 @@ void Renderer::_drawEntities(RenderContext renderContext) const {
 
     // Draw downscaled version of the post-process texture
     // makes it much faster since the PP shader is SLOW.
+    scaleTexture(TextureID::Main, TextureID::DownscaledPostProcess);
+}
 
-    auto fullResTex = TextureManager::getRenderTexture(TextureID::Main);
-    auto downscaledTarget = TextureManager::getRenderTexture(TextureID::DownscaledPostProcess);
-    Rectangle srcRect = Rectangle(0, 0, fullResTex.texture.width, -fullResTex.texture.height);
-    Rectangle dstRect = Rectangle(0, 0, downscaledTarget.texture.width, downscaledTarget.texture.height);
-
-    BeginTextureMode(downscaledTarget);
-    ClearBackground(NO_EFFECT);
-    DrawTexturePro(fullResTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-
+void Renderer::_drawOcclusionMask(RenderContext ctx) const {
+    // DRAW COLOR INFO TO OCCLUSION TEXTURE
+    ctx.colorOverride = Corrade::Containers::NullOpt;
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
+    ClearBackground(Colors::CLEAR);
+    BeginMode2D(ctx.camera);
+    for (auto renderInfo : mOcclusionQueue) {
+        renderInfo.piRender->draw(renderInfo.entity, ctx);
+    }
+    EndMode2D();
+    EndBlendMode();
     EndTextureMode();
-    // TextureID::Main is now free to use
+
+    // DOWNSCALE
+    scaleTexture(TextureID::Main, TextureID::OcclusionColor, BLEND_ALPHA_PREMULTIPLY);
+
+    // DRAW DEPTH INFO TO OTHER OCCLUSION TEXTURE
+    // "Mom, can we use the `RenderTexture.depth`?"
+    // "We have `RenderTexture.depth` at home."
+    // `RenderTexture.depth` at home:
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    ClearBackground(Colors::CLEAR);
+    BeginMode2D(ctx.camera);
+    ShaderManager::activate(Shaders::Silhouette);
+    for (auto renderInfo : mOcclusionQueue) {
+        const Color color = ColorFromNormalized(Vector4{depthToFloat(renderInfo.depth), 0.0f, 0.0f, 1.0f});
+        ctx.colorOverride = color;
+        renderInfo.piRender->draw(renderInfo.entity, ctx);
+    }
+    EndShaderMode();
+    EndMode2D();
+    EndTextureMode();
+
+    // DOWNSCALE
+    scaleTexture(TextureID::Main, TextureID::OcclusionDepth);
+}
+
+// this does what the old Mega-GraphicsSystem used to do.
+void Renderer::_drawEntities(RenderContext renderContext) {
+    _drawEffectsMask(renderContext);
+    _drawOcclusionMask(renderContext);
 
     // Drawing GAME OBJECTS
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
     ClearBackground(Colors::CLEAR);
     BeginMode2D(renderContext.camera);
-    ShaderManager::activate(Shaders::Default);
     for (auto renderInfo : mRenderQueue) {
         renderInfo.piRender->draw(renderInfo.entity, renderContext);
     }
-    EndShaderMode();
     EndMode2D();
     EndTextureMode();
 
@@ -164,28 +219,24 @@ void Renderer::_drawEntities(RenderContext renderContext) const {
     // Lighting and Radiance textures are unused at this point, so I use them as a temporary downscaled render target
 
     // 1. draw downscaled version of Staging
-    fullResTex = TextureManager::getRenderTexture(TextureID::Staging);
-    downscaledTarget = TextureManager::getRenderTexture(TextureID::Radiance);
-    RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
-
-    BeginTextureMode(downscaledTarget);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(fullResTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
+    scaleTexture(TextureID::Staging, TextureID::Radiance);
     // /1.
 
     // 2. Render effects to new buffer
+    RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
     BeginTextureMode(effectsTarget);
     ClearBackground(Colors::CLEAR);
     ShaderManager::activate(Shaders::PostProcess);
 
-    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledTarget.texture);
+    auto downscaledMainTex = TextureManager::getRenderTexture(TextureID::Radiance);
+    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledMainTex.texture);
     drawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
     EndShaderMode();
     EndTextureMode();
     // /2.
 
     // 3. Upscale the effects to the Staging buffer with additive blending
+    auto fullResTex = TextureManager::getRenderTexture(TextureID::Staging);
     SetTextureFilter(effectsTarget.texture, TEXTURE_FILTER_POINT);
     BeginTextureMode(fullResTex);
     BeginBlendMode(BLEND_ADDITIVE);
@@ -193,8 +244,8 @@ void Renderer::_drawEntities(RenderContext renderContext) const {
     // rlSetBlendFactorsSeparate(1, 1, 1, 1, 0x8006, 0x8007);
     // BeginBlendMode(BLEND_CUSTOM_SEPARATE);
 
-    srcRect = Rectangle(0, 0, effectsTarget.texture.width, -effectsTarget.texture.height);
-    dstRect = Rectangle(0, 0, fullResTex.texture.width, fullResTex.texture.height);
+    auto srcRect = Rectangle(0, 0, effectsTarget.texture.width, -effectsTarget.texture.height);
+    auto dstRect = Rectangle(0, 0, fullResTex.texture.width, fullResTex.texture.height);
     DrawTexturePro(effectsTarget.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
 
     EndBlendMode();
@@ -265,9 +316,9 @@ Color getPostProcessFlags(EntityRenderInfo renderInfo) {
         }
     }
 
-    if (renderInfo.entity.has<BlocksLight>()) {
-        b = 255;
-    }
+    // if (renderInfo.entity.has<BlocksLight>()) {
+    //     b = 255;
+    // }
 
     return Color(r, g, b, 255);
 }

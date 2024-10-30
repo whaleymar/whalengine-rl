@@ -41,7 +41,6 @@ private:
 // - Outline
 enum class TextureID {
     Staging,
-    // DownscaledMain,
     Main,
     DownscaledPostProcess,
     Background,  // any repeating backgrounds use this
@@ -52,6 +51,8 @@ enum class TextureID {
     BackgroundFar,
     BackgroundMid,
     BackgroundNear,
+    OcclusionColor,
+    OcclusionDepth,
     _COUNT_DO_NOT_USE_ME,
 };
 
@@ -79,6 +80,7 @@ public:
     static const TextureAtlas& getAtlas(const char* name) { return instance()._getAtlas(name); }
     static const Texture& getTexture(const char* name) { return instance()._getTexture(name); }
     static RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
+    static Vector2i getSize(TextureID id);
 
     Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
                                                                       Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);

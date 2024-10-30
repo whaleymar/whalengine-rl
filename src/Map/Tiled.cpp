@@ -46,13 +46,23 @@ void clearMapCache() {
 }
 
 Color parseColor(const std::string& hexString) {
-    s32 r, g, b;
-    // first 3 chars is "#" and alpha
+    s32 r, g, b, a;
+    // format is "#aarrggbb"
+    std::istringstream(hexString.substr(1, 2)) >> std::hex >> a;
     std::istringstream(hexString.substr(3, 2)) >> std::hex >> r;
     std::istringstream(hexString.substr(5, 2)) >> std::hex >> g;
     std::istringstream(hexString.substr(7, 2)) >> std::hex >> b;
 
-    return Color(r, g, b, 255);
+    return Color(r, g, b, a);
+}
+
+bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst) {
+    if (data.contains(key)) {
+        std::string hexString = readString(data, key);
+        *dst = parseColor(hexString);
+        return true;
+    }
+    return false;
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
@@ -156,10 +166,10 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
         auto trans = Transform2D(level.worldOffsetPixels + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
-        trans.depth = Depth::Foreground1;
+        trans.depth = Depth::Foreground2;
         lightEntity.add(trans);
 
-        BoxLight boxLight = {{3 * PIXELS_PER_TILE, 0, getLightColor(level.lvlInfo.lighting)}, (level.size * 0.5).as<s32>()};
+        BoxLight boxLight = {{3 * PIXELS_PER_TILE, 0, level.lvlInfo.ambientLight}, (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
 
         level.childEntities.insert(lightEntity);
@@ -483,19 +493,12 @@ void parseMapProject(const char* mapfile) {
 static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
     const auto data = getMapFile(lvlFileName);
     for (auto& property : data["properties"]) {
-        // std::string propName = readString(property, "name");
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
-            bool isWorldEntryPoint = false;
-            tryReadBool(mapInfo, "isWorldEntryPoint", &isWorldEntryPoint);
-
-            LevelLighting light = LevelLighting::Normal;
-            if (mapInfo.contains("LightLevel")) {
-                light = mapInfo["LightLevel"];
-            }
-
-            Level::LevelInfo lvlInfo = {isWorldEntryPoint, light};
+            Level::LevelInfo lvlInfo;
+            tryReadColor(mapInfo, "AmbientLight", &lvlInfo.ambientLight);
+            tryReadBool(mapInfo, "isWorldEntryPoint", &lvlInfo.isWorldEntryPoint);
             return lvlInfo;
         }
     }
