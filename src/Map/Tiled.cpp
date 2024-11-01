@@ -19,6 +19,7 @@
 #include "Sys/System.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
+#include "rfl/enums.hpp"
 
 #include <sstream>
 
@@ -38,6 +39,7 @@ static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
+static const nlohmann::json& getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 
 void clearMapCache() {
@@ -186,12 +188,25 @@ static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
         for (auto& property : layer["properties"]) {
             std::string propertytype = readString(property, "propertytype");
             if (propertytype == "Depth") {
-                layerDepth = property["value"];
+                layerDepth = parseDepth(property["value"]);
                 break;
             }
         }
     }
     return layerDepth;
+}
+
+bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst) {
+    if (data.contains(key)) {
+        std::string str = readString(data, key);
+        *dst = parseDepth(str);
+        return true;
+    }
+    return false;
+}
+
+Depth parseDepth(const std::string& depthString) {
+    return rfl::string_to_enum<Depth>(depthString).value();
 }
 
 void parseTileLayer(const nlohmann::json& layer, TileMap& map) {
@@ -483,7 +498,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 }
 
 void parseMapProject(const char* mapfile) {
-    const auto data = getMapFile(mapfile);
+    const auto data = getWorldFile(mapfile);
     for (auto& propType : data["propertyTypes"]) {
         System::prefab.component.makeDefaultComponent(propType);
     }
@@ -507,7 +522,7 @@ static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
 }
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
-    const auto data = getMapFile(mapfile);
+    const auto data = getWorldFile(mapfile);
 
 #ifndef NDEBUG
     std::string type = readString(data, "type");
@@ -575,7 +590,13 @@ Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const 
 
 // MAP LOADING STUFF
 
+const nlohmann::json& getWorldFile(std::string_view mapFile) {
+    const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
+    return S_MAP_MANAGER.readData(fullPath.c_str());
+}
+
 const nlohmann::json& getMapFile(std::string_view mapFile) {
+    // const auto fullPath = whal_format("{}/exports/{}", MAP_DIR, mapFile);
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
 }

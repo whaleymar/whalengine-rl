@@ -35,7 +35,9 @@
 ## Map 
 - would like to do away with the default component function if possible
     - might be able to do this if I export the map project instead of saving https://discourse.mapeditor.org/t/is-it-possible-to-force-tiled-to-output-a-custom-property-even-when-default-value-is-selected/6272/6
-- the process of adding a new component is still annoying. Using a reflection library to improve that would be nice.
+- the process of adding a new component is still annoying. Using a reflection library to improve that would be nice?
+    - could have components inherit a ISerialize interface (`.save` and `.load` methods) && when the ECS world registers that component, it (via a registered `onComponentRegistered` callback) registers the component type (?) w/ some manager which maps the component name to the type, so when loading it can see the type name & dispatch the correct `.load` method, and when saving it can check if each component inherits the interface & call its `.save` method
+    - i could make a component for tiled object ID and use that to know which objects to save
 - things not on the tile grid have their collision/trigger boxes messed up
 - respawn map objects
 - object layers
@@ -51,7 +53,7 @@
 - background/foreground layers should be written to a texture?
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
-- reflect-cpp string -> enum transformations when parsing Tiled map data 
+- Should use the Tiled collision editor for tile collision
 
 ## Sprite Editing workflow
 - .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
@@ -77,22 +79,12 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 - bake tile data into a mesh & use that for lighting
 - serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
 
-## Physics:
-- quad tree ray cast
-
 ## Other:
 - should use 3rd party lib for Expected cause my impl sucks
 - triggers which have some constraint, like X>=50
 
 ## ECS:
 - the entity.set<T> problem (with IMonitor systems): it doesn't really make sense to handle the problem at the system level, because not all component modifications matter. If anything, could do an event callback for when a component is modified and let systems listen for specific component modifications
-
-## Vector2T
-- simd optimizations? (need profiling)
-    - might make cross platform harder
-
-
-
 
 Random note: how to save texture to image:
 ```cpp

@@ -4,8 +4,6 @@
 
 namespace whal {
 
-// any changes to this needs to be mirrored in the Tiled project
-// TODO add UI depth (before debug)
 enum class Depth : u8 {
     BackgroundStatic,
     BackgroundFar,
@@ -16,6 +14,8 @@ enum class Depth : u8 {
     Foreground3,
     Foreground2,
     Foreground1,
+    UIFar,
+    UIClose,
     Debug,
     BehindPlayer
 };
@@ -42,6 +42,10 @@ inline constexpr f32 depthToFloat(Depth depth) {
         return 0.7;
     case Depth::Foreground1:
         return 0.8;
+    case Depth::UIFar:
+        return 0.83;
+    case Depth::UIClose:
+        return 0.86;
     case Depth::Debug:
         return 0.9;
     }
