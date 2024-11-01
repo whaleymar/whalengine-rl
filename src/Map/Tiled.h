@@ -36,6 +36,8 @@ Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
 Color parseColor(const std::string& hexString);
 bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst);
+Depth parseDepth(const std::string& depthString);
+bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst);
 
 struct LayerData {
     Depth depth;

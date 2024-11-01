@@ -18,7 +18,7 @@ void setCustomCursor(Sprite drawComponent) {
         auto entity = System::world.entity().value();
         entity.add(Name("Cursor"));
         Transform2D trans;
-        trans.depth = Depth::Debug;
+        trans.depth = Depth::UIClose;
         entity.add(trans);
         entity.add(drawComponent);
         entity.add<MouseCursor>();

@@ -365,7 +365,7 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultParticleEmitter.particlesPerSecond = member[KEY_VALUE];
 
             } else if (memberName == "Depth") {
-                DefaultParticleEmitter.depth = member[KEY_VALUE];
+                DefaultParticleEmitter.depth = parseDepth(member[KEY_VALUE]);
 
             } else if (memberName == "LifetimeMultiplier") {
                 DefaultParticleEmitter.lifetimeMultiplier = member[KEY_VALUE];
@@ -856,7 +856,7 @@ void addComponentParticleEmitter(const nlohmann::json& values, const nlohmann::j
     tryReadInt(values, "particlesPerSecond", &emitter.particlesPerSecond);
     tryReadVal(values, "Direction", &emitter.direction);
     tryReadVal(values, "Material", &emitter.material);
-    tryReadVal(values, "Depth", &emitter.depth);
+    tryReadDepth(values, "Depth", &emitter.depth);
     tryReadFloat(values, "LifetimeMultiplier", &emitter.lifetimeMultiplier);
 
     if (values.contains("Shape")) {

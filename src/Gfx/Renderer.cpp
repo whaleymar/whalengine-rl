@@ -289,7 +289,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
         for (const EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport
             if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
-                if (renderInfo.depth == Depth::Debug) {
+                if (renderInfo.depth == Depth::Debug || renderInfo.depth == Depth::UIFar || renderInfo.depth == Depth::UIClose) {
                     mUIRenderQueue.emplace_back(renderInfo);
                 } else {
                     mRenderQueue.emplace_back(renderInfo);
