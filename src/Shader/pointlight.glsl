@@ -35,7 +35,7 @@ vec4 getLighting() {
 
     // zero if outside 
     intensity = intensity * step(0.5, intensity); 
-    intensity = (intensity - 0.5) * 2.;
+    intensity = clamp((intensity - 0.5) * 2., 0., 1.);
 
     return vec4(fragColor * intensity);
 

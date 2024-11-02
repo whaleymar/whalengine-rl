@@ -1,35 +1,51 @@
-#version 330
+#version 330 
 
-// Input vertex attributes (from vertex shader)
-in vec2 fragTexCoord;
-in vec4 fragColor;
-
-// Input uniform values
-// default:
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-// mine:
+// Input HDR color texture
+uniform sampler2D texture0; // hdrTexture
+// Exposure level for tone mapping
 uniform float exposure;
 
-// Output fragment color
+// Texture coordinates
+in vec2 fragTexCoord;
+// Final output color
 out vec4 finalColor;
 
+vec3 ACESFilm(vec3 x) {
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
 
-void main()
-{             
-    const float gamma = 2.2;
-    vec4 hdrColorFull = texture(texture0, fragTexCoord);
-    vec3 hdrColor = hdrColorFull.rgb;
+vec3 reinhard(vec3 hdrColor) {
+    // Apply exposure
+    vec3 mappedColor = vec3(1.0) - exp(-hdrColor * exposure);
 
-    vec3 mapped = vec3(1.0) - exp(-hdrColor * exposure);
-    // gamma correction 
-    mapped = pow(mapped, vec3(1.0 / gamma));
-  
-    finalColor = vec4(mapped, 1.0);
+    // Reinhard tone mapping
+    mappedColor = mappedColor / (mappedColor + vec3(1.0));
 
-    // if (hdrColorFull.r > 1.) {
-    //     finalColor = vec4(1.);
+    // Gamma correction (optional, usually gamma 2.2)
+    // mappedColor = pow(mappedColor, vec3(1.0 / 2.2));
+
+    return mappedColor;
+}
+
+void main() {
+    // Sample the HDR texture
+    vec3 hdrColor = texture(texture0, fragTexCoord).rgb;
+
+    // testing
+    // if (hdrColor.r > 1.) {
+    //     finalColor = vec4(1., 0., 0., 1.);
     // } else {
-    //     finalColor = vec4(0., 0., 0., 1.);
+    //     finalColor = vec4(0., 1., 0., 1.);
     // }
-}    
+
+    vec3 mappedColor = reinhard(hdrColor);
+    // vec3 mappedColor = ACESFilm(hdrColor * exposure);
+
+    // Output the tone-mapped color
+    finalColor = vec4(mappedColor, 1.0);
+}

@@ -20,6 +20,7 @@ public:
         return instance_;
     }
 
+    static void init();
     static void render();
     static void setPostEffects(Pipeline pipeline);
     void onEvent(ShaderReloadEvent) override;
@@ -35,6 +36,7 @@ private:
     void _drawOcclusionMask(RenderContext ctx) const;
     void _drawUI(const RenderContext ctx) const;
     void _render();
+    void _init() const;
 
     Camera2D mRaylibCamera;
     Pipeline mPostProcessSteps;
@@ -42,6 +44,7 @@ private:
     std::vector<EntityRenderInfo> mUIRenderQueue;   // UI is stored in a separate queue so it's not affected by lighting
     std::vector<EntityRenderInfo> mOcclusionQueue;  // stored separately for speed, since they need to be drawn twice (color/depth)
     s32 mMainTextureUniform;
+    s32 mExposureUniform;
 };
 
 }  // namespace whal
