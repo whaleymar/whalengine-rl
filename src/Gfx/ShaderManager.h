@@ -13,7 +13,7 @@ enum class Shaders : s16 {
     Radiance,
     Silhouette,
     Quantize,
-    // ToneMap,
+    ToneMap,
     Glitch,
     ShadowLight,
     Blur,

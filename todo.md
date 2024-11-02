@@ -35,6 +35,7 @@
 ## Map 
 - would like to do away with the default component function if possible
     - might be able to do this if I export the map project instead of saving https://discourse.mapeditor.org/t/is-it-possible-to-force-tiled-to-output-a-custom-property-even-when-default-value-is-selected/6272/6
+    - one problem I'm having is with relative template paths -- I should keep the Tiled project in the Game's root directory to fix this (would make all paths easier to work with)
 - the process of adding a new component is still annoying. Using a reflection library to improve that would be nice?
     - could have components inherit a ISerialize interface (`.save` and `.load` methods) && when the ECS world registers that component, it (via a registered `onComponentRegistered` callback) registers the component type (?) w/ some manager which maps the component name to the type, so when loading it can see the type name & dispatch the correct `.load` method, and when saving it can check if each component inherits the interface & call its `.save` method
     - i could make a component for tiled object ID and use that to know which objects to save
@@ -60,6 +61,7 @@
     - see how Murder Engine does this
 
 ## Misc
+- go all-in on custom raylib++ fork -> namespace the library and get rid of the bloat
 - ECS parallelization (low priority)
 - Logger queue that runs on another thread
 - controller support (low priority)

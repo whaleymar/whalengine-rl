@@ -122,41 +122,34 @@ struct RenderTextureInfo {
     TextureID id;
     s32 width;
     s32 height;
+    TextureFilter filter;
+    bool isHDR;
 };
 
 static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
-    {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-    {TextureID::Background, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-    {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-    {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-    {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-    {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER},
-    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
-    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME},
+    {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, true},
+    // {TextureID::Staging, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, false},
+    {TextureID::Background, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, false},
+    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, true},
+    // {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, false},
+    {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_BILINEAR, true},
+    // {TextureID::Lighting, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_BILINEAR, false},
+    {TextureID::Radiance, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
+    {TextureID::DownscaledPostProcess, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
+    {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, true},
+    // {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, false},
+    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
+    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
 };
 
 TextureManager::TextureManager() {
     for (auto rtInfo : S_RENDER_TEX_INFO) {
-        // These blocks are identical aside from the bilinear filter on lighting. I split them when experimenting w/ depth buffers
-        if (rtInfo.id == TextureID::Lighting) {
-            // RenderTexture2D renderTexture = LoadRenderTextureDepthTex(rtInfo.width, rtInfo.height);
-            RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
-            s32 ix = static_cast<s32>(rtInfo.id);
-            S_RENDER_TEXTURES[ix] = renderTexture;
-            setIsRenderTextureUsed(ix);
-            SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_BILINEAR);
-        } else {
-            RenderTexture2D renderTexture = LoadRenderTexture(rtInfo.width, rtInfo.height);
-            s32 ix = static_cast<s32>(rtInfo.id);
-            S_RENDER_TEXTURES[ix] = renderTexture;
-            setIsRenderTextureUsed(ix);
-
-            // use gl_nearest for scaling (this is a pixel art engine!)
-            if (rtInfo.id == TextureID::Main) {
-                SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_POINT);
-            }
-        }
+        auto format = rtInfo.isHDR ? PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 : PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        RenderTexture2D renderTexture = LoadRenderTextureFormat(rtInfo.width, rtInfo.height, format);
+        s32 ix = static_cast<s32>(rtInfo.id);
+        S_RENDER_TEXTURES[ix] = renderTexture;
+        setIsRenderTextureUsed(ix);
+        SetTextureFilter(renderTexture.texture, rtInfo.filter);
     }
 }
 

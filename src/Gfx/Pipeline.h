@@ -16,7 +16,7 @@ public:
     Pipeline& operator=(const Pipeline&) = delete;
     Pipeline(Pipeline&& other);
     Pipeline& operator=(Pipeline&&);
-    Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders);
+    Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders, bool isHDR = false);
     ~Pipeline();
 
     // applies the Pipeline's shader effects to the RenderTexture associated with the given ID. Overwrites the given texture!

@@ -84,7 +84,7 @@ void ShaderManager::loadShaders() {
         {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
         {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
-        // {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
+        {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
         {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
         {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
         {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},

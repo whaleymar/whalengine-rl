@@ -31,8 +31,14 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
     return *this;
 }
 
-Pipeline::Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders)
-    : mShaders(shaders), mSwapBuffer(LoadRenderTexture(resolution.x, resolution.y)), mResolution(resolution), mIsSwapBufferLoaded(true) {}
+Pipeline::Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders, bool isHDR)
+    : mShaders(shaders), mResolution(resolution), mIsSwapBufferLoaded(true) {
+    if (isHDR) {
+        mSwapBuffer = LoadRenderTextureFormat(resolution.x, resolution.y, PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
+    } else {
+        mSwapBuffer = LoadRenderTexture(resolution.x, resolution.y);
+    }
+}
 
 Pipeline::~Pipeline() {
     if (mIsSwapBufferLoaded) {
