@@ -101,10 +101,10 @@ void Renderer::_render() {
     static f32 s_exposure = 1.0;
     if (IsKeyDown(KEY_DOWN) && s_exposure > 0.0) {
         s_exposure -= 0.05;
-        print("exposure: ", s_exposure);
+        // print("exposure: ", s_exposure);
     } else if (IsKeyDown(KEY_UP)) {
         s_exposure += 0.05;
-        print("exposure: ", s_exposure);
+        // print("exposure: ", s_exposure);
     }
     if (IsKeyDown(KEY_T)) {
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));

@@ -144,7 +144,7 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
 
 TextureManager::TextureManager() {
     for (auto rtInfo : S_RENDER_TEX_INFO) {
-        auto format = rtInfo.isHDR ? PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 : PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        auto format = rtInfo.isHDR ? PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
         RenderTexture2D renderTexture = LoadRenderTextureFormat(rtInfo.width, rtInfo.height, format);
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;
