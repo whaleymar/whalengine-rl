@@ -43,8 +43,9 @@ void main() {
     //     finalColor = vec4(0., 1., 0., 1.);
     // }
 
-    vec3 mappedColor = reinhard(hdrColor);
+    // vec3 mappedColor = reinhard(hdrColor);
     // vec3 mappedColor = ACESFilm(hdrColor * exposure);
+    vec3 mappedColor = ACESFilm(hdrColor);
 
     // Output the tone-mapped color
     finalColor = vec4(mappedColor, 1.0);
