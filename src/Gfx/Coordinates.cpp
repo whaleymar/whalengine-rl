@@ -17,6 +17,18 @@ Vector2i screenToWorldCoords(Vector2i screenCoords) {
     return yAtTop + cameraPos - middleOffset;
 }
 
+Vector2i worldToTileCoords(Vector2i worldCoords) {
+    return ((worldCoords + Vector2i(PIXELS_PER_TILE / 2, -PIXELS_PER_TILE + 1)) / PIXELS_PER_TILE);
+}
+
+Vector2i tileToWorldCoords(Vector2i tileCoords) {
+    return tileCoords * PIXELS_PER_TILE;
+}
+
+Vector2i clampToTile(Vector2i worldCoord) {
+    return tileToWorldCoords(worldToTileCoords(worldCoord));
+}
+
 // (0,0) at BOTTOM LEFT for this function
 Vector2f worldToUVcoords(Vector2f worldCoords) {
     const Vector2f resolutonRecip = Vector2f(1.0 / FWINDOW_WIDTH_GAME, 1.0 / FWINDOW_HEIGHT_GAME);
