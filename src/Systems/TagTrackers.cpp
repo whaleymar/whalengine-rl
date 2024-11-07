@@ -12,7 +12,7 @@
 
 namespace whal {
 
-void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& activeLevel) {
+void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& activeLevel) {
     auto camera = first();
     if (activeLevel.cameraFollow) {
         Follow follow = *activeLevel.cameraFollow;
@@ -44,7 +44,7 @@ void CameraSystem::onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& a
     }
 }
 
-void CameraSystem::onEvent(PauseEvent, bool isPaused) {
+void CameraSystem::onEvent(evt::Pause, bool isPaused) {
     auto camera = first();
     if (isPaused) {
         camera.remove<IgnoreTimeModifiers>();

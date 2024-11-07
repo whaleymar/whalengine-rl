@@ -16,11 +16,11 @@ class PlayerSystem : public ecs::ISystem<Player> {};
 
 class CameraSystem : public ecs::ISystem<Camera, Transform2D>,
                      public ecs::AttrUniqueEntity,
-                     public IListen<EnteredLevelEvent, true, ecs::Entity, ActiveLevel&>,
-                     public IListen<PauseEvent, true, bool> {
+                     public IListen<evt::EnteredLevel, true, ecs::Entity, ActiveLevel&>,
+                     public IListen<evt::Pause, true, bool> {
 public:
-    void onEvent(EnteredLevelEvent, ecs::Entity player, ActiveLevel& activeLevel) override;
-    void onEvent(PauseEvent, bool isPaused) override;
+    void onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& activeLevel) override;
+    void onEvent(evt::Pause, bool isPaused) override;
 };
 
 Corrade::Containers::Optional<ecs::Entity> getCamera();

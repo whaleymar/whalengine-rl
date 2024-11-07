@@ -12,6 +12,8 @@ namespace whal {
 class TextureAtlas;
 struct PreciseTransform2D;
 
+namespace gfx {
+
 struct RaylibDrawParams {
     Rectangle rect;  // includes position
     Vector2 origin;
@@ -34,7 +36,9 @@ struct EntityRenderInfo {
     const ecs::IRender* piRender;
 };
 
+// TODO consolidate these
 RaylibDrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter);
 RaylibDrawParams getDrawParamsNew(PreciseTransform2D transform, Vector2f frameSize, Vector2f cameraPosition);
 
+}  // namespace gfx
 }  // namespace whal

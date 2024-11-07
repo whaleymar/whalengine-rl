@@ -81,12 +81,8 @@ void AABB::setPosition(Transform2D transform) {
     mCenter = transToCenter(transform, mHalf);
 }
 
-bool AABB::isOverlapping(const AABB* other) const {
-    return isIntersectAABBvsAABB(this, other);
-}
-
 bool AABB::isOverlapping(const AABB& other) const {
-    return isIntersectAABBvsAABB(this, &other);
+    return isIntersectAABBvsAABB(*this, other);
 }
 
 bool AABB::contains(const AABB& other) const {
@@ -187,17 +183,17 @@ void Circle::draw(Vector2f cameraPos, Color color) const {
 }
 #endif
 
-f32 Circle::getDistanceFromCenter(const AABB* aabb) const {
-    const auto closestPoint = aabb->getClosestPointTo(getPosition());
+f32 Circle::getDistanceFromCenter(const AABB& aabb) const {
+    const auto closestPoint = aabb.getClosestPointTo(getPosition());
     return (getPosition() - closestPoint).as<f32>().len();
 }
 
-f32 Circle::getDistanceFromCenter(const Circle* other) const {
-    return (getPosition() - other->getPosition()).as<f32>().len() - other->getRadius();
+f32 Circle::getDistanceFromCenter(const Circle& other) const {
+    return (getPosition() - other.getPosition()).as<f32>().len() - other.getRadius();
 }
 
 // calculates a vector from the circle's origin to the closest point on the given AABB
-Vector2f Circle::getVecToClosestPoint(const AABB aabb) const {
+Vector2f Circle::getVecToClosestPoint(const AABB& aabb) const {
     const auto delta = getPosition() - aabb.getPosition();  // vector from AABB's center to circle's
 
     // clamp to be on the AABB's boundary. Is now the point on the AABB closest to the circle
@@ -210,18 +206,18 @@ AABB Circle::getBoundingBox() const {
     return AABB(mCenter, {mRadius, mRadius});
 }
 
-bool isIntersectAABBvsAABB(const AABB* first, const AABB* other) {
-    const auto delta = other->getPosition() - first->getPosition();
-    const auto overlap = first->getHalf() + other->getHalf();
+bool isIntersectAABBvsAABB(const AABB& first, const AABB& other) {
+    const auto delta = other.getPosition() - first.getPosition();
+    const auto overlap = first.getHalf() + other.getHalf();
     return overlap.x > abs(delta.x) && overlap.y > abs(delta.y);
 }
 
-bool isIntersectCirclevsCircle(const Circle* first, const Circle* other) {
-    return first->getDistanceFromCenter(other) <= first->getRadius();
+bool isIntersectCirclevsCircle(const Circle& first, const Circle& other) {
+    return first.getDistanceFromCenter(other) <= first.getRadius();
 }
 
-bool isIntersectAABBvsCircle(const AABB* aabb, const Circle* circle) {
-    return circle->getDistanceFromCenter(aabb) <= circle->getRadius();
+bool isIntersectAABBvsCircle(const AABB& aabb, const Circle& circle) {
+    return circle.getDistanceFromCenter(aabb) <= circle.getRadius();
 }
 
 Shape::Shape(AABB aabb) : mAABB(aabb), mShape(ShapeTag::AABB) {}
@@ -302,18 +298,18 @@ bool Shape::isOverlapping(const Shape& other) const {
 bool Shape::isOverlapping(const AABB& other) const {
     switch (mShape) {
     case ShapeTag::AABB:
-        return isIntersectAABBvsAABB(&mAABB, &other);
+        return isIntersectAABBvsAABB(mAABB, other);
     case ShapeTag::Circle:
-        return isIntersectAABBvsCircle(&other, &mCircle);
+        return isIntersectAABBvsCircle(other, mCircle);
     }
 }
 
 bool Shape::isOverlapping(const Circle& other) const {
     switch (mShape) {
     case ShapeTag::AABB:
-        return isIntersectAABBvsCircle(&mAABB, &other);
+        return isIntersectAABBvsCircle(mAABB, other);
     case ShapeTag::Circle:
-        return isIntersectCirclevsCircle(&other, &mCircle);
+        return isIntersectCirclevsCircle(other, mCircle);
     }
 }
 

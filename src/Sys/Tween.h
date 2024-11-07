@@ -122,7 +122,7 @@ private:
     std::shared_ptr<Tween<T>> mTween;
 };
 
-class TweenManager : public IListen<DeathEvent, false, ecs::Entity> {
+class TweenManager : public IListen<evt::Death, false, ecs::Entity> {
     template <typename T>
     using ValueGetter = T& (*)(ecs::Entity);
 
@@ -132,7 +132,7 @@ public:
         return instance_;
     }
 
-    void onEvent(DeathEvent, ecs::Entity entity) override;
+    void onEvent(evt::Death, ecs::Entity entity) override;
     void update();
     void clear();
 

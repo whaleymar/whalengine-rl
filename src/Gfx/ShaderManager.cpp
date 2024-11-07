@@ -144,7 +144,7 @@ void ShaderManager::reloadShaders() {
     unloadAll();
     loadShaders();
 
-    System::event.emit<ShaderReloadEvent>();
+    System::event.emit<evt::ShaderReload>();
 }
 
 Shader ShaderManager::get(Shaders shaderEnum) {

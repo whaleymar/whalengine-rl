@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Components/Transform.h"
+#include "Gfx/Coordinates.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -52,10 +53,10 @@ public:
     void disableJumping() { mIsJumpingEnabled = false; }
     void enableJumping() { mIsJumpingEnabled = true; }
     bool isJumpingEnabled() const { return mIsJumpingEnabled; }
-
     bool isJumpAvailable() const { return mIsJumpPressed; }
 
-    inline static Vector2i MousePosition;
+    Vector2i getMouseScreen() const { return mMouseScreenPosition; }
+    Vector2i getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
 
 private:
     InputHandler() = default;
@@ -64,6 +65,7 @@ private:
 
     u64 mFlags = 0;
     u64 mDeactivationFlags = 0;  // for inputs which are disabled
+    Vector2i mMouseScreenPosition;
     bool mIsJumpPressed = false;
     bool mIsMovementEnabled = true;
     bool mIsJumpingEnabled = true;

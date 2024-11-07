@@ -4,7 +4,7 @@
 
 namespace whal {
 
-void TweenManager::onEvent(DeathEvent, ecs::Entity entity) {
+void TweenManager::onEvent(evt::Death, ecs::Entity entity) {
     mKilledEntities.insert(entity);
 }
 

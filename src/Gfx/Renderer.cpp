@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Gfx/RaylibUtil.h"
 #include "Util/Print.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
@@ -22,11 +23,10 @@
 #include "Systems/TagTrackers.h"
 
 #include "Util/Color.h"
-#include "Util/EngineUtil.h"
 
 namespace whal {
 
-static Color getPostProcessFlags(EntityRenderInfo renderInfo);
+static Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo);
 
 Renderer::Renderer() {
     mRaylibCamera.target = Vector2(0.0f, 0.0f);
@@ -46,7 +46,7 @@ void Renderer::setPostEffects(Pipeline pipeline) {
     instance().mPostProcessSteps = std::move(pipeline);
 }
 
-void Renderer::onEvent(ShaderReloadEvent) {
+void Renderer::onEvent(evt::ShaderReload) {
     mMainTextureUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
     mExposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
 }
@@ -61,7 +61,7 @@ void Renderer::_render() {
     Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform2D>().rotationDegrees;
-    const RenderContext renderContext{
+    const gfx::RenderContext renderContext{
         .cameraPosition = cameraEntity.get<PrecisePosition>().position, .camera = worldCamera, .atlas = TextureManager::getAtlas(TEXNAME_SPRITE)};
     buildRenderQueue(renderContext.cameraPosition.round());
 
@@ -76,11 +76,11 @@ void Renderer::_render() {
     ClearBackground(Colors::CLEAR);
 
     // Game Objects.
-    drawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
 
     // Lights.
     BeginBlendMode(BLEND_MULTIPLIED);
-    drawRenderTexture(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
     EndBlendMode();
 
     // Radiance. Is not upscaled.
@@ -113,7 +113,7 @@ void Renderer::_render() {
         const auto shader = ShaderManager::get(Shaders::ToneMap);
         BeginShaderMode(shader);
         SetShaderValue(shader, mExposureUniform, &s_exposure, SHADER_UNIFORM_FLOAT);
-        drawRenderTexture(TextureManager::getRenderTexture(TextureID::Main), WHITE);
+        gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Main), WHITE);
         EndShaderMode();
         EndBlendMode();
         EndTextureMode();
@@ -122,7 +122,7 @@ void Renderer::_render() {
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         ClearBackground(Colors::CLEAR);
         BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
-        drawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
+        gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
         EndBlendMode();
         EndTextureMode();
         // toneMapper.process(TextureID::Main);
@@ -164,7 +164,7 @@ static void scaleTexture(TextureID src, TextureID dst, BlendMode blendMode = BLE
 
 // This draws the effects mask to TextureID::DownscaledPostProcess.
 // It also populates mOcclusionQueue
-void Renderer::_drawEffectsMask(RenderContext renderContext) {
+void Renderer::_drawEffectsMask(gfx::RenderContext renderContext) {
     // Draw to Effects Buffer (using main texture for this as it's unused at this point in the render pipeline)
     constexpr Color NO_EFFECT = Color{0, 0, 0, 0};
     mOcclusionQueue.clear();
@@ -193,7 +193,7 @@ void Renderer::_drawEffectsMask(RenderContext renderContext) {
     scaleTexture(TextureID::Main, TextureID::DownscaledPostProcess);
 }
 
-void Renderer::_drawOcclusionMask(RenderContext ctx) const {
+void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
     // DRAW COLOR INFO TO OCCLUSION TEXTURE
     ctx.colorOverride = Corrade::Containers::NullOpt;
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
@@ -232,7 +232,7 @@ void Renderer::_drawOcclusionMask(RenderContext ctx) const {
 }
 
 // this does what the old Mega-GraphicsSystem used to do.
-void Renderer::_drawEntities(RenderContext renderContext) {
+void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     _drawEffectsMask(renderContext);
     _drawOcclusionMask(renderContext);
 
@@ -261,7 +261,7 @@ void Renderer::_drawEntities(RenderContext renderContext) {
 
     auto downscaledMainTex = TextureManager::getRenderTexture(TextureID::Radiance);
     SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledMainTex.texture);
-    drawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
     EndShaderMode();
     EndTextureMode();
     // /2.
@@ -281,7 +281,7 @@ void Renderer::_drawEntities(RenderContext renderContext) {
     // /3.
 }
 
-void Renderer::_drawUI(const RenderContext ctx) const {
+void Renderer::_drawUI(const gfx::RenderContext ctx) const {
     BeginMode2D(ctx.camera);
     for (auto renderInfo : mUIRenderQueue) {
         renderInfo.piRender->draw(renderInfo.entity, ctx);
@@ -289,7 +289,7 @@ void Renderer::_drawUI(const RenderContext ctx) const {
     EndMode2D();
 }
 
-static bool isBelow(const EntityRenderInfo& entity1, const EntityRenderInfo& entity2) {
+static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
     if (entity1.depth != entity2.depth) {
         return entity1.depth < entity2.depth;
     }
@@ -305,7 +305,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     // .clear() doesn't affect capacity
     mRenderQueue.clear();
     mUIRenderQueue.clear();
-    static std::vector<EntityRenderInfo> tmpDrawList;  // make it static to minimize memory allocations per frame
+    static std::vector<gfx::EntityRenderInfo> tmpDrawList;  // make it static to minimize memory allocations per frame
     tmpDrawList.clear();
 
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
@@ -314,7 +314,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     // }
     for (ecs::IRender* renderSystem : System::world.getRenderSystems()) {
         renderSystem->addToQueue(tmpDrawList);
-        for (const EntityRenderInfo& renderInfo : tmpDrawList) {
+        for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport
             if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
                 if (renderInfo.depth == Depth::Debug || renderInfo.depth == Depth::UIFar || renderInfo.depth == Depth::UIClose) {
@@ -332,7 +332,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);
 }
 
-Color getPostProcessFlags(EntityRenderInfo renderInfo) {
+Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo) {
     u8 r = 0, g = 0, b = 0;
     if (renderInfo.entity.has<GfxFlags>()) {
         u32 flags = renderInfo.entity.get<GfxFlags>().flags;

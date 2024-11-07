@@ -8,7 +8,7 @@
 
 namespace whal {
 
-void RectangleRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void RectangleRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const DrawRect rect = entity.get<DrawRect>();
     const Transform2D trans = entity.get<Transform2D>();
 
@@ -18,19 +18,19 @@ void RectangleRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) co
     }
 
     const auto frameSize = rect.frameSize.as<f32>();
-    const RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
     DrawRectanglePro(params.rect, params.origin, pTrans.rotationDegrees, color);
 }
 
-void RectangleRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawRect>();
         const auto trans = entity.get<Transform2D>();
         const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2) :
                                                         Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = bb,
             .depth = trans.depth,
             .entity = entity,

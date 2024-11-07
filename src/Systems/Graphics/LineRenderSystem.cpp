@@ -28,7 +28,7 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
     return LinePoints{startPos, endPos};
 }
 
-void LineRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void LineRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto line = entity.get<DrawStraightLine>();
     const Transform2D trans = entity.get<Transform2D>();
     PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
@@ -37,19 +37,19 @@ void LineRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     }
 
     const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
-    const Vector2 p1 = getDrawParams(points.p1.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
-    const Vector2 p2 = getDrawParams(points.p2.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    const Vector2 p1 = gfx::getDrawParams(points.p1.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    const Vector2 p2 = gfx::getDrawParams(points.p2.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
 }
 
-void LineRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawStraightLine>();
         const auto trans = entity.get<Transform2D>();
         const Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
         const LinePoints points = getRotatedPoints(position, trans, line);
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = AABB::fromPoints(points.p1, points.p2),
             .depth = trans.depth,
             .entity = entity,

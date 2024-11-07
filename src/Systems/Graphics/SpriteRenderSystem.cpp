@@ -8,7 +8,7 @@
 
 namespace whal {
 
-void SpriteRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void SpriteRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto sprite = entity.get<Sprite>();
     const Transform2D trans = entity.get<Transform2D>();
 
@@ -21,12 +21,12 @@ void SpriteRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const
 
     const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
-    RaylibDrawParams params = getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    gfx::RaylibDrawParams params = gfx::getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : sprite.color;
     DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, trans.rotationDegrees, color);
 }
 
-void SpriteRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     queue.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto sprite = entity.get<Sprite>();
@@ -35,7 +35,7 @@ void SpriteRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const 
                             AABB(trans, sprite.frameSize / 2) :
                             Box(trans.getRotatedPosition(), sprite.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = bb,
             .depth = trans.depth,
             .entity = entity,

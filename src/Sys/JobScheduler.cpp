@@ -53,7 +53,7 @@ void checkEventFlows(ecs::Entity entity) {
 }
 
 JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
-    System::event.registerListener<DeathEvent>(mDeathListener);
+    System::event.registerListener<evt::Death>(mDeathListener);
 }
 
 void JobScheduler::start() {

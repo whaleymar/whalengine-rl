@@ -17,10 +17,10 @@ struct ShadowLight;
 
 void drawLights(Camera2D worldCamera);
 
-class PointLightSystem : public ecs::ISystem<Transform2D, PointLight>, public IListen<ShaderReloadEvent, true> {
+class PointLightSystem : public ecs::ISystem<Transform2D, PointLight>, public IListen<evt::ShaderReload, true> {
 public:
     void drawEntities();
-    void onEvent(ShaderReloadEvent) override;
+    void onEvent(evt::ShaderReload) override;
 
 private:
     int mPositionUniform;
@@ -28,10 +28,10 @@ private:
     // int mOcclusionDepthUniform;
 };
 
-class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public IListen<ShaderReloadEvent, true> {
+class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public IListen<evt::ShaderReload, true> {
 public:
     void drawEntities();
-    void onEvent(ShaderReloadEvent) override;
+    void onEvent(evt::ShaderReload) override;
 
 private:
     int mPositionUniform;
@@ -41,19 +41,19 @@ private:
     int mOcclusionDepthUniform;
 };
 
-class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<ShaderReloadEvent, true> {
+class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<evt::ShaderReload, true> {
 public:
     void drawEntities(Camera2D worldCamera);
-    void onEvent(ShaderReloadEvent) override;
+    void onEvent(evt::ShaderReload) override;
 
 private:
     int mPositionUniform;
 };
 
-class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public IListen<ShaderReloadEvent, true> {
+class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public IListen<evt::ShaderReload, true> {
 public:
     void drawEntities();
-    void onEvent(ShaderReloadEvent) override;
+    void onEvent(evt::ShaderReload) override;
 
 private:
     int mLightPosUniform;

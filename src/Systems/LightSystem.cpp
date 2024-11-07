@@ -62,7 +62,7 @@ static Vector2i getLightOffset(f32 rotationDegrees, s32 lightHeightPixels) {
     return (Vector2f::fromAngle(-rotationDegrees + 90.0f) * lightHeightPixels).round();
 }
 
-void PointLightSystem::onEvent(ShaderReloadEvent) {
+void PointLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
     // mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
     // mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
@@ -107,7 +107,7 @@ void PointLightSystem::drawEntities() {
     }
 }
 
-void BoxLightSystem::onEvent(ShaderReloadEvent) {
+void BoxLightSystem::onEvent(evt::ShaderReload) {
     Shader shader = ShaderManager::get(Shaders::BoxLight);
     mPositionUniform = GetShaderLocation(shader, "lightpos");
     mHalflenUniform = GetShaderLocation(shader, "lighthalflen");
@@ -170,7 +170,7 @@ void BoxLightSystem::drawEntities() {
     }
 }
 
-void RadianceLightSystem::onEvent(ShaderReloadEvent) {
+void RadianceLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::Radiance), "position");
 }
 
@@ -215,7 +215,7 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
     EndTextureMode();
 }
 
-void ShadowLightSystem::onEvent(ShaderReloadEvent) {
+void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
     mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
     mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");

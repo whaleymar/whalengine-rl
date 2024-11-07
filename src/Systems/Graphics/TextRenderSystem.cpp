@@ -24,7 +24,7 @@ TextRenderSystem::~TextRenderSystem() {
     delete mFont;
 }
 
-void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void TextRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     constexpr s32 spacing = 0;  // PARAM
     const Color tint = WHITE;   // PARAM
 
@@ -62,16 +62,16 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
 
     Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
 
-    RaylibDrawParams params = RaylibDrawParams{
+    gfx::RaylibDrawParams params = gfx::RaylibDrawParams{
         .rect = dstRect,
         .origin = Vector2{0, 0},
         .position = dstPosition.asRL(),
     };
-    DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint), pTrans.rotationDegrees,
-                  pivotOffsetScreen);
+    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
+                       pTrans.rotationDegrees, pivotOffsetScreen);
 }
 
-void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     queue.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawText>();
@@ -80,7 +80,7 @@ void TextRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
         const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2) :
                                                         Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = bb,
             .depth = trans.depth,
             .entity = entity,

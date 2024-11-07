@@ -17,12 +17,12 @@ void System::setPaused(bool pause) {
         time.setMultiplier(0.0);
         audio.pauseClips(true);
         world.pause();
-        event.emit<PauseEvent>(true);
+        event.emit<evt::Pause>(true);
     } else {
         time.setMultiplier(1.0);
         audio.pauseClips(false);
         world.unpause();
-        event.emit<PauseEvent>(false);
+        event.emit<evt::Pause>(false);
     }
 }
 
@@ -82,7 +82,7 @@ void System::end() {
 
 void System::restart(bool resetPlayers) {
     resetManagers();
-    event.emit<RestartEvent>(resetPlayers);
+    event.emit<evt::Restart>(resetPlayers);
 }
 
 IGame& System::getGame() {
