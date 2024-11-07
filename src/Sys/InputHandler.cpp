@@ -23,7 +23,7 @@ void InputHandler::update() {
             reset(inputType);
         }
     }
-    MousePosition = fromRaylibInt(GetMousePosition());
+    MousePosition = Vector2i(GetMousePosition());
     for (auto [mouseButton, inputType] : S_MOUSEMAP) {
         if (IsMouseButtonPressed(mouseButton)) {
             set(inputType);

@@ -59,7 +59,7 @@ void drawLights(Camera2D worldCamera) {
 
 // RESEARCH this assumes the entity is rotated about the transform position
 static Vector2i getLightOffset(f32 rotationDegrees, s32 lightHeightPixels) {
-    return (angleToUnit(-rotationDegrees + 90.0f) * lightHeightPixels).round();
+    return (Vector2f::fromAngle(-rotationDegrees + 90.0f) * lightHeightPixels).round();
 }
 
 void PointLightSystem::onEvent(ShaderReloadEvent) {

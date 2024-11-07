@@ -69,7 +69,7 @@ f32 RailsControl::getSpeed(Vector2i currentPosition) {
     if ((1 - progress) < SPEED_CURVE_EPSILON) {
         isVelocityUpdateNeeded = false;
     }
-    const Vector2f newPos = lerp(startPosition, targetPosf, progress);
+    const Vector2f newPos = startPosition.lerp(targetPosf, progress);
     return (newPos - currentPosition.as<f32>()).len() * PIXELS_PER_TILE;  // idfk why this works
 }
 

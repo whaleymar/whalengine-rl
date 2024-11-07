@@ -5,12 +5,10 @@
 #include "Settings.h"
 // #include "Util/Print.h"
 
-namespace std {
-template <>
-struct hash<Vector2i> {
-    size_t operator()(const Vector2i& v) const { return (v.y << 16) ^ v.x; }
-};
-}  // namespace std
+// RESEARCH
+// Extensions I can think of:
+// 1. A "size" parameter: findPath assumes your collider is 1x1 tile. If size is bigger should check adjacent tiles to make sure path is valid
+// 2. knowing the total distance of the path could be useful
 
 namespace whal {
 
@@ -22,8 +20,6 @@ static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level) {
     return level.navGrid[v1.x][v1.y];
 }
 
-// instead of a boolean mask of blocked tiles, thinking of doing some speculative collider.move ? with the quadtree? O.w. I'm worried non-standard
-// tiles will confuse the AI
 Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level) {
     using namespace std;
 
