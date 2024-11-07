@@ -10,11 +10,10 @@
 #include "Sys/InputHandler.h"
 #include "Systems/Graphics/Common.h"
 #include "Systems/TagTrackers.h"
-#include "Util/EngineUtil.h"
 
 namespace whal {
 
-void NavigationSystem::onEvent(ButtonPressEvent, InputType input) {
+void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
     if (input != InputType::M1) {
         return;
     }
@@ -23,7 +22,7 @@ void NavigationSystem::onEvent(ButtonPressEvent, InputType input) {
         return;
     }
     auto start = pSys->first().get<Transform2D>().position;
-    auto end = getMouseWorldPosition();
+    auto end = System::input.getMouseWorld();
     auto lvl = System::getGame().getScene().getLevelAt(start);
     if (!lvl) {
         return;
@@ -36,7 +35,7 @@ void NavigationSystem::onEvent(ButtonPressEvent, InputType input) {
     }
 }
 
-void NavigationSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto trans = entity.get<Transform2D>();
     const auto path = entity.get<Path>();
 
@@ -46,12 +45,12 @@ void NavigationSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     for (auto step : path.tiles) {
         PreciseTransform2D tileCoord = PreciseTransform2D(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
         tileCoordStart = tileCoord.position;
-        const RaylibDrawParams params = getDrawParamsNew(tileCoord, frameSize, ctx.cameraPosition);
+        const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(tileCoord, frameSize, ctx.cameraPosition);
         DrawRectanglePro(params.rect, params.origin, 0.0f, Color{100, 100, 255, 100});
     }
 }
 
-void NavigationSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void NavigationSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     if (!System::input.isOn(InputType::DEBUG)) {
         return;
     }
@@ -59,7 +58,7 @@ void NavigationSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
         const auto trans = entity.get<Transform2D>();
         const auto path = entity.get<Path>();
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = AABB::fromPoints(path.start, path.target),
             .depth = Depth::Debug,
             .entity = entity,

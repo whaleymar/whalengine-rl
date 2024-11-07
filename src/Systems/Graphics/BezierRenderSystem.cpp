@@ -8,25 +8,25 @@
 namespace whal {
 
 // NOTE rotation not implemented
-void BezierRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
+void BezierRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto bezier = entity.get<DrawBezierQuad>();
     const Transform2D trans = entity.get<Transform2D>();
     const Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
 
-    Vector2 p1 = getDrawParams(position, Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    Vector2 p1 = gfx::getDrawParams(position, Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     Vector2 controlPoint =
-        getDrawParams(position + bezier.controlPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
-    Vector2 p2 = getDrawParams(position + bezier.endPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+        gfx::getDrawParams(position + bezier.controlPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    Vector2 p2 = gfx::getDrawParams(position + bezier.endPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
     DrawSplineSegmentBezierQuadratic(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color);
 }
 
-void BezierRenderSystem::addToQueue(std::vector<EntityRenderInfo>& queue) const {
+void BezierRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawBezierQuad>();
         const auto trans = entity.get<Transform2D>();
         const Vector2i position = (entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>()).round();
 
-        queue.emplace_back(EntityRenderInfo{
+        queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = AABB::fromPoints(position, position + line.controlPointOffset, position + line.endPointOffset),
             .depth = trans.depth,
             .entity = entity,

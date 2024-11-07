@@ -5,35 +5,14 @@
 
 #include "Systems/Graphics/Common.h"
 
-namespace whal {
+namespace whal::gfx {
+
+static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin);
 
 // Draw text using font inside rectangle limits
 void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                    float angle, Vector2f pivotOffset) {
     DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, angle, pivotOffset);
-}
-
-// added rotation support :)
-static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin) {
-    // Character index position in sprite font
-    // NOTE: In case a codepoint is not available in the font, index returned points to '?'
-    int index = GetGlyphIndex(font, codepoint);
-    float scaleFactor = fontSize / font.baseSize;  // Character quad scaling factor
-
-    // Character destination rectangle on screen
-    // NOTE: We consider glyphPadding on drawing
-    Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                        position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                        (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
-                        (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
-
-    // Character source rectangle from font texture atlas
-    // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects
-    Rectangle srcRec = {font.recs[index].x - (float)font.glyphPadding, font.recs[index].y - (float)font.glyphPadding,
-                        font.recs[index].width + 2.0f * font.glyphPadding, font.recs[index].height + 2.0f * font.glyphPadding};
-
-    // Draw the character texture on the screen
-    DrawTexturePro(font.texture, srcRec, dstRec, origin, angle, tint);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
@@ -169,6 +148,29 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
         if ((textOffsetX != 0) || (codepoint != ' '))
             textOffsetX += glyphWidth;  // avoid leading spaces
     }
+}
+
+// added rotation support :)
+static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Color tint, float angle, Vector2 origin) {
+    // Character index position in sprite font
+    // NOTE: In case a codepoint is not available in the font, index returned points to '?'
+    int index = GetGlyphIndex(font, codepoint);
+    float scaleFactor = fontSize / font.baseSize;  // Character quad scaling factor
+
+    // Character destination rectangle on screen
+    // NOTE: We consider glyphPadding on drawing
+    Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                        position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                        (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
+                        (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
+
+    // Character source rectangle from font texture atlas
+    // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects
+    Rectangle srcRec = {font.recs[index].x - (float)font.glyphPadding, font.recs[index].y - (float)font.glyphPadding,
+                        font.recs[index].width + 2.0f * font.glyphPadding, font.recs[index].height + 2.0f * font.glyphPadding};
+
+    // Draw the character texture on the screen
+    DrawTexturePro(font.texture, srcRec, dstRec, origin, angle, tint);
 }
 
 RenderTexture LoadRenderTextureDepthTex(int width, int height) {
@@ -319,4 +321,11 @@ void DrawTextureDepth(Texture2D texture, Rectangle source, Rectangle dest, Vecto
     }
 }
 
-}  // namespace whal
+// raylib's DrawTextureXYZ(RenderTexture.texture) draws upside down.
+// This opts for a less confusing approach.
+void DrawRenderTexture(RenderTexture renderTexture, Color color) {
+    const auto tex = renderTexture.texture;
+    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
+}
+
+}  // namespace whal::gfx

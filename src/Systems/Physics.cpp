@@ -49,7 +49,7 @@ void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
 // If the moving entity or the other entity have callbacks, they're added to a queue and called once everything has moved.
 // If both entities are moving, this might get called twice for the same pair of entities.
 // So I have a helper function that makes sure callbacks are called exactly once per collision
-void PhysicsSystem::onEvent(CollisionEvent, ecs::Entity movingEntity, HitInfo hitinfo) {
+void PhysicsSystem::onEvent(evt::Collision, ecs::Entity movingEntity, HitInfo hitinfo) {
     auto addIfUnique = [](std::vector<std::pair<ecs::Entity, Vector2i>>& entityList, ecs::Entity other, Vector2i moveNormal) {
         for (auto [entity, _] : entityList) {
             if (entity == other) {

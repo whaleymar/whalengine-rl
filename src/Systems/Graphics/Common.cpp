@@ -4,7 +4,7 @@
 #include "Components/Transform.h"
 #include "Settings.h"
 
-namespace whal {
+namespace whal::gfx {
 
 RaylibDrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter) {
     Vector2f size = frameSize * scale;
@@ -55,4 +55,4 @@ RaylibDrawParams getDrawParamsNew(PreciseTransform2D transform, Vector2f frameSi
     };
 }
 
-}  // namespace whal
+}  // namespace whal::gfx

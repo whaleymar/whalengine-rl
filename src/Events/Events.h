@@ -11,15 +11,16 @@ enum class InputType : u64;
 struct HitInfo;
 struct ActiveLevel;
 
-// TODO namespace these I can't remember what they're call when I need them
-class DeathEvent : public IEvent<ecs::Entity> {};
-class CollisionEvent : public IEvent<ecs::Entity, HitInfo> {};
-class ButtonPressEvent : public IEvent<InputType> {};
-class ButtonPressOrReleaseEvent : public IEvent<InputType, bool> {};
-class LandingEvent : public IEvent<ecs::Entity> {};
-class EnteredLevelEvent : public IEvent<ecs::Entity, ActiveLevel&> {};
-class ShaderReloadEvent : public IEvent<> {};
-class RestartEvent : public IEvent<bool> {};
-class PauseEvent : public IEvent<bool> {};
+namespace evt {
+class Death : public IEvent<ecs::Entity> {};
+class Collision : public IEvent<ecs::Entity, HitInfo> {};
+class ButtonPress : public IEvent<InputType> {};
+class ButtonRelease : public IEvent<InputType, bool> {};
+class Landing : public IEvent<ecs::Entity> {};
+class EnteredLevel : public IEvent<ecs::Entity, ActiveLevel&> {};
+class ShaderReload : public IEvent<> {};
+class Restart : public IEvent<bool> {};
+class Pause : public IEvent<bool> {};
+}  // namespace evt
 
 }  // namespace whal

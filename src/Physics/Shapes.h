@@ -32,7 +32,6 @@ public:
     HitInfo collide(const AABB& other) const;
 
     // NOT used by Shape, but is used by Collider
-    bool isOverlapping(const AABB* other) const;
     bool isOverlapping(const AABB& other) const;
     bool contains(const AABB& other) const;
     bool contains(Vector2i point) const;
@@ -63,10 +62,9 @@ public:
     Vector2i getPosition() const { return mCenter; }
 
     s32 getRadius() const { return mRadius; }
-    // TODO pass by value
-    f32 getDistanceFromCenter(const AABB* aabb) const;
-    f32 getDistanceFromCenter(const Circle* other) const;
-    Vector2f getVecToClosestPoint(const AABB aabb) const;
+    f32 getDistanceFromCenter(const AABB& aabb) const;
+    f32 getDistanceFromCenter(const Circle& other) const;
+    Vector2f getVecToClosestPoint(const AABB& aabb) const;
 
     AABB getBoundingBox() const;
 
@@ -117,8 +115,8 @@ private:
     ShapeTag mShape;
 };
 
-bool isIntersectAABBvsAABB(const AABB*, const AABB*);
-bool isIntersectCirclevsCircle(const Circle*, const Circle*);
-bool isIntersectAABBvsCircle(const AABB*, const Circle*);
+bool isIntersectAABBvsAABB(const AABB&, const AABB&);
+bool isIntersectCirclevsCircle(const Circle&, const Circle&);
+bool isIntersectAABBvsCircle(const AABB&, const Circle&);
 
 }  // namespace whal

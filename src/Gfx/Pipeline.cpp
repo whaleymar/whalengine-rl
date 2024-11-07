@@ -2,11 +2,11 @@
 
 #include <raylib.h>
 
+#include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 
 #include "Util/Color.h"
-#include "Util/EngineUtil.h"
 
 namespace whal {
 
@@ -72,7 +72,7 @@ void Pipeline::process(RenderTexture2D& processTexture) const {
         // last draw was to mSwapBuffer, so need to update processTexture
         BeginTextureMode(processTexture);
         ClearBackground(Colors::CLEAR);
-        drawRenderTexture(mSwapBuffer);
+        gfx::DrawRenderTexture(mSwapBuffer);
         EndTextureMode();
     }
 }
@@ -82,9 +82,9 @@ void Pipeline::swapBuffer() const {
 
     ClearBackground(Colors::CLEAR);
     if (mIsDrawingToSwapBuffer) {
-        drawRenderTexture(processTexture);
+        gfx::DrawRenderTexture(processTexture);
     } else {
-        drawRenderTexture(mSwapBuffer);
+        gfx::DrawRenderTexture(mSwapBuffer);
     }
 
     mIsDrawingToSwapBuffer = !mIsDrawingToSwapBuffer;

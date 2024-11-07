@@ -13,7 +13,7 @@ namespace whal {
 // 2. Renders all game objects and lighting onto the TextureID::Main RenderTexture
 // 3. Applies post-processing effects
 // 4. Renders debug information, like colliders (if applicable)
-class Renderer : public IListen<ShaderReloadEvent, true> {
+class Renderer : public IListen<evt::ShaderReload, true> {
 public:
     static Renderer& instance() {
         static Renderer instance_;
@@ -23,7 +23,7 @@ public:
     static void init();
     static void render();
     static void setPostEffects(Pipeline pipeline);
-    void onEvent(ShaderReloadEvent) override;
+    void onEvent(evt::ShaderReload) override;
 
 private:
     Renderer();
@@ -31,18 +31,18 @@ private:
     void operator=(const Renderer&) = delete;
 
     void buildRenderQueue(Vector2i cameraPosition);
-    void _drawEntities(RenderContext ctx);
-    void _drawEffectsMask(RenderContext ctx);
-    void _drawOcclusionMask(RenderContext ctx) const;
-    void _drawUI(const RenderContext ctx) const;
+    void _drawEntities(gfx::RenderContext ctx);
+    void _drawEffectsMask(gfx::RenderContext ctx);
+    void _drawOcclusionMask(gfx::RenderContext ctx) const;
+    void _drawUI(const gfx::RenderContext ctx) const;
     void _render();
     void _init() const;
 
     Camera2D mRaylibCamera;
     Pipeline mPostProcessSteps;
-    std::vector<EntityRenderInfo> mRenderQueue;
-    std::vector<EntityRenderInfo> mUIRenderQueue;   // UI is stored in a separate queue so it's not affected by lighting
-    std::vector<EntityRenderInfo> mOcclusionQueue;  // stored separately for speed, since they need to be drawn twice (color/depth)
+    std::vector<gfx::EntityRenderInfo> mRenderQueue;
+    std::vector<gfx::EntityRenderInfo> mUIRenderQueue;   // UI is stored in a separate queue so it's not affected by lighting
+    std::vector<gfx::EntityRenderInfo> mOcclusionQueue;  // stored separately for speed, since they need to be drawn twice (color/depth)
     s32 mMainTextureUniform;
     s32 mExposureUniform;
 };

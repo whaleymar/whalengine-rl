@@ -15,10 +15,9 @@ NEXT GOAL:
 - One file per system
 - namespacing utility functions. possible categories:
     - nav
-    - gfx 
     - phys
-    - evf(l) (events)
     - map
+- put TweenManager in System, call it tween, so I can just do System::tween.create()
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
@@ -74,6 +73,16 @@ NEXT GOAL:
 ## Sprite Editing workflow
 - .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
     - see how Murder Engine does this
+
+## Camera 
+- follow a spline whose points are defined in the level.
+    - can use this to find the closest point on a spline to the player: https://homepage.math.uiowa.edu/~atkinson/ftp/CurvesAndSufacesClosestPoint.pdf
+
+## Prefab Injection 
+- want to auto-register prefab classes without having to manually add everything to a static list like I do now 
+- considering using the Static Initialization / Inversion of Control pattern used by Google's test suite (gtest)
+    - github.com/google/googletest/blob/main/googletest/include/gtest/gtest.h
+    - https://www.cppstories.com/2023/ub-factory-constinit/ -- cpp20 approach (?)
 
 ## Misc
 - go all-in on custom raylib++ fork -> namespace the library and get rid of the bloat

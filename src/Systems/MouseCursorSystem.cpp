@@ -1,12 +1,12 @@
 #include "MouseCursorSystem.h"
 
-#include "Util/EngineUtil.h"
+#include "Components/Draw.h"
 
 namespace whal {
 
 void MouseCursorSystem::update() {
     for (auto [id, entity] : getEntitiesMutable()) {
-        Vector2i position = getMouseWorldPosition();
+        Vector2i position = System::input.getMouseWorld();
 
         // correct for cursor height
         const auto height = entity.get<Sprite>().frameSize.y;

@@ -6,6 +6,7 @@
 #include "JobScheduler.h"
 #include "Prefab.h"
 #include "Random.h"
+#include "Sys/Cursor.h"
 #include "Time.h"
 #include "whalECS/src/ECS.h"
 
@@ -26,6 +27,7 @@ struct System {
     inline static JobScheduler schedule;
     inline static ecs::World& world = ecs::World::getInstance();
     inline static Prefab prefab;
+    inline static Cursor cursor;
 
     // Updates the engine and game state. Should not be called manually
     static void Update();

@@ -23,7 +23,7 @@ void InputHandler::update() {
             reset(inputType);
         }
     }
-    MousePosition = Vector2i(GetMousePosition());
+    mMouseScreenPosition = Vector2i(GetMousePosition());
     for (auto [mouseButton, inputType] : S_MOUSEMAP) {
         if (IsMouseButtonPressed(mouseButton)) {
             set(inputType);
@@ -54,8 +54,7 @@ void InputHandler::set(InputType input) {
     }
     }
 
-    System::event.emit<ButtonPressEvent>(input);
-    System::event.emit<ButtonPressOrReleaseEvent>(input, true);
+    System::event.emit<evt::ButtonPress>(input);
 }
 
 void InputHandler::reset(InputType input) {
@@ -71,7 +70,7 @@ void InputHandler::reset(InputType input) {
     default:
         mFlags &= ~static_cast<u64>(input);
     }
-    System::event.emit<ButtonPressOrReleaseEvent>(input, false);
+    System::event.emit<evt::ButtonRelease>(input, false);
 }
 
 void InputHandler::loadMappings() const {

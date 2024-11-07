@@ -25,7 +25,9 @@ void DestroyGame(whal::IGame* game) {
 
 namespace whal {
 
-class RestartEvent;
+namespace evt {
+class Restart;
+}
 
 class Engine {
 public:
@@ -62,7 +64,7 @@ public:
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
             return true;
         }
-        System::event.emit<RestartEvent>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
+        System::event.emit<evt::Restart>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
                                              // regular start)
 
         return false;
