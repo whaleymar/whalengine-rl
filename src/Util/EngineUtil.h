@@ -5,6 +5,7 @@
 
 typedef struct RenderTexture RenderTexture;
 
+// TODO namespace these, I can't remember what they're called
 namespace whal {
 
 // Cursor
@@ -15,5 +16,5 @@ void setDefaultCursor();
 void drawRenderTexture(RenderTexture renderTexture, Color color = WHITE);
 
 // Coordinates
-Vector2i getMouseWorldPosition();
+Vector2i getMouseWorldPosition();  // TODO put in input system?
 }  // namespace whal

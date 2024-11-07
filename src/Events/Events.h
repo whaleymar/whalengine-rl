@@ -11,6 +11,7 @@ enum class InputType : u64;
 struct HitInfo;
 struct ActiveLevel;
 
+// TODO namespace these I can't remember what they're call when I need them
 class DeathEvent : public IEvent<ecs::Entity> {};
 class CollisionEvent : public IEvent<ecs::Entity, HitInfo> {};
 class ButtonPressEvent : public IEvent<InputType> {};
