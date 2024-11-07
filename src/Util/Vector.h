@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iosfwd>
+#include <raylib.h>
 
 #include "Util/MathUtil.h"
 #include "Util/Types.h"
@@ -17,6 +18,8 @@ struct Vector2T {
     Vector2T(T elem1, T elem2) : x(elem1), y(elem2) {}
 
     Vector2T(const Vector2T<T>& other) : x(other.x), y(other.y) {}
+
+    Vector2T(Vector2 rlVec) : x(rlVec.x), y(rlVec.y) {}
 
     static inline const Vector2T<T> UP{0, 1};
     static inline const Vector2T<T> DOWN{0, -1};
@@ -86,6 +89,9 @@ struct Vector2T {
         return Vector2T<Type>(static_cast<Type>(x), static_cast<Type>(y));
     }
 
+    // Converts to raylib Vector2 struct
+    inline Vector2 asRL() const { return Vector2{x, y}; }
+
     inline Vector2T<s32> round() const { return Vector2T<s32>(std::roundf(x), std::roundf(y)); }
 
     // from https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
@@ -105,6 +111,47 @@ struct Vector2T {
         // translate point back:
         return Vector2T<T>{xnew + about.x, ynew + about.y};
     }
+
+    // Returns angle of vector.
+    // Inputs do not need to be normalized
+    inline f32 angle(Vector2T<f32> reference = Vector2T<f32>::RIGHT, const bool clockwise = false) const {
+        const Vector2T<f32> vec = std::is_same_v<T, f32> ? norm() : as<f32>().norm();
+        reference = reference.norm();
+
+        const f32 dot = vec.dot(reference);
+        const f32 det = vec.det(reference);
+        const f32 mult = clockwise ? 1.0f : -1.0f;
+        const f32 angleRadians = mult * std::atan2(det, dot);
+        const f32 angleDegrees = angleRadians * math::RAD_TO_DEG;
+
+        // angles >180 are negative. clamp between 0 and 360
+        if (angleDegrees < 0.0f) {
+            return 360.0f + angleDegrees;
+        }
+        return angleDegrees;
+    }
+
+    // Returns unit vector for given angle.
+    // Only recommended for float specialization.
+    inline static Vector2T<T> fromAngle(f32 angle) {
+        const f32 radians = angle * DEG2RAD;
+        return {math::cos(radians), math::sin(radians)};
+    }
+
+    // Returns unit vector for given angle.
+    // Only recommended for float specialization.
+    inline static Vector2T<T> fromAngleFast(f32 angle) {
+        const f32 radians = angle * DEG2RAD;
+        return {math::fast_cos(radians), math::fast_sin(radians)};
+    }
+
+    inline Vector2T<T> lerp(const Vector2T<T> other, const f32 t) const {
+        if constexpr (std::is_same_v<T, f32>) {
+            return {math::lerp(x, other.x, t), math::lerp(y, other.y, t)};
+        } else {
+            return as<f32>().lerp(other.as<f32>(), t).round();
+        }
+    }
 };
 
 template <typename T>
@@ -113,27 +160,10 @@ std::ostream& operator<<(std::ostream& out, Vector2T<T> const& self);
 typedef Vector2T<f32> Vector2f;
 typedef Vector2T<s32> Vector2i;
 
-Vector2i toIntVecRounded(const Vector2f floatVec);
-Vector2f fromRaylib(Vector2 rlVec);
-Vector2i fromRaylibInt(Vector2 rlVec);
-Vector2 toRaylib(Vector2i vec);
-Vector2 toRaylib(Vector2f vec);
-
-Vector2f angleToUnit(f32 angle);
-Vector2f angleToUnitFast(f32 angle);
-
-// inputs do not need to be normalized
-f32 getAngleClockwise(Vector2f vec, Vector2f reference = Vector2f::RIGHT);
-
-// counter clockwise (like unit circle)
-f32 getAngle(Vector2f vec, Vector2f reference = Vector2f::RIGHT);
-
-inline Vector2f lerp(const Vector2f vec1, const Vector2f vec2, const f32 t) {
-    return Vector2f(math::lerp(vec1.x, vec2.x, t), math::lerp(vec1.y, vec2.y, t));
-}
-
-inline Vector2i lerp(const Vector2i vec1, const Vector2i vec2, const f32 t) {
-    return Vector2f(math::lerp(static_cast<f32>(vec1.x), static_cast<f32>(vec2.x), t),
-                    math::lerp(static_cast<f32>(vec1.y), static_cast<f32>(vec2.y), t))
-        .round();
-}
+// lets me use Vector2i as a hashmap key
+namespace std {
+template <>
+struct hash<Vector2i> {
+    size_t operator()(const Vector2i& v) const { return (v.y << 16) ^ v.x; }
+};
+}  // namespace std

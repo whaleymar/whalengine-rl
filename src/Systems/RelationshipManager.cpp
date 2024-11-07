@@ -84,7 +84,7 @@ void OrbitSystem::update() {
         orbit.currentAngle += toAdd;
 
         // RESEARCH bool param so that entity rotates in sync with orbit? (tidal lock)
-        const Vector2f unit = angleToUnit(orbit.currentAngle);
+        const Vector2f unit = Vector2f::fromAngle(orbit.currentAngle);
         trans.position = (unit * static_cast<f32>(orbit.radius)).round() + orbitTarget + (orbit.selfOffset.as<f32>() * unit).round();
     }
 }

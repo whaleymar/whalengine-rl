@@ -65,7 +65,7 @@ void TextRenderSystem::draw(ecs::Entity entity, const RenderContext ctx) const {
     RaylibDrawParams params = RaylibDrawParams{
         .rect = dstRect,
         .origin = Vector2{0, 0},
-        .position = toRaylib(dstPosition),
+        .position = dstPosition.asRL(),
     };
     DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint), pTrans.rotationDegrees,
                   pivotOffsetScreen);

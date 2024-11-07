@@ -147,7 +147,7 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
                 // Draw current character glyph
                 if ((codepoint != ' ') && (codepoint != '\t')) {
                     Vector2f pos = Vector2f(rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY).rotate(-angle, centerpoint);
-                    DrawTextCodepointPro(font, codepoint, toRaylib(pos), fontSize, isGlyphSelected ? selectTint : tint, angle, Vector2{0, 0});
+                    DrawTextCodepointPro(font, codepoint, pos.asRL(), fontSize, isGlyphSelected ? selectTint : tint, angle, Vector2{0, 0});
                 }
             }
 

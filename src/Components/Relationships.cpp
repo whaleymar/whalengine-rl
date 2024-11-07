@@ -34,7 +34,7 @@ void Orbit::initTarget(ecs::Entity self) {
 
     // initialize current angle
     const Vector2i delta = self.get<Transform2D>().position - targetEntity.get<Transform2D>().position;
-    currentAngle = delta.isZero() ? 0.0f : getAngle(delta.as<f32>());
+    currentAngle = delta.isZero() ? 0.0f : delta.as<f32>().angle();
 }
 
 Follow::Follow(ecs::Entity target_) : targetEntityID(target_.id()) {}

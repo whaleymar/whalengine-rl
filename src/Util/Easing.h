@@ -51,7 +51,7 @@ inline f32 ease(const f32 n1, const f32 n2, f32 t, Ease easeFunc) {
 }
 
 inline Vector2f ease(const Vector2f n1, const Vector2f n2, f32 t, Ease easeFunc) {
-    return lerp(n1, n2, getEaseProgress(t, easeFunc));
+    return n1.lerp(n2, getEaseProgress(t, easeFunc));
 }
 
 inline s32 ease(const s32 n1, const s32 n2, f32 t, Ease easeFunc) {
@@ -59,7 +59,7 @@ inline s32 ease(const s32 n1, const s32 n2, f32 t, Ease easeFunc) {
 }
 
 inline Vector2i ease(const Vector2i n1, Vector2i n2, f32 t, Ease easeFunc) {
-    return lerp(n1, n2, getEaseProgress(t, easeFunc));
+    return n1.lerp(n2, getEaseProgress(t, easeFunc));
 }
 
 inline Color ease(Color c1, Color c2, f32 t, Ease easeFunc) {

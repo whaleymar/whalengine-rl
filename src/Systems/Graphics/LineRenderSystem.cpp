@@ -16,13 +16,13 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
     Vector2i startPos;
     Vector2i endPos;
     if (line.isRotateAboutCenter) {
-        Vector2f halfLine = angleToUnit(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
+        Vector2f halfLine = Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
         startPos = (position - halfLine).round();
         endPos = (position + halfLine).round();
 
     } else {
         startPos = trans.position;
-        endPos = trans.position + (angleToUnit(trans.rotationDegrees) * static_cast<f32>(line.length)).round();
+        endPos = trans.position + (Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length)).round();
     }
 
     return LinePoints{startPos, endPos};
