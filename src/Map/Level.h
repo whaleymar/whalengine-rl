@@ -31,12 +31,13 @@ struct Level {
 struct ActiveLevel : public Level {
     std::set<ecs::Entity> childEntities;
     std::vector<ecs::Entity> objects;
-    Vector2i worldOffsetPixels;
+    Vector2i worldOffset;
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     Vector2i initialSpawnPoint;
     std::vector<Vector2i> spawnPoints;
+    std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
 
     void activateObjects();
     void deactivateObjects();

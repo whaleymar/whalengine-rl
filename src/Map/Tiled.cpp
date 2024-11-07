@@ -167,7 +167,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
-        auto trans = Transform2D(level.worldOffsetPixels + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
+        auto trans = Transform2D(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
         trans.depth = Depth::Foreground2;
         lightEntity.add(trans);
 
@@ -570,7 +570,7 @@ Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const 
         position.y += PIXELS_PER_TILE / 2;
     }
     Transform2D trans = Transform2D::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y + PIXELS_PER_TILE);
-    trans.position += level.worldOffsetPixels;
+    trans.position += level.worldOffset;
     return trans;
 }
 

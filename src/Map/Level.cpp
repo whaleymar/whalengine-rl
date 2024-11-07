@@ -143,13 +143,17 @@ static Tile getTile(u32 tileMask) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform2D::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
-    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}};
+    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
 
     // std::vector<std::vector<s32>> collisionGrid;
     for (s32 x = 0; x < map.widthTiles; x++) {
         // std::vector<s32> collisionColumn;
+
+        // initialize nav grid with no obstacles
+        lvl.navGrid.push_back(std::vector<bool>(map.heightTiles, true));
+
         for (s32 y = 0; y < map.heightTiles; y++) {
             Transform2D trans = Transform2D(Transform2D::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
             Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);  // no idea if this is correct
@@ -212,10 +216,11 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         s32 tileID = blockID - tset.firstgid;
                         tset.addTileComponents(e, tileID, lvl, layer.metadata, mapPosition);
 
-                        // For simplicity, tiles with collision also block light and vision
+                        // For simplicity, tiles with collision also block light, vision, and pathing
                         if (e.has<Collider>()) {
                             e.add<BlocksLight>();
                             e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
+                            lvl.navGrid[x][y] = false;
                         }
 
                         e.activate();

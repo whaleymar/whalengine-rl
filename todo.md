@@ -1,6 +1,6 @@
 # To Do 
 
-NEXT GOAL: PATH FINDING
+NEXT GOAL: 
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -13,6 +13,12 @@ NEXT GOAL: PATH FINDING
     - "XyzSystem"
 - Put all systems in the Systems/ dir. Some are in component files
 - One file per system
+- namespacing utility functions. possible categories:
+    - nav
+    - gfx 
+    - phys
+    - evf(l) (events)
+    - map
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
