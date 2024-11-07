@@ -93,6 +93,7 @@ NEXT GOAL:
 - dialogue system (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
+- Possible Shader workflow: Unity Shader Graph -> view code -> export code as GLSL?
 
 ---------------------------------------------------------------------------------------------------------------------------
 

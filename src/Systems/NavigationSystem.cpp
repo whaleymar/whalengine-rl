@@ -1,4 +1,5 @@
 #include "NavigationSystem.h"
+#include "Gfx/Coordinates.h"
 #include "Sys/System.h"
 
 #ifndef NDEBUG
@@ -36,6 +37,13 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
 }
 
 void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
+    // TEMP testing tile coordinate functions
+
+    // Vector2i coord = clampToTile(System::input.getMouseWorld());
+    // const Vector2f frameSize(8, 8);
+    // const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(PreciseTransform2D(coord.as<f32>()), frameSize, ctx.cameraPosition);
+    // DrawRectanglePro(params.rect, params.origin, 0.0f, WHITE);
+
     const auto trans = entity.get<Transform2D>();
     const auto path = entity.get<Path>();
 
