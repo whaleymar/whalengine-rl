@@ -2,7 +2,6 @@
 
 #include <array>
 #include <cassert>
-#include <memory>
 #include <vector>
 
 #include "Physics/CollisionLayer.h"
@@ -16,14 +15,23 @@ struct RaycastHit;
 
 namespace qtree {
 
-// TODO this is quite slow for moving entities, since they require multiple removals/adds per frame
-// but it's very fast for things that don't move.
-// should use this for entities without a velocity component, but a spatial grid for things with velocity,
-// and then a lookup would basically dispatch the correct data struct based on entity.has<Velocity>()
 class QuadTree {
     struct Value {
         ecs::Entity entity;
         AABB shape;
+    };
+
+    struct Node {
+        std::array<s32, 4> children = {-1, -1, -1, -1};  // -1 if no child
+        std::vector<Value> values;
+        s32 parentIx = -1;
+
+        bool isLeaf() const { return children[0] == -1 && children[1] == -1 && children[2] == -1 && children[3] == -1; }
+
+        void reset() {
+            children.fill(-1);
+            values.clear();
+        }
     };
 
 public:
@@ -38,40 +46,37 @@ public:
     std::vector<ecs::Entity> query(const AABB& box) const;
     std::vector<std::pair<ecs::Entity, ecs::Entity>> findAllIntersections() const;
 
+    RaycastHit raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask = CollisionLayer::ALL) const;
+    RaycastHit circlecast(Vector2f origin, Vector2f direction, f32 maxDistance, f32 radius, u16 layerMask = CollisionLayer::ALL) const;
+
     AABB getBoundingBox() const;
 
-    // Note: does not detect entities whose collider contains the ray's origin point
-    // Note: direction does not have to be normalized
-    RaycastHit raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask = CollisionLayer::ALL);
-
-    RaycastHit circlecast(Vector2f origin, Vector2f direction, f32 maxDistance, f32 radius, u16 layerMask = CollisionLayer::ALL);
-
 private:
-    struct Node {
-        std::array<std::unique_ptr<Node>, 4> children;
-        std::vector<Value> values;
-    };
-
-    AABB mBoundingBox;
-    std::unique_ptr<Node> mRoot;
-
-    bool isLeaf(const Node* node) const;
-    AABB computeBox(const AABB& box, int i) const;
+    // returns the index of a free node.
+    // creates a new one if all are used
+    s32 allocateNode();
+    void freeNode(s32 ix);
+    AABB computeBox(const AABB& box, s32 i) const;
 
     // returns quadrant index
     // 0 1
     // 2 3
     s32 getQuadrant(const AABB& nodeBox, const AABB& valueBox) const;
-    void add(Node* node, s32 depth, const AABB& parentBox, const Value value);
-    void split(Node* node, const AABB& parentBox);
-    bool remove(Node* node, const AABB& parentBox, const Value value);
-    void removeValue(Node* node, const Value value);
-    bool tryMerge(Node* node);
-    void query(Node* node, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const;
-    void querySegment(Node* node, const AABB& box, const Segment& querySegment, std::vector<ecs::Entity>& values) const;
-    void findAllIntersections(Node* node, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const;
-    void findIntersectionsInDescendants(Node* node, const Value value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const;
-    RaycastHit _raycast(Segment ray, u16 layerMask);
+    void _add(s32 nodeIx, s32 depth, const AABB& parentBox, const Value value);
+    void split(const s32 nodeIx, const AABB& parentBox);
+    bool _remove(const s32 nodeIx, const AABB& parentBox, const Value value);
+    void removeValue(const s32 nodeIx, const Value value);
+    bool tryMerge(const s32 nodeIx);
+    void _query(const s32 nodeIx, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const;
+    void _querySegment(const s32 nodeIx, const AABB& box, const Segment& querySegment, std::vector<ecs::Entity>& values) const;
+    void _findAllIntersections(const s32 nodeIx, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const;
+    void _findIntersectionsInDescendants(const s32 nodeIx, const Value value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const;
+    RaycastHit _raycast(Segment ray, u16 layerMask) const;
+
+    std::vector<Node> mNodes;       // dense node storage
+    std::vector<s32> mFreeIndices;  // stack of free node indices
+    AABB mBoundingBox;
+    s32 mRootIx = -1;
 };
 
 }  // namespace qtree

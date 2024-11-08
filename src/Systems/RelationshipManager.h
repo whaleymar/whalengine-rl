@@ -20,8 +20,10 @@ public:
     void onEvent(evt::Death, ecs::Entity entity) override;
 };
 
-class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate {
+class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:
+    void onAdd(ecs::Entity entity) override;
+    void onRemove(ecs::Entity entity) override {}
     void update() override;
 };
 

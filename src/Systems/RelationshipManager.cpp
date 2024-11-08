@@ -34,13 +34,14 @@ void EntityChildSystem::onRemove(ecs::Entity entity) {
     }
 }
 
+void AttachSystem::onAdd(ecs::Entity entity) {
+    entity.get<Attach>().initTarget(entity);
+}
+
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         Transform2D& trans = entity.get<Transform2D>();
         Attach& attach = entity.get<Attach>();
-        if (!attach.isTargetInitialized) {
-            attach.initTarget(entity);
-        }
         const ecs::Entity targetEntity(attach.targetEntityID);
         const auto targetTrans = targetEntity.get<Transform2D>();
         const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
