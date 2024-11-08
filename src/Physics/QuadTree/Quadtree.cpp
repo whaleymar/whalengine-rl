@@ -9,93 +9,55 @@
 
 namespace whal::qtree {
 
-static constexpr s32 THRESHOLD = 16;
+static constexpr s32 THRESHOLD = 16;  // number of entities in a node before we try splitting
 static constexpr s32 MAX_DEPTH = 8;
 
-QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRoot(std::make_unique<Node>()) {}
+QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRootIx(allocateNode()) {}
+
+s32 QuadTree::allocateNode() {
+    // get a free index
+    if (!mFreeIndices.empty()) {
+        s32 ix = mFreeIndices.back();
+        mFreeIndices.pop_back();
+        return ix;
+    }
+
+    // or make a new one
+    mNodes.emplace_back();
+    return static_cast<s32>(mNodes.size() - 1);
+}
+
+void QuadTree::freeNode(s32 ix) {
+    mNodes[ix].reset();
+    mFreeIndices.push_back(ix);
+}
 
 void QuadTree::add(const ecs::Entity value) {
-    add(mRoot.get(), 0, mBoundingBox, {value, value.get<Collider>().getShape()});
+    _add(mRootIx, 0, mBoundingBox, {value, value.get<Collider>().getShape()});
 }
+
 void QuadTree::add(const ecs::Entity value, const AABB& newShape) {
-    add(mRoot.get(), 0, mBoundingBox, {value, newShape});
+    _add(mRootIx, 0, mBoundingBox, {value, newShape});
 }
 
 void QuadTree::remove(const ecs::Entity value) {
-    remove(mRoot.get(), mBoundingBox, {value, value.get<Collider>().getShape()});
+    _remove(mRootIx, mBoundingBox, {value, value.get<Collider>().getShape()});
 }
 void QuadTree::remove(const ecs::Entity value, const AABB& previousShape) {
-    remove(mRoot.get(), mBoundingBox, {value, previousShape});
+    _remove(mRootIx, mBoundingBox, {value, previousShape});
 }
 
 std::vector<ecs::Entity> QuadTree::query(const AABB& box) const {
     auto values = std::vector<ecs::Entity>();
-    query(mRoot.get(), mBoundingBox, box, values);
+    _query(mRootIx, mBoundingBox, box, values);
     return values;
-}
-
-std::vector<std::pair<ecs::Entity, ecs::Entity>> QuadTree::findAllIntersections() const {
-    auto intersections = std::vector<std::pair<ecs::Entity, ecs::Entity>>();
-    findAllIntersections(mRoot.get(), intersections);
-    return intersections;
 }
 
 AABB QuadTree::getBoundingBox() const {
     return mBoundingBox;
 }
 
-RaycastHit QuadTree::raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask) {
-    direction = direction.norm();
-    Segment ray(origin, direction * maxDistance);
-    return _raycast(ray, layerMask);
-}
-
-RaycastHit QuadTree::circlecast(Vector2f origin, Vector2f direction, f32 maxDistance, f32 radius, u16 layerMask) {
-    direction = direction.norm();
-    Segment ray(origin, direction * maxDistance, radius);
-    return _raycast(ray, layerMask);
-}
-
-RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) {
-    auto values = std::vector<ecs::Entity>();
-    querySegment(mRoot.get(), mBoundingBox, ray, values);
-
-    RaycastHit hitinfo;
-    if (values.size() == 0) {
-        return hitinfo;
-    }
-
-    // Get closest entity whose collider doesn't contain the origin point
-    const Vector2i originI = ray.origin.as<s32>();
-    f32 closestDistance = 1e10;
-    // research should i get a vector of Value structs instead so I already have the colliders?
-    for (auto entity : values) {
-        const auto collider = entity.get<Collider>();
-        const auto shape = collider.getShape();
-        if ((layerMask & collider.getCollisionMask()) == 0 || shape.contains(originI)) {
-            continue;
-        }
-
-        const RaycastHit curHitInfo = ray.collide(shape);
-        if (curHitInfo.distance < closestDistance) {
-            closestDistance = curHitInfo.distance;
-            hitinfo = curHitInfo;
-
-            // Add the entity info (has placeholder value)
-            hitinfo.setOther(entity);
-            hitinfo.otherLayer = collider.getCollisionLayer();
-            hitinfo.otherMaterial = collider.getMaterial();
-        }
-    }
-
-    return hitinfo;
-}
-
-bool QuadTree::isLeaf(const Node* node) const {
-    return !static_cast<bool>(node->children[0]);
-}
-
-AABB QuadTree::computeBox(const AABB& box, int i) const {
+AABB QuadTree::computeBox(const AABB& box, s32 i) const {
     assert(i >= 0 && i <= 3 && "i not between 0-3");
 
     auto center = box.getPosition();
@@ -176,171 +138,230 @@ s32 QuadTree::getQuadrant(const AABB& nodeBox, const AABB& valueBox) const {
     }
 }
 
-void QuadTree::add(Node* node, s32 depth, const AABB& parentBox, const Value value) {
-    assert(node != nullptr);
+void QuadTree::_add(s32 nodeIx, s32 depth, const AABB& parentBox, const Value value) {
+    assert(nodeIx != -1);
     assert(parentBox.contains(value.shape));
-    if (isLeaf(node)) {
+    Node& node = mNodes[nodeIx];
+    if (node.isLeaf()) {
         // Insert the value in this node if possible
-        if (depth >= MAX_DEPTH || node->values.size() < THRESHOLD) {
-            // print("hit max depth");
-            node->values.push_back(value);
+        if (depth >= MAX_DEPTH || node.values.size() < THRESHOLD) {
+            node.values.push_back(value);
         }
         // Otherwise, we split and we try again
         else {
-            split(node, parentBox);
-            add(node, depth, parentBox, value);
+            split(nodeIx, parentBox);
+            _add(nodeIx, depth, parentBox, value);
         }
     } else {
-        auto i = getQuadrant(parentBox, value.shape);
+        const auto i = getQuadrant(parentBox, value.shape);
         // Add the value in a child if the value is entirely contained in it
         if (i != -1) {
-            add(node->children[static_cast<std::size_t>(i)].get(), depth + 1, computeBox(parentBox, i), value);
+            _add(node.children[static_cast<std::size_t>(i)], depth + 1, computeBox(parentBox, i), value);
         }
         // Otherwise, we add the value in the current node
         else {
-            node->values.push_back(value);
+            node.values.push_back(value);
         }
     }
 }
 
-void QuadTree::split(Node* node, const AABB& parentBox) {
-    assert(node != nullptr);
-    assert(isLeaf(node) && "Only leaves can be split");
+void QuadTree::split(const s32 nodeIx, const AABB& parentBox) {
+    assert(mNodes[nodeIx].isLeaf() && "Only leaves can be split");
+
     // Create children
-    for (auto& child : node->children)
-        child = std::make_unique<Node>();
+    for (size_t i = 0; i < 4; i++) {
+        mNodes[nodeIx].children[i] = allocateNode();
+    }
+
     // Assign values to children
     auto newValues = std::vector<Value>();  // New values for this node
-    for (const auto& value : node->values) {
+    Node& node = mNodes[nodeIx];            // can hold a reference now that I'm done adding stuff
+    for (const auto& value : node.values) {
         auto i = getQuadrant(parentBox, value.shape);
         if (i != -1)
-            node->children[static_cast<std::size_t>(i)]->values.push_back(value);
+            mNodes[node.children[i]].values.push_back(value);
         else
             newValues.push_back(value);
     }
-    node->values = std::move(newValues);
+    node.values = std::move(newValues);
 }
 
-bool QuadTree::remove(Node* node, const AABB& parentBox, const Value value) {
-    assert(node != nullptr);
+bool QuadTree::_remove(s32 nodeIx, const AABB& parentBox, const Value value) {
+    assert(nodeIx != -1);
     assert(parentBox.contains(value.shape));
-    if (isLeaf(node)) {
+
+    Node& node = mNodes[nodeIx];
+    if (node.isLeaf()) {
         // Remove the value from node
-        removeValue(node, value);
+        removeValue(nodeIx, value);
         return true;
     } else {
         // Remove the value in a child if the value is entirely contained in it
         auto i = getQuadrant(parentBox, value.shape);
         if (i != -1) {
-            if (remove(node->children[static_cast<std::size_t>(i)].get(), computeBox(parentBox, i), value))
-                return tryMerge(node);
+            if (_remove(node.children[i], computeBox(parentBox, i), value))
+                return tryMerge(nodeIx);
         }
         // Otherwise, we remove the value from the current node
         else {
-            removeValue(node, value);
+            removeValue(nodeIx, value);
         }
 
         return false;
     }
 }
 
-void QuadTree::removeValue(Node* node, const Value value) {
-    // Find the value in node->values
-    auto it = std::find_if(std::begin(node->values), std::end(node->values), [value](const Value other) { return value.entity == other.entity; });
-    assert(it != std::end(node->values) && "Trying to remove a value that is not present in the node");
+void QuadTree::removeValue(const s32 nodeIx, const Value value) {
+    // Find the value in node.values
+    Node& node = mNodes[nodeIx];
+    auto it = std::find_if(std::begin(node.values), std::end(node.values), [value](const Value other) { return value.entity == other.entity; });
+    assert(it != std::end(node.values) && "Trying to remove a value that is not present in the node");
     // Swap with the last element and pop back
-    *it = std::move(node->values.back());
-    node->values.pop_back();
+    *it = std::move(node.values.back());
+    node.values.pop_back();
 }
 
-bool QuadTree::tryMerge(Node* node) {
-    assert(node != nullptr);
-    assert(!isLeaf(node) && "Only interior nodes can be merged");
-    auto nbValues = node->values.size();
-    for (const auto& child : node->children) {
-        if (!isLeaf(child.get()))
+bool QuadTree::tryMerge(const s32 nodeIx) {
+    assert(!mNodes[nodeIx].isLeaf() && "Only interior nodes can be merged");
+    auto nbValues = mNodes[nodeIx].values.size();
+    for (const s32 childIx : mNodes[nodeIx].children) {
+        const Node& child = mNodes[childIx];
+        if (!child.isLeaf()) {
             return false;
-        nbValues += child->values.size();
+        }
+        nbValues += child.values.size();
     }
     if (nbValues <= THRESHOLD) {
-        node->values.reserve(nbValues);
+        mNodes[nodeIx].values.reserve(nbValues);
         // Merge the values of all the children
-        for (const auto& child : node->children) {
-            for (const auto& value : child->values)
-                node->values.push_back(value);
+        for (const s32 childIx : mNodes[nodeIx].children) {
+            const Node& child = mNodes[childIx];
+            for (const auto& value : child.values) {
+                mNodes[nodeIx].values.push_back(value);
+            }
         }
         // Remove the children
-        for (auto& child : node->children)
-            child.reset();
+        for (const s32 childIx : mNodes[nodeIx].children) {
+            freeNode(childIx);
+        }
+        mNodes[nodeIx].children.fill(-1);
         return true;
     } else
         return false;
 }
 
-void QuadTree::query(Node* node, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const {
-    // assert(node != nullptr);
-    // assert(queryBox.isOverlapping(box));
-    for (const auto& value : node->values) {
+void QuadTree::_query(const s32 nodeIx, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const {
+    const Node& node = mNodes[nodeIx];
+    for (const auto& value : node.values) {
         if (queryBox.isOverlapping(value.shape))
             values.push_back(value.entity);
     }
-    if (!isLeaf(node)) {
-        for (auto i = std::size_t(0); i < node->children.size(); ++i) {
-            auto childBox = computeBox(box, static_cast<int>(i));
+    if (!node.isLeaf()) {
+        for (auto i = std::size_t(0); i < node.children.size(); ++i) {
+            const auto childBox = computeBox(box, static_cast<s32>(i));
             if (queryBox.isOverlapping(childBox))
-                query(node->children[i].get(), childBox, queryBox, values);
+                _query(node.children[i], childBox, queryBox, values);
         }
     }
 }
 
-void QuadTree::querySegment(Node* node, const AABB& box, const Segment& segment, std::vector<ecs::Entity>& values) const {
-    // assert(node != nullptr);
-    // assert(queryBox.isOverlapping(box));
-    for (const auto& value : node->values) {
+void QuadTree::_querySegment(const s32 nodeIx, const AABB& box, const Segment& segment, std::vector<ecs::Entity>& values) const {
+    const Node& node = mNodes[nodeIx];
+    for (const auto& value : node.values) {
         if (segment.isIntersecting(value.shape))
             values.push_back(value.entity);
     }
-    if (!isLeaf(node)) {
-        for (auto i = std::size_t(0); i < node->children.size(); ++i) {
-            auto childBox = computeBox(box, static_cast<int>(i));
+    if (!node.isLeaf()) {
+        for (auto i = std::size_t(0); i < node.children.size(); ++i) {
+            const auto childBox = computeBox(box, static_cast<int>(i));
             if (segment.isIntersecting(childBox))
-                querySegment(node->children[i].get(), childBox, segment, values);
+                _querySegment(node.children[i], childBox, segment, values);
         }
     }
 }
 
-void QuadTree::findAllIntersections(Node* node, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
+void QuadTree::_findAllIntersections(const s32 nodeIx, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
     // Find intersections between values stored in this node
     // Make sure to not report the same intersection twice
-    for (auto i = std::size_t(0); i < node->values.size(); ++i) {
+    const Node& node = mNodes[nodeIx];
+    for (auto i = std::size_t(0); i < node.values.size(); ++i) {
         for (auto j = std::size_t(0); j < i; ++j) {
-            if (node->values[i].shape.isOverlapping(node->values[j].shape))
-                intersections.emplace_back(node->values[i].entity, node->values[j].entity);
+            if (node.values[i].shape.isOverlapping(node.values[j].shape))
+                intersections.emplace_back(node.values[i].entity, node.values[j].entity);
         }
     }
-    if (!isLeaf(node)) {
+    if (node.isLeaf()) {
         // Values in this node can intersect values in descendants
-        for (const auto& child : node->children) {
-            for (const auto& value : node->values)
-                findIntersectionsInDescendants(child.get(), value, intersections);
+        for (const s32 childIx : node.children) {
+            for (const auto& value : node.values)
+                _findIntersectionsInDescendants(childIx, value, intersections);
         }
         // Find intersections in children
-        for (const auto& child : node->children)
-            findAllIntersections(child.get(), intersections);
+        for (const s32 childIx : node.children)
+            _findAllIntersections(childIx, intersections);
     }
 }
 
-void QuadTree::findIntersectionsInDescendants(Node* node, const Value value, std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
+void QuadTree::_findIntersectionsInDescendants(const s32 nodeIx, const Value value,
+                                               std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
     // Test against the values stored in this node
-    for (const auto& other : node->values) {
+    const Node& node = mNodes[nodeIx];
+    for (const auto& other : node.values) {
         if (value.shape.isOverlapping(other.shape))
             intersections.emplace_back(value.entity, other.entity);
     }
     // Test against values stored into descendants of this node
-    if (!isLeaf(node)) {
-        for (const auto& child : node->children)
-            findIntersectionsInDescendants(child.get(), value, intersections);
+    if (!node.isLeaf()) {
+        for (const s32 childIx : node.children)
+            _findIntersectionsInDescendants(childIx, value, intersections);
     }
+}
+
+RaycastHit QuadTree::raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask) const {
+    direction = direction.norm();
+    Segment ray(origin, direction * maxDistance);
+    return _raycast(ray, layerMask);
+}
+
+RaycastHit QuadTree::circlecast(Vector2f origin, Vector2f direction, f32 maxDistance, f32 radius, u16 layerMask) const {
+    direction = direction.norm();
+    Segment ray(origin, direction * maxDistance, radius);
+    return _raycast(ray, layerMask);
+}
+
+RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) const {
+    auto values = std::vector<ecs::Entity>();
+    _querySegment(mRootIx, mBoundingBox, ray, values);
+
+    RaycastHit hitinfo;
+    if (values.size() == 0) {
+        return hitinfo;
+    }
+
+    // Get closest entity whose collider doesn't contain the origin point
+    const Vector2i originI = ray.origin.as<s32>();
+    f32 closestDistance = 1e10;
+    // research should i get a vector of Value structs instead so I already have the colliders?
+    for (auto entity : values) {
+        const auto collider = entity.get<Collider>();
+        const auto shape = collider.getShape();
+        if ((layerMask & collider.getCollisionMask()) == 0 || shape.contains(originI)) {
+            continue;
+        }
+
+        const RaycastHit curHitInfo = ray.collide(shape);
+        if (curHitInfo.distance < closestDistance) {
+            closestDistance = curHitInfo.distance;
+            hitinfo = curHitInfo;
+
+            // Add the entity info (has placeholder value)
+            hitinfo.setOther(entity);
+            hitinfo.otherLayer = collider.getCollisionLayer();
+            hitinfo.otherMaterial = collider.getMaterial();
+        }
+    }
+
+    return hitinfo;
 }
 
 }  // namespace whal::qtree

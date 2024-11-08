@@ -73,7 +73,7 @@ struct MaterialData {
 
         if (isFlagSet(DecaySpeed)) {
             // want to add this one after some delay, in case particle gains speed in first few frames (like from gravity or something)
-            System::schedule.eventFlow({entity}).addWait(0.5).add(
+            System::schedule.eventFlow({entity}).addWait(0.25).add(
                 [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, Color color, Color fadeColor) {
                     // Can't capture data in a lambda? Use a component! ECS!!! :D
                     struct DieWhenSpeedBelow {
@@ -88,7 +88,7 @@ struct MaterialData {
                         .setTransition(Ease::InOutQuad)
                         .setOnStart([](ecs::Entity self, const TweenColor&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
                         .setDelayCondition([](ecs::Entity self, const TweenColor&) -> bool {
-                            return !self.has<Velocity>() || self.get<Velocity>().total.len() <= self.get<DieWhenSpeedBelow>().minSpeed;
+                            return self.has<Velocity>() && self.get<Velocity>().total.len() >= self.get<DieWhenSpeedBelow>().minSpeed;
                         })
                         .setOnEnd([](ecs::Entity self, const TweenColor&) { self.remove<DieWhenSpeedBelow>(); });
                 },
