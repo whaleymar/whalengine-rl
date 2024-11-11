@@ -12,7 +12,7 @@
 
 namespace whal {
 
-static constexpr s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
+static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
 TextRenderSystem::TextRenderSystem() {
     mFont = new Font();

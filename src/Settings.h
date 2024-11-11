@@ -23,7 +23,10 @@
 
 inline const char* WINDOW_TITLE = "whalengine";
 
+// stuff that doesn't change (for now)
 inline constexpr s32 FPS_TARGET = 60;
+inline constexpr s32 PIXELS_PER_TILE = 8;
+inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
 
 // 3 window sizes I use:
 // Render: The actual window size on your screen
@@ -31,24 +34,17 @@ inline constexpr s32 FPS_TARGET = 60;
 
 // TODO should have a resizable window that triggers some event
 
-inline constexpr s32 WINDOW_WIDTH_RENDER = 1280;
-inline constexpr s32 WINDOW_HEIGHT_RENDER = 720;
-
-inline constexpr s32 WINDOW_WIDTH_GAME = 320;
-inline constexpr s32 WINDOW_HEIGHT_GAME = 180;
-
-inline constexpr s32 PIXELS_PER_TILE = 8;
+extern s32 WINDOW_WIDTH_RENDER;
+extern s32 WINDOW_HEIGHT_RENDER;
+extern s32 WINDOW_WIDTH_GAME;
+extern s32 WINDOW_HEIGHT_GAME;
 
 // DERIVED STUFF
-inline constexpr f32 FWINDOW_WIDTH_RENDER = WINDOW_WIDTH_RENDER;
-inline constexpr f32 FWINDOW_HEIGHT_RENDER = WINDOW_HEIGHT_RENDER;
-
-inline constexpr f32 FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
-inline constexpr f32 FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
-
-inline constexpr f32 VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
-
-inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
+extern f32 FWINDOW_WIDTH_RENDER;
+extern f32 FWINDOW_HEIGHT_RENDER;
+extern f32 FWINDOW_WIDTH_GAME;
+extern f32 FWINDOW_HEIGHT_GAME;
+extern f32 VIRTUAL_SCREEN_RATIO;
 
 /////////////////////////////////////////////////////////////
 ////////////////////// FILE PATHS ///////////////////////////
