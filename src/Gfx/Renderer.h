@@ -44,7 +44,7 @@ private:
     std::vector<gfx::EntityRenderInfo> mUIRenderQueue;   // UI is stored in a separate queue so it's not affected by lighting
     std::vector<gfx::EntityRenderInfo> mOcclusionQueue;  // stored separately for speed, since they need to be drawn twice (color/depth)
     s32 mMainTextureUniform;
-    s32 mExposureUniform;
+    // s32 mExposureUniform;
 };
 
 }  // namespace whal

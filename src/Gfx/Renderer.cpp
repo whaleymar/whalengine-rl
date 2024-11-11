@@ -48,7 +48,7 @@ void Renderer::setPostEffects(Pipeline pipeline) {
 
 void Renderer::onEvent(evt::ShaderReload) {
     mMainTextureUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
-    mExposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
+    // mExposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
 }
 
 // Just logs that the renderer started. This is here so the singleton registers its listeners before other stuff starts happening
@@ -95,38 +95,27 @@ void Renderer::_render() {
     _drawUI(renderContext);
     EndTextureMode();
 
-    // TONE MAPPING (experimental)
+    // TONE MAPPING
     // TODO want to do bloom right before this and then additively blend & do tone mapping
-    // Looks bad right now, everything is way too washed out because almost everything is already in LDR
-    static f32 s_exposure = 1.0;
-    if (IsKeyDown(KEY_DOWN) && s_exposure > 0.0) {
-        s_exposure -= 0.05;
-        // print("exposure: ", s_exposure);
-    } else if (IsKeyDown(KEY_UP)) {
-        s_exposure += 0.05;
-        // print("exposure: ", s_exposure);
-    }
-    if (IsKeyDown(KEY_T)) {
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
-        ClearBackground(Colors::CLEAR);
-        BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
-        const auto shader = ShaderManager::get(Shaders::ToneMap);
-        BeginShaderMode(shader);
-        SetShaderValue(shader, mExposureUniform, &s_exposure, SHADER_UNIFORM_FLOAT);
-        gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Main), WHITE);
-        EndShaderMode();
-        EndBlendMode();
-        EndTextureMode();
+    // static f32 s_exposure = 1.0;
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
+    ClearBackground(Colors::CLEAR);
+    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
+    const auto shader = ShaderManager::get(Shaders::ToneMap);
+    BeginShaderMode(shader);
+    // SetShaderValue(shader, mExposureUniform, &s_exposure, SHADER_UNIFORM_FLOAT);
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Main), WHITE);
+    EndShaderMode();
+    EndBlendMode();
+    EndTextureMode();
 
-        // write back to main
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-        ClearBackground(Colors::CLEAR);
-        BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
-        gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
-        EndBlendMode();
-        EndTextureMode();
-        // toneMapper.process(TextureID::Main);
-    }
+    // write back to main
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    ClearBackground(Colors::CLEAR);
+    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
+    EndBlendMode();
+    EndTextureMode();
 
     // 3. ? Apply post processing
     mPostProcessSteps.process(TextureID::Main);
@@ -372,27 +361,5 @@ Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo) {
 
     return Color(r, g, b, 255);
 }
-
-//
-// RELIC: some tone mapping code I wrote for radiance:
-//
-// static int exposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
-// static float exposure = 1.0;
-//
-// if (IsKeyPressed(KEY_UP)) {
-//     exposure += 0.1;
-//     print("exposure: ", exposure);
-// } else if (IsKeyPressed(KEY_DOWN)) {
-//     exposure -= 0.1;
-//     print("exposure: ", exposure);
-// }
-
-// <draw radiance texture>
-
-// auto shader = ShaderManager::get(Shaders::ToneMap);
-// BeginShaderMode(shader);
-// SetShaderValue(shader, exposureUniform, &exposure, SHADER_UNIFORM_FLOAT);
-// DrawTexture(getRenderTexture(TextureID::Main).texture, 0, 0, WHITE);
-// EndShaderMode();
 
 }  // namespace whal
