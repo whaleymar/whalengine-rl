@@ -10,17 +10,12 @@ namespace whal {
 
 void RectangleRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const DrawRect rect = entity.get<DrawRect>();
-    const Transform2D trans = entity.get<Transform2D>();
-
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
-    if (entity.has<PreciseTransform2D>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    }
+    const PreciseTransform2D trans = gfx::getPreciseTrans(entity);
 
     const auto frameSize = rect.frameSize.as<f32>();
-    const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(trans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
-    DrawRectanglePro(params.rect, params.origin, pTrans.rotationDegrees, color);
+    DrawRectanglePro(params.rect, params.origin, trans.rotationDegrees, color);
 }
 
 void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

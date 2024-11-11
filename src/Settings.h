@@ -68,3 +68,7 @@ inline const char* ICON_IMAGE_PATH = "src/Game/data/icon.png";
 
 enum class WorldType2D { TopDown, SideScroller };
 inline constexpr WorldType2D WORLD_TYPE = WorldType2D::TopDown;
+
+// This defines how an object's "Floating" parameter affects its screen position.
+// For example, if an object is floating 8 units in the air, then a mult of 0.5 means it's drawn 4px higher.
+inline constexpr f32 FLOAT_HEIGHT_MULT = 0.5;

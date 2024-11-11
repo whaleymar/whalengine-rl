@@ -328,4 +328,10 @@ void DrawRenderTexture(RenderTexture renderTexture, Color color) {
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
 }
 
+void DrawEllipseFromRect(Rectangle rect, Color color) {
+    s32 centerX = rect.x;
+    s32 centerY = rect.y;
+    DrawEllipse(centerX, centerY, rect.width / 2, rect.height / 2, color);
+}
+
 }  // namespace whal::gfx

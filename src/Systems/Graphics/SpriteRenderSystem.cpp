@@ -10,18 +10,12 @@ namespace whal {
 
 void SpriteRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto sprite = entity.get<Sprite>();
-    const Transform2D trans = entity.get<Transform2D>();
-
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
-    if (entity.has<PreciseTransform2D>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    }
-
+    const PreciseTransform2D trans = gfx::getPreciseTrans(entity);
     const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = trans.facing == Facing::Left ? -1 : 1;
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
-    gfx::RaylibDrawParams params = gfx::getDrawParamsNew(pTrans, frameSize, ctx.cameraPosition);
+    gfx::RaylibDrawParams params = gfx::getDrawParamsNew(trans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : sprite.color;
     DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, trans.rotationDegrees, color);
 }

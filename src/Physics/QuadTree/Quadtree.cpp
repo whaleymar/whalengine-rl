@@ -318,6 +318,9 @@ void QuadTree::_findIntersectionsInDescendants(const s32 nodeIx, const Value val
 }
 
 RaycastHit QuadTree::raycast(Vector2f origin, Vector2f direction, f32 maxDistance, u16 layerMask) const {
+    if (maxDistance == 0.0f) {
+        return RaycastHit();
+    }
     direction = direction.norm();
     Segment ray(origin, direction * maxDistance);
     return _raycast(ray, layerMask);

@@ -219,7 +219,8 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
     BeginMode2D(ctx.camera);
     ShaderManager::activate(Shaders::Silhouette);
     for (auto renderInfo : mOcclusionQueue) {
-        const Color color = ColorFromNormalized(Vector4{depthToFloat(renderInfo.depth), 0.0f, 0.0f, 1.0f});
+        f32 d = depthToFloat(renderInfo.depth);
+        const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
         ctx.colorOverride = color;
         renderInfo.piRender->draw(renderInfo.entity, ctx);
     }
@@ -229,6 +230,27 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
 
     // DOWNSCALE
     scaleTexture(TextureID::Main, TextureID::OcclusionDepth);
+
+    // DRAW DEPTH INFO FOR EVERYTHING TO LAST TEXTURE
+    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    ClearBackground(Colors::CLEAR);
+    BeginMode2D(ctx.camera);
+    ShaderManager::activate(Shaders::Silhouette);
+    for (auto renderInfo : mRenderQueue) {
+        if (!renderInfo.piRender->isPostProcessingUsed()) {
+            continue;
+        }
+        f32 d = depthToFloat(renderInfo.depth);
+        const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
+        ctx.colorOverride = color;
+        renderInfo.piRender->draw(renderInfo.entity, ctx);
+    }
+    EndShaderMode();
+    EndMode2D();
+    EndTextureMode();
+
+    // DOWNSCALE
+    scaleTexture(TextureID::Main, TextureID::AllDepth);
 }
 
 // this does what the old Mega-GraphicsSystem used to do.
@@ -291,7 +313,7 @@ void Renderer::_drawUI(const gfx::RenderContext ctx) const {
 
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
     if (entity1.depth != entity2.depth) {
-        return entity1.depth < entity2.depth;
+        return depthToFloat(entity1.depth) < depthToFloat(entity2.depth);
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
