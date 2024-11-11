@@ -335,7 +335,7 @@ void DrawPixel(Vector2i screenCoord, Color color) {
 
 // Draws pixelated ellipse even for higher resolution target textures.
 void DrawEllipse(Vector2f center, Vector2f radii, Color color) {
-    constexpr s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
+    const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
 
     // offset center by subpixel for better distance calculations
     center -= (Vector2f::ONE * VIRTUAL_SCREEN_RATIO / 2.0f);
