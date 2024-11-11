@@ -21,6 +21,7 @@
 
 #include "Event.h"
 #include "Events/Events.h"
+#include "Tween.h"
 #include "whalECS/src/ECS.h"
 
 namespace {
@@ -111,24 +112,37 @@ public:
     friend System;
 
     JobScheduler();
-    void start();
-    void await();
-    void end();
-    void clear();
 
+    // Asych callback scheduling:
     template <typename... T>
     void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);
 
-    evfl::EventFlow& eventFlow(std::initializer_list<ecs::Entity> requiredEntities = {});
+    // Serial event flow scheduling:
+    evfl::EventFlow& flow(std::initializer_list<ecs::Entity> requiredEntities = {});
     void cancelEventFlow(u32 id);
-
-    void tick(f32 dt);
-    void tryExecuteJobs();
     std::vector<evfl::EventFlow>& getEventFlows() { return mEventFlows; }
+    TweenManager& getTweenMgr() { return mTweenMgr; }
+
+    // Tween scheduling
+    // have to use `auto` for the getter, otherwise the compiler can't infer T for some reason.
+    // static_cast still enforces compile-time type safety.
+    template <typename T>
+    Tweener<T> tween(ecs::Entity entity, T target, f32 duration, auto getter) {
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<TweenManager::ValueGetter<T>>(getter), entity);
+        mTweenMgr.mTweens.push_back(tween);
+        return Tweener(tween);
+    }
 
 private:
     JobScheduler(const JobScheduler&) = delete;
     void operator=(const JobScheduler&) = delete;
+
+    void start();
+    void await();
+    void end();
+    void clear();
+    void tick(f32 dt);
+    void tryExecuteJobs();
 
 #ifdef USE_THREADS
     void worker();
@@ -138,10 +152,11 @@ private:
     std::condition_variable mCondition;
 #endif
 
+    TweenManager mTweenMgr;
     std::list<Job> mQueue;
     std::vector<evfl::EventFlow> mEventFlows;
     std::vector<evfl::EventFlow> mEventFlowsToAdd;
-    EventListener<ecs::Entity> mDeathListener;
+    EventListener<ecs::Entity> mDeathListener;  // Halts EventFlows which use killed entities
 
     bool mIsTerminated = false;
 };

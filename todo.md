@@ -8,9 +8,6 @@ NEXT GOAL:
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
 - Settings.h -> put in game? Or don't define anything && put the .cpp file in Game/ ?
 
-## Cleanup
-- put TweenManager in System, call it tween, so I can just do System::tween.create()
-
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
 - BlocksAiPathing?

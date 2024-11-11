@@ -44,12 +44,16 @@ void EventFlow::tick(f32 deltaTime) {
 
 }  // namespace evfl
 
+// Entity death listener callback
 void checkEventFlows(ecs::Entity entity) {
     for (auto& evflow : Schedule.getEventFlows()) {
         if (evflow.requiresEntity(entity)) {
             evflow.invalidate();
         }
     }
+
+    // update tween manager
+    Schedule.getTweenMgr().onEntityKilled(entity);
 }
 
 JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
@@ -88,9 +92,12 @@ void JobScheduler::clear() {
 #else
     mQueue.clear();
 #endif
+
+    // clear tweens
+    mTweenMgr.clear();
 }
 
-evfl::EventFlow& JobScheduler::eventFlow(std::initializer_list<ecs::Entity> requiredEntities) {
+evfl::EventFlow& JobScheduler::flow(std::initializer_list<ecs::Entity> requiredEntities) {
     mEventFlowsToAdd.push_back(evfl::EventFlow(evfl::EVFL_ID++, requiredEntities));
     return mEventFlowsToAdd.back();
 }
@@ -138,6 +145,9 @@ void JobScheduler::tick(f32 dt) {
             ++it;
         }
     }
+
+    // update tweens
+    mTweenMgr.update();
 }
 
 void JobScheduler::tryExecuteJobs() {
