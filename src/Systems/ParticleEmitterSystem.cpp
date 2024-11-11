@@ -13,18 +13,18 @@ constexpr f32 PERPENDICULAR_DAMPING = 0.33;
 
 void ParticleEmitterSystem::update() {
     // these are between -1 and 1
-    const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
-    const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
+    const f32 locationSampleX = (Rng.uniform() - 0.5) * 2;
+    const f32 locationSampleY = (Rng.uniform() - 0.5) * 2;
 
-    const Vector2f sampleSpeed = Vector2f::fromAngleFast(360.0f * System::rng.uniform());
+    const Vector2f sampleSpeed = Vector2f::fromAngleFast(360.0f * Rng.uniform());
 
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto trans = entity.get<Transform2D>();
         const auto emitter = entity.get<ParticleEmitter>();
 
-        s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * System::time.getMultiplier());
-        const f32 spawnSample = System::rng.uniform();
-        if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f * System::time.getMultiplier() > spawnSample) {
+        s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * Time.getMultiplier());
+        const f32 spawnSample = Rng.uniform();
+        if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f * Time.getMultiplier() > spawnSample) {
             nParticles++;
         }
 

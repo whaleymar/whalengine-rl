@@ -75,7 +75,7 @@ public:
         DestroyGame(mGame);
         mGame = nullptr;
         System::resetManagers();
-        System::world.clear();
+        World.clear();
     }
 
     void mainloop() {

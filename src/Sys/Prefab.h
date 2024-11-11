@@ -6,17 +6,18 @@ namespace whal {
 
 struct System;
 
-class Prefab {
+class PrefabManager {
 public:
     friend System;
+
+    PrefabManager() = default;
 
     EntityFactory entity;
     ComponentFactory component;
 
 private:
-    Prefab() = default;
-    Prefab(const Prefab&) = delete;
-    void operator=(const Prefab&) = delete;
+    PrefabManager(const PrefabManager&) = delete;
+    void operator=(const PrefabManager&) = delete;
 };
 
 }  // namespace whal

@@ -39,7 +39,7 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
     const Animation& anim = animator.getAnimation();
 
     // play animations at normal speed if paused? Seems cute
-    f32 dt = System::isPaused() ? System::time.getUnmodified() : System::dt();
+    f32 dt = System::isPaused() ? Time.getUnmodified() : Time.dt();
     animator.curFrameDuration += dt;
     animator.curAnimDuration += dt;
     if (animator.curFrameDuration >= anim.secondsPerFrame) {
@@ -52,7 +52,7 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
 bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     Transform2D& trans = entity.get<Transform2D>();
 
-    const f32 unsquishStep = System::dt();
+    const f32 unsquishStep = Time.dt();
     trans.scale = {math::approach(trans.scale.x, 1.0, unsquishStep), math::approach(trans.scale.y, 1.0, unsquishStep)};
     return basicAnimation(animator, entity);
 }
@@ -100,7 +100,7 @@ void Animator::nextFrame() {
 void Animator::resetAnimation() {
     curAnimDuration = 0;
     curFrameIx = 0;
-    curFrameDuration = System::rng.uniform() * 0.5;
+    curFrameDuration = Rng.uniform() * 0.5;
 }
 
 void Animator::setLooping(bool loop) {

@@ -6,7 +6,7 @@ namespace whal {
 
 void MouseCursorSystem::update() {
     for (auto [id, entity] : getEntitiesMutable()) {
-        Vector2i position = System::input.getMouseWorld();
+        Vector2i position = Input.getMouseWorld();
 
         // correct for cursor height
         const auto height = entity.get<Sprite>().frameSize.y;

@@ -34,6 +34,7 @@ class InputHandler {
 public:
     friend System;
 
+    InputHandler() = default;
     void update();
     void set(InputType input);
     void reset(InputType input);
@@ -59,7 +60,6 @@ public:
     Vector2i getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
 
 private:
-    InputHandler() = default;
     InputHandler(const InputHandler&) = delete;
     void operator=(const InputHandler&) = delete;
 

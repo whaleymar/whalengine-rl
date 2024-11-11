@@ -116,9 +116,9 @@ void PhysicsSystem::update() {
         f32 dt;
         // camera move normally unless pause menu is active
         if (entity.has<IgnoreTimeModifiers>()) {
-            dt = System::time.getUnmodified();
+            dt = Time.getUnmodified();
         } else {
-            dt = System::dt();
+            dt = Time.dt();
         }
 
         auto rbOpt = entity.tryGet<RigidBody>();
@@ -225,7 +225,7 @@ void PhysicsSystem::update() {
 }
 
 void RotationPhysicsSystem::update() {
-    const f32 dt = System::dt();
+    const f32 dt = Time.dt();
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto angularVelocity = entity.get<AngularVelocity>();
 

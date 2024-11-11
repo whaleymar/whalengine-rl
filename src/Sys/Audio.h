@@ -67,6 +67,8 @@ public:
     friend System;
     friend AudioClip;
 
+    AudioPlayer();
+    ~AudioPlayer();
     Corrade::Containers::Optional<Error> init();
 
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
@@ -91,9 +93,6 @@ public:
     Filter getFilterClips() const { return mClipsFilter; }
 
 private:
-    AudioPlayer();
-    ~AudioPlayer();
-
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 

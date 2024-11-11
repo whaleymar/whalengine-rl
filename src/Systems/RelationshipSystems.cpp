@@ -65,7 +65,7 @@ void AttachSystem::update() {
 
 // RESEARCH use collider.move if the entity has a collider? Seems like it would be glitchy if a collision does happen
 void OrbitSystem::update() {
-    const f32 dt = System::dt();
+    const f32 dt = Time.dt();
     for (auto [entityid, entity] : getEntitiesMutable()) {
         auto& trans = entity.get<Transform2D>();
         Orbit& orbit = entity.get<Orbit>();

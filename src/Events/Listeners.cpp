@@ -6,7 +6,7 @@ namespace whal {
 
 // ECS callback
 void emitEntityDeathEvent(ecs::Entity entity) {
-    System::event.emit<evt::Death>(entity);
+    Event.emit<evt::Death>(entity);
 }
 
 }  // namespace whal

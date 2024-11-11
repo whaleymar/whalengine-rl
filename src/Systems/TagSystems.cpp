@@ -38,8 +38,8 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             .asIgnoreSlowdown()
             .setOnUpdate([](ecs::Entity self, const TweenVec2f&) { self.get<Transform2D>().position = self.get<PrecisePosition>().position.round(); })
 
-            .setOnEnd([](ecs::Entity self, const TweenVec2f&) { System::time.setMultiplier(1.0); });
-        System::time.setMultiplier(0.0);
+            .setOnEnd([](ecs::Entity self, const TweenVec2f&) { Time.setMultiplier(1.0); });
+        Time.setMultiplier(0.0);
         return;
     }
 }
@@ -58,7 +58,7 @@ void AudioListenerSystem::update() {
         return;
     }
     auto listenerEntity = first();
-    System::audio.setListenerPosition(listenerEntity.get<Transform2D>().position);
+    Audio.setListenerPosition(listenerEntity.get<Transform2D>().position);
 }
 
 }  // namespace whal

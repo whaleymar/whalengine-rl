@@ -16,7 +16,7 @@ namespace whal {
 struct Uniforms {
     enum flags : u32 {
         None = 0,
-        Time = 1,
+        TimeStamp = 1,
         Resolution = 1 << 1,
         VirtualResolution = 1 << 2,  // mutually exclusive w/ Resolution
         Palette = 1 << 3,
@@ -40,8 +40,8 @@ static void ActivateShader(Shaders shaderEnum) {
 
     BeginShaderMode(shader);
 
-    if (uniforms.isSet(Uniforms::Time)) {
-        const f32 iTime = System::time.getElapsed();
+    if (uniforms.isSet(Uniforms::TimeStamp)) {
+        const f32 iTime = Time.getElapsed();
         SetShaderValue(shader, uniforms.iTime, &iTime, SHADER_UNIFORM_FLOAT);
     }
 
@@ -85,8 +85,8 @@ void ShaderManager::loadShaders() {
         {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
         {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
         {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
-        {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::Time | Uniforms::Resolution},
-        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::Time | Uniforms::VirtualResolution},
+        {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::TimeStamp | Uniforms::Resolution},
+        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
         {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
         {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
@@ -119,7 +119,7 @@ void ShaderManager::loadShaders() {
 
         S_UNIFORMS[ix].uniformFlags = shaderInfo[i].uniformFlags;
 
-        if (S_UNIFORMS[ix].isSet(Uniforms::Time)) {
+        if (S_UNIFORMS[ix].isSet(Uniforms::TimeStamp)) {
             S_UNIFORMS[ix].iTime = GetShaderLocation(shader, "iTime");
         }
         if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
@@ -146,7 +146,7 @@ void ShaderManager::reloadShaders() {
     unloadAll();
     loadShaders();
 
-    System::event.emit<evt::ShaderReload>();
+    Event.emit<evt::ShaderReload>();
 }
 
 Shader ShaderManager::get(Shaders shaderEnum) {

@@ -6,10 +6,12 @@ namespace whal {
 
 struct System;
 
-class Time {
+class TimeManager {
 public:
     friend System;
 
+    TimeManager();
+    f32 dt() const { return mDeltatime; }  // shorthand
     f32 getDeltaTime() const { return mDeltatime; }
     f32 getUnmodified() const { return mDeltatimeUnmodified; }
     f32 getElapsed() const { return mTimeElapsed; }
@@ -20,9 +22,8 @@ public:
     void sleep(int milliseconds);
 
 private:
-    Time();
-    Time(const Time&) = delete;
-    void operator=(const Time&) = delete;
+    TimeManager(const TimeManager&) = delete;
+    void operator=(const TimeManager&) = delete;
 
     f32 mDeltatime = 0.01;
     f32 mDeltatimeUnmodified = 0.01;

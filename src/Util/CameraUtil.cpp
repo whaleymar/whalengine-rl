@@ -6,10 +6,10 @@
 namespace whal {
 
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (System::world.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
+    if (World.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
         return Corrade::Containers::NullOpt;
     }
-    return System::world.getSystem<CameraSystem>()->first();
+    return World.getSystem<CameraSystem>()->first();
 }
 
 Vector2i getCameraPosition() {

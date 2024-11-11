@@ -66,10 +66,10 @@ void Renderer::_render() {
     buildRenderQueue(renderContext.cameraPosition.round());
 
     // 1. ECS systems with draw-like methods are updated (this should probably happen automatically)
-    TextureManager::instance().renderBackgroundTextures();                      // drawn to TextureID::Background
-    _drawEntities(renderContext);                                               // drawn to TextureID::Staging
-    drawLights(worldCamera);                                                    // drawn to TextureID::UpscaledLighting
-    System::world.getSystem<RadianceLightSystem>()->drawEntities(worldCamera);  // drawn to TextureID::Radiance
+    TextureManager::instance().renderBackgroundTextures();              // drawn to TextureID::Background
+    _drawEntities(renderContext);                                       // drawn to TextureID::Staging
+    drawLights(worldCamera);                                            // drawn to TextureID::UpscaledLighting
+    World.getSystem<RadianceLightSystem>()->drawEntities(worldCamera);  // drawn to TextureID::Radiance
 
     // 2. Renders everything to TextureID::Main
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
@@ -122,10 +122,10 @@ void Renderer::_render() {
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
-    if (System::input.isOn(InputType::DEBUG)) {
+    if (Input.isOn(InputType::DEBUG)) {
         BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
         BeginMode2D(worldCamera);
-        // System::world.getSystem<DrawDebugSystem>()->drawEntities();
+        // World.getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();
         EndMode2D();
         EndTextureMode();
@@ -323,7 +323,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     // if (System::time.getFrame() == 0) {
     //     print("viewbox: ", cameraViewBox.getPosition(), cameraViewBox.getHalf());
     // }
-    for (ecs::IRender* renderSystem : System::world.getRenderSystems()) {
+    for (ecs::IRender* renderSystem : World.getRenderSystems()) {
         renderSystem->addToQueue(tmpDrawList);
         for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport

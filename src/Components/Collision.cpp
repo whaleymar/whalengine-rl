@@ -169,7 +169,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         if (rigidbody.isGrounded) {
             rigidbody.isLanding = !wasGrounded;
             if (rigidbody.isLanding) {
-                System::event.emit<evt::Landing>(mSelf);
+                Event.emit<evt::Landing>(mSelf);
                 rigidbody.framesSinceLanding = 0;
             }
 
@@ -190,7 +190,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                     jumpControlOpt->coyoteSecondsRemaining = jumpControlOpt->coyoteTimeSecondsMax;
                 } else if (jumpControlOpt->coyoteSecondsRemaining > 0) {
                     // is jumping
-                    jumpControlOpt->coyoteSecondsRemaining -= System::dt();
+                    jumpControlOpt->coyoteSecondsRemaining -= Time.dt();
                     skipBounceStep = true;
                 }
             }
@@ -555,7 +555,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
     assert(math::abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 
-    const f32 dt = System::dt();
+    const f32 dt = Time.dt();
     std::vector<Collider*> toCarry = riding;
     const u16 notSolidMask = ~CollisionLayer::Solid;  // cannot be pushed or carried
     for (auto entity : ColliderSystem::query(mShape)) {
@@ -619,7 +619,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             hitinfo.setOther(other->getEntity());
             hitinfo.otherMaterial = other->getMaterial();
             hitinfo.otherLayer = other->getCollisionLayer();
-            System::event.emit<evt::Collision>(mSelf, hitinfo);
+            Event.emit<evt::Collision>(mSelf, hitinfo);
 
             if (other->mSelf.has<Momentum>()) {
                 // set momentum if this movement was part of the physics system
@@ -657,7 +657,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         hitinfo.setOther(other->getEntity());
         hitinfo.otherMaterial = other->getMaterial();
         hitinfo.otherLayer = other->getCollisionLayer();
-        System::event.emit<evt::Collision>(mSelf, hitinfo);
+        Event.emit<evt::Collision>(mSelf, hitinfo);
 
         if (other->getEntity().has<Momentum>()) {
             // set momentum if this movement was part of the physics system
@@ -709,7 +709,7 @@ HitInfo Collider::checkCollisionInMoveArea(const Vector2i newPosition, const Vec
 
             hitInfoToReturn = hitInfo;
             if (triggerCollisionEvents) {
-                System::event.emit<evt::Collision>(mSelf, hitInfo);
+                Event.emit<evt::Collision>(mSelf, hitInfo);
             }
         }
     }
@@ -744,7 +744,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
 
             hitInfoToReturn = hitInfo;
             if (triggerCollisionEvents) {
-                System::event.emit<evt::Collision>(mSelf, hitInfo);
+                Event.emit<evt::Collision>(mSelf, hitInfo);
             }
         }
     }

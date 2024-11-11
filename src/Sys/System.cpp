@@ -11,62 +11,95 @@ namespace whal {
 
 static IGame* S_PGAME = nullptr;
 
+// MODULES
+InputHandler Input = InputHandler();
+TimeManager Time = TimeManager();
+RNGManager Rng = RNGManager();
+EventManager Event = EventManager();
+AudioPlayer Audio = AudioPlayer();
+JobScheduler Schedule = JobScheduler();
+ecs::World& World = ecs::World::getInstance();
+PrefabManager Prefab = PrefabManager();
+CursorManager Cursor = CursorManager();
+
+// VARIABLES
+static bool S_IS_PAUSED = false;
+static bool S_IS_QUIT = false;
+static bool S_IS_STARTED = false;
+static System::UpdateFunction S_UPDATE_FUNCTION = nullptr;
+
 void System::setPaused(bool pause) {
-    IsPaused = pause;
+    S_IS_PAUSED = pause;
     if (pause) {
-        time.setMultiplier(0.0);
-        audio.pauseClips(true);
-        world.pause();
-        event.emit<evt::Pause>(true);
+        Time.setMultiplier(0.0);
+        Audio.pauseClips(true);
+        World.pause();
+        Event.emit<evt::Pause>(true);
     } else {
-        time.setMultiplier(1.0);
-        audio.pauseClips(false);
-        world.unpause();
-        event.emit<evt::Pause>(false);
+        Time.setMultiplier(1.0);
+        Audio.pauseClips(false);
+        World.unpause();
+        Event.emit<evt::Pause>(false);
     }
+}
+
+void System::togglePause() {
+    setPaused(!S_IS_PAUSED);
+}
+
+bool System::isPaused() {
+    return S_IS_PAUSED;
+}
+
+void System::quit() {
+    S_IS_QUIT = true;
+}
+
+bool System::isQuit() {
+    return S_IS_QUIT;
 }
 
 void System::Update() {
     // Engine Update
-    input.update();
-    time.update();
-    schedule.tick(dt());
-    audio.update();
+    Input.update();
+    Time.update();
+    Schedule.tick(Time.dt());
+    Audio.update();
     TweenManager::instance().update();
-    world.update();
+    World.update();
 
     // Game update
-    mUpdateFunction();
+    S_UPDATE_FUNCTION();
 }
 
 bool System::IsValid() {
-    return S_PGAME != nullptr && mUpdateFunction != nullptr;
+    return S_PGAME != nullptr && S_UPDATE_FUNCTION != nullptr;
 }
 
 void System::resetManagers() {
-    time.mFrame = 0;
-    time.mTimeElapsed = 0.0f;
-    time.mTimeMultiplier = 1.0f;
+    Time.mFrame = 0;
+    Time.mTimeElapsed = 0.0f;
+    Time.mTimeMultiplier = 1.0f;
 
-    schedule.clear();
-    audio.stopAll();
+    Schedule.clear();
+    Audio.stopAll();
     TweenManager::instance().clear();
     ShaderManager::instance().reloadShaders();
 }
 
 bool System::start() {
-    assert(!IsStarted);
-    IsStarted = true;
+    assert(!S_IS_STARTED);
+    S_IS_STARTED = true;
 
     ShaderManager::instance().loadShaders();
-    input.loadMappings();
-    world.setEntityDeathCallback(&emitEntityDeathEvent);
-    schedule.start();
-    if (auto err = audio.init(); err) {
+    Input.loadMappings();
+    World.setEntityDeathCallback(&emitEntityDeathEvent);
+    Schedule.start();
+    if (auto err = Audio.init(); err) {
         print(*err);
         return true;
     }
-    if (!audio.isValid()) {
+    if (!Audio.isValid()) {
         print("Error initializing audio manager");
         return true;
     }
@@ -75,14 +108,14 @@ bool System::start() {
 }
 
 void System::end() {
-    schedule.end();
-    schedule.await();
+    Schedule.end();
+    Schedule.await();
     ShaderManager::instance().unloadAll();
 }
 
 void System::restart(bool resetPlayers) {
     resetManagers();
-    event.emit<evt::Restart>(resetPlayers);
+    Event.emit<evt::Restart>(resetPlayers);
 }
 
 IGame& System::getGame() {
@@ -94,7 +127,7 @@ void System::setGame(IGame& game) {
 }
 
 void System::setGameUpdate(UpdateFunction updateFunc) {
-    mUpdateFunction = updateFunc;
+    S_UPDATE_FUNCTION = updateFunc;
 }
 
 }  // namespace whal
