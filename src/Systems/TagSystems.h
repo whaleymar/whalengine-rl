@@ -2,7 +2,6 @@
 
 #include "Events/Events.h"
 #include "Sys/System.h"
-#include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -22,12 +21,6 @@ public:
     void onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& activeLevel) override;
     void onEvent(evt::Pause, bool isPaused) override;
 };
-
-Corrade::Containers::Optional<ecs::Entity> getCamera();
-Vector2i getCameraPosition();
-Vector2f getCameraPositionPrecise();
-void setCameraPosition(Vector2i pos);
-void setCameraTarget(ecs::Entity target);
 
 class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform2D>,
                             public ecs::IUpdate,

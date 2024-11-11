@@ -1,4 +1,4 @@
-#include "TagTrackers.h"
+#include "TagSystems.h"
 
 #include "Components/RailsControl.h"
 #include "Components/Tags.h"
@@ -50,51 +50,6 @@ void CameraSystem::onEvent(evt::Pause, bool isPaused) {
         camera.remove<IgnoreTimeModifiers>();
     } else {
         camera.add<IgnoreTimeModifiers>();
-    }
-}
-
-Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (System::world.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
-        return Corrade::Containers::NullOpt;
-    }
-    return System::world.getSystem<CameraSystem>()->first();
-}
-
-void setCameraTarget(ecs::Entity target) {
-    if (auto cameraOpt = getCamera(); cameraOpt) {
-        auto camera = *cameraOpt;
-        if (camera.has<Follow>()) {
-            auto& follow = camera.get<Follow>();
-            follow.targetEntityID = target.id();
-        } else {
-            camera.add(Follow(target));
-        }
-    }
-}
-
-Vector2i getCameraPosition() {
-    static Vector2i lastPos;
-    auto eOpt = getCamera();
-    if (eOpt) {
-        lastPos = eOpt->get<Transform2D>().position;
-    }
-    return lastPos;
-}
-
-Vector2f getCameraPositionPrecise() {
-    static Vector2f lastPos;
-    auto eOpt = getCamera();
-    if (eOpt) {
-        lastPos = eOpt->get<PrecisePosition>().position;
-    }
-
-    return lastPos;
-}
-
-void setCameraPosition(Vector2i pos) {
-    auto eOpt = getCamera();
-    if (eOpt) {
-        eOpt->set(Transform2D(pos));
     }
 }
 

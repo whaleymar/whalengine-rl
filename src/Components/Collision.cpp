@@ -10,7 +10,7 @@
 #include "Components/Velocity.h"
 #include "IGame.h"
 #include "Map/Level.h"
-#include "Systems/CollisionManager.h"
+#include "Systems/ColliderSystem.h"
 
 #include "Events/Events.h"
 #include "Physics/CollisionLayer.h"
@@ -119,7 +119,7 @@ void Collider::updateEntityPosition() {
             // tried to go out of bounds. simulate fake collision with world boundary
             auto closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
             trans.position = closestPointInBounds;
-            QuadTreeSystem::updatePosition(mSelf, getShapeMutable(), trans);
+            ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans);
         }
 
     } else {
@@ -375,14 +375,14 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
                 }
             }
 
-            QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
+            ColliderSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
             return hitInfo;
         }
     }
-    QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
+    ColliderSystem::updateShape(mSelf, originalShape, mShape);
     return HitInfo();
 }
 
@@ -428,7 +428,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
                     continue;
                 }
             }
-            QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
+            ColliderSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
@@ -436,7 +436,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
         }
     }
 
-    QuadTreeSystem::updateShape(mSelf, originalShape, mShape);
+    ColliderSystem::updateShape(mSelf, originalShape, mShape);
 
     if (isGroundedCheckNeeded) {
         return groundedCheck(amount.y, groundColliders);
@@ -447,7 +447,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
 void Collider::moveNoCollisionCheck(Vector2f toMove, Vector2i toMoveRounded) {
     const AABB previousShape = mShape;
     mShape.setPosition(mShape.getPosition() + toMoveRounded);
-    QuadTreeSystem::updateShape(mSelf, previousShape, mShape);
+    ColliderSystem::updateShape(mSelf, previousShape, mShape);
 }
 
 void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std::vector<Collider*>& ridingColliders, bool isManualMove,
@@ -509,7 +509,7 @@ std::vector<Collider*> Collider::getRidingCollidersQT() const {
     const auto movedCollider = AABB(mShape.getPosition() + Vector2i::UP, mShape.getHalf());
     const auto layerMask = getCollisionLayersThatCanRideMe();
 
-    for (auto entity : QuadTreeSystem::query(movedCollider)) {
+    for (auto entity : ColliderSystem::query(movedCollider)) {
         const auto pCollider = &entity.get<Collider>();
 
         // (making sure to not use the moved collider for the directional collision check so the edges are properly aligned)
@@ -558,7 +558,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     const f32 dt = System::dt();
     std::vector<Collider*> toCarry = riding;
     const u16 notSolidMask = ~CollisionLayer::Solid;  // cannot be pushed or carried
-    for (auto entity : QuadTreeSystem::query(mShape)) {
+    for (auto entity : ColliderSystem::query(mShape)) {
         Collider* other = &entity.get<Collider>();
         if (this != other && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1, notSolidMask)) {
             // push takes priority over carry
@@ -723,7 +723,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     const auto movedCollider = AABB(position, mShape.getHalf());
     HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such. doesn't matter which specific collision is returned.
 
-    for (auto entity : QuadTreeSystem::query(movedCollider)) {
+    for (auto entity : ColliderSystem::query(movedCollider)) {
         const auto collider = entity.get<Collider>();
         if (!isCollisionPossible(&collider, moveNormal, layerMask)) {
             continue;
@@ -768,7 +768,7 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
                                                                             std::ceil(static_cast<f32>(math::abs(toMove.y)) / 2) + yPadding));
 
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
-    for (auto entity : QuadTreeSystem::query(bigCollider)) {
+    for (auto entity : ColliderSystem::query(bigCollider)) {
         const auto& other = entity.get<Collider>();
         // quick and dirty check for collision layers; ignoring directional collision
         bool isCollidable = other.mIsCollidable && this != &other && LAYER_MATRIX.isOn(mCollisionLayer, other.mCollisionLayer) &&

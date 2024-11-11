@@ -1,11 +1,11 @@
-#include "Physics.h"
+#include "PhysicsSystem.h"
 
 #include <cmath>
 
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
-#include "Systems/CollisionManager.h"
+#include "Systems/ColliderSystem.h"
 
 #include "Components/Collision.h"
 #include "Components/PlayerControl.h"
@@ -89,7 +89,7 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
         if (isManuallyMoved) {
             // Sync collider position without checking collision
             if (collider.getShape().getPosition() != transToCenter(transOffset, collider.getShape().getHalf())) {
-                QuadTreeSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
+                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
             }
 
         } else {

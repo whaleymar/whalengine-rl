@@ -4,7 +4,7 @@
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 #include "Physics/CollisionLayer.h"
-#include "Systems/CollisionManager.h"
+#include "Systems/ColliderSystem.h"
 
 namespace whal {
 
@@ -19,7 +19,7 @@ void TriggerSystem::update() {
         adjustedTransform.position += trigger.offset;
         trigger.shape.setPosition(adjustedTransform);
 
-        for (auto other : QuadTreeSystem::query(trigger.shape.getBoundingBox())) {
+        for (auto other : ColliderSystem::query(trigger.shape.getBoundingBox())) {
             auto collider = other.get<Collider>();
 
             if (!LAYER_MATRIX.isOn(trigger.layer, collider.getCollisionLayer())) {

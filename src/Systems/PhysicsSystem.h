@@ -14,6 +14,7 @@ struct Velocity;
 struct AngularVelocity;
 struct HitInfo;
 
+// TODO parameter file
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
 class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>, public ecs::IUpdate, public IListen<evt::Collision, true, ecs::Entity, HitInfo> {

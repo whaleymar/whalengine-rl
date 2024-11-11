@@ -1,9 +1,8 @@
 #include "Coordinates.h"
 
 #include "Settings.h"
+#include "Util/CameraUtil.h"
 #include "Util/Vector.h"
-
-#include "Systems/TagTrackers.h"
 
 namespace whal {
 

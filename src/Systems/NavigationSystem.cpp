@@ -1,5 +1,4 @@
 #include "NavigationSystem.h"
-#include "Gfx/Coordinates.h"
 #include "Sys/System.h"
 
 #ifndef NDEBUG
@@ -10,7 +9,7 @@
 #include "Map/Path.h"
 #include "Sys/InputHandler.h"
 #include "Systems/Graphics/Common.h"
-#include "Systems/TagTrackers.h"
+#include "Systems/TagSystems.h"
 
 namespace whal {
 
