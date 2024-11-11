@@ -17,8 +17,9 @@
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "Sys/System.h"
-#include "Systems/TagTrackers.h"
+#include "Systems/TagSystems.h"
 
+#include "Util/CameraUtil.h"
 #include "Util/Color.h"
 #include "Util/Easing.h"
 #include "Util/Vector.h"

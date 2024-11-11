@@ -9,14 +9,6 @@ NEXT GOAL:
 - Settings.h -> put in game? Or don't define anything && put the .cpp file in Game/ ?
 
 ## Cleanup
-- consistent System naming (files and classes)
-    - "XyzSystem"
-- Put all systems in the Systems/ dir. Some are in component files
-- One file per system
-- namespacing utility functions. possible categories:
-    - nav
-    - phys
-    - map
 - put TweenManager in System, call it tween, so I can just do System::tween.create()
 
 ## Components (some of these are duplicates of other tasks)
@@ -27,8 +19,7 @@ NEXT GOAL:
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
-- bloom shader is a little broken (reloading makes it look wildly different)
-    - kinda want to get rid of my fake bloom entirely and implement HDR + tone mapping
+- implement real bloom instead of my faked thingy
 - Lights need Brightness multiplier so everything's not stuck in LDR
 - fully in-shadow translucent objects are still visible, as well as text
 
@@ -39,6 +30,12 @@ NEXT GOAL:
 
 ## Web 
 - getting mouse position does not work
+- need to update a lot of shaders 
+
+## Debug tools 
+- imgui integration
+    - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
+    - changing shader uniforms dynamically would also be cool
 
 ## Map 
 - would like to do away with the default component function if possible

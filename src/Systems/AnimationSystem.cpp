@@ -1,8 +1,7 @@
-#include "Animation.h"
+#include "AnimationSystem.h"
 
 #include "Components/Animator.h"
 #include "Components/Draw.h"
-#include "Gfx/Texture.h"
 
 namespace whal {
 
