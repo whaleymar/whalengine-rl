@@ -4,7 +4,7 @@
 
 namespace whal {
 
-void TweenManager::onEvent(evt::Death, ecs::Entity entity) {
+void TweenManager::onEntityKilled(ecs::Entity entity) {
     mKilledEntities.insert(entity);
 }
 
@@ -29,7 +29,10 @@ void TweenManager::update() {
                                          if (!isStarted) {
                                              pTween->init();
                                          }
-                                         pTween->tick();
+                                         const f32 dt = System::isPaused() && !pTween->isSet(TweenParams::IgnorePause) ? 0.0f :
+                                                        pTween->isSet(TweenParams::IgnoreSlowdown)                     ? Time.getUnmodified() :
+                                                                                                                         Time.dt();
+                                         pTween->tick(dt);
 
                                          // dispatch callback based on tween state
                                          if (!isStarted && pTween->isStarted()) {

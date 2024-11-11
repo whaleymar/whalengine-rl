@@ -33,12 +33,13 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        TweenManager::create(camera, focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> auto& { return self.get<PrecisePosition>().position; })
+        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> auto& { return self.get<PrecisePosition>().position; })
             .setTransition(Ease::InOutQuad)
             .asIgnoreSlowdown()
-            .setOnUpdate([](ecs::Entity self, const TweenVec2f&) { self.get<Transform2D>().position = self.get<PrecisePosition>().position.round(); })
+            .setOnUpdate(
+                [](ecs::Entity self, const Tween<Vector2f>&) { self.get<Transform2D>().position = self.get<PrecisePosition>().position.round(); })
 
-            .setOnEnd([](ecs::Entity self, const TweenVec2f&) { Time.setMultiplier(1.0); });
+            .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
         Time.setMultiplier(0.0);
         return;
     }

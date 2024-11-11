@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "Sys/System.h"
 #include "Util/Easing.h"
 #include "whalECS/src/ECS.h"
 
@@ -29,11 +28,12 @@ public:
     virtual bool isCancelled() const = 0;
     virtual ecs::Entity getEntity() const = 0;
     virtual void kill() = 0;
+    virtual bool isSet(TweenParams::Flags flag) = 0;
 
 private:
     virtual bool isDelayCondition() = 0;
     virtual void init() = 0;
-    virtual void tick() = 0;
+    virtual void tick(f32 dt) = 0;
     virtual void onStart() const = 0;
     virtual void onUpdate() const = 0;
     virtual void onEnd() const = 0;
@@ -122,33 +122,26 @@ private:
     std::shared_ptr<Tween<T>> mTween;
 };
 
-class TweenManager : public IListen<evt::Death, false, ecs::Entity> {
+class JobScheduler;
+class TweenManager {
+public:
+    friend System;
+    friend JobScheduler;
+
     template <typename T>
     using ValueGetter = T& (*)(ecs::Entity);
 
-public:
-    static TweenManager& instance() {
-        static TweenManager instance_;
-        return instance_;
-    }
-
-    void onEvent(evt::Death, ecs::Entity entity) override;
-    void update();
-    void clear();
-
-    // have to use `auto` for the getter, otherwise the compiler can't infer T for some reason.
-    // static_cast still enforces compile-time type safety
-    template <typename T>
-    static Tweener<T> create(ecs::Entity entity, T target, f32 duration, auto getter) {
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<ValueGetter<T>>(getter), entity);
-        instance().mTweens.push_back(tween);
-        return Tweener(tween);
-    }
+    // called automatically
+    void onEntityKilled(ecs::Entity e);
 
 private:
     TweenManager() = default;
     TweenManager(TweenManager&) = delete;
     TweenManager operator=(TweenManager&) = delete;
+
+    // Managed by System:
+    void update();
+    void clear();
 
     std::vector<std::shared_ptr<ITween>> mTweens;
     std::unordered_set<ecs::Entity, ecs::EntityHash> mKilledEntities;
@@ -161,12 +154,11 @@ class Tween : public ITween {
     friend Tweener<T>;
 
 public:
-    using ValueGetter = T& (*)(ecs::Entity);
     using TweenCallback = void (*)(ecs::Entity, const Tween<T>&);
     using BoolTweenCallback = bool (*)(ecs::Entity, const Tween<T>&);
 
     // i would like this to be private but friending std::shared_ptr doesn't work
-    Tween(T target, f32 duration, ValueGetter getter, ecs::Entity entity)
+    Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
     ~Tween() = default;
 
@@ -186,11 +178,7 @@ public:
     void kill() override { mIsCancelled = true; }
 
 private:
-    void tick() override {
-        const f32 dt = System::isPaused() && !isSet(TweenParams::IgnorePause) ? 0.0f :
-                       isSet(TweenParams::IgnoreSlowdown)                     ? Time.getUnmodified() :
-                                                                                Time.dt();
-
+    void tick(f32 dt) override {
         if (mDelay > mElapsedTime) {
             mElapsedTime += dt;
             return;
@@ -255,7 +243,7 @@ private:
     }
 
     void setLoops(s32 n = 0) { mNumLoops = n; }
-    bool isSet(TweenParams::Flags flag) { return (mFlags & flag) > 0; }
+    bool isSet(TweenParams::Flags flag) override { return (mFlags & flag) > 0; }
     void resetFlag(TweenParams::Flags flag) { mFlags = (mFlags & ~flag); }
     void setFlag(TweenParams::Flags flag) { mFlags = (mFlags | flag); }
 
@@ -277,7 +265,7 @@ private:
     T mStartValue;
     T mEndValue;
     T mTweenValue;
-    ValueGetter mGetter;
+    TweenManager::ValueGetter<T> mGetter;
     ecs::Entity mEntity;
     TweenCallback mOnStart = nullptr;
     TweenCallback mOnEnd = nullptr;
@@ -289,9 +277,4 @@ private:
     bool mIsCancelled = false;
 };
 
-typedef Tween<f32> TweenFloat;
-typedef Tween<s32> TweenInt;
-typedef Tween<Vector2f> TweenVec2f;
-typedef Tween<Vector2i> TweenVec2i;
-typedef Tween<Color> TweenColor;
 }  // namespace whal

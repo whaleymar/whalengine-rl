@@ -73,7 +73,7 @@ struct MaterialData {
 
         if (isFlagSet(DecaySpeed)) {
             // want to add this one after some delay, in case particle gains speed in first few frames (like from gravity or something)
-            Schedule.eventFlow({entity}).addWait(0.25).add(
+            Schedule.flow({entity}).addWait(0.25).add(
                 [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, Color color, Color fadeColor) {
                     // Can't capture data in a lambda? Use a component! ECS!!! :D
                     struct DieWhenSpeedBelow {
@@ -84,21 +84,20 @@ struct MaterialData {
                         .minSpeed = minSpeedTPS,
                         .lifetime = decaySeconds,
                     });
-                    TweenManager::create(e, fadeColor, decaySeconds, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
+                    Schedule.tween(e, fadeColor, decaySeconds, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
                         .setTransition(Ease::InOutQuad)
-                        .setOnStart([](ecs::Entity self, const TweenColor&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
-                        .setDelayCondition([](ecs::Entity self, const TweenColor&) -> bool {
+                        .setOnStart([](ecs::Entity self, const Tween<Color>&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
+                        .setDelayCondition([](ecs::Entity self, const Tween<Color>&) -> bool {
                             return self.has<Velocity>() && self.get<Velocity>().total.len() >= self.get<DieWhenSpeedBelow>().minSpeed;
                         })
-                        .setOnEnd([](ecs::Entity self, const TweenColor&) { self.remove<DieWhenSpeedBelow>(); });
+                        .setOnEnd([](ecs::Entity self, const Tween<Color>&) { self.remove<DieWhenSpeedBelow>(); });
                 },
                 entity, decayParams.decaySpeed.minSpeedTPS, decayParams.decaySpeed.decaySeconds, color, fadeColor);
         }
 
         if (isFlagSet(FadeOutFlag)) {
-            TweenManager::create(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& {
-                return self.get<T>().color;
-            }).setTransition(Ease::InOutQuad);
+            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
+                .setTransition(Ease::InOutQuad);
         }
 
         if (isFlagSet(RadianceFlag)) {
@@ -106,9 +105,8 @@ struct MaterialData {
         }
 
         if (startScale != 1.0) {
-            TweenManager::create(entity, Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& {
-                return self.get<Transform2D>().scale;
-            }).from(Vector2f(1.0, 1.0) * startScale);
+            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<Transform2D>().scale; })
+                .from(Vector2f(1.0, 1.0) * startScale);
         }
     }
 

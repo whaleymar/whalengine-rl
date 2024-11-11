@@ -2,7 +2,6 @@
 
 #include "Events/Listeners.h"
 #include "IGame.h"
-#include "Tween.h"
 
 #include "Gfx/ShaderManager.h"
 #include "Util/Print.h"
@@ -65,7 +64,6 @@ void System::Update() {
     Time.update();
     Schedule.tick(Time.dt());
     Audio.update();
-    TweenManager::instance().update();
     World.update();
 
     // Game update
@@ -83,7 +81,6 @@ void System::resetManagers() {
 
     Schedule.clear();
     Audio.stopAll();
-    TweenManager::instance().clear();
     ShaderManager::instance().reloadShaders();
 }
 
