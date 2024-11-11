@@ -233,7 +233,7 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
 
     // DRAW DEPTH INFO FOR EVERYTHING TO LAST TEXTURE
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    ClearBackground(Colors::CLEAR);
+    ClearBackground(BLACK);
     BeginMode2D(ctx.camera);
     ShaderManager::activate(Shaders::Silhouette);
     for (auto renderInfo : mRenderQueue) {

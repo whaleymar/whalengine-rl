@@ -230,6 +230,7 @@ void ShadowLightSystem::drawEntities() {
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
     const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
+    const auto allDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
 
     for (auto [entityid, entity] : getEntitiesMutable()) {
         ShaderManager::activate(Shaders::ShadowLight);
@@ -248,7 +249,7 @@ void ShadowLightSystem::drawEntities() {
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
         SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
         SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
-        SetShaderValueTexture(shader, mAllDepthUniform, depthTex);
+        SetShaderValueTexture(shader, mAllDepthUniform, allDepthTex);
 
         DrawTextureRec(colorTex, Rectangle(0, 0, colorTex.width, -colorTex.height), Vector2(0, 0), light.color);
         EndShaderMode();
