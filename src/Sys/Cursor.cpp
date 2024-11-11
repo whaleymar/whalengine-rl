@@ -9,10 +9,10 @@
 
 namespace whal {
 
-void Cursor::setCursor(Sprite sprite) const {
+void CursorManager::set(Sprite sprite) const {
     const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
     if (!isCustomCursorActive) {
-        auto entity = System::world.entity().value();
+        auto entity = World.entity().value();
         entity.add(Name("Cursor"));
         Transform2D trans;
         trans.depth = Depth::UIClose;
@@ -27,7 +27,7 @@ void Cursor::setCursor(Sprite sprite) const {
     HideCursor();
 }
 
-void Cursor::setDefaultCursor() const {
+void CursorManager::setDefault() const {
     const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
     if (isCustomCursorActive) {
         MouseCursorSystem::first().kill();

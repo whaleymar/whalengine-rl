@@ -188,8 +188,8 @@ public:
 private:
     void tick() override {
         const f32 dt = System::isPaused() && !isSet(TweenParams::IgnorePause) ? 0.0f :
-                       isSet(TweenParams::IgnoreSlowdown)                     ? System::time.getUnmodified() :
-                                                                                System::dt();
+                       isSet(TweenParams::IgnoreSlowdown)                     ? Time.getUnmodified() :
+                                                                                Time.dt();
 
         if (mDelay > mElapsedTime) {
             mElapsedTime += dt;

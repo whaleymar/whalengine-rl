@@ -54,7 +54,7 @@ void InputHandler::set(InputType input) {
     }
     }
 
-    System::event.emit<evt::ButtonPress>(input);
+    Event.emit<evt::ButtonPress>(input);
 }
 
 void InputHandler::reset(InputType input) {
@@ -70,7 +70,7 @@ void InputHandler::reset(InputType input) {
     default:
         mFlags &= ~static_cast<u64>(input);
     }
-    System::event.emit<evt::ButtonRelease>(input, false);
+    Event.emit<evt::ButtonRelease>(input, false);
 }
 
 void InputHandler::loadMappings() const {

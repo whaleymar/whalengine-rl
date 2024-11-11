@@ -5,17 +5,17 @@ namespace whal {
 struct Sprite;
 struct System;
 
-class Cursor {
+class CursorManager {
 public:
     friend System;
 
-    void setCursor(Sprite sprite) const;
-    void setDefaultCursor() const;
+    CursorManager() = default;
+    void set(Sprite sprite) const;
+    void setDefault() const;
 
 private:
-    Cursor() = default;
-    Cursor(const Cursor&) = delete;
-    void operator=(const Cursor&) = delete;
+    CursorManager(const CursorManager&) = delete;
+    void operator=(const CursorManager&) = delete;
 };
 
 }  // namespace whal

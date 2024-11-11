@@ -29,9 +29,9 @@ void RailsSystem::onAdd(const ecs::Entity entity) {
 static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
     f32 dt;
     if (entity.has<IgnoreTimeModifiers>()) {
-        dt = System::time.getUnmodified();
+        dt = Time.getUnmodified();
     } else {
-        dt = System::dt();
+        dt = Time.dt();
     }
     auto& transform = entity.get<Transform2D>();
 
@@ -106,9 +106,9 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
     f32 dt;
     // camera moves normally unless pause menu is activated
     if (entity.has<IgnoreTimeModifiers>()) {
-        dt = System::time.getUnmodified();
+        dt = Time.getUnmodified();
     } else {
-        dt = System::dt();
+        dt = Time.dt();
     }
     if (rails.isWaiting) {
         // waiting at checkpoint

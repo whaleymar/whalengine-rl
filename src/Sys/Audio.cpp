@@ -73,8 +73,8 @@ void AudioClip::unload() {
 Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     unload();
 #ifndef __EMSCRIPTEN__
-    auto result = System::audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
-                                                         &mSound);  // looping on by default bc documentation recommends it
+    auto result = Audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
+                                                 &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
         mSound = nullptr;
         auto err = FMOD_ErrorString(result);

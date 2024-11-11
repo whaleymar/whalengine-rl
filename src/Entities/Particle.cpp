@@ -27,7 +27,7 @@ constexpr f32 MAX_SPEED_BURST = 20.0f;
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
 static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color color, f32 lifetime) {
-    auto expected = System::world.entity(false);
+    auto expected = World.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -47,7 +47,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();
 
-    auto expected = System::world.entity(false);
+    auto expected = World.entity(false);
     if (!expected.isExpected()) {
         return expected;
     }
@@ -106,13 +106,13 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
     }
 
     for (s32 i = 0; i < count; i++) {
-        const f32 locationSampleX = (System::rng.uniform() - 0.5) * 2;
-        const f32 locationSampleY = (System::rng.uniform() - 0.5) * 2;
+        const f32 locationSampleX = (Rng.uniform() - 0.5) * 2;
+        const f32 locationSampleY = (Rng.uniform() - 0.5) * 2;
         const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
         const Vector2i spawnLocation = spawnZone.getPosition() + Vector2i(spawnOffsetX, spawnOffsetY);
-        const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((System::rng.uniform() - 0.5) * 2);
-        const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, System::rng.uniform()) * speedMultiplier;
+        const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((Rng.uniform() - 0.5) * 2);
+        const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, Rng.uniform()) * speedMultiplier;
 
         ecs::Entity particle;
         auto eParticle = createParticle(Transform2D(spawnLocation), material, depth, lifetimeMultiplier);
@@ -124,7 +124,7 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
 
         particle.set(Velocity(Vector2f::fromAngleFast(finalAngle) * finalSpeed));
         if (particle.has<AngularVelocity>()) {
-            particle.set(AngularVelocity::fromSecondsPerRotation(System::rng.range(1.5f, 2.5f)));
+            particle.set(AngularVelocity::fromSecondsPerRotation(Rng.range(1.5f, 2.5f)));
         }
     }
 }

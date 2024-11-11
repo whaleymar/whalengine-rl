@@ -76,7 +76,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
     for (auto& property : object["properties"]) {
         std::string componentName = readString(property, "propertytype");
         ComponentAdder creatorFunc = nullptr;
-        System::prefab.component.getEntry(componentName.c_str(), &creatorFunc);
+        Prefab.component.getEntry(componentName.c_str(), &creatorFunc);
         if (creatorFunc == nullptr) {
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
@@ -84,7 +84,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 const auto& newPrefab = getTemplate(path);
                 addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level, layerData);
                 EntityBuilder builderFunc = nullptr;
-                System::prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
+                Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
                     builderFunc(entity, newPrefab, level);
                 }
@@ -163,7 +163,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    auto eEntity = System::world.entity();
+    auto eEntity = World.entity();
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
@@ -232,7 +232,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
 
-        auto eEntity = System::world.entity(false);
+        auto eEntity = World.entity(false);
         if (!eEntity.isExpected()) {
             failedToAllocateEntities = true;
             break;
@@ -344,7 +344,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
             const auto prefabName = readString(*pPrefab, "name");
             EntityBuilder builderFunc = nullptr;
-            System::prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
+            Prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
                 builderFunc(entity, *pPrefab, level);
             }
@@ -418,7 +418,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 //         return;
 //     }
 //
-//     auto eEntity = System::world.entity();
+//     auto eEntity = World.entity();
 //     if (!eEntity.isExpected()) {
 //         return;
 //     }
@@ -500,7 +500,7 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
 void parseMapProject(const char* mapfile) {
     const auto data = getWorldFile(mapfile);
     for (auto& propType : data["propertyTypes"]) {
-        System::prefab.component.makeDefaultComponent(propType);
+        Prefab.component.makeDefaultComponent(propType);
     }
 }
 

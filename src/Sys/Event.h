@@ -36,6 +36,7 @@ private:
 class EventManager {
 public:
     friend System;
+    EventManager() = default;
 
     template <typename E, typename... T>
         requires(std::is_base_of<IEvent<T...>, E>::value)
@@ -81,7 +82,6 @@ public:
     }
 
 private:
-    EventManager() = default;
     EventManager(EventManager& other) = delete;
 
     void removeListenerAt(EventId eventId, size_t ix) {

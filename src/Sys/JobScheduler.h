@@ -110,6 +110,7 @@ class JobScheduler {
 public:
     friend System;
 
+    JobScheduler();
     void start();
     void await();
     void end();
@@ -126,7 +127,8 @@ public:
     std::vector<evfl::EventFlow>& getEventFlows() { return mEventFlows; }
 
 private:
-    JobScheduler();
+    JobScheduler(const JobScheduler&) = delete;
+    void operator=(const JobScheduler&) = delete;
 
 #ifdef USE_THREADS
     void worker();

@@ -17,12 +17,12 @@ MaterialData MaterialData::get(WorldMaterial material) {
 }
 
 f32 MaterialData::getDecayTime() const {
-    return isFlagSet(DecayTime) ? std::lerp(decayParams.decayTime.decaySecondsMin, decayParams.decayTime.decaySecondsMax, System::rng.uniform()) :
+    return isFlagSet(DecayTime) ? std::lerp(decayParams.decayTime.decaySecondsMin, decayParams.decayTime.decaySecondsMax, Rng.uniform()) :
                                   MAX_LIFETIME_SECONDS;
 }
 
 Color MaterialData::getColor() const {
-    return Colors::lerp(colorRange[0], colorRange[1], System::rng.uniform());
+    return Colors::lerp(colorRange[0], colorRange[1], Rng.uniform());
 }
 
 static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",

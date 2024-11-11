@@ -15,19 +15,19 @@ namespace whal {
 class IGame;
 class Engine;
 
+extern TimeManager Time;
+extern InputHandler Input;
+extern RNGManager Rng;
+extern EventManager Event;
+extern AudioPlayer Audio;
+extern JobScheduler Schedule;
+extern ecs::World& World;
+extern PrefabManager Prefab;
+extern CursorManager Cursor;
+
 struct System {
     friend Engine;
     using UpdateFunction = void (*)();
-
-    inline static InputHandler input;
-    inline static Time time;
-    inline static RNG rng;
-    inline static EventManager event;
-    inline static AudioPlayer audio;
-    inline static JobScheduler schedule;
-    inline static ecs::World& world = ecs::World::getInstance();
-    inline static Prefab prefab;
-    inline static Cursor cursor;
 
     // Updates the engine and game state. Should not be called manually
     static void Update();
@@ -36,11 +36,10 @@ struct System {
     static bool IsValid();
 
     static void setPaused(bool pause);
-    static f32 dt() { return time.getDeltaTime(); }
-    static void togglePause() { setPaused(!IsPaused); }
-    static bool isPaused() { return IsPaused; }
-    static void quit() { IsQuit = true; }
-    static bool isQuit() { return IsQuit; }
+    static void togglePause();
+    static bool isPaused();
+    static void quit();
+    static bool isQuit();
 
     // Restarts the state of all modules
     static void restart(bool resetPlayers);
@@ -58,11 +57,6 @@ private:
     static void end();
     static void setGame(IGame& game);
     static void resetManagers();
-
-    inline static bool IsPaused = false;
-    inline static bool IsQuit = false;
-    inline static bool IsStarted = false;
-    inline static UpdateFunction mUpdateFunction = nullptr;
 };
 
 // An interface for ECS Systems, but it's here to avoid circlular imports.
@@ -70,7 +64,7 @@ template <typename E, bool RunOnPause, typename... T>
     requires(std::is_base_of<IEvent<T...>, E>::value)
 class IListen {
 public:
-    virtual ~IListen() { System::event.stopListening<E, T...>(mListener); }
+    virtual ~IListen() { Event.stopListening<E, T...>(mListener); }
     virtual void onEvent(E, T...) = 0;
 
 protected:
@@ -83,7 +77,7 @@ protected:
                       this->onEvent(E{}, args...);
               }
           }) {
-        System::event.registerListener<E>(mListener);
+        Event.registerListener<E>(mListener);
     }
 
 private:

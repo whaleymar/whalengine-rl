@@ -280,7 +280,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
     auto collider = Collider::Solid(Transform2D({centerX, centerY}), halflen);
 
-    auto eEntity = System::world.entity();
+    auto eEntity = World.entity();
     if (!eEntity.isExpected()) {
         print("Error creating entity for mesh");
     } else {

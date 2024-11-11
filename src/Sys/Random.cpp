@@ -1,9 +1,9 @@
 #include "Random.h"
 
-#include <cstring>
-#include <ctime>
 #include <cassert>
 #include <cmath>
+#include <cstring>
+#include <ctime>
 
 u32 xorshift32(u32& state) {
     state ^= state << 13;
@@ -24,15 +24,15 @@ static u32 RANDOM_STATE = static_cast<u32>(std::time(nullptr));
 
 namespace whal {
 
-f32 RNG::uniform() const {
+f32 RNGManager::uniform() const {
     return fastRandomFloat(RANDOM_STATE);
 }
 
-f32 RNG::range(f32 lower, f32 upper) const {
+f32 RNGManager::range(f32 lower, f32 upper) const {
     return std::lerp(lower, upper, uniform());
 }
 
-s32 RNG::range(s32 lower, s32 upperExclusive) const {
+s32 RNGManager::range(s32 lower, s32 upperExclusive) const {
     const auto retVal = std::lerp(lower, upperExclusive, uniform());
     assert(retVal != upperExclusive);  // idk if uniform() can return 1.0
     return retVal;

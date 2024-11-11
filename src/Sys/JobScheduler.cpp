@@ -45,7 +45,7 @@ void EventFlow::tick(f32 deltaTime) {
 }  // namespace evfl
 
 void checkEventFlows(ecs::Entity entity) {
-    for (auto& evflow : System::schedule.getEventFlows()) {
+    for (auto& evflow : Schedule.getEventFlows()) {
         if (evflow.requiresEntity(entity)) {
             evflow.invalidate();
         }
@@ -53,7 +53,7 @@ void checkEventFlows(ecs::Entity entity) {
 }
 
 JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
-    System::event.registerListener<evt::Death>(mDeathListener);
+    Event.registerListener<evt::Death>(mDeathListener);
 }
 
 void JobScheduler::start() {

@@ -17,12 +17,12 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
     if (input != InputType::M1) {
         return;
     }
-    auto pSys = System::world.getSystem<PlayerSystem>();
+    auto pSys = World.getSystem<PlayerSystem>();
     if (pSys->getEntitiesMutable().empty()) {
         return;
     }
     auto start = pSys->first().get<Transform2D>().position;
-    auto end = System::input.getMouseWorld();
+    auto end = Input.getMouseWorld();
     auto lvl = System::getGame().getScene().getLevelAt(start);
     if (!lvl) {
         return;
@@ -38,7 +38,7 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
 void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     // TEMP testing tile coordinate functions
 
-    // Vector2i coord = clampToTile(System::input.getMouseWorld());
+    // Vector2i coord = clampToTile(Eng::input.getMouseWorld());
     // const Vector2f frameSize(8, 8);
     // const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(PreciseTransform2D(coord.as<f32>()), frameSize, ctx.cameraPosition);
     // DrawRectanglePro(params.rect, params.origin, 0.0f, WHITE);
@@ -58,7 +58,7 @@ void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) co
 }
 
 void NavigationSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
-    if (!System::input.isOn(InputType::DEBUG)) {
+    if (!Input.isOn(InputType::DEBUG)) {
         return;
     }
     for (auto [entityid, entity] : getEntitiesMutable()) {
