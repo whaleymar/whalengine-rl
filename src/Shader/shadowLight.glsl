@@ -17,6 +17,7 @@ uniform vec2 lp1;
 uniform float radiusPixels;
 uniform float lightDepth;
 uniform sampler2D occlusionDepthTex;
+uniform sampler2D allDepthTex;
 
 // Output fragment color
 out vec4 finalColor;
@@ -36,6 +37,11 @@ bool isWall(vec2 p) {
     float depth = sampleDepth.r;
 
     return lightDepth <= depth;
+}
+
+bool isBehindSomething(vec2 p) {
+    float depth = texture(allDepthTex, p).r;
+    return lightDepth < depth;
 }
 
 vec4 getWallColor(vec2 p) {
@@ -120,6 +126,12 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     if (pixelDistance > radiusPixels) {
         return vec3(0.);
     }
+
+    // check if we are behind something else 
+    if (isBehindSomething(p)) {
+        return vec3(0.);
+    }
+
     // 1.0 == full light; 0.0 == full shadow
     vec3 light = blendLighting(p, lightPos);
     // vec3 light = blendLightingSimple(p, lightPos);

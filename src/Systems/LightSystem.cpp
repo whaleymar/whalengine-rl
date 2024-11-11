@@ -220,6 +220,7 @@ void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
     mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
     mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
+    mAllDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "allDepthTex");
 }
 
 void ShadowLightSystem::drawEntities() {
@@ -247,6 +248,7 @@ void ShadowLightSystem::drawEntities() {
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
         SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
         SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
+        SetShaderValueTexture(shader, mAllDepthUniform, depthTex);
 
         DrawTextureRec(colorTex, Rectangle(0, 0, colorTex.width, -colorTex.height), Vector2(0, 0), light.color);
         EndShaderMode();

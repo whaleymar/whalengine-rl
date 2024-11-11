@@ -65,7 +65,7 @@ public:
             return true;
         }
         // System::event.emit<evt::Restart>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
-        //                                      // regular start)
+        //                                      // regular start). TODO it's definitely a bug
 
         return false;
     }

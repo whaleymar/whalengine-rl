@@ -53,6 +53,7 @@ enum class TextureID {
     BackgroundNear,
     OcclusionColor,
     OcclusionDepth,
+    AllDepth,
     _COUNT_DO_NOT_USE_ME,
 };
 

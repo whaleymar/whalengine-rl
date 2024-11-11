@@ -10,6 +10,7 @@ enum class Depth : u8 {
     BackgroundMid,
     BackgroundNear,
     Level,
+    BehindPlayer,
     Player,
     Foreground3,
     Foreground2,
@@ -17,7 +18,6 @@ enum class Depth : u8 {
     UIFar,
     UIClose,
     Debug,
-    BehindPlayer
 };
 
 inline constexpr f32 depthToFloat(Depth depth) {

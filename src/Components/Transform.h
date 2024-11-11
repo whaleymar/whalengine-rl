@@ -103,6 +103,7 @@ struct PreciseTransform2D {
     bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
     Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
     Vector2f scale = Vector2f::ONE;
+    f32 floatHeight = 0.0f;
 
     static PreciseTransform2D pixels(s32 x, s32 y);
     static PreciseTransform2D tiles(s32 x, s32 y);

@@ -1,10 +1,33 @@
 #include "Common.h"
 #include <raylib.h>
 
+#include "Components/Floating.h"
 #include "Components/Transform.h"
 #include "Settings.h"
 
 namespace whal::gfx {
+
+PreciseTransform2D getPreciseTrans(ecs::Entity entity) {
+    assert(entity.has<Transform2D>());
+
+    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(entity.get<Transform2D>());
+    if (entity.has<PreciseTransform2D>()) {
+        pTrans.position = entity.get<PrecisePosition>().position;
+    }
+    if (entity.has<Floating>()) {
+        pTrans.floatHeight = entity.get<Floating>().height;
+    }
+    return pTrans;
+}
+
+void clampToPixelGrid(RaylibDrawParams& params) {
+    Vector2f positionF = Vector2f(params.position);
+    Vector2i position = (positionF / VIRTUAL_SCREEN_RATIO).round() * static_cast<s32>(VIRTUAL_SCREEN_RATIO);
+
+    params.position = position.asRL();
+    params.rect.x = params.position.x;
+    params.rect.y = params.position.y;
+}
 
 RaylibDrawParams getDrawParams(Vector2f position, Vector2f frameSize, Vector2f cameraPosition, Vector2f scale, bool isRotateAboutCenter) {
     Vector2f size = frameSize * scale;

@@ -30,9 +30,9 @@ PreciseTransform2D PreciseTransform2D::tiles(s32 x, s32 y) {
 
 Vector2f PreciseTransform2D::getRotatedPosition() const {
     if (rotationDegrees == 0.0f) {
-        return position;
+        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
     }
-    return position.rotate(rotationDegrees, position + pivotOffset.as<f32>() * scale);
+    return position.rotate(rotationDegrees, position + pivotOffset.as<f32>() * scale) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
 }
 
 }  // namespace whal

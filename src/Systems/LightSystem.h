@@ -60,6 +60,7 @@ private:
     int mRadiusUniform;
     int mLightDepthUniform;
     int mOcclusionDepthUniform;
+    int mAllDepthUniform;
 };
 
 }  // namespace whal

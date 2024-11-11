@@ -28,21 +28,16 @@ void TextRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) co
     constexpr s32 spacing = 0;  // PARAM
     const Color tint = WHITE;   // PARAM
 
-    const Transform2D trans = entity.get<Transform2D>();
     const DrawText draw = entity.get<DrawText>();
-
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
-    if (entity.has<PreciseTransform2D>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    }
+    PreciseTransform2D trans = gfx::getPreciseTrans(entity);
 
     // rotation pivot correction
-    Vector2f pivotOffsetScreen = pTrans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
+    Vector2f pivotOffsetScreen = trans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
     Vector2f frameSize = draw.frameSize.as<f32>();
 
     // scale to full resolution
-    frameSize = frameSize * VIRTUAL_SCREEN_RATIO * pTrans.scale;
-    Vector2f dstPosition = {pTrans.position.x - ctx.cameraPosition.x, -1 * pTrans.position.y + ctx.cameraPosition.y};
+    frameSize = frameSize * VIRTUAL_SCREEN_RATIO * trans.scale;
+    Vector2f dstPosition = {trans.position.x - ctx.cameraPosition.x, -1 * trans.position.y + ctx.cameraPosition.y};
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     dstPosition += Vector2f(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 
@@ -68,7 +63,7 @@ void TextRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) co
         .position = dstPosition.asRL(),
     };
     gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-                       pTrans.rotationDegrees, pivotOffsetScreen);
+                       trans.rotationDegrees, pivotOffsetScreen);
 }
 
 void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

@@ -140,6 +140,7 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
     // {TextureID::UpscaledLighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, false},
     {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
     {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
+    {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
 };
 
 TextureManager::TextureManager() {

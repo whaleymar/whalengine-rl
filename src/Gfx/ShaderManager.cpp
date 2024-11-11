@@ -91,6 +91,8 @@ void ShaderManager::loadShaders() {
         {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
         {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"},
+        {Shaders::Pixelate, 0, "src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
+        // {Shaders::DropShadow, 0, "src/Shader/dropShadow.glsl"},
         {Shaders::Test, 0, "src/Shader/test.glsl"},
     };
 
