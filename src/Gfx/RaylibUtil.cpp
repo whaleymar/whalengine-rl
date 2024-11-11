@@ -328,10 +328,50 @@ void DrawRenderTexture(RenderTexture renderTexture, Color color) {
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
 }
 
+// Draws correctly sized pixel even for higher resolution target textures.
+void DrawPixel(Vector2i screenCoord, Color color) {
+    DrawRectangle(screenCoord.x, screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO, color);
+}
+
+// Draws pixelated ellipse even for higher resolution target textures.
+void DrawEllipse(Vector2f center, Vector2f radii, Color color) {
+    constexpr s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
+
+    // offset center by subpixel for better distance calculations
+    center -= (Vector2f::ONE * VIRTUAL_SCREEN_RATIO / 2.0f);
+
+    radii = radii * VIRTUAL_SCREEN_RATIO;
+    Vector2f offset = Vector2f(-1, 0) * VIRTUAL_SCREEN_RATIO;
+    const Vector2f lowF = center - radii + offset;
+    const Vector2i low = lowF.round();
+    const Vector2f highF = center + radii;
+    const Vector2i high = highF.round();
+    const Vector2f denoms = Vector2f(1.0f / (radii.x * radii.x), 1.0f / (radii.y * radii.y));
+
+    Vector2f current = lowF;
+    const f32 maxAlpha = static_cast<f32>(color.a);
+    for (s32 x = low.x; x < high.x; x += step) {
+        for (s32 y = low.y; y < high.y; y += step) {
+            f32 xtest = (current.x - center.x);
+            xtest = (xtest * xtest) * denoms.x;
+
+            f32 ytest = (current.y - center.y);
+            ytest = (ytest * ytest) * denoms.y;
+
+            if ((xtest + ytest) <= 1.0f) {
+                f32 distanceFrac = 1.0f - xtest - ytest;
+                color.a = static_cast<u8>((distanceFrac * distanceFrac) * maxAlpha);
+                DrawPixel({x, y}, color);
+            }
+            current += Vector2f(0, step);
+        }
+        current.y = lowF.y;
+        current += Vector2f(step, 0);
+    }
+}
+
 void DrawEllipseFromRect(Rectangle rect, Color color) {
-    s32 centerX = rect.x;
-    s32 centerY = rect.y;
-    DrawEllipse(centerX, centerY, rect.width / 2, rect.height / 2, color);
+    DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color);
 }
 
 }  // namespace whal::gfx

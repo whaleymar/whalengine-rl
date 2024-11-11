@@ -23,5 +23,8 @@ void UnloadRenderTextureDepthTex(RenderTexture target);
 void DrawTextureDepth(Texture texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float depth);
 
 void DrawRenderTexture(RenderTexture renderTexture, Color color = WHITE);
+
+void DrawPixel(Vector2i screenCoord, Color color);
+void DrawEllipse(Vector2f center, Vector2f radii, Color color);
 void DrawEllipseFromRect(Rectangle rect, Color color);
 }  // namespace whal::gfx
