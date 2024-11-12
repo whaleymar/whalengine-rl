@@ -79,21 +79,21 @@ void ShaderManager::loadShaders() {
 
     static const ShaderInfo shaderInfo[] = {
         {Shaders::Default, 0, 0},
-        {Shaders::PointLight, 0, "src/Shader/pointlight.glsl"},
-        {Shaders::BoxLight, 0, "src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
-        {Shaders::Radiance, 0, "src/Shader/radiancelight.glsl"},
-        {Shaders::Silhouette, 0, "src/Shader/silhouette.glsl"},
-        {Shaders::Quantize, 0, "src/Shader/quantize.glsl", Uniforms::Palette},
-        {Shaders::ToneMap, 0, "src/Shader/toneMapping.glsl"},
-        {Shaders::Glitch, 0, "src/Shader/glitch-ppEffect.glsl", Uniforms::TimeStamp | Uniforms::Resolution},
-        {Shaders::ShadowLight, 0, "src/Shader/shadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
-        {Shaders::Blur, 0, "src/Shader/blur.glsl", Uniforms::Resolution},
-        {Shaders::BlurLowRes, 0, "src/Shader/blur.glsl", Uniforms::VirtualResolution},
-        {Shaders::PostProcess, 0, "src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
-        {Shaders::EffectsMask, 0, "src/Shader/occlusionMask.glsl"},
-        {Shaders::Pixelate, 0, "src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
-        // {Shaders::DropShadow, 0, "src/Shader/dropShadow.glsl"},
-        {Shaders::Test, 0, "src/Shader/test.glsl"},
+        {Shaders::PointLight, 0, "whalengine/src/Shader/pointlight.glsl"},
+        {Shaders::BoxLight, 0, "whalengine/src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
+        {Shaders::Radiance, 0, "whalengine/src/Shader/radiancelight.glsl"},
+        {Shaders::Silhouette, 0, "whalengine/src/Shader/silhouette.glsl"},
+        {Shaders::Quantize, 0, "whalengine/src/Shader/quantize.glsl", Uniforms::Palette},
+        {Shaders::ToneMap, 0, "whalengine/src/Shader/toneMapping.glsl"},
+        {Shaders::Glitch, 0, "whalengine/src/Shader/glitch-ppEffect.glsl", Uniforms::TimeStamp | Uniforms::Resolution},
+        {Shaders::ShadowLight, 0, "whalengine/src/Shader/shadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
+        {Shaders::Blur, 0, "whalengine/src/Shader/blur.glsl", Uniforms::Resolution},
+        {Shaders::BlurLowRes, 0, "whalengine/src/Shader/blur.glsl", Uniforms::VirtualResolution},
+        {Shaders::PostProcess, 0, "whalengine/src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
+        {Shaders::EffectsMask, 0, "whalengine/src/Shader/occlusionMask.glsl"},
+        {Shaders::Pixelate, 0, "whalengine/src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
+        // {Shaders::DropShadow, 0, "whalengine/src/Shader/dropShadow.glsl"},
+        {Shaders::Test, 0, "whalengine/src/Shader/test.glsl"},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);

@@ -1,4 +1,3 @@
-import http.server
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 
@@ -20,3 +19,4 @@ with socketserver.TCPServer(("", PORT), SimpleHTTPRequestHandler) as httpd:
         print("Shutting down")
         httpd.server_close()
     
+
