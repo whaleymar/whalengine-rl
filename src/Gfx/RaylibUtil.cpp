@@ -1,5 +1,6 @@
 #include "RaylibUtil.h"
 
+#include "Settings.h"
 #include "raylib.h"
 #include "rlgl.h"
 

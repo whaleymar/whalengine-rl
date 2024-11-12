@@ -5,6 +5,10 @@
 
 namespace whal {
 
+namespace ecs {
+class Entity;
+}
+
 Corrade::Containers::Optional<ecs::Entity> getCamera();
 Vector2i getCameraPosition();
 Vector2f getCameraPositionPrecise();

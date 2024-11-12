@@ -9,10 +9,9 @@
 #include "Components/Light.h"
 #include "Components/RigidBody.h"
 #include "Components/Velocity.h"
+#include "Sys/System.h"
 
 #include "Util/Vector.h"
-
-#include "Sys/Tween.h"
 
 namespace whal {
 

@@ -3,6 +3,7 @@
 #include "Physics/HitInfo.h"
 #include "Shapes.h"
 #include "Util/MathUtil.h"
+#include "whalECS/src/ECS.h"
 
 namespace whal {
 

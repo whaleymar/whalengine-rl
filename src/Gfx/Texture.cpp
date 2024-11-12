@@ -1,5 +1,6 @@
 #include "Gfx/Texture.h"
 
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
