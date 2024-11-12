@@ -82,6 +82,7 @@ void System::resetManagers() {
     Schedule.clear();
     Audio.stopAll();
     ShaderManager::instance().reloadShaders();
+    World.clear();
 }
 
 bool System::start() {
@@ -128,3 +129,35 @@ void System::setGameUpdate(UpdateFunction updateFunc) {
 }
 
 }  // namespace whal
+
+bool _EngineStart() {
+    return whal::System::start();
+}
+
+void _EngineSetGame(whal::IGame& game) {
+    whal::System::setGame(game);
+}
+
+bool _EngineIsValid() {
+    return whal::System::IsValid();
+}
+
+void _EngineReset() {
+    whal::System::resetManagers();
+}
+
+void _EngineSleep(float seconds) {
+    whal::Time.sleep(seconds);
+}
+
+bool _EngineIsQuit() {
+    return whal::System::isQuit();
+}
+
+void _EngineUpdate() {
+    whal::System::Update();
+}
+
+void _EngineEnd() {
+    whal::System::end();
+}

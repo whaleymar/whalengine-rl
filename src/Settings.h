@@ -39,6 +39,11 @@ extern s32 WINDOW_HEIGHT_RENDER;
 extern s32 WINDOW_WIDTH_GAME;
 extern s32 WINDOW_HEIGHT_GAME;
 
+extern "C" {
+s32 GetRenderWidth();
+s32 GetRenderHeight();
+}
+
 // DERIVED STUFF
 extern f32 FWINDOW_WIDTH_RENDER;
 extern f32 FWINDOW_HEIGHT_RENDER;

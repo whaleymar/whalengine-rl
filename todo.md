@@ -29,6 +29,9 @@ NEXT GOAL:
 - getting mouse position does not work
 - need to update a lot of shaders 
 
+## Rotation Fuckiness 
+- point lights are hard coded to rotate about bottom of transform
+
 ## Debug tools 
 - imgui integration
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
