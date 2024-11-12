@@ -24,11 +24,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE SOURCES_BASE ${PROJECT_SOURCE_DIR}/../src/*.hpp ${PROJECT_SOURCE_DIR}/../src/*.h)
 
-add_executable(${PROJECT_NAME} ${SOURCES_BASE} "Engine.hpp" "main.cpp" "System.cpp")
+add_executable(${PROJECT_NAME} ${SOURCES_BASE} "Engine.hpp" "main.cpp")
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 
-target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../build/libengined.a")
+# target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../build/libengined.a")
 set(FMOD_DIR "${PROJECT_SOURCE_DIR}/../lib/fmod")
 
 target_include_directories(${PROJECT_NAME} 
@@ -87,12 +87,6 @@ elseif(UNIX)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
     target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
-
-    target_precompile_headers(${PROJECT_NAME}
-        PUBLIC "${PROJECT_SOURCE_DIR}/../lib/whalECS/src/ECS.h"
-        PUBLIC "${PROJECT_SOURCE_DIR}/../src/Sys/System.h"
-        PUBLIC "${PROJECT_SOURCE_DIR}/../src/Sys/Event.h"
-    )
 
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/libfmod.so")
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/libfmodL.so")

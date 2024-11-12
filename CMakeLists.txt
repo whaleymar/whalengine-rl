@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(engine CXX C)
+project(game CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11) # required by raylib
@@ -28,8 +28,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(GLOB_RECURSE SOURCES_BASE ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.c ${PROJECT_SOURCE_DIR}/src/*.hpp ${PROJECT_SOURCE_DIR}/src/*.h ${PROJECT_SOURCE_DIR}/lib/whalECS/src/*)
 
 # add_executable(${PROJECT_NAME} ${SOURCES_BASE})
-add_library(${PROJECT_NAME} ${SOURCES_BASE}) # static obj file
-# add_library(SHARED ${PROJECT_NAME} ${SOURCES_BASE})
+# add_library(${PROJECT_NAME} ${SOURCES_BASE}) # static obj file
+add_library(${PROJECT_NAME} SHARED ${SOURCES_BASE})
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 

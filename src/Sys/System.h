@@ -50,7 +50,7 @@ struct System {
     // Sets the main game update method, which will run once every frame
     static void setGameUpdate(UpdateFunction updateFunc);
 
-private:
+    // PRIVATE
     // Initializes the modules.
     // Assumes raylib context is initialized.
     static bool start();
@@ -59,29 +59,15 @@ private:
     static void resetManagers();
 };
 
-// An interface for ECS Systems, but it's here to avoid circlular imports.
-template <typename E, bool RunOnPause, typename... T>
-    requires(std::is_base_of<IEvent<T...>, E>::value)
-class IListen {
-public:
-    virtual ~IListen() { Event.stopListening<E, T...>(mListener); }
-    virtual void onEvent(E, T...) = 0;
-
-protected:
-    IListen()
-        : mListener([this](T... args) {
-              if constexpr (RunOnPause) {
-                  this->onEvent(E{}, args...);
-              } else {
-                  if (!System::isPaused())
-                      this->onEvent(E{}, args...);
-              }
-          }) {
-        Event.registerListener<E>(mListener);
-    }
-
-private:
-    EventListener<T...> mListener;
-};
-
 }  // namespace whal
+
+extern "C" {
+bool _EngineStart();
+void _EngineSetGame(whal::IGame& game);
+bool _EngineIsValid();
+void _EngineReset();
+void _EngineSleep(float seconds);
+bool _EngineIsQuit();
+void _EngineUpdate();
+void _EngineEnd();
+}

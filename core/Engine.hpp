@@ -14,55 +14,92 @@
 #endif
 // /WEB
 
-// extern whal::IGame* CreateGame();
-// extern void DestroyGame(whal::IGame* game);
-
 namespace whal {
 
 namespace evt {
 class Restart;
 }
 
+const char* DL_PATH = "build/libgamed.so";
+
 class GameHandler {
 public:
+    using GameCreator = whal::IGame* (*)();
+    using GameDestructor = void (*)(whal::IGame*);
+    using IntGetter = s32 (*)();
+    using Callback = void (*)();
+    using GameSetter = void (*)(whal::IGame&);
+    using BoolCB = bool (*)();
+    using FloatFunc = void (*)(float);
+
     GameHandler() = default;
-    whal::IGame* load() {
+    bool isValid() const { return mLibHandle != nullptr; }
+
+    template <typename T>
+    T getSymbol(const char* symbol) {
+        T fPtr = (T)dlsym(mLibHandle, symbol);
+        if (!fPtr) {
+            print("Couldn't find", symbol, "symbol in", DL_PATH);
+            mAllLoadsSuccessful = false;
+            return nullptr;
+        }
+        return fPtr;
+    }
+
+    // returns true if error
+    bool loadLib() {
 #if !defined(__EMSCRIPTEN__) && !defined(_WIN32)
         // linux build, do hot reloading setup
         if (mLibHandle) {
+            print("running dlclose");
             dlclose(mLibHandle);
+            const char* error = dlerror();
+            if (error) {
+                print("dlclose error: ", error);
+            }
         }
 
-        mLibHandle = dlopen("./libengined.so", RTLD_NOW);
+        print("running dlopen");
+        mLibHandle = dlopen(DL_PATH, RTLD_NOW);
         if (!mLibHandle) {
-            print("Failed to load libengined.so");
-            return nullptr;
+            print("Failed to load libgamed.so");
+            return true;
         }
 
-        auto createGame = (whal::IGame * (*)()) dlsym(mLibHandle, "CreateGame");
-        auto destroyGame = (void (*)(whal::IGame*))dlsym(mLibHandle, "DestroyGame");
+        mAllLoadsSuccessful = true;
+        CreateGameCB = getSymbol<GameCreator>("CreateGame");
+        DestroyGameCB = getSymbol<GameDestructor>("DestroyGame");
+        EngineStart = getSymbol<BoolCB>("_EngineStart");
+        EngineSetGame = getSymbol<GameSetter>("_EngineSetGame");
+        EngineIsValid = getSymbol<BoolCB>("_EngineIsValid");
+        EngineReset = getSymbol<Callback>("_EngineReset");
+        EngineSleep = getSymbol<FloatFunc>("_EngineSleep");
+        EngineIsQuit = getSymbol<BoolCB>("_EngineIsQuit");
+        EngineUpdate = getSymbol<Callback>("_EngineUpdate");
+        EngineEnd = getSymbol<Callback>("_EngineEnd");
+        GetWindowWidth = getSymbol<IntGetter>("GetRenderWidth");
+        GetWindowHeight = getSymbol<IntGetter>("GetRenderHeight");
 
-        if (!createGame || !destroyGame) {
-            print("Couldn't find `CreateGame` and/or `DestroyGame` symbols in library");
+        if (mAllLoadsSuccessful) {
+            print("Loaded library successfully");
+            return false;
+        } else {
+            print("Exiting...");
             dlclose(mLibHandle);
             mLibHandle = nullptr;
-            return nullptr;
+            return true;
         }
-
-        return createGame();
 #else
         print("NOT IMPLEMENTED: GameHandler::load() for Windows/Web builds");
-        return nullptr;
+        return true;
 
 #endif
     }
 
-    void unload(whal::IGame* game) {
-        if (!game || !mLibHandle) {
+    void unloadLib() {
+        if (!mLibHandle) {
             return;
         }
-        auto destroyGame = (void (*)(whal::IGame*))dlsym(mLibHandle, "DestroyGame");
-        destroyGame(game);
 
         if (mLibHandle) {
             dlclose(mLibHandle);
@@ -70,16 +107,36 @@ public:
         }
     }
 
+    BoolCB EngineStart;
+    GameSetter EngineSetGame;
+    BoolCB EngineIsValid;
+    Callback EngineReset;
+    FloatFunc EngineSleep;
+    BoolCB EngineIsQuit;
+    Callback EngineUpdate;
+    Callback EngineEnd;
+    IntGetter GetWindowWidth;
+    IntGetter GetWindowHeight;
+    GameCreator CreateGameCB;
+    GameDestructor DestroyGameCB;
+
 private:
     void* mLibHandle = nullptr;
+    bool mAllLoadsSuccessful;
 };
 
 class Engine {
 public:
     bool start() {
+        // Load library
+        bool err = mGameHandler.loadLib();
+        if (err) {
+            return true;
+        }
+
         // Raylib initialization
         SetTraceLogLevel(LOG_WARNING);
-        InitWindow(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, WINDOW_TITLE);
+        InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), WINDOW_TITLE);
         SetExitKey(KEY_NULL);  // Escape quits by default
 
         SetTargetFPS(FPS_TARGET);
@@ -94,23 +151,22 @@ public:
 #endif
 
         // Init modules
-        return System::start();
+        return mGameHandler.EngineStart();
     }
 
     bool loadGame() {
-        // mGame = CreateGame();
-        mGame = mGameHandler.load();
+        mGame = mGameHandler.CreateGameCB();
         if (!mGame) {
             return true;
         }
 
-        System::setGame(*mGame);
+        mGameHandler.EngineSetGame(*mGame);
         if (mGame->start()) {
             print("Error initializing game");
             return true;
         }
 
-        if (!System::IsValid()) {
+        if (!mGameHandler.EngineIsValid()) {
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
             return true;
         }
@@ -122,33 +178,47 @@ public:
 
     void unloadGame() {
         mGame->end();
-        // DestroyGame(mGame);
-        mGameHandler.unload(mGame);
+        mGameHandler.DestroyGameCB(mGame);
         mGame = nullptr;
-        System::resetManagers();
-        World.clear();
+        mGameHandler.EngineReset();
     }
 
     void mainloop() {
 #ifdef __EMSCRIPTEN__
         EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
-        System::time.sleep(1);
-        emscripten_set_main_loop(System::Update, 0, 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
+        mGameHandler.EngineSleep(1);
+        emscripten_set_main_loop(mGameHandler.EngineUpdate, 0,
+                                 1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
 #else
-        while (!WindowShouldClose() && !System::isQuit()) {
-            System::Update();
+        while (!WindowShouldClose() && !mGameHandler.EngineIsQuit()) {
+            mGameHandler.EngineUpdate();
             // for testing
-            // if (IsKeyPressed(KEY_R)) {
-            //     unloadGame();
-            //     loadGame();
-            // }
+            if (IsKeyPressed(KEY_R)) {
+                unloadGame();
+                print("Unloaded Game");
+                print("Reloading Game library");
+                mGameHandler.EngineEnd();
+                bool err = mGameHandler.loadLib();
+                if (err) {
+                    print("Failed to reload library");
+                    return;
+                }
+                print("Reloaded Game library");
+                err = mGameHandler.EngineStart();
+                if (err) {
+                    print("Error Restarting Engine Modules");
+                    return;
+                }
+                loadGame();
+                print("Loaded Game");
+            }
         }
 #endif
     }
 
     void end() {
         // Delete modules
-        System::end();
+        mGameHandler.EngineEnd();
 
         // Raylib end
 #ifndef __EMSCRIPTEN__
