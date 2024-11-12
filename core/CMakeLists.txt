@@ -46,50 +46,11 @@ include_directories("../lib")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${-g}>")
 target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${-O2}>")
 
-if (EMSCRIPTEN)
-    # find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
+if (WIN32)
     target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/../lib/raylib/src")
-
-    # these don't seem to work with clang-cl 
-    target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated -Wshadow)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wbad-function-cast -Wcast-function-type)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=undefined)
-
-    # force static linking
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/libraylib.a")
-
-    # single threaded build:
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=2 --profiling -fsanitize=undefined")
-    else()
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lidbfs.js -s USE_GLFW=3 --shell-file ${CMAKE_CURRENT_LIST_DIR}/web/minshell.html --preload-file ../src/Game/data --preload-file ../src/Shader -s GL_ENABLE_GET_PROC_ADDRESS=1 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1073741824 -s STACK_SIZE=536870912 -s ASSERTIONS=0 -fsanitize=undefined")
-    endif()
-
-
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
-
-elseif (WIN32)
-    target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/../lib/raylib/src")
-
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/fmod_vc.lib")
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/fmodL_vc.lib")
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/raylib.lib")
 elseif(UNIX)
     find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
-
-    # these don't seem to work with clang-cl 
-    target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wdeprecated -Wshadow)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-unused-parameter -Wno-unused-private-field -Wno-macro-redefined)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fno-strict-aliasing)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-invalid-offsetof)
-
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/libfmod.so")
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/fmod/api/core/lib/x86_64/libfmodL.so")
     target_link_libraries(${PROJECT_NAME} raylib)
 
 endif()

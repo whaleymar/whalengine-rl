@@ -27,7 +27,7 @@
 
 namespace whal {
 
-static const char* MAP_DIR = "src/Game/data/map";
+static const char* MAP_DIR = "data/map";
 
 static ResourceManager<nlohmann::json, 50> S_TEMPLATE_MANAGER;
 static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
