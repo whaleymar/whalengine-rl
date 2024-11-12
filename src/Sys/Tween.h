@@ -123,6 +123,7 @@ private:
 };
 
 class JobScheduler;
+struct System;
 class TweenManager {
 public:
     friend System;

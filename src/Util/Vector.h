@@ -90,7 +90,7 @@ struct Vector2T {
     }
 
     // Converts to raylib Vector2 struct
-    inline Vector2 asRL() const { return Vector2{x, y}; }
+    inline Vector2 asRL() const { return Vector2{static_cast<f32>(x), static_cast<f32>(y)}; }
 
     inline Vector2T<s32> round() const { return Vector2T<s32>(std::roundf(x), std::roundf(y)); }
 
@@ -161,9 +161,6 @@ typedef Vector2T<f32> Vector2f;
 typedef Vector2T<s32> Vector2i;
 
 // lets me use Vector2i as a hashmap key
-namespace std {
-template <>
-struct hash<Vector2i> {
+struct Vector2iHash {
     size_t operator()(const Vector2i& v) const { return (v.y << 16) ^ v.x; }
 };
-}  // namespace std

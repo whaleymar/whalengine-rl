@@ -1,5 +1,6 @@
 #pragma once
 
+#include <dlfcn.h>
 #include <raylib.h>
 #include "IGame.h"
 #include "Settings.h"
@@ -13,21 +14,65 @@
 #endif
 // /WEB
 
-// TEMP
-// these will eventually be extern
-#include "Game/Game.h"
-whal::IGame* CreateGame() {
-    return new Game();
-}
-void DestroyGame(whal::IGame* game) {
-    delete game;
-}
+// extern whal::IGame* CreateGame();
+// extern void DestroyGame(whal::IGame* game);
 
 namespace whal {
 
 namespace evt {
 class Restart;
 }
+
+class GameHandler {
+public:
+    GameHandler() = default;
+    whal::IGame* load() {
+#if !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+        // linux build, do hot reloading setup
+        if (mLibHandle) {
+            dlclose(mLibHandle);
+        }
+
+        mLibHandle = dlopen("./libengined.so", RTLD_NOW);
+        if (!mLibHandle) {
+            print("Failed to load libengined.so");
+            return nullptr;
+        }
+
+        auto createGame = (whal::IGame * (*)()) dlsym(mLibHandle, "CreateGame");
+        auto destroyGame = (void (*)(whal::IGame*))dlsym(mLibHandle, "DestroyGame");
+
+        if (!createGame || !destroyGame) {
+            print("Couldn't find `CreateGame` and/or `DestroyGame` symbols in library");
+            dlclose(mLibHandle);
+            mLibHandle = nullptr;
+            return nullptr;
+        }
+
+        return createGame();
+#else
+        print("NOT IMPLEMENTED: GameHandler::load() for Windows/Web builds");
+        return nullptr;
+
+#endif
+    }
+
+    void unload(whal::IGame* game) {
+        if (!game || !mLibHandle) {
+            return;
+        }
+        auto destroyGame = (void (*)(whal::IGame*))dlsym(mLibHandle, "DestroyGame");
+        destroyGame(game);
+
+        if (mLibHandle) {
+            dlclose(mLibHandle);
+            mLibHandle = nullptr;
+        }
+    }
+
+private:
+    void* mLibHandle = nullptr;
+};
 
 class Engine {
 public:
@@ -53,7 +98,12 @@ public:
     }
 
     bool loadGame() {
-        mGame = CreateGame();
+        // mGame = CreateGame();
+        mGame = mGameHandler.load();
+        if (!mGame) {
+            return true;
+        }
+
         System::setGame(*mGame);
         if (mGame->start()) {
             print("Error initializing game");
@@ -72,7 +122,8 @@ public:
 
     void unloadGame() {
         mGame->end();
-        DestroyGame(mGame);
+        // DestroyGame(mGame);
+        mGameHandler.unload(mGame);
         mGame = nullptr;
         System::resetManagers();
         World.clear();
@@ -110,6 +161,7 @@ public:
 
 private:
     Image mIconImage;
+    GameHandler mGameHandler;
     IGame* mGame;
 };
 

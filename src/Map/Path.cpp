@@ -1,10 +1,9 @@
 #include "Path.h"
 #include <algorithm>
 #include <queue>
+#include <unordered_map>
 #include "Gfx/Coordinates.h"
 #include "Map/Level.h"
-#include "Settings.h"
-// #include "Util/Print.h"
 
 // RESEARCH
 // Extensions I can think of:
@@ -37,9 +36,9 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
 
     const auto comp = [](const pair<f32, Vector2i>& elem1, const pair<f32, Vector2i>& elem2) { return elem1.first > elem2.first; };
     priority_queue<pair<f32, Vector2i>, vector<pair<f32, Vector2i>>, decltype(comp)> openSet(comp);
-    unordered_map<Vector2i, Vector2i> cameFrom;
-    unordered_map<Vector2i, f32> gScore;
-    unordered_map<Vector2i, f32> fScore;
+    unordered_map<Vector2i, Vector2i, Vector2iHash> cameFrom;
+    unordered_map<Vector2i, f32, Vector2iHash> gScore;
+    unordered_map<Vector2i, f32, Vector2iHash> fScore;
 
     openSet.emplace(0.0f, start);
     gScore[start] = 0.0f;

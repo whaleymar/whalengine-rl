@@ -5,6 +5,7 @@
 #include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Gfx/Depth.h"
+#include "Sys/System.h"
 #include "Systems/MouseCursorSystem.h"
 
 namespace whal {
