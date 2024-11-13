@@ -82,7 +82,6 @@ void System::resetManagers() {
     Schedule.clear();
     Audio.stopAll();
     ShaderManager::instance().reloadShaders();
-    World.clear();
 }
 
 bool System::start() {
