@@ -250,6 +250,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         for (auto [id, pair] : idToIndex) {
             pair.second.kill();
         }
+        return;
     }
 
     for (const auto& object : objects) {
