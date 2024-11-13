@@ -20,7 +20,16 @@ namespace evt {
 class Restart;
 }
 
+#if defined(DYNLIB)
+#if defined(_WIN32)
+const char* DL_PATH = "build/libgamed.dll";
+#else
 const char* DL_PATH = "build/libgamed.so";
+#endif
+#else
+extern "C" whal::IGame* CreateGame();
+extern "C" void DestroyGame(whal::IGame* game);
+#endif
 
 class GameHandler {
 public:
@@ -35,6 +44,8 @@ public:
     GameHandler() = default;
     bool isValid() const { return mLibHandle != nullptr; }
 
+    // TODO windows
+#if defined(DYNLIB)
     template <typename T>
     T getSymbol(const char* symbol) {
         T fPtr = (T)dlsym(mLibHandle, symbol);
@@ -46,21 +57,30 @@ public:
         return fPtr;
     }
 
+    // TODO windows
+    void getHandle() { mLibHandle = dlopen(DL_PATH, RTLD_NOW); }
+
+    // TODO windows
+    void closeHandle() {
+        dlclose(mLibHandle);
+        const char* error = dlerror();
+        if (error) {
+            print("dlclose error: ", error);
+            return;
+        }
+        mLibHandle = nullptr;
+    }
+#endif
+
     // returns true if error
     bool loadLib() {
-#if !defined(__EMSCRIPTEN__) && !defined(_WIN32)
+#if defined(DYNLIB)
         // linux build, do hot reloading setup
         if (mLibHandle) {
-            print("running dlclose");
-            dlclose(mLibHandle);
-            const char* error = dlerror();
-            if (error) {
-                print("dlclose error: ", error);
-            }
+            closeHandle();
         }
 
-        print("running dlopen");
-        mLibHandle = dlopen(DL_PATH, RTLD_NOW);
+        getHandle();
         if (!mLibHandle) {
             print("Failed to load libgamed.so");
             return true;
@@ -85,27 +105,39 @@ public:
             return false;
         } else {
             print("Exiting...");
-            dlclose(mLibHandle);
-            mLibHandle = nullptr;
+            closeHandle();
             return true;
         }
 #else
-        print("NOT IMPLEMENTED: GameHandler::load() for Windows/Web builds");
-        return true;
+        // We're linking statically, can address the callbacks directly
+        CreateGameCB = CreateGame;
+        DestroyGameCB = DestroyGame;
+        EngineStart = _EngineStart;
+        EngineSetGame = _EngineSetGame;
+        EngineIsValid = _EngineIsValid;
+        EngineReset = _EngineReset;
+        EngineSleep = _EngineSleep;
+        EngineIsQuit = _EngineIsQuit;
+        EngineUpdate = _EngineUpdate;
+        EngineEnd = _EngineEnd;
+        GetWindowWidth = GetRenderWidth;
+        GetWindowHeight = GetRenderHeight;
+        return false;
 
 #endif
     }
 
+#if defined(DYNLIB)
     void unloadLib() {
         if (!mLibHandle) {
             return;
         }
 
         if (mLibHandle) {
-            dlclose(mLibHandle);
-            mLibHandle = nullptr;
+            closeHandle();
         }
     }
+#endif
 
     BoolCB EngineStart;
     GameSetter EngineSetGame;
@@ -192,10 +224,10 @@ public:
 #else
         while (!WindowShouldClose() && !mGameHandler.EngineIsQuit()) {
             mGameHandler.EngineUpdate();
-            // for testing
+            // hot reloading
+#if defined(DYNLIB)
             if (IsKeyPressed(KEY_R)) {
                 unloadGame();
-                print("Unloaded Game");
                 print("Reloading Game library");
                 mGameHandler.EngineEnd();
                 bool err = mGameHandler.loadLib();
@@ -212,6 +244,7 @@ public:
                 loadGame();
                 print("Loaded Game");
             }
+#endif
         }
 #endif
     }
