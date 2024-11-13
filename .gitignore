@@ -17,3 +17,4 @@ engine.html
 engine.js
 engine.wasm
 engine.worker.js
+engineWrapper
