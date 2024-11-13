@@ -1,6 +1,5 @@
 #pragma once
 
-#include <dlfcn.h>
 #include <raylib.h>
 #include "IGame.h"
 #include "Settings.h"
@@ -21,9 +20,12 @@ class Restart;
 }
 
 #if defined(DYNLIB)
+#include <cstdlib>
 #if defined(_WIN32)
+#include <windows.h>
 const char* DL_PATH = "build/libgamed.dll";
 #else
+#include <dlfcn.h>
 const char* DL_PATH = "build/libgamed.so";
 #endif
 #else
@@ -44,11 +46,14 @@ public:
     GameHandler() = default;
     bool isValid() const { return mLibHandle != nullptr; }
 
-    // TODO windows
 #if defined(DYNLIB)
     template <typename T>
     T getSymbol(const char* symbol) {
+#ifdef _WIN32
+        T fPtr = (T)GetProcAddress((HMODULE)mLibHandle, symbol);
+#else
         T fPtr = (T)dlsym(mLibHandle, symbol);
+#endif
         if (!fPtr) {
             print("Couldn't find", symbol, "symbol in", DL_PATH);
             mAllLoadsSuccessful = false;
@@ -57,17 +62,28 @@ public:
         return fPtr;
     }
 
-    // TODO windows
-    void getHandle() { mLibHandle = dlopen(DL_PATH, RTLD_NOW); }
+    void getHandle() {
+#ifdef _WIN32
+        mLibHandle = LoadLibrary(DL_PATH);
+#else
+        mLibHandle = dlopen(DL_PATH, RTLD_NOW);
+#endif
+    }
 
-    // TODO windows
     void closeHandle() {
+        if (!mLibHandle) {
+            return;
+        }
+#ifdef _WIN32
+        FreeLibrary((HMODULE)mLibHandle);
+#else
         dlclose(mLibHandle);
         const char* error = dlerror();
         if (error) {
             print("dlclose error: ", error);
             return;
         }
+#endif
         mLibHandle = nullptr;
     }
 #endif
@@ -75,7 +91,7 @@ public:
     // returns true if error
     bool loadLib() {
 #if defined(DYNLIB)
-        // linux build, do hot reloading setup
+        // do hot reloading setup
         if (mLibHandle) {
             closeHandle();
         }
@@ -202,8 +218,6 @@ public:
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
             return true;
         }
-        // System::event.emit<evt::Restart>();  // For some reason, map objects (not tiles) disappear unless I do this (only happens on restart, not
-        //                                      // regular start). TODO it's definitely a bug
 
         return false;
     }
@@ -228,8 +242,14 @@ public:
 #if defined(DYNLIB)
             if (IsKeyPressed(KEY_R)) {
                 unloadGame();
-                print("Reloading Game library");
                 mGameHandler.EngineEnd();
+                print("Recompiling", DL_PATH);
+                int result = std::system("make");
+                if (result != 0) {
+                    print("Error recompiling. Got code: ", result);
+                    print("Reloading with old library");
+                }
+                print("Reloading Game library");
                 bool err = mGameHandler.loadLib();
                 if (err) {
                     print("Failed to reload library");
