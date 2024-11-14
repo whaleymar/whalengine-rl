@@ -35,25 +35,26 @@ class Collider {
 
 public:
     Collider() = default;
+    // TODO struct for all the optional args
     Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
              CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None,
-             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
-             CollisionCallback squish_ = &defaultSquish);
+             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish,
+             Vector2i offset = Vector2i::ZERO);
 
     // static creator functions
     static Collider Actor(AABB shape, CollisionCallback squish_ = &defaultSquish);
-    static Collider Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_ = &defaultSquish);
+    static Collider Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
     static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                           CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     static Collider Solid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
                           CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
-                          CollisionCallback squish_ = &defaultSquish);
+                          CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
     static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
                               CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
     static Collider SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
                               CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
-                              CollisionCallback squish_ = &defaultSquish);
+                              CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
 
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
@@ -107,6 +108,9 @@ public:
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
     u16 getCollisionLayersThatCanRideMe() const;
 
+    void setOffset(Vector2i offset) { mOffset = offset; }
+    Vector2i getOffset() const { return mOffset; }
+
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,
                              const bool triggerCollisionEvents = false) const;
     std::vector<std::pair<ecs::Entity, Collider>> getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask = CollisionLayer::ALL,
@@ -123,6 +127,7 @@ protected:
 
     // Shape mShape; // Maybe one day. Too much is hard coded to AABBs for me to bother rn
     AABB mShape;
+    Vector2i mOffset;  // shape's offset from transform
     ecs::Entity mSelf;
     CollisionLayer::Layer mCollisionLayer;
     bool mIsCollidable = true;
@@ -168,10 +173,6 @@ struct Momentum {
     void resetMomentumY();
 
     Vector2f getMomentum() const;
-};
-
-struct ColliderOffset {
-    Vector2i offset;
 };
 
 }  // namespace whal

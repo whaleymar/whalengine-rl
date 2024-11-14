@@ -17,6 +17,7 @@ NEXT GOAL:
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
 - implement real bloom instead of my faked thingy
+    - once implemented, use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
 - Lights need Brightness multiplier so everything's not stuck in LDR
 - fully in-shadow translucent objects are still visible, as well as text
 
@@ -36,6 +37,11 @@ NEXT GOAL:
 - imgui integration
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
     - changing shader uniforms dynamically would also be cool
+    - change which RenderTexture I'm looking at 
+    - change which Scene I'm in -- allows for debug-only scenes that are easier to use
+
+## Triggers 
+- consolidate with colliders like unity. Makes a lot less work :) 
 
 ## Map 
 - would like to do away with the default component function if possible
@@ -81,6 +87,9 @@ NEXT GOAL:
     - github.com/google/googletest/blob/main/googletest/include/gtest/gtest.h
     - https://www.cppstories.com/2023/ub-factory-constinit/ -- cpp20 approach (?)
 
+## Physics 
+- collider offsets + rotation + scaling doesn't work quite right
+
 ## Misc
 - go all-in on custom raylib++ fork -> namespace the library and get rid of the bloat
 - ECS parallelization (low priority)
@@ -91,14 +100,13 @@ NEXT GOAL:
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Possible Shader workflow: Unity Shader Graph -> view code -> export code as GLSL?
+- define some common tween functions (transform position, rotation, sprite scale, etc) in a header
+- should collider size change with scale? that's how it works in unity
 
 ---------------------------------------------------------------------------------------------------------------------------
 
 # Research & Ideas
 things i might want to (re)consider in the future -- ctrl+f for "RESEARCH" 
-
-## System:
-- hot-reloading code (youtube video is bookmarked)
 
 ## Map:
 - bake tile data into a mesh & use that for lighting

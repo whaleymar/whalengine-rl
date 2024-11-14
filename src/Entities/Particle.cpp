@@ -99,7 +99,7 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
 void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier,
                    f32 speedMultiplier) {
     const f32 angle = directionToAngle(direction);
-    const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1});
+    const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1}, Vector2i());
 
     if (material == WorldMaterial::Grass) {
         count /= 2;

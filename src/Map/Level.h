@@ -58,6 +58,7 @@ struct Scene {
     Expected<ActiveLevel*> loadAndGetFirstLevel();
     Vector2i getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i position);
     Corrade::Containers::Optional<Level> getLevelAt(Vector2i worldPosition) const;
+    Expected<ActiveLevel*> getLoadedLevelAt(Vector2i worldPosition);
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
 };

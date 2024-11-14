@@ -20,7 +20,7 @@ struct Transform2D;
 class ColliderSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
 public:
     ColliderSystem();
-    static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition);
+    static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition, Vector2i colliderOffset);
     static void updateShape(ecs::Entity entity, const AABB& previousShape, const AABB& newShape);
     static std::vector<ecs::Entity> query(const AABB& aabb);
 

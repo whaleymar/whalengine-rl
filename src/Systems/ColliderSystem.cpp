@@ -54,9 +54,9 @@ void drawColliders() {
 }
 #endif
 
-void ColliderSystem::updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition) {
+void ColliderSystem::updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition, Vector2i colliderOffset) {
     QUAD_TREE.remove(entity);
-    colliderShape.setPosition(nextPosition);
+    colliderShape.setPosition(nextPosition, colliderOffset);
     QUAD_TREE.add(entity);
 }
 
@@ -88,6 +88,11 @@ void ColliderSystem::onAdd(ecs::Entity entity) {
     // RESEARCH unhandled edge case: fails if we try to create an entity beyond quadtree bounds.
     auto& collider = entity.get<Collider>();
     collider.setEntity(entity);
+    // if (entity.has<ColliderOffset>()) {  // TODO if this is added after collider, then it won't affect entities which aren't in physics system
+    // (static
+    //                                      // lvl geometry)
+    //     collider.getShapeMutable().setPosition(collider.getShape().getPosition() + entity.get<ColliderOffset>().offset);
+    // }
     if (collider.isActor() || collider.isSemiSolid()) {
         entity.add<Momentum>();
     }

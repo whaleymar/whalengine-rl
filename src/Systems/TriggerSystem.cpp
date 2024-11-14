@@ -15,9 +15,7 @@ void TriggerSystem::update() {
         const auto trans = entity.get<Transform2D>();
 
         // update trigger zone w/ transform
-        Transform2D adjustedTransform = trans;
-        adjustedTransform.position += trigger.offset;
-        trigger.shape.setPosition(adjustedTransform);
+        trigger.shape.setPosition(trans, trigger.offset);
 
         for (auto other : ColliderSystem::query(trigger.shape.getBoundingBox())) {
             auto collider = other.get<Collider>();

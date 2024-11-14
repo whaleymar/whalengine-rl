@@ -640,14 +640,15 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
 
         const auto offset = otherTrans - thisTrans;
         Transform2D transOffset = entity.get<Transform2D>();
-        if (!offset.isZero()) {
-            entity.add(ColliderOffset(offset));
-            transOffset.position += offset;
-        }
-        collider.setShape(AABB(transOffset, halflen));
+        // if (!offset.isZero()) {
+        //     entity.add(ColliderOffset(offset));
+        //     transOffset.position += offset;
+        // }
+        // collider.setShape(AABB(transOffset, halflen));
+        collider.setShape(AABB(transOffset, halflen, offset));
     } else {
         // there's no default shape object. Instead use the entity's dimensions
-        collider.setShape(AABB(entity.get<Transform2D>(), entityData.size / 2));
+        collider.setShape(AABB(entity.get<Transform2D>(), entityData.size / 2, Vector2i()));
     }
     entity.add(collider);
 }
@@ -682,12 +683,13 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
             trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflen.y), halflen);
         }
     } else {
+        // TODO offsets, like i do w/ colliders
         if (allObjects[idToIndex.at(entityData.id).first].contains("ellipse")) {
             const s32 radius = std::max(entityData.size.x, entityData.size.y) / 2;
             trigger.shape = Circle(entity.get<Transform2D>(), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>(), entityData.size / 2);
+            trigger.shape = AABB(entity.get<Transform2D>(), entityData.size / 2, Vector2i());
         }
     }
 
