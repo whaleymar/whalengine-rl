@@ -640,11 +640,6 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
 
         const auto offset = otherTrans - thisTrans;
         Transform2D transOffset = entity.get<Transform2D>();
-        // if (!offset.isZero()) {
-        //     entity.add(ColliderOffset(offset));
-        //     transOffset.position += offset;
-        // }
-        // collider.setShape(AABB(transOffset, halflen));
         collider.setShape(AABB(transOffset, halflen, offset));
     } else {
         // there's no default shape object. Instead use the entity's dimensions

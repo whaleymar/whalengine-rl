@@ -84,6 +84,16 @@ struct Transform2D {
     static Transform2D pixels(s32 x, s32 y);
     static Transform2D tiles(s32 x, s32 y);
     Vector2i getRotatedPosition() const;
+
+    // Get an offset's transformed position
+    Vector2i apply(Vector2i relOffset) const;
+
+    // Calculate this Transform2D's root position using an offset's transformed position
+    Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
+
+#ifndef NDEBUG
+    void draw() const;
+#endif
 };
 
 // TODO thinking of making this an OPTIONAL REPLACEMENT for Transform2D (an entity would have one or the other), but using floats for position

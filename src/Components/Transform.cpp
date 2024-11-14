@@ -1,6 +1,10 @@
 #include "Transform.h"
 
+#include "Gfx/Coordinates.h"
+#include "Gfx/RaylibUtil.h"
 #include "Settings.h"
+#include "Systems/Graphics/Common.h"
+#include "Util/CameraUtil.h"
 
 namespace whal {
 
@@ -12,13 +16,54 @@ Transform2D Transform2D::tiles(s32 x, s32 y) {
     return Transform2D({x * PIXELS_PER_TILE, y * PIXELS_PER_TILE});
 }
 
-Vector2i Transform2D::getRotatedPosition() const {
+static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f pivotOffset, f32 rotationDegrees, f32 floatHeight) {
     if (rotationDegrees == 0.0f) {
-        return position;
+        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + pivotOffset.as<f32>() * (Vector2f::ONE - scale);
     }
-    auto const posF = position.as<f32>();
-    return posF.rotate(rotationDegrees, posF + pivotOffset.as<f32>() * scale).round();
+    const auto pivotRoot = position + pivotOffset.as<f32>();
+    const auto unscaled = position.rotate(rotationDegrees, pivotRoot) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
+    const auto delta = unscaled - pivotRoot;
+    return pivotRoot + delta * scale;
 }
+
+Vector2i Transform2D::getRotatedPosition() const {
+    return _getRotatedPosition(position.as<f32>(), scale, pivotOffset.as<f32>(), rotationDegrees, 0.0f).round();
+}
+
+Vector2i Transform2D::apply(Vector2i relOffset) const {
+    // optimize for most common case
+    if (rotationDegrees == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        return position + relOffset + scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO).round();
+    return getRotatedPosition() + rotatedOffset;
+}
+
+Vector2i Transform2D::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
+    // optimize for most common case
+    if (rotationDegrees == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        return transformedPosition - relOffset - scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO).round();
+    const Vector2i transformation = getRotatedPosition() + rotatedOffset;
+    return transformedPosition - (transformation - this->position);
+}
+
+#ifndef NDEBUG
+// Draws the root position + transformed root, according to the rotation + scale + pivot
+void Transform2D::draw() const {
+    const Vector2f cameraPos = getCameraPositionPrecise();
+    gfx::DrawPixel(worldToScreenCoords(position.as<f32>(), cameraPos), RED);
+    auto unrounded = _getRotatedPosition(position.as<f32>(), scale, pivotOffset.as<f32>(), rotationDegrees, 0.0f);
+    gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos), GREEN);
+}
+#endif
 
 PreciseTransform2D PreciseTransform2D::pixels(s32 x, s32 y) {
     return PreciseTransform2D({static_cast<f32>(x), static_cast<f32>(y)});
@@ -29,10 +74,7 @@ PreciseTransform2D PreciseTransform2D::tiles(s32 x, s32 y) {
 }
 
 Vector2f PreciseTransform2D::getRotatedPosition() const {
-    if (rotationDegrees == 0.0f) {
-        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
-    }
-    return position.rotate(rotationDegrees, position + pivotOffset.as<f32>() * scale) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
+    return _getRotatedPosition(position, scale, pivotOffset.as<f32>(), rotationDegrees, floatHeight);
 }
 
 }  // namespace whal

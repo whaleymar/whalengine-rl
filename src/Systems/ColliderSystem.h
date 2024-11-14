@@ -17,7 +17,7 @@ void drawColliders();
 
 struct Transform2D;
 
-class ColliderSystem : public ecs::ISystem<Collider>, public ecs::IMonitorSystem {
+class ColliderSystem : public ecs::ISystem<Collider, Transform2D>, public ecs::IMonitorSystem {
 public:
     ColliderSystem();
     static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition, Vector2i colliderOffset);

@@ -12,23 +12,12 @@
 
 namespace whal {
 
-Vector2i getRotationCorrection(Vector2i half, const Transform2D& trans, Vector2i colliderOffset) {
-    // optimize for most common case
-    if (trans.rotationDegrees == 0.0) {
-        return colliderOffset;
-    }
-
-    // RESEARCH might want to use fast variants of these functions
-    auto newCalc = trans.getRotatedPosition() + colliderOffset.as<f32>().rotate(trans.rotationDegrees, Vector2f::ZERO).round();
-    return newCalc - trans.position;
-}
-
 Vector2i transToCenter(Transform2D trans, Vector2i half, Vector2i colliderOffset) {
-    return trans.position + getRotationCorrection(half, trans, colliderOffset);
+    return trans.apply(colliderOffset);
 }
 
 Vector2i centerToTransRoot(Vector2i center, Vector2i half, Transform2D trans, Vector2i colliderOffset) {
-    return center - getRotationCorrection(half, trans, colliderOffset);
+    return trans.applyInverse(center, colliderOffset);
 }
 
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
@@ -166,8 +155,7 @@ void Circle::setPosition(Vector2i center) {
 }
 
 void Circle::setPosition(Transform2D transform, Vector2i colliderOffset) {
-    // TODO needs work, is a little off on X axis when sprite is Not rotated about center (which reminds me... should be part of Transform)
-    // mCenter = transform.position + Vector2i(0, mRadius);
+    // TODO needs testing
     mCenter = transToCenter(transform, Vector2i(mRadius, mRadius), colliderOffset);
 }
 

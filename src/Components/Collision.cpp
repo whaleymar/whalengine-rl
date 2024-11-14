@@ -104,6 +104,11 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
 }
 
+void Collider::setEntity(ecs::Entity entity) {
+    mSelf = entity;
+    // mShape = AABB(mSelf.get<Transform2D>(), mShape.getHalf(), mOffset);
+}
+
 // syncs other engine components (Transform2D, PrecisePosition, and Trigger) with collider position
 void Collider::updateEntityPosition() {
     Transform2D& trans = mSelf.get<Transform2D>();
@@ -537,6 +542,17 @@ u16 Collider::getCollisionLayersThatCanRideMe() const {
         return CollisionLayer::SemiSolid | CollisionLayer::Actor;
     } else {
         return CollisionLayer::None;
+    }
+}
+
+void Collider::setOffset(Vector2i offset) {
+    mOffset = offset;
+
+    // need to recalculate shape's position with this offset
+    // it's ok if entity doesn't have a transform yet, that means it isn't in the ColliderSystem yet,
+    // and this calculation will happen when its `onAdd` method runs this->setEntity()
+    if (mSelf.has<Transform2D>()) {
+        mShape = AABB(mSelf.get<Transform2D>(), mShape.getHalf(), mOffset);
     }
 }
 

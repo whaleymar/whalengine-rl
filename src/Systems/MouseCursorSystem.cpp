@@ -1,6 +1,5 @@
 #include "MouseCursorSystem.h"
 
-#include "Components/Draw.h"
 #include "Sys/System.h"
 
 namespace whal {
@@ -8,10 +7,6 @@ namespace whal {
 void MouseCursorSystem::update() {
     for (auto [id, entity] : getEntitiesMutable()) {
         Vector2i position = Input.getMouseWorld();
-
-        // correct for cursor height
-        const auto height = entity.get<Sprite>().frameSize.y;
-        position -= Vector2i(0, height / 2);
 
         // update transform
         entity.get<Transform2D>().position = position;

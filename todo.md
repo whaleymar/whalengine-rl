@@ -1,6 +1,7 @@
 # To Do 
 
-NEXT GOAL: 
+NEXT GOAL: rotation schenanigans 
+- convert transToCenter into a generic function that transforms a component's offset according to the scale + rotation
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -102,6 +103,7 @@ NEXT GOAL:
 - Possible Shader workflow: Unity Shader Graph -> view code -> export code as GLSL?
 - define some common tween functions (transform position, rotation, sprite scale, etc) in a header
 - should collider size change with scale? that's how it works in unity
+- if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 
 ---------------------------------------------------------------------------------------------------------------------------
 
