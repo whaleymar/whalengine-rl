@@ -81,7 +81,7 @@ public:
     u16 getCollisionMask() const { return mCollisionMask | mCollisionLayer; }
 
     ecs::Entity getEntity() const { return mSelf; }
-    void setEntity(ecs::Entity entity) { mSelf = entity; }
+    void setEntity(ecs::Entity entity);  //{ mSelf = entity; }
 
     bool isActor() const { return mCollisionLayer & CollisionLayer::Actor; }
     bool isSolid() const { return mCollisionLayer & CollisionLayer::Solid; }
@@ -108,7 +108,7 @@ public:
     u16 getCollisionLayersThatCanStopMe() const;  // is this name specific enough?
     u16 getCollisionLayersThatCanRideMe() const;
 
-    void setOffset(Vector2i offset) { mOffset = offset; }
+    void setOffset(Vector2i offset);
     Vector2i getOffset() const { return mOffset; }
 
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL,

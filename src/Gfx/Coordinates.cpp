@@ -16,6 +16,12 @@ Vector2i screenToWorldCoords(Vector2i screenCoords) {
     return yAtTop + cameraPos - middleOffset;
 }
 
+Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition) {
+    Vector2f worldF = worldCoords.as<f32>();
+    Vector2f screenPositionUnscaled(worldF.x - cameraPosition.x, cameraPosition.y - worldF.y);
+    return (screenPositionUnscaled * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2)).round();
+}
+
 Vector2i worldToTileCoords(Vector2i worldCoords) {
     return ((worldCoords + Vector2i(PIXELS_PER_TILE / 2, -PIXELS_PER_TILE + 1)) / PIXELS_PER_TILE);
 }
