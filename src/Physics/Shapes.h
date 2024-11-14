@@ -9,20 +9,20 @@ namespace whal {
 struct HitInfo;
 struct Transform2D;
 
-Vector2i centerToTrans(Vector2i center, Vector2i half, f32 rotationDegrees);
-Vector2i transToCenter(Transform2D trans, Vector2i half);
+Vector2i centerToTransRoot(Vector2i center, Vector2i half, Transform2D trans, Vector2i colliderOffset);
+Vector2i transToCenter(Transform2D trans, Vector2i half, Vector2i colliderOffset);
 
 class AABB {
 public:
     AABB() = default;
     AABB(Vector2i center, Vector2i half = {0, 0});
-    AABB(Transform2D transform, Vector2i half);
+    AABB(Transform2D transform, Vector2i half, Vector2i colliderOffset);
 
     static AABB fromPoints(Vector2i p1, Vector2i p2);
     static AABB fromPoints(Vector2i p1, Vector2i p2, Vector2i p3);
 
     void setPosition(Vector2i center);
-    void setPosition(Transform2D transform);
+    void setPosition(Transform2D transform, Vector2i colliderOffset);
     Vector2i getPosition() const { return mCenter; }
 
     Vector2i getHalf() const { return mHalf; }
@@ -58,7 +58,7 @@ public:
     Circle(Transform2D transform, s32 radius);
 
     void setPosition(Vector2i center);
-    void setPosition(Transform2D transform);
+    void setPosition(Transform2D transform, Vector2i colliderOffset);
     Vector2i getPosition() const { return mCenter; }
 
     s32 getRadius() const { return mRadius; }
@@ -98,7 +98,7 @@ public:
     AABB getBoundingBox() const;
 
     void setPosition(Vector2i center);
-    void setPosition(Transform2D transform);
+    void setPosition(Transform2D transform, Vector2i colliderOffset);
     Vector2i getPosition() const;
     bool isOverlapping(const Shape& other) const;
     bool isOverlapping(const AABB& other) const;

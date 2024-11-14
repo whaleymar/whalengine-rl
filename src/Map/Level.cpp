@@ -89,6 +89,15 @@ Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const 
     return NULLOPT;
 }
 
+Expected<ActiveLevel*> Scene::getLoadedLevelAt(Vector2i worldPos) {
+    auto lvlOpt = getLevelAt(worldPos);
+    if (!lvlOpt) {
+        return Error("No level at position");
+    }
+
+    return getLoadedLevel(*lvlOpt);
+}
+
 Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     s32 minDistance = 999999;
     Vector2i closestPosition;

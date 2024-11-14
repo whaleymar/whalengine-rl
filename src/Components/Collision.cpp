@@ -64,9 +64,9 @@ Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial materi
       mCollisionDir(collisionDir), mCollisionMask(layer) {}
 
 Collider::Collider(Transform2D transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                   CollisionDir collisionDir, CollisionCallback squish_)
-    : mShape(AABB(transform, halflen)), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
-      mCollisionDir(collisionDir), mCollisionMask(layer) {}
+                   CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset)
+    : mShape(AABB(transform, halflen, offset)), mOffset(offset), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_),
+      mSquishCallback(squish_), mMaterial(material), mCollisionDir(collisionDir), mCollisionMask(layer) {}
 
 Collider Collider::Actor(AABB shape, CollisionCallback squish_) {
     auto collider = Collider(shape, CollisionLayer::Actor);
@@ -74,8 +74,8 @@ Collider Collider::Actor(AABB shape, CollisionCallback squish_) {
     return collider;
 }
 
-Collider Collider::Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_) {
-    auto collider = Collider(transform, halflen, CollisionLayer::Actor);
+Collider Collider::Actor(Transform2D transform, Vector2i halflen, CollisionCallback squish_, Vector2i offset) {
+    auto collider = Collider(transform, halflen, CollisionLayer::Actor, WorldMaterial::None, nullptr, CollisionDir::ALL, &defaultSquish, offset);
     collider.setSquishCallback(squish_);
     return collider;
 }
@@ -86,8 +86,8 @@ Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallback o
 }
 
 Collider Collider::Solid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                         CollisionDir collisionDir, CollisionCallback squish_) {
-    return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_);
+                         CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset) {
+    return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_, offset);
 }
 
 Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
@@ -96,8 +96,8 @@ Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallba
 }
 
 Collider Collider::SemiSolid(Transform2D transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                             CollisionDir collisionDir, CollisionCallback squish_) {
-    return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_);
+                             CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset) {
+    return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_, offset);
 }
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
@@ -108,8 +108,7 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
 void Collider::updateEntityPosition() {
     Transform2D& trans = mSelf.get<Transform2D>();
     auto const shape = getShape();
-    auto const offset = mSelf.has<ColliderOffset>() ? mSelf.get<ColliderOffset>().offset : Vector2i();
-    auto const newPosition = centerToTrans(shape.getPosition() - offset, shape.getHalf(), trans.rotationDegrees);
+    auto const newPosition = centerToTransRoot(shape.getPosition(), shape.getHalf(), trans, getOffset());
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {
@@ -119,7 +118,7 @@ void Collider::updateEntityPosition() {
             // tried to go out of bounds. simulate fake collision with world boundary
             auto closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
             trans.position = closestPointInBounds;
-            ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans);
+            ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
         }
 
     } else {
@@ -132,8 +131,7 @@ void Collider::updateEntityPosition() {
 
     if (mSelf.has<Trigger>()) {
         auto trigger = mSelf.get<Trigger>();
-        Transform2D adjustedTransform = Transform2D(trans.position + trigger.offset);
-        trigger.shape.setPosition(adjustedTransform);
+        trigger.shape.setPosition(trans, trigger.offset);
         mSelf.set(trigger);
     }
 }

@@ -63,7 +63,7 @@ RaylibDrawParams getDrawParamsNew(PreciseTransform2D transform, Vector2f frameSi
     // rotate about center or transform
     Vector2f origin;
     origin = size * Vector2f(0.5, 0.5);
-    screenPosition.y -= size.y * 0.5;
+    // screenPosition.y -= size.y * 0.5;
 
     // Scale everything up
     screenPosition *= VIRTUAL_SCREEN_RATIO;

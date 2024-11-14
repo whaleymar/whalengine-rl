@@ -32,7 +32,7 @@ void ParticleEmitterSystem::update() {
             continue;
         }
 
-        const AABB spawnZone(trans, emitter.aabbHalf);
+        const AABB spawnZone(trans, emitter.aabbHalf, Vector2i());
         const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
 

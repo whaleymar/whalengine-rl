@@ -82,19 +82,15 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
         }
 
         auto& collider = entity.get<Collider>();
-        Transform2D transOffset = trans;
-        if (entity.has<ColliderOffset>()) {
-            transOffset.position += entity.get<ColliderOffset>().offset;
-        }
         if (isManuallyMoved) {
             // Sync collider position without checking collision
-            if (collider.getShape().getPosition() != transToCenter(transOffset, collider.getShape().getHalf())) {
-                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), transOffset);
+            if (collider.getShape().getPosition() != transToCenter(trans, collider.getShape().getHalf(), collider.getOffset())) {
+                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
             }
 
         } else {
             // Move collider within physics engine
-            const auto targetColliderPosition = transToCenter(transOffset, collider.getShape().getHalf());
+            const auto targetColliderPosition = transToCenter(trans, collider.getShape().getHalf(), collider.getOffset());
             if (collider.getShape().getPosition() != targetColliderPosition) {
                 const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
 

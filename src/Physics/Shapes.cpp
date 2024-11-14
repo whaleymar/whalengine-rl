@@ -12,31 +12,28 @@
 
 namespace whal {
 
-Vector2i getRotationCorrection(Vector2i half, f32 rotationDegrees) {
-    // -180deg is up
-    // -90deg is right
-    // 0deg is down
-    // 90 deg is left
-
+Vector2i getRotationCorrection(Vector2i half, const Transform2D& trans, Vector2i colliderOffset) {
     // optimize for most common case
-    if (rotationDegrees == 0.0) {
-        return {0, half.y};
+    if (trans.rotationDegrees == 0.0) {
+        return colliderOffset;
     }
-    const f32 correctRadians = DEG2RAD * (rotationDegrees * -1.0f - 90);
-    return (Vector2f(-0.5, -1.0) * half.as<f32>() * Vector2f(math::fast_cos(correctRadians), math::fast_sin(correctRadians))).round();
+
+    // RESEARCH might want to use fast variants of these functions
+    auto newCalc = trans.getRotatedPosition() + colliderOffset.as<f32>().rotate(trans.rotationDegrees, Vector2f::ZERO).round();
+    return newCalc - trans.position;
 }
 
-Vector2i transToCenter(Transform2D trans, Vector2i half) {
-    return trans.position + getRotationCorrection(half, trans.rotationDegrees);
+Vector2i transToCenter(Transform2D trans, Vector2i half, Vector2i colliderOffset) {
+    return trans.position + getRotationCorrection(half, trans, colliderOffset);
 }
 
-Vector2i centerToTrans(Vector2i center, Vector2i half, f32 rotationDegrees) {
-    return center - getRotationCorrection(half, rotationDegrees);
+Vector2i centerToTransRoot(Vector2i center, Vector2i half, Transform2D trans, Vector2i colliderOffset) {
+    return center - getRotationCorrection(half, trans, colliderOffset);
 }
 
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
-AABB::AABB(Transform2D transform, Vector2i half) : mCenter(transToCenter(transform, half)), mHalf(half) {}
+AABB::AABB(Transform2D transform, Vector2i half, Vector2i colliderOffset) : mCenter(transToCenter(transform, half, colliderOffset)), mHalf(half) {}
 
 AABB AABB::fromPoints(Vector2i p1, Vector2i p2) {
     Vector2i min;
@@ -77,8 +74,8 @@ void AABB::setPosition(Vector2i center) {
     mCenter = center;
 }
 
-void AABB::setPosition(Transform2D transform) {
-    mCenter = transToCenter(transform, mHalf);
+void AABB::setPosition(Transform2D transform, Vector2i colliderOffset) {
+    mCenter = transToCenter(transform, mHalf, colliderOffset);
 }
 
 bool AABB::isOverlapping(const AABB& other) const {
@@ -168,10 +165,10 @@ void Circle::setPosition(Vector2i center) {
     mCenter = center;
 }
 
-void Circle::setPosition(Transform2D transform) {
+void Circle::setPosition(Transform2D transform, Vector2i colliderOffset) {
     // TODO needs work, is a little off on X axis when sprite is Not rotated about center (which reminds me... should be part of Transform)
     // mCenter = transform.position + Vector2i(0, mRadius);
-    mCenter = transToCenter(transform, Vector2i(mRadius, mRadius));
+    mCenter = transToCenter(transform, Vector2i(mRadius, mRadius), colliderOffset);
 }
 
 #ifndef NDEBUG
@@ -266,13 +263,13 @@ void Shape::setPosition(Vector2i center) {
     }
 }
 
-void Shape::setPosition(Transform2D transform) {
+void Shape::setPosition(Transform2D transform, Vector2i colliderOffset) {
     switch (mShape) {
     case ShapeTag::AABB:
-        mAABB.setPosition(transform);
+        mAABB.setPosition(transform, colliderOffset);
         break;
     case ShapeTag::Circle:
-        mCircle.setPosition(transform);
+        mCircle.setPosition(transform, colliderOffset);
         break;
     }
 }

@@ -54,7 +54,7 @@ struct MaterialData {
         entity.add(Lifetime(lifetime));
 
         if (isFlagSet(Collision)) {
-            auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLen, halfLen}));
+            auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLen, halfLen}, Vector2i()));
             collider.setMaterial(id);
             entity.add(collider);
         }
