@@ -77,4 +77,29 @@ Vector2f PreciseTransform2D::getRotatedPosition() const {
     return _getRotatedPosition(position, scale, pivotOffset.as<f32>(), rotationDegrees, floatHeight);
 }
 
+Vector2f PreciseTransform2D::apply(Vector2f relOffset) const {
+    // optimize for most common case
+    if (rotationDegrees == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
+        return position + relOffset + scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO);
+    return getRotatedPosition() + rotatedOffset;
+}
+
+Vector2f PreciseTransform2D::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
+    // optimize for most common case
+    if (rotationDegrees == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
+        return transformedPosition - relOffset - scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO);
+    const Vector2f transformation = getRotatedPosition() + rotatedOffset;
+    return transformedPosition - (transformation - this->position);
+}
+
 }  // namespace whal

@@ -9,9 +9,6 @@ namespace whal {
 struct HitInfo;
 struct Transform2D;
 
-Vector2i centerToTransRoot(Vector2i center, Vector2i half, Transform2D trans, Vector2i colliderOffset);
-Vector2i transToCenter(Transform2D trans, Vector2i half, Vector2i colliderOffset);
-
 class AABB {
 public:
     AABB() = default;

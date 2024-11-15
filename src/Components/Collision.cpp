@@ -113,7 +113,7 @@ void Collider::setEntity(ecs::Entity entity) {
 void Collider::updateEntityPosition() {
     Transform2D& trans = mSelf.get<Transform2D>();
     auto const shape = getShape();
-    auto const newPosition = centerToTransRoot(shape.getPosition(), shape.getHalf(), trans, getOffset());
+    auto const newPosition = trans.applyInverse(shape.getPosition(), getOffset());
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {
