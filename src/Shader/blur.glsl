@@ -29,9 +29,8 @@ float normpdf(in float x, in float sigma)
 void main() {
 	vec3 c = texture(texture0, fragTexCoord).rgb;
 
-    //declare stuff
-    // const int mSize = 11; // try this at full resolution
-    const int mSize = 5;
+    // TODO uniform
+    const int mSize = 3;
     const int kSize = (mSize-1)/2;
     float kernel[mSize];
     vec3 final_colour = vec3(0.0);

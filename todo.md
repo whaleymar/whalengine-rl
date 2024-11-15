@@ -17,6 +17,7 @@ NEXT GOAL:
     - thinking of defining a custom shader for sprites which would get this
     - however, shaders in draw systems is dangerous, bc of sorting...
     - good argument for mega shader?
+    - The way raylib is programmed, I could never call `EndShaderMode`, and when I want to use the default sprite then I just manually activate it. If `BeginShaderMode` is called on the active shader then nothing happens
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}

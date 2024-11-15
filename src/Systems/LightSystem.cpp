@@ -37,19 +37,23 @@ void drawLights(Camera2D worldCamera) {
     BeginBlendMode(BLEND_ADDITIVE);
     World.getSystem<PointLightSystem>()->drawEntities();
     World.getSystem<BoxLightSystem>()->drawEntities();
-    EndMode2D();
 
     World.getSystem<ShadowLightSystem>()->drawEntities();
     EndBlendMode();
+    EndMode2D();
     EndTextureMode();
 
-    // blur the lighting texture
+    // blur the lighting texture (and set alphas to 1)
     static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::BlurLowRes}, true);
+
+    // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
+    // static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::LightPassThru}, true);
     lightingPipeline.process(TextureID::Lighting);
 
     // upscale the lighting to full resolution
     const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::UpscaledLighting);
     BeginTextureMode(lightTexUpscale);
+    ClearBackground(Colors::CLEAR);
 
     const Rectangle srcRect = Rectangle(0, 0, lightTex.texture.width, -lightTex.texture.height);
     const Rectangle dstRect = Rectangle(0, 0, lightTexUpscale.texture.width, lightTexUpscale.texture.height);

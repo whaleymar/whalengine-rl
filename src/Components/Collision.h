@@ -60,6 +60,7 @@ public:
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }
     void setShape(AABB shape) { mShape = shape; }
+    Vector2f getRemainder() const { return {mXRemainder, mYRemainder}; }
     CollisionCallback getOnCollisionEnter() const { return mOnCollisionEnter; }
     void setCollisionCallback(CollisionCallback callback);  // Sends update signal to CollisionManager if callback was previously null.
     void setSquishCallback(CollisionCallback callback) { mSquishCallback = callback; }

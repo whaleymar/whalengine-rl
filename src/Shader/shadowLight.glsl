@@ -132,12 +132,18 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     }
 
     // check if we are behind something else 
+    vec3 light;
+
+    // Because I'm doing an `else`, anything behind a wall but in front (depth-wise) of light gets lit, but I kinda like how it looks
     if (isBehindSomething(p)) {
-        return vec3(0.);
+        // return vec3(0.);
+        light = vec3(1.0);
+    } else {
+        light = blendLighting(p, lightPos);
     }
 
     // 1.0 == full light; 0.0 == full shadow
-    vec3 light = blendLighting(p, lightPos);
+    // vec3 light = blendLighting(p, lightPos);
     // vec3 light = blendLightingSimple(p, lightPos);
     // vec3 light = vec3(1.); // point light without shadows
 

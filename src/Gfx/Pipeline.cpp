@@ -34,7 +34,7 @@ Pipeline& Pipeline::operator=(Pipeline&& other) {
 Pipeline::Pipeline(Vector2i resolution, std::initializer_list<Shaders> shaders, bool isHDR)
     : mShaders(shaders), mResolution(resolution), mIsSwapBufferLoaded(true) {
     if (isHDR) {
-        mSwapBuffer = LoadRenderTextureFormat(resolution.x, resolution.y, PIXELFORMAT_UNCOMPRESSED_R32G32B32A32);
+        mSwapBuffer = LoadRenderTextureFormat(resolution.x, resolution.y, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     } else {
         mSwapBuffer = LoadRenderTexture(resolution.x, resolution.y);
     }

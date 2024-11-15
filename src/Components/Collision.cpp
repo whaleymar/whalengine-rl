@@ -372,16 +372,19 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
+            // Try to wiggle out of it
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
                 if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
 
+            // Collision happened
             ColliderSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
+            mXRemainder = 0;
             return hitInfo;
         }
     }
@@ -428,15 +431,19 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             mShape.setPosition(nextPos);
             toMove -= moveSign;
         } else {
+            // try to wiggle out of it
             if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
                 if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
             }
+
+            // collision happened
             ColliderSystem::updateShape(mSelf, originalShape, mShape);
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
+            mYRemainder = 0;
             return hitInfo;
         }
     }

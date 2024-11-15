@@ -320,9 +320,6 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     tmpDrawList.clear();
 
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
-    // if (System::time.getFrame() == 0) {
-    //     print("viewbox: ", cameraViewBox.getPosition(), cameraViewBox.getHalf());
-    // }
     for (ecs::IRender* renderSystem : World.getRenderSystems()) {
         renderSystem->addToQueue(tmpDrawList);
         for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
