@@ -7,16 +7,14 @@
 
 namespace whal {
 
-// NOTE rotation not implemented
 void BezierRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto bezier = entity.get<DrawBezierQuad>();
     const Transform2D trans = entity.get<Transform2D>();
-    const Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
+    const PreciseTransform2D pTrans = gfx::getPreciseTrans(entity);
 
-    Vector2 p1 = gfx::getDrawParams(position, Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
-    Vector2 controlPoint =
-        gfx::getDrawParams(position + bezier.controlPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
-    Vector2 p2 = gfx::getDrawParams(position + bezier.endPointOffset.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    Vector2 p1 = pTrans.getRotatedPosition().asRL();
+    Vector2 controlPoint = pTrans.apply(bezier.controlPointOffset.as<f32>()).asRL();
+    Vector2 p2 = pTrans.apply(bezier.endPointOffset.as<f32>()).asRL();
     DrawSplineSegmentBezierQuadratic(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color);
 }
 

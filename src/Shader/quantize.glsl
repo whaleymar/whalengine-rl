@@ -19,11 +19,22 @@ out vec4 finalColor;
  #define WIDTH 256.0
  #define HEIGHT 16.0
 
-void main()
-{
-    vec4 px = texture(texture0, fragTexCoord.xy);
-    // finalColor = px; // just making sure this changes nothing
+// REGULAR POSTERIZATION SHADER 
+float gamma = 0.6;
+float numColors = 64.0;
+vec4 quantize(vec4 color) {
+    vec3 texelColor = color.rgb;
+    texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
+    texelColor = texelColor*numColors;
+    texelColor = floor(texelColor);
+    texelColor = texelColor/numColors;
+    texelColor = pow(texelColor, vec3(1.0/gamma));
 
+    return vec4(texelColor, color.a);
+}
+
+// CUSTOM PALETTE POSTERIZATION
+vec4 applyPalette(vec4 px) {
     float cell = px.b * MAXCOLOR;
 
     float cell_l = floor(cell); 
@@ -42,5 +53,12 @@ void main()
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 
-    finalColor = graded_color * fragColor;
+    return graded_color * fragColor;
+}
+
+void main() {
+    vec4 texelColor = texture(texture0, fragTexCoord.xy);
+    // finalColor = quantize(texelColor);
+    // finalColor = applyPalette(texelColor);
+    finalColor = applyPalette(quantize(texelColor));
 }
