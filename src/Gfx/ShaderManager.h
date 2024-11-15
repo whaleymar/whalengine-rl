@@ -18,6 +18,7 @@ enum class Shaders : s16 {
     ShadowLight,
     Blur,
     BlurLowRes,
+    LightPassThru,
     PostProcess,
     EffectsMask,
     Pixelate,

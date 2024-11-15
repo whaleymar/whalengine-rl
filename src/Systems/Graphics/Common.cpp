@@ -1,6 +1,7 @@
 #include "Common.h"
 #include <raylib.h>
 
+#include "Components/Collision.h"
 #include "Components/Floating.h"
 #include "Components/Transform.h"
 #include "Settings.h"
@@ -13,6 +14,9 @@ PreciseTransform2D getPreciseTrans(ecs::Entity entity) {
     PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(entity.get<Transform2D>());
     if (entity.has<PreciseTransform2D>()) {
         pTrans.position = entity.get<PrecisePosition>().position;
+    } else if (entity.has<Collider>()) {
+        // Make physics movement look smooth even though it's pixel perfect
+        pTrans.position += entity.get<Collider>().getRemainder();
     }
     if (entity.has<Floating>()) {
         pTrans.floatHeight = entity.get<Floating>().height;
