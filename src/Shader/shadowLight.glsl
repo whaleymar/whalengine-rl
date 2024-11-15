@@ -42,6 +42,10 @@ bool isWall(vec2 p) {
 bool isBehindSomething(vec2 p) {
     float depth = texture(allDepthTex, p).r;
     return lightDepth < depth;
+
+    // experimenting with a light below illuminating the foreground... needs work
+    // maybe if i get the angle between the position and light and light if it's > 45 degrees?
+    // return lightDepth < depth && lp1.y > p.y; 
 }
 
 vec4 getWallColor(vec2 p) {

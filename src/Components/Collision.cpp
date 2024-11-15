@@ -321,7 +321,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         auto originalPosition = getShape().getPosition();
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
-        Vector2f moveUnrounded = isHit ? moveAmount.as<f32>() : Vector2f(amount.x, 0);
+        Vector2f moveUnrounded = (isHit || mSelf.has<Wiggle>()) ? moveAmount.as<f32>() : Vector2f(amount.x, 0);
         pushAndCarry1D(moveUnrounded, moveAmount, riding, isSkipmomentumUpdate, isPushedBySolid);
 
         // moveY, then push/carry in that direction only
@@ -330,7 +330,7 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
             emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags);
         isHit = isHit || isHitY;
         moveAmount = getShape().getPosition() - originalPosition;
-        moveUnrounded = isHitY ? moveAmount.as<f32>() : Vector2f(0, amount.y);
+        moveUnrounded = (isHitY || mSelf.has<Wiggle>()) ? moveAmount.as<f32>() : Vector2f(0, amount.y);
         pushAndCarry1D(moveUnrounded, moveAmount, riding, isSkipmomentumUpdate, isPushedBySolid);
 
         break;
@@ -394,9 +394,11 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     // include fractional movement from previous calls
     s32 toMove = amountRounded.y;
     std::vector<std::pair<ecs::Entity, Collider>> groundColliders;
-    for (const auto& pair : others) {
-        if (isOtherGround(pair.second)) {
-            groundColliders.push_back(pair);
+    if (isGroundedCheckNeeded) {
+        for (const auto& pair : others) {
+            if (isOtherGround(pair.second)) {
+                groundColliders.push_back(pair);
+            }
         }
     }
 
@@ -480,9 +482,9 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
 }
 
 // we are moving, other is still.
-bool Collider::isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask) const {
-    return other->mIsCollidable && this != other && LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer) &&
-           (layerMask & other->mCollisionLayer) > 0 && checkDirectionalCollision(mShape, other->mShape, moveNormal, other->getCollisionDir());
+bool Collider::isCollisionPossible(const Collider& other, const Vector2i moveNormal, const u16 layerMask) const {
+    return other.mIsCollidable && this != &other && LAYER_MATRIX.isOn(mCollisionLayer, other.mCollisionLayer) &&
+           (layerMask & other.mCollisionLayer) > 0 && checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir());
 }
 
 // other is moving, we are still. Only affects directional collision check.
@@ -569,7 +571,6 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
     assert(math::abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 
-    const f32 dt = Time.dt();
     std::vector<Collider*> toCarry = riding;
     const u16 notSolidMask = ~CollisionLayer::Solid;  // cannot be pushed or carried
     for (auto entity : ColliderSystem::query(mShape)) {
@@ -646,7 +647,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
                 } else {
                     // don't worry about rounding, we're just moving the overlap distance
-                    f32 momentum = static_cast<f32>(toMoveRounded) / dt;
+                    f32 momentum = static_cast<f32>(toMoveRounded) / Time.dt();
                     if (isXDirection) {
                         other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
                     } else {
@@ -684,7 +685,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                 }
                 // other->maintainMomentum(isXDirection);
             } else {
-                f32 momentum = toMoveUnrounded / dt;
+                f32 momentum = toMoveUnrounded / Time.dt();
                 if (isXDirection) {
                     other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
                 } else {
@@ -738,8 +739,8 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     HitInfo hitInfoToReturn;  // used for updating rigidbody flags n such. doesn't matter which specific collision is returned.
 
     for (auto entity : ColliderSystem::query(movedCollider)) {
-        const auto collider = entity.get<Collider>();
-        if (!isCollisionPossible(&collider, moveNormal, layerMask)) {
+        const auto& collider = entity.get<Collider>();
+        if (!isCollisionPossible(collider, moveNormal, layerMask)) {
             continue;
         }
 

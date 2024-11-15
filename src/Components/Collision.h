@@ -24,9 +24,10 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 
 struct Wiggle;
 using WiggleCallback = bool (*)(Wiggle, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
+bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 struct Wiggle {
     Vector2i wiggleAmount;
-    WiggleCallback callback;
+    WiggleCallback callback = defaultWiggle;
 };
 
 class Collider {
@@ -100,7 +101,7 @@ public:
                         bool isPushedBySolid = false, bool isSkipMomentumUpdate = false);
     bool emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isXDirection, bool updateRigidBodyFlags);
 
-    bool isCollisionPossible(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
+    bool isCollisionPossible(const Collider& other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
     bool isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask = CollisionLayer::ALL) const;
     HitInfo checkIsGrounded(const bool triggerCollisionEvents, const std::vector<std::pair<ecs::Entity, Collider>>& groundColliders);
     bool isOtherGround(const Collider& other) const;
@@ -140,8 +141,6 @@ protected:
     CollisionDir mCollisionDir;
     u16 mCollisionMask = 0;
 };
-
-bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount);
 
 // since movement is pixel perfect, rounding can have big effect on momentum
 // so track the previous 5 momentum values and use their average
