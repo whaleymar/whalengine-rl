@@ -565,12 +565,10 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
     // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
-    // heights to match tiles, but points need manual adjustment
+    // heights to match tiles
 
-    if (isPoint) {
-        position.y += PIXELS_PER_TILE / 2;
-    }
-    Transform2D trans = Transform2D::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y + PIXELS_PER_TILE);
+    Transform2D trans =
+        Transform2D::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2);
     trans.position += level.worldOffset;
     return trans;
 }

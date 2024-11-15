@@ -12,17 +12,10 @@
 
 namespace whal {
 
-Vector2i transToCenter(Transform2D trans, Vector2i half, Vector2i colliderOffset) {
-    return trans.apply(colliderOffset);
-}
-
-Vector2i centerToTransRoot(Vector2i center, Vector2i half, Transform2D trans, Vector2i colliderOffset) {
-    return trans.applyInverse(center, colliderOffset);
-}
-
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
-AABB::AABB(Transform2D transform, Vector2i half, Vector2i colliderOffset) : mCenter(transToCenter(transform, half, colliderOffset)), mHalf(half) {}
+// note: mHalf is not scaled with the transform, but mCenter's location does. mHalf should eventually scale, but it requires some effort
+AABB::AABB(Transform2D transform, Vector2i half, Vector2i colliderOffset) : mCenter(transform.apply(colliderOffset)), mHalf(half) {}
 
 AABB AABB::fromPoints(Vector2i p1, Vector2i p2) {
     Vector2i min;
@@ -64,7 +57,7 @@ void AABB::setPosition(Vector2i center) {
 }
 
 void AABB::setPosition(Transform2D transform, Vector2i colliderOffset) {
-    mCenter = transToCenter(transform, mHalf, colliderOffset);
+    mCenter = transform.apply(colliderOffset);
 }
 
 bool AABB::isOverlapping(const AABB& other) const {
@@ -156,7 +149,7 @@ void Circle::setPosition(Vector2i center) {
 
 void Circle::setPosition(Transform2D transform, Vector2i colliderOffset) {
     // TODO needs testing
-    mCenter = transToCenter(transform, Vector2i(mRadius, mRadius), colliderOffset);
+    mCenter = transform.apply(colliderOffset);
 }
 
 #ifndef NDEBUG

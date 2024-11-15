@@ -49,7 +49,7 @@ void AttachSystem::update() {
                                                 targetTrans.facing == Facing::Left ?
                                             Vector2i(-1, 1) :
                                             Vector2i(1, 1);
-        const Vector2i targetPosition = targetTrans.position + attach.offset * offsetModifier;
+        const Vector2i targetPosition = targetTrans.apply(attach.offset * offsetModifier);
         if (targetPosition == trans.position) {
             continue;
         }

@@ -126,6 +126,12 @@ struct PreciseTransform2D {
                                   .scale = trans.scale};
     }
     Vector2f getRotatedPosition() const;
+
+    // Get an offset's transformed position
+    Vector2f apply(Vector2f relOffset) const;
+
+    // Calculate this Transform2D's root position using an offset's transformed position
+    Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
 };
 
 }  // namespace whal

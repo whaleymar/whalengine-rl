@@ -58,11 +58,6 @@ void drawLights(Camera2D worldCamera) {
     EndTextureMode();
 }
 
-// RESEARCH this assumes the entity is rotated about the transform position
-static Vector2i getLightOffset(f32 rotationDegrees, s32 lightHeightPixels) {
-    return (Vector2f::fromAngle(-rotationDegrees + 90.0f) * lightHeightPixels).round();
-}
-
 void PointLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
     // mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
@@ -83,7 +78,7 @@ void PointLightSystem::drawEntities() {
         }
         PointLight light = entity.get<PointLight>();
         const auto trans = entity.get<Transform2D>();
-        const Vector2i worldPosition = trans.position + getLightOffset(trans.rotationDegrees, light.heightOffset);
+        const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
@@ -134,7 +129,7 @@ void BoxLightSystem::drawEntities() {
 
         BoxLight light = entity.get<BoxLight>();
         const auto trans = entity.get<Transform2D>();
-        const Vector2i worldPosition = trans.position + getLightOffset(trans.rotationDegrees, light.heightOffset);
+        const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
@@ -193,8 +188,7 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
         }
 
         Radiance light = entity.get<Radiance>();
-        const Vector2i worldPosition =
-            entity.get<Transform2D>().position + getLightOffset(entity.get<Transform2D>().rotationDegrees, light.heightOffset);
+        const Vector2i worldPosition = entity.get<Transform2D>().apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
         Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
