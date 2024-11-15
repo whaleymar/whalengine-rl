@@ -37,12 +37,6 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
 
 void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     // TEMP testing tile coordinate functions
-
-    // Vector2i coord = clampToTile(Eng::input.getMouseWorld());
-    // const Vector2f frameSize(8, 8);
-    // const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(PreciseTransform2D(coord.as<f32>()), frameSize, ctx.cameraPosition);
-    // DrawRectanglePro(params.rect, params.origin, 0.0f, WHITE);
-
     const auto trans = entity.get<Transform2D>();
     const auto path = entity.get<Path>();
 
@@ -52,7 +46,7 @@ void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) co
     for (auto step : path.tiles) {
         PreciseTransform2D tileCoord = PreciseTransform2D(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
         tileCoordStart = tileCoord.position;
-        const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(tileCoord, frameSize, ctx.cameraPosition);
+        const gfx::RaylibDrawParams params = gfx::getDrawParams(tileCoord, frameSize, ctx.cameraPosition);
         DrawRectanglePro(params.rect, params.origin, 0.0f, Color{100, 100, 255, 100});
     }
 }

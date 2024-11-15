@@ -1,6 +1,6 @@
 # To Do 
 
-NEXT GOAL: rotation schenanigans -- testing
+NEXT GOAL: 
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -13,6 +13,10 @@ NEXT GOAL: rotation schenanigans -- testing
 - BlocksAiPathing?
 - dashed line
 - parallax factor
+- SpriteVisibilityMask -- a standalone sprite which affects visibility of main Sprite component
+    - thinking of defining a custom shader for sprites which would get this
+    - however, shaders in draw systems is dangerous, bc of sorting...
+    - good argument for mega shader?
 
 ## Gfx 
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}

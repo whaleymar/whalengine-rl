@@ -13,7 +13,7 @@ void RectangleRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ct
     const PreciseTransform2D trans = gfx::getPreciseTrans(entity);
 
     const auto frameSize = rect.frameSize.as<f32>();
-    const gfx::RaylibDrawParams params = gfx::getDrawParamsNew(trans, frameSize, ctx.cameraPosition);
+    const gfx::RaylibDrawParams params = gfx::getDrawParams(trans, frameSize, ctx.cameraPosition);
     const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
     DrawRectanglePro(params.rect, params.origin, trans.rotationDegrees, color);
 }

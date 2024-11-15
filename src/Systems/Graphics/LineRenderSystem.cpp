@@ -19,7 +19,6 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
         Vector2f halfLine = Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
         startPos = (position - halfLine).round();
         endPos = (position + halfLine).round();
-
     } else {
         startPos = trans.position;
         endPos = trans.position + (Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length)).round();
@@ -30,15 +29,11 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
 
 void LineRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
     const auto line = entity.get<DrawStraightLine>();
-    const Transform2D trans = entity.get<Transform2D>();
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(trans);
-    if (entity.has<PreciseTransform2D>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    }
+    PreciseTransform2D pTrans = gfx::getPreciseTrans(entity);
 
-    const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
-    const Vector2 p1 = gfx::getDrawParams(points.p1.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
-    const Vector2 p2 = gfx::getDrawParams(points.p2.as<f32>(), Vector2f::ZERO, ctx.cameraPosition, Vector2f::ZERO, false).position;
+    const LinePoints points = getRotatedPoints(pTrans.position, entity.get<Transform2D>(), line);
+    const Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
+    const Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
     DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
 }
 
