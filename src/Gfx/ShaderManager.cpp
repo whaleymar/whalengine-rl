@@ -78,7 +78,7 @@ void ShaderManager::loadShaders() {
     };
 
     static const ShaderInfo shaderInfo[] = {
-        {Shaders::Default, 0, 0},
+        {Shaders::Default, "whalengine/src/Shader/spritevert.glsl", "whalengine/src/Shader/spritefrag.glsl"},
         {Shaders::PointLight, 0, "whalengine/src/Shader/pointlight.glsl"},
         {Shaders::BoxLight, 0, "whalengine/src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
         {Shaders::Radiance, 0, "whalengine/src/Shader/radiancelight.glsl"},
@@ -93,7 +93,6 @@ void ShaderManager::loadShaders() {
         {Shaders::PostProcess, 0, "whalengine/src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
         {Shaders::EffectsMask, 0, "whalengine/src/Shader/occlusionMask.glsl"},
         {Shaders::Pixelate, 0, "whalengine/src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
-        // {Shaders::DropShadow, 0, "whalengine/src/Shader/dropShadow.glsl"},
         {Shaders::Test, 0, "whalengine/src/Shader/test.glsl"},
     };
 

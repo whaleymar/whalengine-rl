@@ -3,24 +3,25 @@
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
+// in vec3 hdrColor;
 
 // Input uniform values
-// default:
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
-
-// mine:
 
 // Output fragment color
 out vec4 finalColor;
 
-vec2 norm(vec2 coord) {
-    return vec2(coord.x/2. + 1., coord.y/2. + 1.);
-}
+// NOTE: Add here your custom variables
 
 void main() {
+    // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
-    finalColor = texelColor*colDiffuse;
+
+    // vec4 hdrColorFull = vec4(hdrColor, 1.);
+    // vec4 hdrColorFull = vec4(1.);
+    // finalColor = texelColor * fragColor * hdrColorFull;
+
+    // finalColor = texelColor * fragColor;
+    finalColor = texelColor * fragColor;
 }
-
-
