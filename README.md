@@ -4,6 +4,7 @@
 - Ninja
 
 # Building for Linux
+
 In addition to the above requirements, the current configuration requires Raylib 3.0+ to be installed via your package manager.
 
 ```
@@ -14,6 +15,7 @@ make
 ```
 
 # Building for Windows
+
 Requires Microsoft Visual C++ (MSVC) compiler. This project wasn't built for Visual Studio and I have no idea how that IDE works, so instead you have to open `x64 Native Tools Command Prompt` (find using Windows search) to compile. Confirm you have a working MSVC compiler by typing `cl`, which should list information about the compiler. Next, confirm you have clang by running `clang-cl -v` (should see similar output). 
 
 *From here you have a couple options:*
@@ -31,3 +33,13 @@ Hit `ctrl+shift+p` to open the command listing, search CMake, and click `CMake: 
 
 ## CMake (from command line)
 `cd` to the project directory and run `make`
+
+# Building for Web
+
+Requirements:
+- emscripten (and emcmake). Follow these instructions: https://emscripten.org/docs/getting_started/downloads.html
+- Compile raylib for web:
+    - `cd` to raylib's `src` directory
+    - run `make PLATFORM=PLATFORM_WEB -B`
+    - copy `raylib/src/build/raylib/libraylib.a` to `lib/`
+    - back in your game's root directory, run `make webdebug` or `make webrelease`

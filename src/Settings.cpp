@@ -14,10 +14,10 @@ f32 FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
 f32 VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
 
 // EXTERN
-s32 GetRenderWidth() {
+s32 WhalGetRenderWidth() {
     return WINDOW_WIDTH_RENDER;
 }
 
-s32 GetRenderHeight() {
+s32 WhalGetRenderHeight() {
     return WINDOW_HEIGHT_RENDER;
 }

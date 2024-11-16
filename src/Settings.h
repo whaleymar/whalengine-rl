@@ -40,8 +40,8 @@ extern s32 WINDOW_WIDTH_GAME;
 extern s32 WINDOW_HEIGHT_GAME;
 
 extern "C" {
-s32 GetRenderWidth();
-s32 GetRenderHeight();
+s32 WhalGetRenderWidth();
+s32 WhalGetRenderHeight();
 }
 
 // DERIVED STUFF

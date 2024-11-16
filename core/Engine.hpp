@@ -67,6 +67,11 @@ public:
         mLibHandle = LoadLibrary(DL_PATH);
 #else
         mLibHandle = dlopen(DL_PATH, RTLD_NOW);
+        const char* error = dlerror();
+        if (error) {
+            print("Error loading shared lib: ", error);
+            return;
+        }
 #endif
     }
 
@@ -113,8 +118,8 @@ public:
         EngineIsQuit = getSymbol<BoolCB>("_EngineIsQuit");
         EngineUpdate = getSymbol<Callback>("_EngineUpdate");
         EngineEnd = getSymbol<Callback>("_EngineEnd");
-        GetWindowWidth = getSymbol<IntGetter>("GetRenderWidth");
-        GetWindowHeight = getSymbol<IntGetter>("GetRenderHeight");
+        GetWindowWidth = getSymbol<IntGetter>("WhalGetRenderWidth");
+        GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
 
         if (mAllLoadsSuccessful) {
             print("Loaded library successfully");
@@ -136,8 +141,8 @@ public:
         EngineIsQuit = _EngineIsQuit;
         EngineUpdate = _EngineUpdate;
         EngineEnd = _EngineEnd;
-        GetWindowWidth = GetRenderWidth;
-        GetWindowHeight = GetRenderHeight;
+        GetWindowWidth = WhalGetRenderWidth;
+        GetWindowHeight = WhalGetRenderHeight;
         return false;
 
 #endif
