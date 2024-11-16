@@ -27,11 +27,9 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
     return LinePoints{startPos, endPos};
 }
 
-void LineRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
-    const auto line = entity.get<DrawStraightLine>();
-    PreciseTransform2D pTrans = gfx::getPreciseTrans(entity);
-
-    const LinePoints points = getRotatedPoints(pTrans.position, entity.get<Transform2D>(), line);
+void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
+    const auto line = eCtx.entity.get<DrawStraightLine>();
+    const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform2D>(), line);
     const Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
     const Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
     DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
@@ -41,12 +39,12 @@ void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) con
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawStraightLine>();
         const auto trans = entity.get<Transform2D>();
-        const Vector2f position = entity.has<PrecisePosition>() ? entity.get<PrecisePosition>().position : trans.position.as<f32>();
-        const LinePoints points = getRotatedPoints(position, trans, line);
+        const auto pTrans = gfx::getPreciseTrans(entity, trans);
+        const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
 
         queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = AABB::fromPoints(points.p1, points.p2),
-            .depth = trans.depth,
+            .preciseTransform = pTrans,
             .entity = entity,
             .piRender = this,
         });

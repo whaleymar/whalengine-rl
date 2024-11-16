@@ -169,7 +169,7 @@ void Renderer::_drawEffectsMask(gfx::RenderContext renderContext) {
             }
             const Color flags = getPostProcessFlags(renderInfo);
             renderContext.colorOverride = flags;
-            renderInfo.piRender->draw(renderInfo.entity, renderContext);
+            renderInfo.piRender->draw(renderInfo, renderContext);
         }
     }
     EndShaderMode();
@@ -190,7 +190,7 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
     ClearBackground(Colors::CLEAR);
     BeginMode2D(ctx.camera);
     for (auto renderInfo : mOcclusionQueue) {
-        renderInfo.piRender->draw(renderInfo.entity, ctx);
+        renderInfo.piRender->draw(renderInfo, ctx);
     }
     EndMode2D();
     EndBlendMode();
@@ -208,10 +208,10 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
     BeginMode2D(ctx.camera);
     ShaderManager::activate(Shaders::Silhouette);
     for (auto renderInfo : mOcclusionQueue) {
-        f32 d = depthToFloat(renderInfo.depth);
+        f32 d = depthToFloat(renderInfo.preciseTransform.depth);
         const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
         ctx.colorOverride = color;
-        renderInfo.piRender->draw(renderInfo.entity, ctx);
+        renderInfo.piRender->draw(renderInfo, ctx);
     }
     EndShaderMode();
     EndMode2D();
@@ -229,10 +229,10 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
         if (!renderInfo.piRender->isPostProcessingUsed()) {
             continue;
         }
-        f32 d = depthToFloat(renderInfo.depth);
+        f32 d = depthToFloat(renderInfo.preciseTransform.depth);
         const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
         ctx.colorOverride = color;
-        renderInfo.piRender->draw(renderInfo.entity, ctx);
+        renderInfo.piRender->draw(renderInfo, ctx);
     }
     EndShaderMode();
     EndMode2D();
@@ -252,7 +252,7 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     ClearBackground(Colors::CLEAR);
     BeginMode2D(renderContext.camera);
     for (auto renderInfo : mRenderQueue) {
-        renderInfo.piRender->draw(renderInfo.entity, renderContext);
+        renderInfo.piRender->draw(renderInfo, renderContext);
     }
     EndMode2D();
     EndTextureMode();
@@ -295,14 +295,14 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
 void Renderer::_drawUI(const gfx::RenderContext ctx) const {
     BeginMode2D(ctx.camera);
     for (auto renderInfo : mUIRenderQueue) {
-        renderInfo.piRender->draw(renderInfo.entity, ctx);
+        renderInfo.piRender->draw(renderInfo, ctx);
     }
     EndMode2D();
 }
 
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
-    if (entity1.depth != entity2.depth) {
-        return depthToFloat(entity1.depth) < depthToFloat(entity2.depth);
+    if (entity1.preciseTransform.depth != entity2.preciseTransform.depth) {
+        return depthToFloat(entity1.preciseTransform.depth) < depthToFloat(entity2.preciseTransform.depth);
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
@@ -325,7 +325,8 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
         for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport
             if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
-                if (renderInfo.depth == Depth::Debug || renderInfo.depth == Depth::UIFar || renderInfo.depth == Depth::UIClose) {
+                if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
+                    renderInfo.preciseTransform.depth == Depth::UIClose) {
                     mUIRenderQueue.emplace_back(renderInfo);
                 } else {
                     mRenderQueue.emplace_back(renderInfo);

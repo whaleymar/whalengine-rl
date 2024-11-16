@@ -9,7 +9,7 @@ struct Transform2D;
 
 class BezierRenderSystem : public ecs::ISystem<DrawBezierQuad, Transform2D>, public ecs::IRender {
 public:
-    void draw(ecs::Entity entity, const gfx::RenderContext ctx) const override;
+    void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;
 };
 

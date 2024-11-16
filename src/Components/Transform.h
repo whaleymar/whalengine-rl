@@ -108,9 +108,10 @@ struct PrecisePosition {
 struct PreciseTransform2D {
     Vector2f position;
 
-    f32 rotationDegrees = 0.0;              // counterclockwise
-    Facing facing = Facing::Right;          // draw calls flipped if facing left
-    bool isManuallyMoved = true;            // if true, updates collider position without calling Collider.move
+    f32 rotationDegrees = 0.0;      // counterclockwise
+    Facing facing = Facing::Right;  // draw calls flipped if facing left
+    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
+    Depth depth = Depth::Level;
     Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
     Vector2f scale = Vector2f::ONE;
     f32 floatHeight = 0.0f;
@@ -122,6 +123,7 @@ struct PreciseTransform2D {
                                   .rotationDegrees = trans.rotationDegrees,
                                   .facing = trans.facing,
                                   .isManuallyMoved = trans.isManuallyMoved,
+                                  .depth = trans.depth,
                                   .pivotOffset = trans.pivotOffset,
                                   .scale = trans.scale};
     }

@@ -13,7 +13,7 @@ class TextRenderSystem : public ecs::ISystem<DrawText, Transform2D>, public ecs:
 public:
     TextRenderSystem();
     ~TextRenderSystem();
-    void draw(ecs::Entity entity, const gfx::RenderContext ctx) const override;
+    void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;
 
 private:

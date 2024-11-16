@@ -35,10 +35,9 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
     }
 }
 
-void NavigationSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
+void NavigationSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     // TEMP testing tile coordinate functions
-    const auto trans = entity.get<Transform2D>();
-    const auto path = entity.get<Path>();
+    const auto path = eCtx.entity.get<Path>();
 
     Vector2f tileCoordStart = (((path.start + Vector2i(0, -8)) / 8) * 8).as<f32>();
 
@@ -56,12 +55,13 @@ void NavigationSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) con
         return;
     }
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        const auto trans = entity.get<Transform2D>();
         const auto path = entity.get<Path>();
+        auto pTrans = gfx::getPreciseTrans(entity);
+        pTrans.depth = Depth::Debug;
 
         queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = AABB::fromPoints(path.start, path.target),
-            .depth = Depth::Debug,
+            .preciseTransform = pTrans,
             .entity = entity,
             .piRender = this,
         });
