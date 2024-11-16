@@ -23,6 +23,7 @@ NEXT GOAL:
 - like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
 - implement real bloom instead of my faked thingy
     - once implemented, use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
+    - for this, I think sprites components would need some luminance multiplier?
 - Lights need Brightness multiplier so everything's not stuck in LDR
 - fully in-shadow translucent objects are still visible, as well as text
 

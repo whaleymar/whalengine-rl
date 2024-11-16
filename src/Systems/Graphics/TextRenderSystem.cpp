@@ -24,12 +24,12 @@ TextRenderSystem::~TextRenderSystem() {
     delete mFont;
 }
 
-void TextRenderSystem::draw(ecs::Entity entity, const gfx::RenderContext ctx) const {
+void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     constexpr s32 spacing = 0;  // PARAM
     const Color tint = WHITE;   // PARAM
 
-    const DrawText draw = entity.get<DrawText>();
-    PreciseTransform2D trans = gfx::getPreciseTrans(entity);
+    const DrawText draw = eCtx.entity.get<DrawText>();
+    const auto& trans = eCtx.preciseTransform;
 
     // rotation pivot correction
     Vector2f pivotOffsetScreen = trans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
@@ -77,7 +77,7 @@ void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) con
 
         queue.emplace_back(gfx::EntityRenderInfo{
             .boundingBox = bb,
-            .depth = trans.depth,
+            .preciseTransform = gfx::getPreciseTrans(entity, trans),
             .entity = entity,
             .piRender = this,
         });

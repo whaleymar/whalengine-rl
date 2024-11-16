@@ -1,8 +1,8 @@
 #pragma once
 
 #include <raylib.h>
+#include "Components/Transform.h"
 #include "CorradeOptional.h"
-#include "Gfx/Depth.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
@@ -10,7 +10,6 @@
 namespace whal {
 
 class TextureAtlas;
-struct PreciseTransform2D;
 
 namespace gfx {
 
@@ -31,12 +30,15 @@ struct RenderContext {
 
 struct EntityRenderInfo {
     AABB boundingBox;
-    Depth depth;
+    PreciseTransform2D preciseTransform;
     ecs::Entity entity;
     const ecs::IRender* piRender;
 };
 
 PreciseTransform2D getPreciseTrans(ecs::Entity entity);
+
+// slightly more efficient if caller already has the transform
+PreciseTransform2D getPreciseTrans(ecs::Entity entity, const Transform2D& transform);
 void clampToPixelGrid(RaylibDrawParams& params);
 
 RaylibDrawParams getDrawParams(PreciseTransform2D transform, Vector2f frameSize, Vector2f cameraPosition);

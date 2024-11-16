@@ -24,6 +24,20 @@ PreciseTransform2D getPreciseTrans(ecs::Entity entity) {
     return pTrans;
 }
 
+PreciseTransform2D getPreciseTrans(ecs::Entity entity, const Transform2D& transform) {
+    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(transform);
+    if (entity.has<PreciseTransform2D>()) {
+        pTrans.position = entity.get<PrecisePosition>().position;
+    } else if (entity.has<Collider>()) {
+        // Make physics movement look smooth even though it's pixel perfect
+        pTrans.position += entity.get<Collider>().getRemainder();
+    }
+    if (entity.has<Floating>()) {
+        pTrans.floatHeight = entity.get<Floating>().height;
+    }
+    return pTrans;
+}
+
 void clampToPixelGrid(RaylibDrawParams& params) {
     Vector2f positionF = Vector2f(params.position);
     Vector2i position = (positionF / VIRTUAL_SCREEN_RATIO).round() * static_cast<s32>(VIRTUAL_SCREEN_RATIO);
