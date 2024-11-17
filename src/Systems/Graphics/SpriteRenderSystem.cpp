@@ -8,13 +8,15 @@
 #include "Gfx/Texture.h"
 #include "Physics/Box.h"
 
+#include "Util/Print.h"
 #include "rlgl.h"
 
 namespace whal {
 
 // TODO put in raylib utils
 // This overwrites the `vertexNormal` attribute with a custom HDR color value
-// TODO in the future I should change raylib's src code to use HDR color instead of LDR, so I can use normals for a texture mask
+// This calls a customized version of `rlColor4f` which uses full precision colors
+// I can also co-opt the normals RESEARCH
 // In the Future Future I should just change the raylib batched vertex buffer to support more custom stuff
 static void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, Vector3 hdrColor);
 
@@ -25,23 +27,34 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
     gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, frameSize, ctx.cameraPosition);
-    const Color color = ctx.colorOverride ? *ctx.colorOverride : sprite.color;
 
+    if (ctx.colorOverride) {
+        DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, *ctx.colorOverride);
+        return;
+    }
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the passed shader isn't the active one.
-    // Shader shader = ShaderManager::get(Shaders::Default);
-    // BeginShaderMode(shader);
-    // Vector3 hdrCol;
-    // if (!ctx.colorOverride && eCtx.entity.has<Player>()) {
-    //     hdrCol = {1.3, 1.3, 1.3};
-    //     // hdrCol = {1.0, 1.0, 1.0};
-    // } else {
-    //     // Vector4 col4 = ColorNormalize(color);
-    //     // hdrCol = {col4.x, col4.y, col4.z};
-    //     hdrCol = {1.0, 1.0, 1.0};
-    // }
-    DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, color);
-    // DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, color, hdrCol);
+    Shader shader = ShaderManager::get(Shaders::Default);
+    BeginShaderMode(shader);
+    Vector3 hdrCol;
+    if (!ctx.colorOverride && eCtx.entity.has<Player>()) {
+        static f32 lum = 1.0;
+        if (IsKeyPressed(KEY_RIGHT)) {
+            lum += 0.1;
+            print(lum);
+        } else if (IsKeyPressed(KEY_LEFT)) {
+            lum -= 0.1;
+            print(lum);
+        }
+        hdrCol = {1.0f * lum, 1.0f * lum, 1.0f * lum};
+        // hdrCol = {1.0, 1.0, 1.0};
+    } else {
+        Vector4 col4 = ColorNormalize(sprite.color);
+        hdrCol = {col4.x, col4.y, col4.z};
+        // hdrCol = {1.0, 1.0, 1.0};
+    }
+    // DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, color);
+    DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color, hdrCol);
 }
 
 void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
@@ -115,8 +128,8 @@ void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 
         rlSetTexture(texture.id);
         rlBegin(RL_QUADS);
 
-        // rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, static_cast<f32>(tint.a) / 255.0f);
-        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+        rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, static_cast<f32>(tint.a) / 255.0f);
+        // rlColor4ub(tint.r, tint.g, tint.b, tint.a); // old way, LDR colors
         rlNormal3f(hdrColor.x, hdrColor.y, hdrColor.z);
         // rlSetNormals(hdrColor);
 

@@ -23,5 +23,5 @@ void main() {
     // finalColor = texelColor * fragColor * hdrColorFull;
 
     // finalColor = texelColor * fragColor;
-    finalColor = texelColor * fragColor;
+    finalColor = texelColor * fragColor; 
 }
