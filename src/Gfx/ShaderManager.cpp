@@ -92,7 +92,8 @@ void ShaderManager::loadShaders() {
         {Shaders::LightPassThru, 0, "whalengine/src/Shader/lightpassthrough.glsl"},
         {Shaders::PostProcess, 0, "whalengine/src/Shader/postProcess.glsl", Uniforms::VirtualResolution},
         {Shaders::EffectsMask, 0, "whalengine/src/Shader/occlusionMask.glsl"},
-        {Shaders::Pixelate, 0, "whalengine/src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
+        // {Shaders::Pixelate, 0, "whalengine/src/Shader/pixelate.glsl", Uniforms::Resolution},  // TODO want virtual ratio
+        {Shaders::Threshold, 0, "whalengine/src/Shader/threshold.glsl"},
         {Shaders::Test, 0, "whalengine/src/Shader/test.glsl"},
     };
 

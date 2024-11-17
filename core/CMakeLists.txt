@@ -46,7 +46,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 
 if (WIN32)
     target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/../lib/raylib/src")
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/raylib.lib")
+    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/raylib.lib") # TODO put this in the right folder
 elseif(UNIX)
     # need to dynamically link so there's only one OpenGL context
     target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/bin/linux/libraylib.so")
