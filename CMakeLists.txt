@@ -87,7 +87,7 @@ elseif (WIN32)
     target_link_libraries(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/lib/fmod/api/core/lib/x86_64/fmodL_vc.lib")
     target_link_libraries(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/lib/raylib.lib")
 elseif(UNIX)
-    find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
+    # find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 
     # these don't seem to work with clang-cl 
     # target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti -fno-exceptions)

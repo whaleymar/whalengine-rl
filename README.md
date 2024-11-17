@@ -43,3 +43,10 @@ Requirements:
     - run `make PLATFORM=PLATFORM_WEB -B`
     - copy `raylib/src/build/raylib/libraylib.a` to `lib/`
     - back in your game's root directory, run `make webdebug` or `make webrelease`
+
+# Building custom raylib fork 
+
+- `cd` into `whalengine/lib/raylib/src`
+- run `make PLATFORM=<platform> RAYLIB_BUILD_MODE=<DEBUG or RELEASE> RAYLIB_LIBTYPE=<SHARED or STATIC>`
+    - must be SHARED for hot reloading setup
+    - put generated library files into `whalengine/core/bin/<platform>`

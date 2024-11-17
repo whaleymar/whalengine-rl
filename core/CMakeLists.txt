@@ -37,6 +37,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "${FMOD_DIR}/api/core/inc"
     PUBLIC "${FMOD_DIR}/api/studio/inc"
     PUBLIC "${PROJECT_SOURCE_DIR}/../lib/magnum-singles"
+    PUBLIC "${PROJECT_SOURCE_DIR}/../lib/raylib/src"
 )
 
 include_directories("../lib")
@@ -45,9 +46,15 @@ target_compile_options(${PROJECT_NAME} PRIVATE "-g")
 
 if (WIN32)
     target_include_directories(${PROJECT_NAME} PUBLIC "${PROJECT_SOURCE_DIR}/../lib/raylib/src")
-    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/../lib/raylib.lib")
+    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/raylib.lib")
 elseif(UNIX)
-    find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
-    target_link_libraries(${PROJECT_NAME} raylib)
+    # need to dynamically link so there's only one OpenGL context
+    target_link_libraries(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/bin/linux/libraylib.so")
+
+    # Hard-code the library path into the executable
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    set(CMAKE_BUILD_RPATH "$ORIGIN")
+    set(CMAKE_SKIP_BUILD_RPATH FALSE)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 endif()
 
