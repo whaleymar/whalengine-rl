@@ -47,7 +47,7 @@ struct MaterialData {
     f32 getDecayTime() const;
     Color getColor() const;
 
-    // T is a draw-like component. Must have a member called ".color"
+    // T is a draw-like component. Must have a member called ".color" and one called "brightness"
     template <typename T>
     void addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier = 1.0) const {
         const f32 lifetime = getDecayTime() * lifetimeMultiplier;
@@ -68,6 +68,12 @@ struct MaterialData {
 
         if (isFlagSet(Light)) {
             entity.add(PointLight{halfLen * 2});
+
+            // if fading, then decrease light with time
+            if (isFlagSet(FadeOutFlag)) {
+                Schedule.tween(entity, 0, lifetime, [](ecs::Entity self) -> s32& { return self.get<PointLight>().radius; })
+                    .setTransition(Ease::InQuad);
+            }
         }
 
         if (isFlagSet(DecaySpeed)) {
@@ -100,7 +106,8 @@ struct MaterialData {
         }
 
         if (isFlagSet(RadianceFlag)) {
-            entity.add(Radiance{2, 0, color});
+            // entity.add(Radiance{2, 0, color});
+            entity.get<T>().brightness = 2.5;
         }
 
         if (startScale != 1.0) {

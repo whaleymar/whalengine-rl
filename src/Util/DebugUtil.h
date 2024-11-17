@@ -5,6 +5,7 @@
 #ifndef NDEBUG
 
 #include "Components/Animator.h"
+#include "Components/Camera.h"
 #include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"

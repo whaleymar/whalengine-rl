@@ -3,6 +3,7 @@
 #include "whalECS/src/ECS.h"
 
 #include "Components/Callback.h"
+#include "Components/Camera.h"
 #include "Components/Name.h"
 #include "Components/RailsControl.h"
 #include "Components/Relationships.h"
@@ -24,7 +25,9 @@ Expected<ecs::Entity> createCamera(Transform2D trans) {
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
     camera.add(Name("Camera"));
-    camera.add<Camera>();
+    camera.add(Camera{
+        .bloomThreshold = 1.5,
+    });
     camera.add<AudioListener>();
     camera.add<IgnoreTimeModifiers>();
 

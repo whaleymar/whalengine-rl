@@ -37,6 +37,7 @@ private:
     void _drawUI(const gfx::RenderContext ctx) const;
     void _render();
     void _init() const;
+    void _bloomAndTonemap(const gfx::RenderContext& ctx) const;
 
     Camera2D mRaylibCamera;
     Pipeline mPostProcessSteps;
