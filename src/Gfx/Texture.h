@@ -54,6 +54,8 @@ enum class TextureID {
     OcclusionColor,
     OcclusionDepth,
     AllDepth,
+    DownscaledBloom,
+    UpscaledBloom,
     _COUNT_DO_NOT_USE_ME,
 };
 

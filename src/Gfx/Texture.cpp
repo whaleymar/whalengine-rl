@@ -141,6 +141,8 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
     {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
     {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
     {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
+    {TextureID::DownscaledBloom, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::UpscaledBloom, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_BILINEAR, true},
 };
 
 TextureManager::TextureManager() {

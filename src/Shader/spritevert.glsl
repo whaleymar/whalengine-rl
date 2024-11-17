@@ -25,5 +25,7 @@ void main()
     fragColor = vertexColor;
     // hdrColor = vertexNormal;
 
+    // this is from the raylib template, idk what it does, can't just do the commented version
     gl_Position = mvp*vec4(vertexPosition, 1.0);
+    // gl_Position = vec4(vertexPosition, 1.0);
 }

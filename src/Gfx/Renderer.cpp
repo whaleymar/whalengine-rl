@@ -27,6 +27,7 @@
 namespace whal {
 
 static Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo);
+static void bloomAndTonemap(s32 lumThresholdUniform);
 
 Renderer::Renderer() {
     mRaylibCamera.target = Vector2(0.0f, 0.0f);
@@ -48,6 +49,7 @@ void Renderer::setPostEffects(Pipeline pipeline) {
 
 void Renderer::onEvent(evt::ShaderReload) {
     mMainTextureUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
+    mBloomThresholdUniform = GetShaderLocation(ShaderManager::get(Shaders::Threshold), "lum_threshold");
     // mExposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
 }
 
@@ -95,29 +97,8 @@ void Renderer::_render() {
     _drawUI(renderContext);
     EndTextureMode();
 
-    // TONE MAPPING
-    // TODO want to do bloom right before this and then additively blend & do tone mapping
-    // static f32 s_exposure = 1.0;
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
-    ClearBackground(Colors::CLEAR);
-    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
-    const auto shader = ShaderManager::get(Shaders::ToneMap);
-    BeginShaderMode(shader);
-    // SetShaderValue(shader, mExposureUniform, &s_exposure, SHADER_UNIFORM_FLOAT);
-    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Main), WHITE);
-    EndShaderMode();
-    EndBlendMode();
-    EndTextureMode();
-
-    // write back to main
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    ClearBackground(Colors::CLEAR);
-    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
-    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
-    EndBlendMode();
-    EndTextureMode();
-
     // 3. ? Apply post processing
+    bloomAndTonemap(mBloomThresholdUniform);
     mPostProcessSteps.process(TextureID::Main);
 
     // 4. Draw debug stuff.
@@ -358,6 +339,69 @@ Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo) {
     // }
 
     return Color(r, g, b, 255);
+}
+
+// RESEARCH should be part of post processing pipeline.
+// Separate right now because it uses FBOs w/ different resolutions
+
+// RESEARCH the LearnOpenGL bloom tutorial uses (equiv of) `rlActiveDrawBuffers` to do the thresholding step *while* lighting.
+// Could try this for a speed boost
+void bloomAndTonemap(s32 lumThresholdUniform) {
+    // BLOOM
+    auto bloomTexUS = TextureManager::getRenderTexture(TextureID::UpscaledBloom);
+    auto mainTex = TextureManager::getRenderTexture(TextureID::Main);
+    auto stagingTex = TextureManager::getRenderTexture(TextureID::Staging);
+
+    // 1. Threshold the Main tex
+
+    // TODO make this configurable from imgui
+    // should threshold be in the camera component?
+    static f32 threshold = 1.1f;
+    if (IsKeyPressed(KEY_UP)) {
+        threshold += 0.1;
+        print("threshold: ", threshold);
+    } else if (IsKeyPressed(KEY_DOWN)) {
+        threshold -= 0.1;
+        print("threshold: ", threshold);
+    }
+    BeginTextureMode(bloomTexUS);
+    Shader threshShader = ShaderManager::get(Shaders::Threshold);
+    BeginShaderMode(threshShader);
+    SetShaderValue(threshShader, lumThresholdUniform, &threshold, SHADER_UNIFORM_FLOAT);
+    gfx::DrawRenderTexture(mainTex);
+    EndShaderMode();
+    EndTextureMode();
+
+    // 2. Downscale and upscale for a cheap blur
+    scaleTexture(TextureID::UpscaledBloom, TextureID::DownscaledBloom);
+    scaleTexture(TextureID::DownscaledBloom, TextureID::UpscaledBloom);
+
+    // 3. Draw additively
+    // RESEARCH could save a draw call by making the final staging -> main thingy happen here?
+    BeginTextureMode(mainTex);
+    BeginBlendMode(BLEND_ADDITIVE);
+    gfx::DrawRenderTexture(bloomTexUS);
+    EndBlendMode();
+    EndTextureMode();
+
+    // TONE MAPPING
+    BeginTextureMode(stagingTex);
+    ClearBackground(Colors::CLEAR);
+    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
+    const auto shader = ShaderManager::get(Shaders::ToneMap);
+    BeginShaderMode(shader);
+    gfx::DrawRenderTexture(mainTex, WHITE);
+    EndShaderMode();
+    EndBlendMode();
+    EndTextureMode();
+
+    // write back to main
+    BeginTextureMode(mainTex);
+    ClearBackground(Colors::CLEAR);
+    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
+    gfx::DrawRenderTexture(stagingTex);
+    EndBlendMode();
+    EndTextureMode();
 }
 
 }  // namespace whal

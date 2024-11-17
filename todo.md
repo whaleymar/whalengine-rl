@@ -110,6 +110,7 @@ NEXT GOAL:
 - should collider size change with scale? that's how it works in unity
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
+- Get web and windows builds working again
 
 ---------------------------------------------------------------------------------------------------------------------------
 

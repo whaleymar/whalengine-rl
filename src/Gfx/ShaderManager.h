@@ -22,7 +22,7 @@ enum class Shaders : s16 {
     PostProcess,
     EffectsMask,
     Pixelate,
-    // DropShadow,
+    Threshold,
     Test,
     _Count_DO_NOT_USE_ME
 };
