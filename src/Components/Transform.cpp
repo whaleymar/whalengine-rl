@@ -3,7 +3,6 @@
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
-#include "Systems/Graphics/Common.h"
 #include "Util/CameraUtil.h"
 
 namespace whal {

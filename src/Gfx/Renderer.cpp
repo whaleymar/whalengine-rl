@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Components/Camera.h"
 #include "Gfx/RaylibUtil.h"
 #include "Util/Print.h"
 #include "raylib/src/rlgl.h"
@@ -27,7 +28,6 @@
 namespace whal {
 
 static Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo);
-static void bloomAndTonemap(s32 lumThresholdUniform);
 
 Renderer::Renderer() {
     mRaylibCamera.target = Vector2(0.0f, 0.0f);
@@ -63,8 +63,10 @@ void Renderer::_render() {
     Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform2D>().rotationDegrees;
-    const gfx::RenderContext renderContext{
-        .cameraPosition = cameraEntity.get<PrecisePosition>().position, .camera = worldCamera, .atlas = TextureManager::getAtlas(TEXNAME_SPRITE)};
+    const gfx::RenderContext renderContext{.cameraPosition = cameraEntity.get<PrecisePosition>().position,
+                                           .camera = worldCamera,
+                                           .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
+                                           .cameraEntity = cameraEntity};
     buildRenderQueue(renderContext.cameraPosition.round());
 
     // 1. ECS systems with draw-like methods are updated (this should probably happen automatically)
@@ -98,7 +100,7 @@ void Renderer::_render() {
     EndTextureMode();
 
     // 3. ? Apply post processing
-    bloomAndTonemap(mBloomThresholdUniform);
+    _bloomAndTonemap(renderContext);
     mPostProcessSteps.process(TextureID::Main);
 
     // 4. Draw debug stuff.
@@ -221,7 +223,7 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
 
 // this does what the old Mega-GraphicsSystem used to do.
 void Renderer::_drawEntities(gfx::RenderContext renderContext) {
-    _drawEffectsMask(renderContext);
+    // _drawEffectsMask(renderContext);
     _drawOcclusionMask(renderContext);
 
     // Drawing GAME OBJECTS
@@ -238,34 +240,34 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     // Lighting and Radiance textures are unused at this point, so I use them as a temporary downscaled render target
 
     // 1. draw downscaled version of Staging
-    scaleTexture(TextureID::Staging, TextureID::Radiance);
+    // scaleTexture(TextureID::Staging, TextureID::Radiance);
     // /1.
 
     // 2. Render effects to new buffer
-    RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
-    BeginTextureMode(effectsTarget);
-    ClearBackground(Colors::CLEAR);
-    ShaderManager::activate(Shaders::PostProcess);
-
-    auto downscaledMainTex = TextureManager::getRenderTexture(TextureID::Radiance);
-    SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledMainTex.texture);
-    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
-    EndShaderMode();
-    EndTextureMode();
+    // RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
+    // BeginTextureMode(effectsTarget);
+    // ClearBackground(Colors::CLEAR);
+    // ShaderManager::activate(Shaders::PostProcess);
+    //
+    // auto downscaledMainTex = TextureManager::getRenderTexture(TextureID::Radiance);
+    // SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledMainTex.texture);
+    // gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
+    // EndShaderMode();
+    // EndTextureMode();
     // /2.
 
     // 3. Upscale the effects to the Staging buffer with additive blending
-    auto fullResTex = TextureManager::getRenderTexture(TextureID::Staging);
-    SetTextureFilter(effectsTarget.texture, TEXTURE_FILTER_POINT);
-    BeginTextureMode(fullResTex);
-    BeginBlendMode(BLEND_ADDITIVE);
-
-    auto srcRect = Rectangle(0, 0, effectsTarget.texture.width, -effectsTarget.texture.height);
-    auto dstRect = Rectangle(0, 0, fullResTex.texture.width, fullResTex.texture.height);
-    DrawTexturePro(effectsTarget.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-
-    EndBlendMode();
-    EndTextureMode();
+    // auto fullResTex = TextureManager::getRenderTexture(TextureID::Staging);
+    // SetTextureFilter(effectsTarget.texture, TEXTURE_FILTER_POINT);
+    // BeginTextureMode(fullResTex);
+    // BeginBlendMode(BLEND_ADDITIVE);
+    //
+    // auto srcRect = Rectangle(0, 0, effectsTarget.texture.width, -effectsTarget.texture.height);
+    // auto dstRect = Rectangle(0, 0, fullResTex.texture.width, fullResTex.texture.height);
+    // DrawTexturePro(effectsTarget.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+    //
+    // EndBlendMode();
+    // EndTextureMode();
     // /3.
 }
 
@@ -343,7 +345,7 @@ Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo) {
 
 // RESEARCH the LearnOpenGL bloom tutorial uses (equiv of) `rlActiveDrawBuffers` to do the thresholding step *while* lighting.
 // Could try this for a speed boost
-void bloomAndTonemap(s32 lumThresholdUniform) {
+void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     // BLOOM
     auto bloomTexUS = TextureManager::getRenderTexture(TextureID::UpscaledBloom);
     auto mainTex = TextureManager::getRenderTexture(TextureID::Main);
@@ -351,20 +353,11 @@ void bloomAndTonemap(s32 lumThresholdUniform) {
 
     // 1. Threshold the Main tex
 
-    // TODO make this configurable from imgui
-    // should threshold be in the camera component?
-    static f32 threshold = 1.5f;
-    if (IsKeyPressed(KEY_UP)) {
-        threshold += 0.1;
-        print("threshold: ", threshold);
-    } else if (IsKeyPressed(KEY_DOWN)) {
-        threshold -= 0.1;
-        print("threshold: ", threshold);
-    }
+    const f32 threshold = ctx.cameraEntity.get<whal::Camera>().bloomThreshold;
     BeginTextureMode(bloomTexUS);
     Shader threshShader = ShaderManager::get(Shaders::Threshold);
     BeginShaderMode(threshShader);
-    SetShaderValue(threshShader, lumThresholdUniform, &threshold, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(threshShader, mBloomThresholdUniform, &threshold, SHADER_UNIFORM_FLOAT);
     gfx::DrawRenderTexture(mainTex);
     EndShaderMode();
     EndTextureMode();

@@ -23,6 +23,7 @@ struct RenderContext {
     Vector2f cameraPosition;
     Camera2D camera;
     const TextureAtlas& atlas;
+    ecs::Entity cameraEntity;
 
     // for post processing flags to work right, iRender systems should draw with this color if it's present
     Corrade::Containers::Optional<Color> colorOverride = Corrade::Containers::NullOpt;

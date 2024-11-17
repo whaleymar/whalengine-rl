@@ -3,7 +3,6 @@
 namespace whal {
 
 struct Player {};
-struct Camera {};
 struct AudioListener {};
 struct Particle {};
 struct Invisible {};
