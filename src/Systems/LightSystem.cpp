@@ -85,7 +85,7 @@ void PointLightSystem::drawEntities() {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
+        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
@@ -136,7 +136,7 @@ void BoxLightSystem::drawEntities() {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
+        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
@@ -195,7 +195,7 @@ void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
         const Vector2i worldPosition = entity.get<Transform2D>().apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.b, light.color.g, light.color.a);
+        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
 
         // RESEARCH may want to add this as a param in the component
         constexpr f32 intensity = 1.0;

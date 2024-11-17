@@ -120,10 +120,6 @@ static void scaleTexture(TextureID src, TextureID dst, BlendMode blendMode = BLE
     const Rectangle srcRect = Rectangle(0, 0, srcTex.texture.width, -srcTex.texture.height);
     const Rectangle dstRect = Rectangle(0, 0, dstTex.texture.width, dstTex.texture.height);
 
-    // TODO not sure whether I should apply this to src or dst
-    // TODO this has side effects, figure out how to undo the filter change afterwards
-    // SetTextureFilter(fullResTex.texture, filter);
-
     BeginTextureMode(dstTex);
     BeginBlendMode(blendMode);
     ClearBackground(Colors::CLEAR);
@@ -301,8 +297,9 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     tmpDrawList.clear();
 
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
-    for (ecs::IRender* renderSystem : World.getRenderSystems()) {
-        renderSystem->addToQueue(tmpDrawList);
+    for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
+        tmpDrawList.reserve(renderSystem.pSystem->getEntitiesVirtual().size());  // reserve space in case capacity is too low
+        renderSystem.pIRender->addToQueue(tmpDrawList);
         for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport
             if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
@@ -356,7 +353,7 @@ void bloomAndTonemap(s32 lumThresholdUniform) {
 
     // TODO make this configurable from imgui
     // should threshold be in the camera component?
-    static f32 threshold = 1.1f;
+    static f32 threshold = 1.5f;
     if (IsKeyPressed(KEY_UP)) {
         threshold += 0.1;
         print("threshold: ", threshold);
