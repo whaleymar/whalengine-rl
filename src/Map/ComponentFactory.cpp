@@ -126,7 +126,7 @@ static const NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_RailsControl", addComponentRailsControl},
     {"Component_Collider", addComponentCollider},
     {"Component_Trigger", addComponentTrigger},
-    {"Component_Draw", addComponentDraw},
+    {"Component_DrawRect", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
     {"Component_Sprite_Animated", addComponentAnimator},
     {"Component_DrawLayer_TileOnly", addDrawLayer},
@@ -481,6 +481,8 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
         draw.color = color;
     }
 
+    tryReadFloat(values, "Brightness", &draw.brightness);
+
     u32 flags = parseGfxEffects(values);
     entity.add(GfxFlags{flags});
     entity.add(draw);
@@ -503,6 +505,8 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
         Color color = parseColor(hexcode);
         sprite.color = color;
     }
+
+    tryReadFloat(values, "Brightness", &sprite.brightness);
 
     u32 flags = parseGfxEffects(values);
     entity.add(GfxFlags{flags});
@@ -544,6 +548,8 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
         sprite.color = color;
     }
 
+    tryReadFloat(values, "Brightness", &sprite.brightness);
+
     u32 flags = parseGfxEffects(values);
     entity.add(GfxFlags{flags});
 
@@ -571,10 +577,7 @@ void addComponentLight(const nlohmann::json& values, const nlohmann::json& allOb
         // by default, use bigger dimension
         light.radius = std::max(entityData.size.x, entityData.size.y);
     }
-    if (!tryReadVal(values, "heightTexels", &light.heightOffset)) {
-        // by default, use half of entity height
-        light.heightOffset = entityData.size.y / 2;
-    }
+    tryReadVal(values, "heightTexels", &light.heightOffset);
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
         light.color = parseColor(hexString);

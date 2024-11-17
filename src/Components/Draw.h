@@ -20,6 +20,7 @@ struct IDraw {
     IDraw(Color color_);
 
     Color color = WHITE;
+    f32 brightness = 1.0f;
 };
 
 struct Sprite : public IDraw {
@@ -44,6 +45,7 @@ struct DrawBezierQuad {
     Vector2i endPointOffset;
     Color color = WHITE;
     f32 thickness = 1.0;
+    f32 brightness = 1.0f;
     Depth depth = Depth::Level;
 };
 
@@ -51,6 +53,7 @@ struct DrawStraightLine {
     s32 length;
     Color color = WHITE;
     f32 thickness = 1.0;
+    f32 brightness = 1.0f;
     bool isRotateAboutCenter = false;
 };
 
@@ -58,6 +61,7 @@ struct DrawText {
     std::string text;
     Vector2i frameSize;
     Color color = WHITE;
+    f32 brightness = 1.0f;
     bool isCentered = false;
 };
 

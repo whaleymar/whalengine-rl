@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Gfx/RaylibUtil.h"
 #include "Physics/Box.h"
 
 namespace whal {
@@ -13,8 +14,11 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
 
     const auto frameSize = rect.frameSize.as<f32>();
     const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, frameSize, ctx.cameraPosition);
-    const Color color = ctx.colorOverride ? *ctx.colorOverride : rect.color;
-    DrawRectanglePro(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, color);
+    if (ctx.colorOverride) {
+        DrawRectanglePro(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, *ctx.colorOverride);
+    } else {
+        gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, rect.brightness);
+    }
 }
 
 void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

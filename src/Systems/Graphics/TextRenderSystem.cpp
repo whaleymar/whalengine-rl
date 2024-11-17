@@ -67,7 +67,6 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 }
 
 void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
-    queue.reserve(getEntitiesMutable().size());  // reserve space in case capacity is too low
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawText>();
         const auto trans = entity.get<Transform2D>();

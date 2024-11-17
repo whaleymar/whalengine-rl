@@ -375,4 +375,176 @@ void DrawEllipseFromRect(Rectangle rect, Color color) {
     DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color);
 }
 
+void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness) {
+    // Check if texture is valid
+    if (texture.id > 0) {
+        float width = (float)texture.width;
+        float height = (float)texture.height;
+
+        bool flipX = false;
+
+        if (source.width < 0) {
+            flipX = true;
+            source.width *= -1;
+        }
+        if (source.height < 0)
+            source.y -= source.height;
+
+        Vector2 topLeft;
+        Vector2 topRight;
+        Vector2 bottomLeft;
+        Vector2 bottomRight;
+
+        // Only calculate rotation if needed
+        if (rotation == 0.0f) {
+            float x = dest.x - origin.x;
+            float y = dest.y - origin.y;
+            topLeft = (Vector2){x, y};
+            topRight = (Vector2){x + dest.width, y};
+            bottomLeft = (Vector2){x, y + dest.height};
+            bottomRight = (Vector2){x + dest.width, y + dest.height};
+        } else {
+            float sinRotation = sinf(rotation * DEG2RAD);
+            float cosRotation = cosf(rotation * DEG2RAD);
+            float x = dest.x;
+            float y = dest.y;
+            float dx = -origin.x;
+            float dy = -origin.y;
+
+            topLeft.x = x + dx * cosRotation - dy * sinRotation;
+            topLeft.y = y + dx * sinRotation + dy * cosRotation;
+
+            topRight.x = x + (dx + dest.width) * cosRotation - dy * sinRotation;
+            topRight.y = y + (dx + dest.width) * sinRotation + dy * cosRotation;
+
+            bottomLeft.x = x + dx * cosRotation - (dy + dest.height) * sinRotation;
+            bottomLeft.y = y + dx * sinRotation + (dy + dest.height) * cosRotation;
+
+            bottomRight.x = x + (dx + dest.width) * cosRotation - (dy + dest.height) * sinRotation;
+            bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
+        }
+
+        rlSetTexture(texture.id);
+        rlBegin(RL_QUADS);
+
+        Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
+        rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
+        // rlColor4ub(tint.r, tint.g, tint.b, tint.a); // old way, LDR colors
+
+        // This input gets normalized, should implement the commented setter
+        // Normals are unused, can be anything #RESEARCH
+        rlNormal3f(hdrColor.x, hdrColor.y, hdrColor.z);
+        // rlSetNormals(hdrColor);
+
+        // Top-left corner for texture and quad
+        if (flipX)
+            rlTexCoord2f((source.x + source.width) / width, source.y / height);
+        else
+            rlTexCoord2f(source.x / width, source.y / height);
+        rlVertex2f(topLeft.x, topLeft.y);
+
+        // Bottom-left corner for texture and quad
+        if (flipX)
+            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+        else
+            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+        rlVertex2f(bottomLeft.x, bottomLeft.y);
+
+        // Bottom-right corner for texture and quad
+        if (flipX)
+            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+        else
+            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+        rlVertex2f(bottomRight.x, bottomRight.y);
+
+        // Top-right corner for texture and quad
+        if (flipX)
+            rlTexCoord2f(source.x / width, source.y / height);
+        else
+            rlTexCoord2f((source.x + source.width) / width, source.y / height);
+        rlVertex2f(topRight.x, topRight.y);
+
+        rlEnd();
+        rlSetTexture(0);
+    }
+}
+
+void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness) {
+    Vector2 topLeft = {};
+    Vector2 topRight = {};
+    Vector2 bottomLeft = {};
+    Vector2 bottomRight = {};
+
+    // Only calculate rotation if needed
+    if (rotation == 0.0f) {
+        float x = rec.x - origin.x;
+        float y = rec.y - origin.y;
+        topLeft = (Vector2){x, y};
+        topRight = (Vector2){x + rec.width, y};
+        bottomLeft = (Vector2){x, y + rec.height};
+        bottomRight = (Vector2){x + rec.width, y + rec.height};
+    } else {
+        float sinRotation = sinf(rotation * DEG2RAD);
+        float cosRotation = cosf(rotation * DEG2RAD);
+        float x = rec.x;
+        float y = rec.y;
+        float dx = -origin.x;
+        float dy = -origin.y;
+
+        topLeft.x = x + dx * cosRotation - dy * sinRotation;
+        topLeft.y = y + dx * sinRotation + dy * cosRotation;
+
+        topRight.x = x + (dx + rec.width) * cosRotation - dy * sinRotation;
+        topRight.y = y + (dx + rec.width) * sinRotation + dy * cosRotation;
+
+        bottomLeft.x = x + dx * cosRotation - (dy + rec.height) * sinRotation;
+        bottomLeft.y = y + dx * sinRotation + (dy + rec.height) * cosRotation;
+
+        bottomRight.x = x + (dx + rec.width) * cosRotation - (dy + rec.height) * sinRotation;
+        bottomRight.y = y + (dx + rec.width) * sinRotation + (dy + rec.height) * cosRotation;
+    }
+
+#if defined(SUPPORT_QUADS_DRAW_MODE)
+    rlSetTexture(GetShapesTexture().id);
+    Rectangle shapeRect = GetShapesTextureRectangle();
+
+    rlBegin(RL_QUADS);
+
+    rlNormal3f(0.0f, 0.0f, 1.0f);
+    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+    rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
+
+    rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
+    rlVertex2f(topLeft.x, topLeft.y);
+
+    rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
+    rlVertex2f(bottomLeft.x, bottomLeft.y);
+
+    rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
+    rlVertex2f(bottomRight.x, bottomRight.y);
+
+    rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
+    rlVertex2f(topRight.x, topRight.y);
+
+    rlEnd();
+
+    rlSetTexture(0);
+#else
+    rlBegin(RL_TRIANGLES);
+
+    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+    rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
+
+    rlVertex2f(topLeft.x, topLeft.y);
+    rlVertex2f(bottomLeft.x, bottomLeft.y);
+    rlVertex2f(topRight.x, topRight.y);
+
+    rlVertex2f(topRight.x, topRight.y);
+    rlVertex2f(bottomLeft.x, bottomLeft.y);
+    rlVertex2f(bottomRight.x, bottomRight.y);
+
+    rlEnd();
+#endif
+}
+
 }  // namespace whal::gfx
