@@ -29,11 +29,20 @@ struct RenderContext {
     Corrade::Containers::Optional<Color> colorOverride = Corrade::Containers::NullOpt;
 };
 
+struct ColorBufInfo {
+    u8 depth;
+    bool isOccluder;
+    bool isUI;
+};
+
+// TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform2D (only calculated by Renderer if
+// not culled)
 struct EntityRenderInfo {
     AABB boundingBox;
     PreciseTransform2D preciseTransform;
     ecs::Entity entity;
     const ecs::IRender* piRender;
+    ColorBufInfo colorBuf = {};
 };
 
 PreciseTransform2D getPreciseTrans(ecs::Entity entity);

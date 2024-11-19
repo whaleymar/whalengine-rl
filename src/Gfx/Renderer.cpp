@@ -4,11 +4,11 @@
 #include <raylib.h>
 #include "Components/Camera.h"
 #include "Gfx/RaylibUtil.h"
+#include "Systems/Graphics/Common.h"
 #include "Util/Print.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
-#include "Components/GfxFlags.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 
@@ -27,12 +27,11 @@
 
 namespace whal {
 
-static Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo);
-
 Renderer::Renderer() {
     mRaylibCamera.target = Vector2(0.0f, 0.0f);
     mRaylibCamera.zoom = 1.0f;
     mRaylibCamera.rotation = 0.0f;
+    mStagingTexture = gfx::CreateMultiTexture();
 }
 
 void Renderer::init() {
@@ -80,7 +79,7 @@ void Renderer::_render() {
     ClearBackground(Colors::CLEAR);
 
     // Game Objects.
-    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Staging));
+    gfx::DrawRenderTexture(mStagingTexture.tex);
 
     // Lights.
     BeginBlendMode(BLEND_MULTIPLIED);
@@ -130,95 +129,51 @@ static void scaleTexture(TextureID src, TextureID dst, BlendMode blendMode = BLE
     EndTextureMode();
 }
 
-// This draws the effects mask to TextureID::DownscaledPostProcess.
-// It also populates mOcclusionQueue
-void Renderer::_drawEffectsMask(gfx::RenderContext renderContext) {
-    // Draw to Effects Buffer (using main texture for this as it's unused at this point in the render pipeline)
-    constexpr Color NO_EFFECT = Color{0, 0, 0, 0};
-    mOcclusionQueue.clear();
-
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    ClearBackground(NO_EFFECT);
-    BeginMode2D(renderContext.camera);
-    ShaderManager::activate(Shaders::Silhouette);
-    for (auto renderInfo : mRenderQueue) {
-        if (renderInfo.piRender->isPostProcessingUsed()) {
-            if (renderInfo.entity.has<BlocksLight>()) {
-                mOcclusionQueue.push_back(renderInfo);
-            }
-            const Color flags = getPostProcessFlags(renderInfo);
-            renderContext.colorOverride = flags;
-            renderInfo.piRender->draw(renderInfo, renderContext);
-        }
-    }
-    EndShaderMode();
-    EndMode2D();
-    EndTextureMode();
-    renderContext.colorOverride = Corrade::Containers::NullOpt;
-
-    // Draw downscaled version of the post-process texture
-    // makes it much faster since the PP shader is SLOW.
-    scaleTexture(TextureID::Main, TextureID::DownscaledPostProcess);
-}
-
 void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
-    // DRAW COLOR INFO TO OCCLUSION TEXTURE
-    ctx.colorOverride = Corrade::Containers::NullOpt;
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
+    // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
+    const auto mt = Renderer::getStagingTex();
+    const Texture depthTex = Texture{
+        .id = mt.depth,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+    const Texture occlDepthTex = Texture{
+        .id = mt.occlusionDepth,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+    Texture colorTex = Texture{
+        .id = mt.occlusionColor,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+
+    const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth);
+    const auto targetOcclDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
+    const auto targetColorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
+    const Rectangle srcRect = Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
+    const Rectangle dstRect = Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+
+    BeginTextureMode(targetDepthTex);
     ClearBackground(Colors::CLEAR);
-    BeginMode2D(ctx.camera);
-    for (auto renderInfo : mOcclusionQueue) {
-        renderInfo.piRender->draw(renderInfo, ctx);
-    }
-    EndMode2D();
-    EndBlendMode();
+    DrawTexturePro(depthTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
     EndTextureMode();
 
-    // DOWNSCALE
-    scaleTexture(TextureID::Main, TextureID::OcclusionColor, BLEND_ALPHA_PREMULTIPLY);
-
-    // DRAW DEPTH INFO TO OTHER OCCLUSION TEXTURE
-    // "Mom, can we use the `RenderTexture.depth`?"
-    // "We have `RenderTexture.depth` at home."
-    // `RenderTexture.depth` at home:
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+    BeginTextureMode(targetOcclDepthTex);
     ClearBackground(Colors::CLEAR);
-    BeginMode2D(ctx.camera);
-    ShaderManager::activate(Shaders::Silhouette);
-    for (auto renderInfo : mOcclusionQueue) {
-        f32 d = depthToFloat(renderInfo.preciseTransform.depth);
-        const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
-        ctx.colorOverride = color;
-        renderInfo.piRender->draw(renderInfo, ctx);
-    }
-    EndShaderMode();
-    EndMode2D();
+    DrawTexturePro(occlDepthTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
     EndTextureMode();
 
-    // DOWNSCALE
-    scaleTexture(TextureID::Main, TextureID::OcclusionDepth);
-
-    // DRAW DEPTH INFO FOR EVERYTHING TO LAST TEXTURE
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
-    ClearBackground(BLACK);
-    BeginMode2D(ctx.camera);
-    ShaderManager::activate(Shaders::Silhouette);
-    for (auto renderInfo : mRenderQueue) {
-        if (!renderInfo.piRender->isPostProcessingUsed()) {
-            continue;
-        }
-        f32 d = depthToFloat(renderInfo.preciseTransform.depth);
-        const Color color = ColorFromNormalized(Vector4{d, 0.0f, 0.0f, 1.0f});
-        ctx.colorOverride = color;
-        renderInfo.piRender->draw(renderInfo, ctx);
-    }
-    EndShaderMode();
-    EndMode2D();
+    BeginTextureMode(targetColorTex);
+    ClearBackground(Colors::CLEAR);
+    DrawTexturePro(colorTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
     EndTextureMode();
-
-    // DOWNSCALE
-    scaleTexture(TextureID::Main, TextureID::AllDepth);
 }
 
 // this does what the old Mega-GraphicsSystem used to do.
@@ -227,7 +182,7 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     _drawOcclusionMask(renderContext);
 
     // Drawing GAME OBJECTS
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Staging));
+    BeginTextureMode(mStagingTexture.tex);
     ClearBackground(Colors::CLEAR);
     BeginMode2D(renderContext.camera);
     for (auto renderInfo : mRenderQueue) {
@@ -235,40 +190,6 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     }
     EndMode2D();
     EndTextureMode();
-
-    // Apply Post Processing Effects
-    // Lighting and Radiance textures are unused at this point, so I use them as a temporary downscaled render target
-
-    // 1. draw downscaled version of Staging
-    // scaleTexture(TextureID::Staging, TextureID::Radiance);
-    // /1.
-
-    // 2. Render effects to new buffer
-    // RenderTexture effectsTarget = TextureManager::getRenderTexture(TextureID::Lighting);
-    // BeginTextureMode(effectsTarget);
-    // ClearBackground(Colors::CLEAR);
-    // ShaderManager::activate(Shaders::PostProcess);
-    //
-    // auto downscaledMainTex = TextureManager::getRenderTexture(TextureID::Radiance);
-    // SetShaderValueTexture(ShaderManager::get(Shaders::PostProcess), mMainTextureUniform, downscaledMainTex.texture);
-    // gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::DownscaledPostProcess));
-    // EndShaderMode();
-    // EndTextureMode();
-    // /2.
-
-    // 3. Upscale the effects to the Staging buffer with additive blending
-    // auto fullResTex = TextureManager::getRenderTexture(TextureID::Staging);
-    // SetTextureFilter(effectsTarget.texture, TEXTURE_FILTER_POINT);
-    // BeginTextureMode(fullResTex);
-    // BeginBlendMode(BLEND_ADDITIVE);
-    //
-    // auto srcRect = Rectangle(0, 0, effectsTarget.texture.width, -effectsTarget.texture.height);
-    // auto dstRect = Rectangle(0, 0, fullResTex.texture.width, fullResTex.texture.height);
-    // DrawTexturePro(effectsTarget.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    //
-    // EndBlendMode();
-    // EndTextureMode();
-    // /3.
 }
 
 void Renderer::_drawUI(const gfx::RenderContext ctx) const {
@@ -307,9 +228,15 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
             if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
                 if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
                     renderInfo.preciseTransform.depth == Depth::UIClose) {
-                    mUIRenderQueue.emplace_back(renderInfo);
+                    mUIRenderQueue.emplace_back(renderInfo.boundingBox, renderInfo.preciseTransform, renderInfo.entity, renderInfo.piRender,
+                                                gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                                                  .isOccluder = renderInfo.entity.has<BlocksLight>(),
+                                                                  .isUI = true});
                 } else {
-                    mRenderQueue.emplace_back(renderInfo);
+                    mRenderQueue.emplace_back(renderInfo.boundingBox, renderInfo.preciseTransform, renderInfo.entity, renderInfo.piRender,
+                                              gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                                                .isOccluder = renderInfo.entity.has<BlocksLight>(),
+                                                                .isUI = false});
                 }
             }
         }
@@ -321,25 +248,6 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);
 }
 
-Color getPostProcessFlags(gfx::EntityRenderInfo renderInfo) {
-    u8 r = 0, g = 0, b = 0;
-    if (renderInfo.entity.has<GfxFlags>()) {
-        u32 flags = renderInfo.entity.get<GfxFlags>().flags;
-        if ((flags & GfxFlags::Bloom) > 0) {
-            r = 255;
-        }
-        if ((flags & GfxFlags::Glow) > 0) {
-            g = 255;
-        }
-    }
-
-    // if (renderInfo.entity.has<BlocksLight>()) {
-    //     b = 255;
-    // }
-
-    return Color(r, g, b, 255);
-}
-
 // RESEARCH should be part of post processing pipeline.
 // Separate right now because it uses FBOs w/ different resolutions
 
@@ -349,7 +257,9 @@ void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     // BLOOM
     auto bloomTexUS = TextureManager::getRenderTexture(TextureID::UpscaledBloom);
     auto mainTex = TextureManager::getRenderTexture(TextureID::Main);
-    auto stagingTex = TextureManager::getRenderTexture(TextureID::Staging);
+    // auto tmpTex = mStagingTexture.tex;
+    // This can be anything with the render dimensions EXCEPT mStagingTexture.tex, because I want to maintain the other color buffers for debugging
+    auto tmpTex = TextureManager::getRenderTexture(TextureID::UpscaledLighting);
 
     // 1. Threshold the Main tex
 
@@ -375,7 +285,7 @@ void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     EndTextureMode();
 
     // TONE MAPPING
-    BeginTextureMode(stagingTex);
+    BeginTextureMode(tmpTex);
     ClearBackground(Colors::CLEAR);
     BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
     const auto shader = ShaderManager::get(Shaders::ToneMap);
@@ -389,7 +299,7 @@ void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     BeginTextureMode(mainTex);
     ClearBackground(Colors::CLEAR);
     BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
-    gfx::DrawRenderTexture(stagingTex);
+    gfx::DrawRenderTexture(tmpTex);
     EndBlendMode();
     EndTextureMode();
 }

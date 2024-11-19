@@ -29,7 +29,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     Shader shader = ShaderManager::get(Shaders::Default);
     BeginShaderMode(shader);
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color,
-                       sprite.brightness);
+                       sprite.brightness, eCtx.colorBuf);
 }
 
 void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

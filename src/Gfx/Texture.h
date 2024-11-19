@@ -40,7 +40,7 @@ private:
 // RESEARCH other LayerXYZs I might want to do in the future:
 // - Outline
 enum class TextureID {
-    Staging,
+    // Staging,
     Main,
     DownscaledPostProcess,
     Background,  // any repeating backgrounds use this
@@ -57,6 +57,13 @@ enum class TextureID {
     DownscaledBloom,
     UpscaledBloom,
     _COUNT_DO_NOT_USE_ME,
+};
+
+struct MultiTexture {
+    RenderTexture tex;
+    u32 occlusionColor;
+    u32 depth;           // stores depth for everything on red channel
+    u32 occlusionDepth;  // stores dpeth for occluders on red channel
 };
 
 class TextureManager {

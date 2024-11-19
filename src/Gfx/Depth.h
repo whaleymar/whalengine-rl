@@ -4,6 +4,7 @@
 
 namespace whal {
 
+// These should be ordered correctly, since they're passed as raw data to OpenGL, not floats
 enum class Depth : u8 {
     BackgroundStatic,
     BackgroundFar,
