@@ -146,6 +146,7 @@ public:
         EngineEnd = _EngineEnd;
         GetWindowWidth = WhalGetRenderWidth;
         GetWindowHeight = WhalGetRenderHeight;
+        GetTargetFPS = WhalGetTargetFPS;
         GetWindowTitle = WhalGetWindowTitle;
         return false;
 
