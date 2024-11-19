@@ -201,7 +201,7 @@ Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const 
 
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char* imagePath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
-    if (!IsTextureReady(texture)) {
+    if (!IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
     }
     return registerTexture(texture, name);
@@ -209,7 +209,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char*
 
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name) {
     Texture2D texture = LoadTexture(imagePath);
-    if (!IsTextureReady(texture)) {
+    if (!IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
     }
     return registerTextureAtlas(texture, atlasDataPath, name);
