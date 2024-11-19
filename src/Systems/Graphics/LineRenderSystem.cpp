@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
 namespace whal {
@@ -32,7 +34,11 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform2D>(), line);
     const Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
     const Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
-    DrawLineEx(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color);
+
+    // If we don't deactivate, we minimize the number of shader swaps.
+    // Swaps only happen if the new shader isn't the active one.
+    BeginShaderMode(ShaderManager::get(Shaders::Default));
+    gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, line.brightness, eCtx.colorBuf);
 }
 
 void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

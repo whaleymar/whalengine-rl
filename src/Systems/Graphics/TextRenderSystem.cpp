@@ -4,6 +4,7 @@
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Physics/Box.h"
 #include "Settings.h"
 #include "Util/Vector.h"
@@ -51,9 +52,10 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
     // TODO needs adjustment based on rotation? Currently not working for multi-line text
     // drawing wrapped:
-    dstPosition -= frameSize * Vector2f(0.5, 1);  // original
+    // dstPosition -= frameSize * Vector2f(0.5, 0.5);  // original
+    dstPosition -= frameSize * Vector2f(0.5, 0.0);  // trying something new
     // needs half tile offset for some reason; might be an issue with map data:
-    dstPosition += Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
+    // dstPosition += Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
 
     Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
 
@@ -62,8 +64,12 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         .origin = Vector2{0, 0},
         .position = dstPosition.asRL(),
     };
+
+    // If we don't deactivate, we minimize the number of shader swaps.
+    // Swaps only happen if the new shader isn't the active one.
+    BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-                       trans.rotationDegrees, pivotOffsetScreen);
+                       trans.rotationDegrees, pivotOffsetScreen, draw.brightness, eCtx.colorBuf);
 }
 
 void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

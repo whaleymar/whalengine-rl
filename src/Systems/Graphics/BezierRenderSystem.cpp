@@ -3,6 +3,8 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
 namespace whal {
@@ -12,7 +14,12 @@ void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     Vector2 p1 = eCtx.preciseTransform.getRotatedPosition().asRL();
     Vector2 controlPoint = eCtx.preciseTransform.apply(bezier.controlPointOffset.as<f32>()).asRL();
     Vector2 p2 = eCtx.preciseTransform.apply(bezier.endPointOffset.as<f32>()).asRL();
-    DrawSplineSegmentBezierQuadratic(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color);
+
+    // If we don't deactivate, we minimize the number of shader swaps.
+    // Swaps only happen if the new shader isn't the active one.
+    BeginShaderMode(ShaderManager::get(Shaders::Default));
+    gfx::DrawSplineSegmentBezierQuadraticHDR(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color, bezier.brightness,
+                                             eCtx.colorBuf);
 }
 
 void BezierRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

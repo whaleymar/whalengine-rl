@@ -20,16 +20,12 @@ NEXT GOAL:
     - The way raylib is programmed, I could never call `EndShaderMode`, and when I want to use the default sprite then I just manually activate it. If `BeginShaderMode` is called on the active shader then nothing happens
 
 ## Gfx 
-- like godot, should have tag components for {Blocks light (DONE), Blocks AI pathing}
-- implement real bloom instead of my faked thingy
+- implement real bloom instead of my faked thingy (DONE)
     - once implemented, use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
     - for this, I think sprites components would need some luminance multiplier?
 - Lights need Brightness multiplier so everything's not stuck in LDR
-- fully in-shadow translucent objects are still visible, as well as text
 
 ## Lighting 
-- issue with `iRender::draw` not being designed for outside shader use, but I'm using it for the occlusion depth + effect maps
-    - instead of isPostProcessingUsed, have a separate `draw` call called `drawSilhouette` where you swearzies to not use a custom shader (and use a custom color)
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
 
 ## Web 
@@ -111,6 +107,8 @@ NEXT GOAL:
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 - Get web and windows builds working again
+- rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
+    - also want to support tags for effects, like the text moving in a wave pattern
 
 ---------------------------------------------------------------------------------------------------------------------------
 
