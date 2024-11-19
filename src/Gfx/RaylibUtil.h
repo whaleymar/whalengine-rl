@@ -9,9 +9,14 @@ typedef struct Texture Texture;
 typedef struct Rectangle Rectangle;
 typedef struct Vector2 Vector2;
 
-namespace whal::gfx {
+namespace whal {
+
+struct MultiTexture;
+
+namespace gfx {
 
 struct RaylibDrawParams;
+struct ColorBufInfo;
 
 void DrawTextBoxed(Font font, const char* text, gfx::RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
                    float angle, Vector2f pivotOffset);
@@ -31,8 +36,13 @@ void DrawEllipseFromRect(Rectangle rect, Color color);
 // Modified version of DrawTexturePro which doesn't clamp HDR colors
 // I can also co-opt the normals RESEARCH
 // In the Future Future I should just change the raylib batched vertex buffer to support more custom stuff
-void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness);
+void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness,
+                   gfx::ColorBufInfo colorBufInfo);
 
 // HDR version of DrawRectanglePro
-void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness);
-}  // namespace whal::gfx
+void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness, gfx::ColorBufInfo colorBufInfo);
+
+// Adds extra texture targets for depth and occlusion buffers
+MultiTexture CreateMultiTexture();
+}  // namespace gfx
+}  // namespace whal

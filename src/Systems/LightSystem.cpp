@@ -10,7 +10,6 @@
 
 #include "Events/Events.h"
 #include "Gfx/Coordinates.h"
-#include "Gfx/Depth.h"
 #include "Gfx/Pipeline.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
@@ -218,8 +217,8 @@ void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
     mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
     mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
-    mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
-    mAllDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "allDepthTex");
+    mDepthBufUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "depthBuf");
+    mOcclDepthBufUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
 }
 
 void ShadowLightSystem::drawEntities() {
@@ -227,10 +226,12 @@ void ShadowLightSystem::drawEntities() {
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
-    const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto depthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
+    const auto occlDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
-    const auto allDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
 
+    // must match what's in spritefrag.glsl
+    const f32 depthScalar = 20.0f;
     for (auto [entityid, entity] : getEntitiesMutable()) {
         ShaderManager::activate(Shaders::ShadowLight);
 
@@ -241,14 +242,14 @@ void ShadowLightSystem::drawEntities() {
         const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));
         const Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
         const f32 lightRadiusPixels = light.radius;
-        const f32 lightDepth = depthToFloat(trans.depth);
+        const f32 lightDepth = static_cast<f32>(trans.depth) / 255.0f * depthScalar;
 
         // Set shader values
         SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
         SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
         SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
-        SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
-        SetShaderValueTexture(shader, mAllDepthUniform, allDepthTex);
+        SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
+        SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
 
         DrawTextureRec(colorTex, Rectangle(0, 0, colorTex.width, -colorTex.height), Vector2(0, 0), light.color);
         EndShaderMode();

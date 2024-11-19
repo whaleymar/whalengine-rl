@@ -16,8 +16,8 @@ uniform vec2 iResolution;
 uniform vec2 lp1;
 uniform float radiusPixels;
 uniform float lightDepth;
-uniform sampler2D occlusionDepthTex;
-uniform sampler2D allDepthTex;
+uniform sampler2D depthBuf;
+uniform sampler2D occlDepthBuf;
 
 // Output fragment color
 out vec4 finalColor;
@@ -33,19 +33,13 @@ const vec3 wallColor = vec3(0.0);
 const float pi = 3.1415926;
 
 bool isWall(vec2 p) {
-    vec4 sampleDepth = texture(occlusionDepthTex, p);
-    float depth = sampleDepth.r;
-
+    float depth = texture(occlDepthBuf, p).r;
     return lightDepth <= depth;
 }
 
 bool isBehindSomething(vec2 p) {
-    float depth = texture(allDepthTex, p).r;
+    float depth = texture(depthBuf, p).r;
     return lightDepth < depth;
-
-    // experimenting with a light below illuminating the foreground... needs work
-    // maybe if i get the angle between the position and light and light if it's > 45 degrees?
-    // return lightDepth < depth && lp1.y > p.y; 
 }
 
 vec4 getWallColor(vec2 p) {

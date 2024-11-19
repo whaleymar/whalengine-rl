@@ -1,6 +1,9 @@
 #include "RaylibUtil.h"
+#include <cstring>
 
+#include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Util/Print.h"
 #include "raylib.h"
 #include "rlgl.h"
 
@@ -371,11 +374,33 @@ void DrawEllipse(Vector2f center, Vector2f radii, Color color) {
     }
 }
 
+static float packColorBufData(const gfx::ColorBufInfo& cbi) {
+    u32 packed = 0;
+    packed |= static_cast<u32>(cbi.depth);
+
+    if (cbi.isOccluder) {
+        packed |= (1 << 8);
+    }
+
+    if (cbi.isUI) {
+        packed |= (1 << 9);
+    }
+
+    // TEMP
+    // std::bitset<32> tmp(packed);
+    // print(tmp);
+
+    f32 result;
+    std::memcpy(&result, &packed, sizeof(f32));
+    return result;
+}
+
 void DrawEllipseFromRect(Rectangle rect, Color color) {
     DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color);
 }
 
-void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness) {
+void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness,
+                   gfx::ColorBufInfo colorBufInfo) {
     // Check if texture is valid
     if (texture.id > 0) {
         float width = (float)texture.width;
@@ -429,12 +454,11 @@ void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 
 
         Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
         rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
-        // rlColor4ub(tint.r, tint.g, tint.b, tint.a); // old way, LDR colors
 
         // This input gets normalized, should implement the commented setter
         // Normals are unused, can be anything #RESEARCH
-        rlNormal3f(hdrColor.x, hdrColor.y, hdrColor.z);
-        // rlSetNormals(hdrColor);
+        // rlNormal3f(hdrColor.x, hdrColor.y, hdrColor.z);
+        rlSetNormals(Vector3{packColorBufData(colorBufInfo), 0.0, 0.0});
 
         // Top-left corner for texture and quad
         if (flipX)
@@ -469,7 +493,7 @@ void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 
     }
 }
 
-void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness) {
+void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness, gfx::ColorBufInfo colorBufInfo) {
     Vector2 topLeft = {};
     Vector2 topRight = {};
     Vector2 bottomLeft = {};
@@ -510,7 +534,7 @@ void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color
 
     rlBegin(RL_QUADS);
 
-    rlNormal3f(0.0f, 0.0f, 1.0f);
+    rlSetNormals(Vector3{packColorBufData(colorBufInfo), 0.0, 0.0});
     Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
     rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
 
@@ -532,6 +556,7 @@ void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color
 #else
     rlBegin(RL_TRIANGLES);
 
+    rlSetNormals(Vector3{packColorBufData(colorBufInfo), 0.0, 0.0});
     Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
     rlColor4f(hdrColor.x * brightness, hdrColor.y * brightness, hdrColor.z * brightness, hdrColor.w);
 
@@ -545,6 +570,36 @@ void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color
 
     rlEnd();
 #endif
+}
+
+MultiTexture CreateMultiTexture() {
+    MultiTexture mt;
+    const s32 width = WINDOW_WIDTH_RENDER;
+    const s32 height = WINDOW_HEIGHT_RENDER;
+    const auto hdrFormat = PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
+    const auto ldrFormat = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+
+    mt.tex = LoadRenderTextureFormat(width, height, hdrFormat);
+
+    rlEnableFramebuffer(mt.tex.id);
+
+    mt.depth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+    mt.occlusionColor = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+    mt.occlusionDepth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+
+    // Activate the buffers
+    rlActiveDrawBuffers(4);
+    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.depth, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, RL_ATTACHMENT_COLOR_CHANNEL2, RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, RL_ATTACHMENT_COLOR_CHANNEL3, RL_ATTACHMENT_TEXTURE2D, 0);
+
+    // Automatically calls rlDisableFramebuffer()
+    if (!rlFramebufferComplete(mt.tex.id)) {
+        print("failed to create MultiTexture");
+    }
+
+    return mt;
 }
 
 }  // namespace whal::gfx

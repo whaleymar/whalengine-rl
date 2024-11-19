@@ -17,7 +17,7 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
     if (ctx.colorOverride) {
         DrawRectanglePro(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, *ctx.colorOverride);
     } else {
-        gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, rect.brightness);
+        gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, rect.brightness, eCtx.colorBuf);
     }
 }
 

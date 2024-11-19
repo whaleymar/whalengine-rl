@@ -2,6 +2,7 @@
 
 #include "Events/Events.h"
 #include "Gfx/Pipeline.h"
+#include "Gfx/Texture.h"
 #include "Sys/IListen.h"
 #include "Systems/Graphics/Common.h"
 
@@ -23,6 +24,7 @@ public:
     static void init();
     static void render();
     static void setPostEffects(Pipeline pipeline);
+    static MultiTexture getStagingTex() { return instance().mStagingTexture; }
     void onEvent(evt::ShaderReload) override;
 
 private:
@@ -42,11 +44,10 @@ private:
     Camera2D mRaylibCamera;
     Pipeline mPostProcessSteps;
     std::vector<gfx::EntityRenderInfo> mRenderQueue;
-    std::vector<gfx::EntityRenderInfo> mUIRenderQueue;   // UI is stored in a separate queue so it's not affected by lighting
-    std::vector<gfx::EntityRenderInfo> mOcclusionQueue;  // stored separately for speed, since they need to be drawn twice (color/depth)
+    std::vector<gfx::EntityRenderInfo> mUIRenderQueue;  // UI is stored in a separate queue so it's not affected by lighting
+    MultiTexture mStagingTexture;
     s32 mMainTextureUniform;
     s32 mBloomThresholdUniform;
-    // s32 mExposureUniform;
 };
 
 }  // namespace whal
