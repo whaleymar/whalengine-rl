@@ -116,7 +116,7 @@ static const MaterialData S_MATERIAL_DUST = {
 static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .id = WorldMaterial::Fire,
                                              .colorRange = {ORANGE, RED},
-                                             .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecayTime |
+                                             .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecayTime |
                                                       MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag,
                                              .bounciness = 0.0,
                                              .gravityCoef = -0.5,
@@ -130,7 +130,7 @@ static const MaterialData S_MATERIAL_EMBER = {
     .name = "Ember",
     .id = WorldMaterial::Ember,
     .colorRange = {ORANGE, RED},
-    .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
+    .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
              MaterialData::Collision,
     .bounciness = 1.0,
     .gravityCoef = 1.0,
@@ -143,7 +143,7 @@ static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
                                                .id = WorldMaterial::Ember,
                                                // .colorRange = {RED, {Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 255}},
                                                .colorRange = {PINK, PINK},
-                                               .flags = MaterialData::Light | MaterialData::RadianceFlag | MaterialData::DecaySpeed |
+                                               .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed |
                                                         MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
                                                .bounciness = 1.0,
                                                .gravityCoef = 1.0,

@@ -1,5 +1,8 @@
 #include "Settings.h"
 
+const char* WINDOW_TITLE = "untitled tanks game";
+s32 FPS_TARGET = 144;
+
 // WINDOW SIZES
 s32 WINDOW_WIDTH_RENDER = 1280;
 s32 WINDOW_HEIGHT_RENDER = 720;
@@ -20,4 +23,12 @@ s32 WhalGetRenderWidth() {
 
 s32 WhalGetRenderHeight() {
     return WINDOW_HEIGHT_RENDER;
+}
+
+const char* WhalGetWindowTitle() {
+    return WINDOW_TITLE;
+}
+
+s32 WhalGetTargetFPS() {
+    return FPS_TARGET;
 }

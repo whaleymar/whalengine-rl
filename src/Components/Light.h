@@ -13,9 +13,6 @@ struct IEmitLight {
     Color color = WHITE;
 };
 
-// lights have a multiplicative effect on other objects (determines how visible they are).
-// radiance is additive. its color stays the same but its transparency increases with distance. Plus it affects the background.
-
 // TODO get rid of the inheritance, use dependency injection
 
 // this is implemented in a kind of jank way, but it's fast
@@ -25,8 +22,6 @@ struct PointLight : public IEmitLight {};
 struct BoxLight : public IEmitLight {
     Vector2i halfLen;
 };
-
-struct Radiance : public IEmitLight {};
 
 struct ShadowLight : public IEmitLight {};
 

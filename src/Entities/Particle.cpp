@@ -73,7 +73,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     return particle;
 }
 
-Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime, bool fullRadiance) {
+Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime) {
     auto expected = createParticleBase(transform, color, lifetime);
     if (!expected.isExpected()) {
         return expected;
@@ -86,12 +86,6 @@ Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f
 
     s32 radius = PIXELS_PER_TILE * 1;
     particle.add(PointLight{radius, 0, color});
-    if (fullRadiance) {
-        particle.add(Radiance{radius / 2, 0, color});
-
-    } else {
-        particle.add(Radiance{radius / 2, 0, Color(color.r, color.g, color.b, color.a / 2)});
-    }
 
     return particle;
 }

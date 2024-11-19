@@ -11,7 +11,6 @@ namespace whal {
 
 struct PointLight;
 struct BoxLight;
-struct Radiance;
 struct Transform2D;
 struct ShadowLight;
 
@@ -39,15 +38,6 @@ private:
     int mRadiusUniform;
     int mLightDepthUniform;
     int mOcclusionDepthUniform;
-};
-
-class RadianceLightSystem : public ecs::ISystem<Transform2D, Radiance>, public IListen<evt::ShaderReload, true> {
-public:
-    void drawEntities(Camera2D worldCamera);
-    void onEvent(evt::ShaderReload) override;
-
-private:
-    int mPositionUniform;
 };
 
 class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public IListen<evt::ShaderReload, true> {

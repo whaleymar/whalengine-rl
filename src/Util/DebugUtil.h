@@ -42,7 +42,6 @@ DECLARE_COMPONENT(whal::Jumper);
 DECLARE_COMPONENT(whal::Follow);
 DECLARE_COMPONENT(whal::Attach);
 DECLARE_COMPONENT(whal::PointLight);
-DECLARE_COMPONENT(whal::Radiance);
 DECLARE_COMPONENT(whal::BoxLight);
 DECLARE_COMPONENT(whal::ShadowLight);
 DECLARE_COMPONENT(whal::Lifetime);

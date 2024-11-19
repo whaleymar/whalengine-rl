@@ -24,6 +24,7 @@ NEXT GOAL:
     - once implemented, use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
     - for this, I think sprites components would need some luminance multiplier?
 - Lights need Brightness multiplier so everything's not stuck in LDR
+- rendering static tiles needs optimization. Even something simple like caching PreciseTransform2D would be huge
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -109,6 +110,10 @@ NEXT GOAL:
 - Get web and windows builds working again
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
+- efficient way of tracking an entity's precise position. Doing it from the Renderer every frame is too slow
+    - idea 1: "dirty" flag on transform whenever any of its data changes
+    - idea 2: everything that alters an entity's position updates precise position immediately -- difficult bc of tweens
+    - idea 3: optimize for static tiles: they are the most common thing I'm rendering. If they're fast then rendering is fast
 
 ---------------------------------------------------------------------------------------------------------------------------
 

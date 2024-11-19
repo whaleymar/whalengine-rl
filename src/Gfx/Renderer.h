@@ -34,8 +34,7 @@ private:
 
     void buildRenderQueue(Vector2i cameraPosition);
     void _drawEntities(gfx::RenderContext ctx);
-    void _drawEffectsMask(gfx::RenderContext ctx);
-    void _drawOcclusionMask(gfx::RenderContext ctx) const;
+    void _scaleDepthBuffers(gfx::RenderContext ctx) const;
     void _drawUI(const gfx::RenderContext ctx) const;
     void _render();
     void _init() const;
@@ -46,7 +45,6 @@ private:
     std::vector<gfx::EntityRenderInfo> mRenderQueue;
     std::vector<gfx::EntityRenderInfo> mUIRenderQueue;  // UI is stored in a separate queue so it's not affected by lighting
     MultiTexture mStagingTexture;
-    s32 mMainTextureUniform;
     s32 mBloomThresholdUniform;
 };
 
