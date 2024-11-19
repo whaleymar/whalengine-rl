@@ -1,7 +1,7 @@
 #include "Settings.h"
 
 const char* WINDOW_TITLE = "untitled tanks game";
-s32 FPS_TARGET = 144;
+s32 FPS_TARGET = 60;
 
 // WINDOW SIZES
 s32 WINDOW_WIDTH_RENDER = 1280;

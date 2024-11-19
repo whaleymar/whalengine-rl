@@ -244,7 +244,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
 // Could try this for a speed boost
 void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     // BLOOM
-    auto bloomTexUS = TextureManager::getRenderTexture(TextureID::UpscaledBloom);
+    auto bloomTex = TextureManager::getRenderTexture(TextureID::Bloom);
     auto mainTex = TextureManager::getRenderTexture(TextureID::Main);
     // auto tmpTex = mStagingTexture.tex;
     // This can be anything with the render dimensions EXCEPT mStagingTexture.tex, because I want to maintain the other color buffers for debugging
@@ -253,7 +253,7 @@ void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     // 1. Threshold the Main tex
 
     const f32 threshold = ctx.cameraEntity.get<whal::Camera>().bloomThreshold;
-    BeginTextureMode(bloomTexUS);
+    BeginTextureMode(bloomTex);
     Shader threshShader = ShaderManager::get(Shaders::Threshold);
     BeginShaderMode(threshShader);
     SetShaderValue(threshShader, mBloomThresholdUniform, &threshold, SHADER_UNIFORM_FLOAT);
@@ -262,14 +262,20 @@ void Renderer::_bloomAndTonemap(const gfx::RenderContext& ctx) const {
     EndTextureMode();
 
     // 2. Downscale and upscale for a cheap blur
-    scaleTexture(TextureID::UpscaledBloom, TextureID::DownscaledBloom);
-    scaleTexture(TextureID::DownscaledBloom, TextureID::UpscaledBloom);
+    scaleTexture(TextureID::Bloom, TextureID::HalfResBuf);
+    scaleTexture(TextureID::HalfResBuf, TextureID::QuarterResBuf);
+
+    // a little too much...
+    // scaleTexture(TextureID::QuarterResBuf, TextureID::EighthResBuf);
+    // scaleTexture(TextureID::EighthResBuf, TextureID::QuarterResBuf);
+    scaleTexture(TextureID::QuarterResBuf, TextureID::HalfResBuf);
+    scaleTexture(TextureID::HalfResBuf, TextureID::Bloom);
 
     // 3. Draw additively
     // RESEARCH could save a draw call by making the final staging -> main thingy happen here?
     BeginTextureMode(mainTex);
     BeginBlendMode(BLEND_ADDITIVE);
-    gfx::DrawRenderTexture(bloomTexUS);
+    gfx::DrawRenderTexture(bloomTex);
     EndBlendMode();
     EndTextureMode();
 
