@@ -14,17 +14,13 @@ NEXT GOAL:
 - dashed line
 - parallax factor
 - SpriteVisibilityMask -- a standalone sprite which affects visibility of main Sprite component
-    - thinking of defining a custom shader for sprites which would get this
-    - however, shaders in draw systems is dangerous, bc of sorting...
-    - good argument for mega shader?
-    - The way raylib is programmed, I could never call `EndShaderMode`, and when I want to use the default sprite then I just manually activate it. If `BeginShaderMode` is called on the active shader then nothing happens
 
 ## Gfx 
 - implement real bloom instead of my faked thingy (DONE)
     - once implemented, use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
     - for this, I think sprites components would need some luminance multiplier?
 - Lights need Brightness multiplier so everything's not stuck in LDR
-- rendering static tiles needs optimization. Even something simple like caching PreciseTransform2D would be huge
+- need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -110,10 +106,6 @@ NEXT GOAL:
 - Get web and windows builds working again
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
-- efficient way of tracking an entity's precise position. Doing it from the Renderer every frame is too slow
-    - idea 1: "dirty" flag on transform whenever any of its data changes
-    - idea 2: everything that alters an entity's position updates precise position immediately -- difficult bc of tweens
-    - idea 3: optimize for static tiles: they are the most common thing I'm rendering. If they're fast then rendering is fast
 
 ---------------------------------------------------------------------------------------------------------------------------
 
