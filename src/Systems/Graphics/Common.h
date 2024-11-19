@@ -24,9 +24,6 @@ struct RenderContext {
     Camera2D camera;
     const TextureAtlas& atlas;
     ecs::Entity cameraEntity;
-
-    // for post processing flags to work right, iRender systems should draw with this color if it's present
-    Corrade::Containers::Optional<Color> colorOverride = Corrade::Containers::NullOpt;
 };
 
 struct ColorBufInfo {
@@ -37,6 +34,9 @@ struct ColorBufInfo {
 
 // TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform2D (only calculated by Renderer if
 // not culled)
+//  - difficult thing is that some classes (like DropShadowRenderer) manually alter the PreciseTransform2D calculation... so maybe not
+//  - getting rid of the bounding box could still be nice for efficiency?
+//    - also don't need IRender implementer to add piRender, renderer can add that to struct w/ PreciseTransform
 struct EntityRenderInfo {
     AABB boundingBox;
     PreciseTransform2D preciseTransform;

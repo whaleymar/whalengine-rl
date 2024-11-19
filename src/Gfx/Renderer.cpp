@@ -178,7 +178,6 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
 
 // this does what the old Mega-GraphicsSystem used to do.
 void Renderer::_drawEntities(gfx::RenderContext renderContext) {
-    // _drawEffectsMask(renderContext);
     _drawOcclusionMask(renderContext);
 
     // Drawing GAME OBJECTS
@@ -220,6 +219,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     tmpDrawList.clear();
 
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
+    // int nCulled = 0;
     for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
         tmpDrawList.reserve(renderSystem.pSystem->getEntitiesVirtual().size());  // reserve space in case capacity is too low
         renderSystem.pIRender->addToQueue(tmpDrawList);
@@ -238,11 +238,14 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
                                                                 .isOccluder = renderInfo.entity.has<BlocksLight>(),
                                                                 .isUI = false});
                 }
+                // } else {
+                //     nCulled++;
             }
         }
 
         tmpDrawList.clear();
     }
+    // print("Culled ", nCulled, "on frame", Time.getFrame());
 
     std::sort(mRenderQueue.begin(), mRenderQueue.end(), isBelow);
     std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);

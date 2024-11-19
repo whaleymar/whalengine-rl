@@ -20,14 +20,9 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
     gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, frameSize, ctx.cameraPosition);
 
-    if (ctx.colorOverride) {
-        DrawTexturePro(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, *ctx.colorOverride);
-        return;
-    }
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
-    Shader shader = ShaderManager::get(Shaders::Default);
-    BeginShaderMode(shader);
+    BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color,
                        sprite.brightness, eCtx.colorBuf);
 }
