@@ -1,18 +1,21 @@
-#include "SpriteRenderSystem.h"
+#include "TileRenderSystem.h"
 
 #include "Common.h"
 #include "Components/Draw.h"
+#include "Components/Tile.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Physics/Box.h"
 
+#include "Settings.h"
 #include "rlgl.h"
 
 namespace whal {
 
-void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
+// Exactly the same as SpriteRenderSystem::draw
+void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto sprite = eCtx.entity.get<Sprite>();
     const auto frameSize = sprite.frameSize.as<f32>();
 
@@ -27,21 +30,22 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
                        sprite.brightness, eCtx.colorBuf);
 }
 
-void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
+void TileRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        const auto sprite = entity.get<Sprite>();
-        const auto& trans = entity.get<Transform2D>();
-        const auto bb = trans.rotationDegrees == 0.0f ?
-                            AABB(trans, sprite.frameSize / 2, Vector2i()) :
-                            Box(trans.getRotatedPosition(), sprite.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
-
-        queue.push_back(gfx::EntityRenderInfo{
-            .boundingBox = bb,
-            .preciseTransform = gfx::getPreciseTrans(entity, trans),
-            .entity = entity,
-            .piRender = this,
-        });
+        queue.push_back(entity.get<Tile>().renderInfo);
     }
+}
+
+void TileRenderSystem::onAdd(ecs::Entity entity) {
+    const auto& trans = entity.get<Transform2D>();
+    const auto bb = AABB(trans, Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) / 2, Vector2i());
+
+    entity.get<Tile>().renderInfo = gfx::EntityRenderInfo{
+        .boundingBox = bb,
+        .preciseTransform = gfx::getPreciseTrans(entity, trans),
+        .entity = entity,
+        .piRender = this,
+    };
 }
 
 }  // namespace whal

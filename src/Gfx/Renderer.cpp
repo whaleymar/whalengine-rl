@@ -47,7 +47,6 @@ void Renderer::setPostEffects(Pipeline pipeline) {
 }
 
 void Renderer::onEvent(evt::ShaderReload) {
-    mMainTextureUniform = GetShaderLocation(ShaderManager::get(Shaders::PostProcess), "iMainTex");
     mBloomThresholdUniform = GetShaderLocation(ShaderManager::get(Shaders::Threshold), "lum_threshold");
     // mExposureUniform = GetShaderLocation(ShaderManager::get(Shaders::ToneMap), "exposure");
 }
@@ -69,10 +68,9 @@ void Renderer::_render() {
     buildRenderQueue(renderContext.cameraPosition.round());
 
     // 1. ECS systems with draw-like methods are updated (this should probably happen automatically)
-    TextureManager::instance().renderBackgroundTextures();              // drawn to TextureID::Background
-    _drawEntities(renderContext);                                       // drawn to TextureID::Staging
-    drawLights(worldCamera);                                            // drawn to TextureID::UpscaledLighting
-    World.getSystem<RadianceLightSystem>()->drawEntities(worldCamera);  // drawn to TextureID::Radiance
+    TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
+    _drawEntities(renderContext);                           // drawn to TextureID::Staging
+    drawLights(worldCamera);                                // drawn to TextureID::UpscaledLighting
 
     // 2. Renders everything to TextureID::Main
     BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
@@ -86,15 +84,7 @@ void Renderer::_render() {
     gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
     EndBlendMode();
 
-    // Radiance. Is not upscaled.
-    RenderTexture2D radianceTexture = TextureManager::getRenderTexture(TextureID::Radiance);
-    Rectangle screenSourceRec =
-        Rectangle(0.0f, 0.0f, static_cast<f32>(radianceTexture.texture.width), -static_cast<f32>(radianceTexture.texture.height));
-    Rectangle dstRect(0, 0, radianceTexture.texture.width * VIRTUAL_SCREEN_RATIO, radianceTexture.texture.height * VIRTUAL_SCREEN_RATIO);
-    BeginBlendMode(BLEND_ADDITIVE);
-    DrawTexturePro(radianceTexture.texture, screenSourceRec, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
-    EndBlendMode();
-
+    // UI.
     _drawUI(renderContext);
     EndTextureMode();
 
@@ -129,7 +119,7 @@ static void scaleTexture(TextureID src, TextureID dst, BlendMode blendMode = BLE
     EndTextureMode();
 }
 
-void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
+void Renderer::_scaleDepthBuffers(gfx::RenderContext ctx) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
     const auto mt = Renderer::getStagingTex();
     const Texture depthTex = Texture{
@@ -178,8 +168,6 @@ void Renderer::_drawOcclusionMask(gfx::RenderContext ctx) const {
 
 // this does what the old Mega-GraphicsSystem used to do.
 void Renderer::_drawEntities(gfx::RenderContext renderContext) {
-    _drawOcclusionMask(renderContext);
-
     // Drawing GAME OBJECTS
     BeginTextureMode(mStagingTexture.tex);
     ClearBackground(Colors::CLEAR);
@@ -189,6 +177,8 @@ void Renderer::_drawEntities(gfx::RenderContext renderContext) {
     }
     EndMode2D();
     EndTextureMode();
+
+    _scaleDepthBuffers(renderContext);
 }
 
 void Renderer::_drawUI(const gfx::RenderContext ctx) const {
@@ -201,7 +191,7 @@ void Renderer::_drawUI(const gfx::RenderContext ctx) const {
 
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
     if (entity1.preciseTransform.depth != entity2.preciseTransform.depth) {
-        return depthToFloat(entity1.preciseTransform.depth) < depthToFloat(entity2.preciseTransform.depth);
+        return entity1.preciseTransform.depth < entity2.preciseTransform.depth;
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
@@ -219,7 +209,6 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     tmpDrawList.clear();
 
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
-    // int nCulled = 0;
     for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
         tmpDrawList.reserve(renderSystem.pSystem->getEntitiesVirtual().size());  // reserve space in case capacity is too low
         renderSystem.pIRender->addToQueue(tmpDrawList);
@@ -238,14 +227,11 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
                                                                 .isOccluder = renderInfo.entity.has<BlocksLight>(),
                                                                 .isUI = false});
                 }
-                // } else {
-                //     nCulled++;
             }
         }
 
         tmpDrawList.clear();
     }
-    // print("Culled ", nCulled, "on frame", Time.getFrame());
 
     std::sort(mRenderQueue.begin(), mRenderQueue.end(), isBelow);
     std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);

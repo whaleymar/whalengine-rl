@@ -42,6 +42,7 @@ public:
     using GameSetter = void (*)(whal::IGame&);
     using BoolCB = bool (*)();
     using FloatFunc = void (*)(float);
+    using StrGetter = const char* (*)();
 
     GameHandler() = default;
     bool isValid() const { return mLibHandle != nullptr; }
@@ -120,6 +121,8 @@ public:
         EngineEnd = getSymbol<Callback>("_EngineEnd");
         GetWindowWidth = getSymbol<IntGetter>("WhalGetRenderWidth");
         GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
+        GetTargetFPS = getSymbol<IntGetter>("WhalGetTargetFPS");
+        GetWindowTitle = getSymbol<StrGetter>("WhalGetWindowTitle");
 
         if (mAllLoadsSuccessful) {
             print("Loaded library successfully");
@@ -143,6 +146,7 @@ public:
         EngineEnd = _EngineEnd;
         GetWindowWidth = WhalGetRenderWidth;
         GetWindowHeight = WhalGetRenderHeight;
+        GetWindowTitle = WhalGetWindowTitle;
         return false;
 
 #endif
@@ -170,6 +174,8 @@ public:
     Callback EngineEnd;
     IntGetter GetWindowWidth;
     IntGetter GetWindowHeight;
+    IntGetter GetTargetFPS;
+    StrGetter GetWindowTitle;
     GameCreator CreateGameCB;
     GameDestructor DestroyGameCB;
 
@@ -189,11 +195,10 @@ public:
 
         // Raylib initialization
         SetTraceLogLevel(LOG_WARNING);
-        InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), WINDOW_TITLE);
+        InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), mGameHandler.GetWindowTitle());
         SetExitKey(KEY_NULL);  // Escape quits by default
 
-        SetTargetFPS(FPS_TARGET);
-        // SetTargetFPS(144); // for testing
+        SetTargetFPS(mGameHandler.GetTargetFPS());
 
         // Set application icon for desktop builds
 #ifndef __EMSCRIPTEN__

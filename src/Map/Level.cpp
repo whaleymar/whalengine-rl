@@ -1,6 +1,7 @@
 #include "Level.h"
 
 #include "Components/Tags.h"
+#include "Components/Tile.h"
 #include "Gfx/Frame.h"
 #include "IGame.h"
 #include "Physics/CollisionLayer.h"
@@ -134,15 +135,15 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     return result;
 }
 
-struct Tile {
+struct TileInfo {
     s32 gid;
     bool isFlipH;
     bool isFlipY;
     bool isRotate;
 };
 
-static Tile getTile(u32 tileMask) {
-    Tile tile;
+static TileInfo getTile(u32 tileMask) {
+    TileInfo tile;
     tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
     tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
     tile.isRotate = tileMask & 0x20000000;  // Check if the 30th bit is on
@@ -156,6 +157,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
 
+    // CREATE TILE ENTITIES
     // std::vector<std::vector<s32>> collisionGrid;
     for (s32 x = 0; x < map.widthTiles; x++) {
         // std::vector<s32> collisionColumn;
@@ -171,8 +173,8 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
 
             for (auto& layer : map.layers) {
                 u32 tileMask = layer.data[ix];
-                Tile tile = getTile(tileMask);
-                Tile originalTile = tile;
+                TileInfo tile = getTile(tileMask);
+                TileInfo originalTile = tile;
                 s32 blockID = tile.gid;
 
                 // the rotate flag technically means diagonal flipping or something idk it's some jank
@@ -231,6 +233,8 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                             e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
                             lvl.navGrid[x][y] = false;
                         }
+
+                        e.add<Tile>();  // this tells the renderer that this entity won't move
 
                         e.activate();
                         // if ((*eEntity).has<Collider>()) {

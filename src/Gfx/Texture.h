@@ -40,13 +40,10 @@ private:
 // RESEARCH other LayerXYZs I might want to do in the future:
 // - Outline
 enum class TextureID {
-    // Staging,
     Main,
-    DownscaledPostProcess,
     Background,  // any repeating backgrounds use this
     Lighting,
     UpscaledLighting,
-    Radiance,
     BackgroundStatic,
     BackgroundFar,
     BackgroundMid,

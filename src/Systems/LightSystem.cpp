@@ -169,50 +169,6 @@ void BoxLightSystem::drawEntities() {
     }
 }
 
-void RadianceLightSystem::onEvent(evt::ShaderReload) {
-    mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::Radiance), "position");
-}
-
-void RadianceLightSystem::drawEntities(Camera2D worldCamera) {
-    auto cameraPos = getCameraPositionPrecise();
-    // auto cameraPos = toFloatVec(getCameraPosition());
-
-    Shader shader = ShaderManager::get(Shaders::Radiance);
-    ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::Radiance);
-    BeginTextureMode(TextureManager::getRenderTexture(TextureID::Radiance));
-    BeginMode2D(worldCamera);
-
-    ClearBackground({0, 0, 0, 0});  // don't overwrite background stuff
-
-    const Texture randomTexture = TextureManager::getRenderTexture(TextureID::DownscaledPostProcess).texture;
-    for (auto [entityid, entity] : getEntitiesMutable()) {
-        if (entity.has<Invisible>()) {
-            continue;
-        }
-
-        Radiance light = entity.get<Radiance>();
-        const Vector2i worldPosition = entity.get<Transform2D>().apply(Vector2i(0, light.heightOffset));
-        const Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
-
-        // RESEARCH may want to add this as a param in the component
-        constexpr f32 intensity = 1.0;
-        s32 radius = light.radius;
-        radius = ease(0, radius, intensity, Ease::OutQuad);
-
-        Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
-
-        Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
-        Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
-        DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
-    }
-
-    EndMode2D();
-    EndTextureMode();
-}
-
 void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
     mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");

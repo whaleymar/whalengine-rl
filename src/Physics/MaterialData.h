@@ -26,7 +26,7 @@ struct MaterialData {
         RigidBodyFlag = 1 << 1,
         Liquid = 1 << 2,
         Light = 1 << 3,
-        RadianceFlag = 1 << 4,
+        GlowFlag = 1 << 4,
         DecayTime = 1 << 5,
         DecaySpeed = 1 << 6,
         FadeOutFlag = 1 << 7,
@@ -105,8 +105,7 @@ struct MaterialData {
                 .setTransition(Ease::InOutQuad);
         }
 
-        if (isFlagSet(RadianceFlag)) {
-            // entity.add(Radiance{2, 0, color});
+        if (isFlagSet(GlowFlag)) {
             entity.get<T>().brightness = 2.5;
         }
 

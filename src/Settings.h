@@ -21,10 +21,11 @@
 ///////////////// RAYLIB GRAPHICS ///////////////////////////
 /////////////////////////////////////////////////////////////
 
-inline const char* WINDOW_TITLE = "whalengine";
+extern const char* WINDOW_TITLE;
+extern s32 FPS_TARGET;
 
 // stuff that doesn't change (for now)
-inline constexpr s32 FPS_TARGET = 60;
+// inline constexpr s32 FPS_TARGET = 60;
 inline constexpr s32 PIXELS_PER_TILE = 8;
 inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
 
@@ -42,6 +43,8 @@ extern s32 WINDOW_HEIGHT_GAME;
 extern "C" {
 s32 WhalGetRenderWidth();
 s32 WhalGetRenderHeight();
+const char* WhalGetWindowTitle();
+s32 WhalGetTargetFPS();
 }
 
 // DERIVED STUFF

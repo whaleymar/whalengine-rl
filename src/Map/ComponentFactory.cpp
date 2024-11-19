@@ -10,7 +10,6 @@
 #include "Components/Animator.h"
 #include "Components/Collision.h"
 #include "Components/Draw.h"
-#include "Components/GfxFlags.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/ParticleEmitter.h"
@@ -75,15 +74,9 @@ static void addComponentSprite(const nlohmann::json& values, const nlohmann::jso
 static void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& allObjects,
                                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-static void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
-                         const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                         ecs::Entity entity, LayerData layerData);
 static void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects,
                               const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                               const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
-static void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& allObjects,
-                                 const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
-                                 const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
 static void addComponentLifetime(const nlohmann::json& values, const nlohmann::json& allObjects,
                                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData,
                                  const ActiveLevel& level, ecs::Entity entity, LayerData layerData);
@@ -116,7 +109,6 @@ static Sprite DefaultSprite;
 static Sprite DefaultAnimatedSprite;
 static Attach DefaultAttach;
 static PointLight DefaultPointLight;
-static Radiance DefaultRadiance;
 static Lifetime DefaultLifeTime;
 static DrawText DefaultDrawText;
 static ParticleEmitter DefaultParticleEmitter;
@@ -129,9 +121,7 @@ static const NameToCreator<ComponentAdder> S_COMPONENT_ENTRIES[] = {
     {"Component_DrawRect", addComponentDraw},
     {"Component_Sprite_NoAnim", addComponentSprite},
     {"Component_Sprite_Animated", addComponentAnimator},
-    {"Component_DrawLayer_TileOnly", addDrawLayer},
     {"Component_PointLight", addComponentLight},
-    {"Component_Radiance", addComponentRadiance},
     {"Component_Lifetime", addComponentLifetime},
     {"Component_Attach", addComponentAttach},
     {"Component_RigidBody", addComponentRigidBody},
@@ -259,22 +249,6 @@ void ComponentFactory::makeDefaultComponent(const nlohmann::json& property) {
                 DefaultPointLight.heightOffset = member[KEY_VALUE];
             } else if (memberName == "radiusTexels") {
                 DefaultPointLight.radius = member[KEY_VALUE];
-            } else {
-                print("Skipping member ", memberName, "for", componentName);
-            }
-        }
-
-    } else if (componentName == "Component_Radiance") {
-        DefaultRadiance = Radiance();
-        for (const auto& member : property[KEY_MEMBERS]) {
-            std::string memberName = member[KEY_NAME];
-            if (memberName == "Color") {
-                std::string hexString = member[KEY_VALUE];
-                DefaultRadiance.color = parseColor(hexString);
-            } else if (memberName == "heightTexels") {
-                DefaultRadiance.heightOffset = member[KEY_VALUE];
-            } else if (memberName == "radiusTexels") {
-                DefaultRadiance.radius = member[KEY_VALUE];
             } else {
                 print("Skipping member ", memberName, "for", componentName);
             }
@@ -454,19 +428,6 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
     entity.add(rails);
 }
 
-static u32 parseGfxEffects(const nlohmann::json& values) {
-    u32 flags = 0;
-    if (values.contains("Layer")) {
-        std::string textureLayer = values["Layer"];
-        if (textureLayer == "Bloom") {
-            flags |= GfxFlags::Bloom;
-        } else if (textureLayer == "Glow") {
-            flags |= GfxFlags::Glow;
-        }
-    }
-    return flags;
-}
-
 void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObjects,
                       const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
                       ecs::Entity entity, LayerData layerData) {
@@ -482,9 +443,6 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
     }
 
     tryReadFloat(values, "Brightness", &draw.brightness);
-
-    u32 flags = parseGfxEffects(values);
-    entity.add(GfxFlags{flags});
     entity.add(draw);
 }
 
@@ -507,9 +465,6 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     }
 
     tryReadFloat(values, "Brightness", &sprite.brightness);
-
-    u32 flags = parseGfxEffects(values);
-    entity.add(GfxFlags{flags});
 
     std::string spritePath = "";
     if (values.contains("Sprite")) {
@@ -549,24 +504,7 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     }
 
     tryReadFloat(values, "Brightness", &sprite.brightness);
-
-    u32 flags = parseGfxEffects(values);
-    entity.add(GfxFlags{flags});
-
     entity.add(sprite);
-}
-
-// this is only intended to be used on tiles (which already have a sprite), not objects
-void addDrawLayer(const nlohmann::json& values, const nlohmann::json& allObjects,
-                  const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                  ecs::Entity entity, LayerData layerData) {
-    if (!entity.has<Sprite>()) {
-        print("can't add draw layer for entity", entityData.id, "without Draw component");
-        return;
-    }
-
-    u32 flags = parseGfxEffects(values);
-    entity.add(GfxFlags{flags});
 }
 
 void addComponentLight(const nlohmann::json& values, const nlohmann::json& allObjects,
@@ -578,25 +516,6 @@ void addComponentLight(const nlohmann::json& values, const nlohmann::json& allOb
         light.radius = std::max(entityData.size.x, entityData.size.y);
     }
     tryReadVal(values, "heightTexels", &light.heightOffset);
-    std::string hexString;
-    if (tryReadVal(values, "Color", &hexString)) {
-        light.color = parseColor(hexString);
-    }
-    entity.add(light);
-}
-
-void addComponentRadiance(const nlohmann::json& values, const nlohmann::json& allObjects,
-                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, EntityMapData entityData, const ActiveLevel& level,
-                          ecs::Entity entity, LayerData layerData) {
-    Radiance light = entity.has<Radiance>() ? entity.get<Radiance>() : DefaultRadiance;
-    if (!tryReadVal(values, "radiusTexels", &light.radius)) {
-        // by default, use bigger dimension
-        light.radius = std::max(entityData.size.x, entityData.size.y);
-    }
-    if (!tryReadVal(values, "heightTexels", &light.heightOffset)) {
-        // by default, use half of entity height
-        light.heightOffset = entityData.size.y / 2;
-    }
     std::string hexString;
     if (tryReadVal(values, "Color", &hexString)) {
         light.color = parseColor(hexString);
