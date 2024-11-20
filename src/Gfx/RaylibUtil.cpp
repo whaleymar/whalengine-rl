@@ -368,6 +368,23 @@ void DrawRenderTexture(RenderTexture renderTexture, Color color) {
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
 }
 
+void ScaleTexture(RenderTexture src, RenderTexture dst) {
+    const Rectangle srcRect = Rectangle(0, 0, src.texture.width, -src.texture.height);
+    const Rectangle dstRect = Rectangle(0, 0, dst.texture.width, dst.texture.height);
+
+    BeginTextureMode(dst);
+    ClearBackground(Colors::CLEAR);
+    DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+    EndBlendMode();
+    EndTextureMode();
+}
+
+void ScaleTexture(TextureID src, TextureID dst) {
+    const auto srcTex = TextureManager::getRenderTexture(src);
+    const auto dstTex = TextureManager::getRenderTexture(dst);
+    ScaleTexture(srcTex, dstTex);
+}
+
 // Draws correctly sized pixel even for higher resolution target textures.
 void DrawPixel(Vector2i screenCoord, Color color) {
     DrawRectangle(screenCoord.x, screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO, color);

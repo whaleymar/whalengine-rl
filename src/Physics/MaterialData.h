@@ -106,7 +106,7 @@ struct MaterialData {
         }
 
         if (isFlagSet(GlowFlag)) {
-            entity.get<T>().brightness = 2.5;
+            entity.get<T>().brightness = 2.0;  // TODO brightness modifier in material struct, not flag
         }
 
         if (startScale != 1.0) {

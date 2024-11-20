@@ -1,11 +1,14 @@
 #pragma once
 
-#include "Util/Types.h"
+#include <memory>
+#include <vector>
 
 namespace whal {
 
+class BaseShader;
+
 struct Camera {
-    f32 bloomThreshold = 1.5f;
+    std::vector<std::shared_ptr<BaseShader>> postprocess;
 };
 
 }  // namespace whal

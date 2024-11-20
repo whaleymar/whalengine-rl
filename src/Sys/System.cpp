@@ -20,6 +20,7 @@ JobScheduler Schedule = JobScheduler();
 ecs::World& World = ecs::World::getInstance();
 PrefabManager Prefab = PrefabManager();
 CursorManager Cursor = CursorManager();
+Renderer Graphics = Renderer();
 
 // VARIABLES
 static bool S_IS_PAUSED = false;
@@ -88,6 +89,7 @@ bool System::start() {
     assert(!S_IS_STARTED);
     S_IS_STARTED = true;
 
+    Graphics.init();
     ShaderManager::instance().loadShaders();
     Input.loadMappings();
     World.setEntityDeathCallback(&emitEntityDeathEvent);
