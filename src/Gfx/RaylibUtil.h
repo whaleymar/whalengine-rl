@@ -12,6 +12,7 @@ typedef struct Vector2 Vector2;
 namespace whal {
 
 struct MultiTexture;
+enum class TextureID;
 
 namespace gfx {
 
@@ -29,6 +30,8 @@ void UnloadRenderTextureDepthTex(RenderTexture target);
 void DrawTextureDepth(Texture texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float depth);
 
 void DrawRenderTexture(RenderTexture renderTexture, Color color = WHITE);
+void ScaleTexture(RenderTexture src, RenderTexture dst);
+void ScaleTexture(TextureID src, TextureID dst);
 
 ////////////////////////////
 // CUSTOM SHAPE FUNCTIONS //

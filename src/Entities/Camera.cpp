@@ -25,9 +25,7 @@ Expected<ecs::Entity> createCamera(Transform2D trans) {
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
     camera.add(Name("Camera"));
-    camera.add(Camera{
-        .bloomThreshold = 1.5,
-    });
+    camera.add<Camera>();
     camera.add<AudioListener>();
     camera.add<IgnoreTimeModifiers>();
 

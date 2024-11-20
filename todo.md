@@ -1,6 +1,8 @@
 # To Do 
 
 NEXT GOAL: 
+- add Renderer.getTempRT
+- finish implementing acerola bloom tex
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

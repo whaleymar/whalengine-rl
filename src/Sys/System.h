@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Audio.h"
+#include "Cursor.h"
 #include "Event.h"
 #include "InputHandler.h"
 #include "JobScheduler.h"
 #include "Prefab.h"
 #include "Random.h"
-#include "Sys/Cursor.h"
+#include "Renderer.h"
 #include "Time.h"
 #include "whalECS/src/ECS.h"
 
@@ -24,6 +25,7 @@ extern JobScheduler Schedule;
 extern ecs::World& World;
 extern PrefabManager Prefab;
 extern CursorManager Cursor;
+extern Renderer Graphics;
 
 struct System {
     friend Engine;

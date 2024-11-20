@@ -17,7 +17,6 @@ enum class Shaders : s16 {
     BlurLowRes,
     LightPassThru,
     Pixelate,
-    Threshold,
     Test,
     _Count_DO_NOT_USE_ME
 };
