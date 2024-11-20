@@ -36,6 +36,90 @@ void Renderer::init() {
     mStagingTexture = gfx::CreateMultiTexture();
 }
 
+void Renderer::tick() {
+    const s32 RELEASE_FRAMES = 60;
+
+    // iterate through the available RTs and get the range of ones that should be freed
+    // RTs are ordered by unused frames (high to low) so as soon as we find an RT we should keep, we can exit
+    s32 rmIx = -1;
+    for (s32 i = 0; i < static_cast<s32>(mAvailableRTs.size()); ++i) {
+        if (mAvailableRTs[i].unusedFrames >= RELEASE_FRAMES) {
+            rmIx = i;
+        } else {
+            break;
+        }
+    }
+
+    // release old RTs
+    if (rmIx > -1) {
+        // end is exclusive. add 1.
+        mAvailableRTs.erase(mAvailableRTs.begin(), mAvailableRTs.begin() + rmIx + 1);
+    }
+
+    // increment unused frames
+    for (size_t i = 0; i < mAvailableRTs.size(); ++i) {
+        mAvailableRTs[i].unusedFrames++;
+    }
+
+    // Make used RTs available
+    for (size_t i = 0; i < mUsedRTs.size(); ++i) {
+        mUsedRTs[i].unusedFrames = 0;
+        mAvailableRTs.push_back(mUsedRTs[i]);
+    }
+
+    // Clear used list
+    mUsedRTs.clear();
+}
+
+RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, PixelFormat format, TextureFilter filter) {
+    // iterate backwards, since the most recently used stuff is in the back
+    for (s32 i = static_cast<s32>(mAvailableRTs.size()) - 1; i >= 0; --i) {
+        auto& it = mAvailableRTs[i];
+        if (it.rt.texture.width == width && it.rt.texture.height == height && it.rt.texture.format == format) {
+            // move this to mUsedRTs and return it
+            auto result = mAvailableRTs[i];
+            mAvailableRTs.erase(mAvailableRTs.begin() + i);
+            if (result.filter != filter) {
+                result.filter = filter;
+                SetTextureFilter(result.rt.texture, filter);
+            }
+            mUsedRTs.push_back(result);
+            return result.rt;
+        }
+    }
+
+    // Nothing was found, create a new RenderTexture
+    RenderTexture rt = LoadRenderTextureFormat(width, height, format);
+    SetTextureFilter(rt.texture, filter);
+    mUsedRTs.push_back({.rt = rt, .filter = filter});
+    return rt;
+}
+
+RenderTexture Renderer::getTemporaryRT(Texture reference, TextureFilter filter) {
+    return getTemporaryRT(reference.width, reference.height, static_cast<PixelFormat>(reference.format), filter);
+}
+
+void Renderer::releaseTemporaryRT(RenderTexture rt) {
+    s32 ix = -1;
+    // iterate in reverse since we are most likely to release a recently created one
+    for (s32 i = static_cast<s32>(mUsedRTs.size()) - 1; i >= 0; --i) {
+        if (mUsedRTs[i].rt.id == rt.id) {
+            ix = i;
+            break;
+        }
+    }
+
+    if (ix == -1) {
+        // user error, just exit
+        return;
+    }
+
+    auto released = mUsedRTs[ix];
+    mUsedRTs.erase(mUsedRTs.begin() + ix);
+    released.unusedFrames = 0;
+    mAvailableRTs.push_back(released);
+}
+
 void Renderer::render() {
     // 0. Create render context and build the render queue.
     Camera2D worldCamera = mRaylibCamera;

@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
 #include "Settings.h"
