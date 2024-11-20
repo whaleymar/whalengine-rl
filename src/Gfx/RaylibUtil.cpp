@@ -3,6 +3,7 @@
 
 #include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Util/Color.h"
 #include "Util/Print.h"
 #include "raylib.h"
 #include "rlgl.h"

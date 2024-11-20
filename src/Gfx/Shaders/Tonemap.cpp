@@ -1,7 +1,7 @@
 #include "Tonemap.h"
 
 #include "Gfx/RaylibUtil.h"
-#include "Gfx/Texture.h"
+#include "Sys/System.h"
 #include "raylib.h"
 
 namespace whal {
@@ -11,11 +11,11 @@ Tonemap::Tonemap() : BaseShader("", "whalengine/src/Shader/toneMapping.glsl") {}
 void Tonemap::process(RenderTexture src, RenderTexture dst) {
     assert(isValid());
 
-    // This can be anything with the render dimensions EXCEPT mStagingTexture.tex, because I want to maintain the other color buffers for debugging
-    // TODO getTempRT
     RenderTexture tmpSrc;
+    bool isTemporary = false;
     if (src.id == dst.id) {
-        tmpSrc = TextureManager::getRenderTexture(TextureID::UpscaledLighting);
+        isTemporary = true;
+        tmpSrc = Graphics.getTemporaryRT(src.texture);
         BeginTextureMode(tmpSrc);
         ClearBackground(Colors::CLEAR);
         BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);  // doesn't seem to make a difference
@@ -35,6 +35,10 @@ void Tonemap::process(RenderTexture src, RenderTexture dst) {
     gfx::DrawRenderTexture(tmpSrc);
     EndBlendMode();
     EndTextureMode();
+
+    if (isTemporary) {
+        Graphics.releaseTemporaryRT(tmpSrc);
+    }
 }
 
 }  // namespace whal

@@ -2,6 +2,7 @@
 
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/Texture.h"
+#include "Sys/System.h"
 #include "raylib.h"
 
 namespace whal {
@@ -13,10 +14,11 @@ Bloom::Bloom() : BaseShader("", "whalengine/src/Shader/threshold.glsl") {
 void Bloom::process(RenderTexture src, RenderTexture dst) {
     assert(isValid());
 
-    // TODO would like some sort of GetTemporaryRenderTex func for this
-    RenderTexture halfRes = TextureManager::getRenderTexture(TextureID::HalfResBuf);
-    RenderTexture quarterRes = TextureManager::getRenderTexture(TextureID::QuarterResBuf);
     RenderTexture bloomTex = TextureManager::getRenderTexture(TextureID::Bloom);
+    RenderTexture halfRes =
+        Graphics.getTemporaryRT(src.texture.width / 2, src.texture.height / 2, static_cast<PixelFormat>(src.texture.format), TEXTURE_FILTER_BILINEAR);
+    RenderTexture quarterRes =
+        Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, static_cast<PixelFormat>(src.texture.format), TEXTURE_FILTER_BILINEAR);
 
     BeginTextureMode(bloomTex);
     BeginShaderMode(mShaderHandle);
@@ -32,6 +34,9 @@ void Bloom::process(RenderTexture src, RenderTexture dst) {
     // upscale
     gfx::ScaleTexture(quarterRes, halfRes);
     gfx::ScaleTexture(halfRes, bloomTex);
+
+    Graphics.releaseTemporaryRT(quarterRes);
+    Graphics.releaseTemporaryRT(halfRes);
 
     // Draw Additively
     BeginTextureMode(dst);

@@ -3,6 +3,7 @@
 NEXT GOAL: 
 - add Renderer.getTempRT
 - finish implementing acerola bloom tex
+- get rid of Pipeline class
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
