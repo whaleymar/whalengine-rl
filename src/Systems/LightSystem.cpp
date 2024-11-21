@@ -10,9 +10,9 @@
 
 #include "Events/Events.h"
 #include "Gfx/Coordinates.h"
-#include "Gfx/Pipeline.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
+#include "Gfx/Shaders/LightDenoise.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "Sys/System.h"
@@ -43,21 +43,11 @@ void drawLights(Camera2D worldCamera) {
     EndMode2D();
     EndTextureMode();
 
-    // blur the lighting texture (and set alphas to 1)
-    static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::BlurLowRes}, true);
+    // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
+    static LightDenoise lightingPipeline;
 
-    // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
-    // static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::LightPassThru}, true);
-    lightingPipeline.process(lightTex);
-
-    // upscale the lighting to full resolution
     const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
-    BeginTextureMode(lightTexUpscale);
-    ClearBackground(Colors::CLEAR);
-    const Rectangle srcRect = Rectangle(0, 0, lightTex.texture.width, -lightTex.texture.height);
-    const Rectangle dstRect = Rectangle(0, 0, lightTexUpscale.texture.width, lightTexUpscale.texture.height);
-    DrawTexturePro(lightTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
+    lightingPipeline.process(lightTex, lightTexUpscale);
     Graphics.releaseTemporaryRT(lightTex);
 }
 

@@ -10,7 +10,6 @@ uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 
 // mine:
-// uniform float iTime;
 uniform vec2 iResolution;
 
 // Output fragment color
@@ -29,7 +28,7 @@ float normpdf(in float x, in float sigma)
 void main() {
 	vec3 c = texture(texture0, fragTexCoord).rgb;
 
-    // TODO uniform
+    // can't make this a uniform because it needs to be const...
     const int mSize = 3;
     const int kSize = (mSize-1)/2;
     float kernel[mSize];

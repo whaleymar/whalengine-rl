@@ -67,7 +67,7 @@ struct MaterialData {
         }
 
         if (isFlagSet(Light)) {
-            entity.add(PointLight{halfLen * 2});
+            entity.add(PointLight{halfLen * 2, 0, color});
 
             // if fading, then decrease light with time
             if (isFlagSet(FadeOutFlag)) {
