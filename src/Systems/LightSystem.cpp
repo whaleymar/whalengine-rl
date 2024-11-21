@@ -28,7 +28,8 @@ namespace whal {
 const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
 void drawLights(Camera2D worldCamera) {
-    const auto lightTex = TextureManager::getRenderTexture(TextureID::Lighting);
+    RenderTexture lightTex =
+        Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, TEXTURE_FILTER_BILINEAR);
     BeginTextureMode(lightTex);
     BeginMode2D(worldCamera);
     ClearBackground(COLOR_AMBIENT);
@@ -47,18 +48,17 @@ void drawLights(Camera2D worldCamera) {
 
     // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
     // static const Pipeline lightingPipeline({WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME}, {Shaders::LightPassThru}, true);
-    lightingPipeline.process(TextureID::Lighting);
+    lightingPipeline.process(lightTex);
 
     // upscale the lighting to full resolution
-    const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::UpscaledLighting);
+    const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
     BeginTextureMode(lightTexUpscale);
     ClearBackground(Colors::CLEAR);
-
     const Rectangle srcRect = Rectangle(0, 0, lightTex.texture.width, -lightTex.texture.height);
     const Rectangle dstRect = Rectangle(0, 0, lightTexUpscale.texture.width, lightTexUpscale.texture.height);
     DrawTexturePro(lightTex.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-
     EndTextureMode();
+    Graphics.releaseTemporaryRT(lightTex);
 }
 
 void PointLightSystem::onEvent(evt::ShaderReload) {
@@ -119,8 +119,7 @@ void BoxLightSystem::drawEntities() {
     auto cameraPos = getCameraPositionPrecise();
     Shader shader = ShaderManager::get(Shaders::BoxLight);
 
-    // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
-    const auto randomTexture = TextureManager::getRenderTexture(TextureID::Lighting).texture;
+    const auto randomTexture = Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     for (auto [entityid, entity] : getEntitiesMutable()) {
         if (entity.has<Invisible>()) {
             continue;
@@ -162,11 +161,12 @@ void BoxLightSystem::drawEntities() {
         const Vector2i destPosition = screenPosition - lightBounds;
         const Vector2i destSize = lightBounds * 2;
 
-        const Rectangle srcRect(0, 0, randomTexture.width, randomTexture.height);
+        const Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
         const Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
-        DrawTexturePro(randomTexture, srcRect, dstRect, Vector2(0, 0), 0, color);
+        DrawTexturePro(randomTexture.texture, srcRect, dstRect, Vector2(0, 0), 0, color);
     }
+    Graphics.releaseTemporaryRT(randomTexture);
 }
 
 void ShadowLightSystem::onEvent(evt::ShaderReload) {
