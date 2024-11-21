@@ -116,6 +116,36 @@ Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTe
     return texture;
 }
 
+Texture MultiTexture::getOcclusionColor() const {
+    return Texture{
+        .id = occlusionColor,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+}
+
+Texture MultiTexture::getDepth() const {
+    return Texture{
+        .id = depth,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+}
+
+Texture MultiTexture::getOcclusionDepth() const {
+    return Texture{
+        .id = occlusionDepth,
+        .width = WINDOW_WIDTH_RENDER,
+        .height = WINDOW_HEIGHT_RENDER,
+        .mipmaps = 1,
+        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+    };
+}
+
 // RESEARCH add a data point for Texture Filter?
 struct RenderTextureInfo {
     TextureID id;

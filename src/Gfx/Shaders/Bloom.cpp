@@ -21,6 +21,7 @@ void Bloom::process(RenderTexture src, RenderTexture dst) {
         Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, static_cast<PixelFormat>(src.texture.format), TEXTURE_FILTER_BILINEAR);
 
     BeginTextureMode(bloomTex);
+    ClearBackground(Colors::CLEAR);
     BeginShaderMode(mShaderHandle);
     setFloat("lum_threshold", threshold);
     gfx::DrawRenderTexture(src);
@@ -40,6 +41,8 @@ void Bloom::process(RenderTexture src, RenderTexture dst) {
 
     // Draw Additively
     BeginTextureMode(dst);
+    ClearBackground(Colors::CLEAR);
+    gfx::DrawRenderTexture(src);
     BeginBlendMode(BLEND_ADDITIVE);
     gfx::DrawRenderTexture(bloomTex);
     EndBlendMode();

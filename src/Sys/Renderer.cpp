@@ -26,6 +26,29 @@
 
 namespace whal {
 
+namespace gfx {
+
+void applyShaders(RenderTexture target, std::vector<std::shared_ptr<BaseShader>>& shaders) {
+    RenderTexture swap = Graphics.getTemporaryRT(target.texture);
+    bool isSwapTarget = true;
+    for (std::shared_ptr<BaseShader>& pShader : shaders) {
+        if (isSwapTarget) {
+            pShader->process(target, swap);
+        } else {
+            pShader->process(swap, target);
+        }
+        isSwapTarget = !isSwapTarget;
+    }
+
+    if (!isSwapTarget) {
+        // make sure final image is on the target
+        Graphics.blit(swap, target);
+    }
+    Graphics.releaseTemporaryRT(swap);
+}
+
+}  // namespace gfx
+
 Renderer::Renderer() {
     mRaylibCamera.target = Vector2(0.0f, 0.0f);
     mRaylibCamera.zoom = 1.0f;
@@ -120,6 +143,36 @@ void Renderer::releaseTemporaryRT(RenderTexture rt) {
     mAvailableRTs.push_back(released);
 }
 
+void Renderer::blit(RenderTexture src, RenderTexture dst, Shader shader) const {
+    const Rectangle srcRect = Rectangle(0, 0, src.texture.width, -src.texture.height);
+    const Rectangle dstRect = Rectangle(0, 0, dst.texture.width, dst.texture.height);
+
+    BeginTextureMode(dst);
+    ClearBackground(Colors::CLEAR);
+    const bool isCustomShader = shader.id != 0;
+    if (isCustomShader) {
+        BeginShaderMode(shader);
+        DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+        EndShaderMode();
+    } else {
+        DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+    }
+    EndTextureMode();
+}
+
+void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<BaseShader>& shader) {
+    if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
+        // scale first, then apply shader
+        RenderTexture tmpSrc = getTemporaryRT(src.texture);
+        blit(src, tmpSrc);
+
+        shader->process(tmpSrc, dst);
+        releaseTemporaryRT(tmpSrc);
+    } else {
+        shader->process(src, dst);
+    }
+}
+
 void Renderer::render() {
     // 0. Create render context and build the render queue.
     Camera2D worldCamera = mRaylibCamera;
@@ -153,9 +206,10 @@ void Renderer::render() {
     EndTextureMode();
 
     // 3. ? Apply post processing
-    for (std::shared_ptr<BaseShader>& pShader : cameraEntity.get<whal::Camera>().postprocess) {
-        pShader->process(mainTex, mainTex);
-    }
+    gfx::applyShaders(mainTex, cameraEntity.get<whal::Camera>().postprocess);
+    // for (std::shared_ptr<BaseShader>& pShader : cameraEntity.get<whal::Camera>().postprocess) {
+    //     pShader->process(mainTex, mainTex);
+    // }
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
@@ -173,27 +227,9 @@ void Renderer::render() {
 void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
     const auto mt = Renderer::getStagingTex();
-    const Texture depthTex = Texture{
-        .id = mt.depth,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
-        .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-    };
-    const Texture occlDepthTex = Texture{
-        .id = mt.occlusionDepth,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
-        .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-    };
-    Texture colorTex = Texture{
-        .id = mt.occlusionColor,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
-        .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-    };
+    const auto depthTex = mt.getDepth();
+    const auto occlDepthTex = mt.getOcclusionDepth();
+    const auto colorTex = mt.getOcclusionColor();
 
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth);
     const auto targetOcclDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
