@@ -59,6 +59,7 @@ private:
 
     void buildRenderQueue(Vector2i cameraPosition);
     void drawEntities(gfx::RenderContext ctx);
+    void drawLights(gfx::RenderContext ctx);
     void scaleDepthBuffers(gfx::RenderContext ctx) const;
     void drawUI(const gfx::RenderContext ctx) const;
 

@@ -12,7 +12,6 @@
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
-#include "Gfx/Shaders/LightDenoise.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
 #include "Sys/System.h"
@@ -27,37 +26,13 @@ namespace whal {
 
 const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
 
-void drawLights(Camera2D worldCamera) {
-    RenderTexture lightTex =
-        Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, TEXTURE_FILTER_BILINEAR);
-    BeginTextureMode(lightTex);
-    BeginMode2D(worldCamera);
-    ClearBackground(COLOR_AMBIENT);
-
-    BeginBlendMode(BLEND_ADDITIVE);
-    World.getSystem<PointLightSystem>()->drawEntities();
-    World.getSystem<BoxLightSystem>()->drawEntities();
-
-    World.getSystem<ShadowLightSystem>()->drawEntities();
-    EndBlendMode();
-    EndMode2D();
-    EndTextureMode();
-
-    // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
-    static LightDenoise lightingPipeline;
-
-    const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
-    lightingPipeline.process(lightTex, lightTexUpscale);
-    Graphics.releaseTemporaryRT(lightTex);
-}
-
 void PointLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
     // mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
     // mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
 }
 
-void PointLightSystem::drawEntities() {
+void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
     auto cameraPos = getCameraPositionPrecise();
 
     Shader shader = ShaderManager::get(Shaders::PointLight);
@@ -105,7 +80,7 @@ void BoxLightSystem::onEvent(evt::ShaderReload) {
     // mOcclusionDepthUniform = GetShaderLocation(shader, "occlusionDepthTex");
 }
 
-void BoxLightSystem::drawEntities() {
+void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
     auto cameraPos = getCameraPositionPrecise();
     Shader shader = ShaderManager::get(Shaders::BoxLight);
 
@@ -167,7 +142,7 @@ void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mOcclDepthBufUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
 }
 
-void ShadowLightSystem::drawEntities() {
+void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // RESEARCH maybe pass angle/spread uniform?
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 

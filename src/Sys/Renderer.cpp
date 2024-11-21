@@ -24,6 +24,8 @@
 #include "Util/Color.h"
 #include "Util/Print.h"
 
+#include "Gfx/Shaders/LightDenoise.h"
+
 namespace whal {
 
 namespace gfx {
@@ -187,7 +189,7 @@ void Renderer::render() {
 
     // 1. IRender and IRenderLight systems are drawn
     drawEntities(renderContext);  // drawn to TextureID::Staging
-    drawLights(worldCamera);      // drawn to TextureID::Lighting
+    drawLights(renderContext);    // drawn to TextureID::Lighting
 
     // 2. Renders everything to TextureID::Main
     RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
@@ -267,6 +269,33 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     EndTextureMode();
 
     scaleDepthBuffers(renderContext);
+}
+
+void Renderer::drawLights(gfx::RenderContext renderContext) {
+    RenderTexture lightTex =
+        Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, TEXTURE_FILTER_BILINEAR);
+    BeginTextureMode(lightTex);
+    BeginMode2D(renderContext.camera);
+    ClearBackground(BLACK);
+
+    BeginBlendMode(BLEND_ADDITIVE);
+    for (const ecs::IRenderLight* pLightSystem : World.getLightSystems()) {
+        pLightSystem->draw(renderContext);
+    }
+    // World.getSystem<PointLightSystem>()->drawEntities();
+    // World.getSystem<BoxLightSystem>()->drawEntities();
+    // World.getSystem<ShadowLightSystem>()->drawEntities();
+
+    EndBlendMode();
+    EndMode2D();
+    EndTextureMode();
+
+    // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
+    static LightDenoise lightingPipeline;
+
+    const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
+    lightingPipeline.process(lightTex, lightTexUpscale);
+    Graphics.releaseTemporaryRT(lightTex);
 }
 
 void Renderer::drawUI(const gfx::RenderContext ctx) const {
