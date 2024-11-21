@@ -2,10 +2,19 @@
 
 #include "Gfx/Texture.h"
 #include "Systems/Graphics/Common.h"
+#include "raylib.h"
 
+#include <memory>
 #include <vector>
 
 namespace whal {
+
+class BaseShader;
+namespace gfx {
+
+void applyShaders(RenderTexture target, const std::vector<std::shared_ptr<BaseShader>>& shaders);
+
+}  // namespace gfx
 
 struct System;
 
@@ -35,6 +44,12 @@ public:
 
     // Release a temporary Render Texture. Call in reverse allocation order for best performance.
     void releaseTemporaryRT(RenderTexture rt);
+
+    // Copy src RenderTexture into dst. Optionally use a shader when drawing.
+    // If dimensions aren't the same, scaling happens automatically.
+    // src and dest should not be the same RenderTexture.
+    void blit(RenderTexture src, RenderTexture dst, Shader shader = {.id = 0, .locs = nullptr}) const;
+    void blit(RenderTexture src, RenderTexture dst, std::shared_ptr<BaseShader>& shader);
 
 private:
     Renderer(const Renderer&) = delete;

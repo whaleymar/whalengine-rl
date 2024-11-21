@@ -51,7 +51,11 @@ struct MultiTexture {
     RenderTexture tex;
     u32 occlusionColor;
     u32 depth;           // stores depth for everything on red channel
-    u32 occlusionDepth;  // stores dpeth for occluders on red channel
+    u32 occlusionDepth;  // stores depth for occluders on red channel
+
+    Texture getOcclusionColor() const;
+    Texture getDepth() const;
+    Texture getOcclusionDepth() const;
 };
 
 class TextureManager {

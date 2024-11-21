@@ -376,7 +376,6 @@ void ScaleTexture(RenderTexture src, RenderTexture dst) {
     BeginTextureMode(dst);
     ClearBackground(Colors::CLEAR);
     DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndBlendMode();
     EndTextureMode();
 }
 

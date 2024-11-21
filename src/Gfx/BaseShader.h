@@ -19,6 +19,8 @@ public:
     BaseShader(const char* vsPath, const char* fsPath);
     virtual ~BaseShader();
 
+    // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
+    // gfx::applyShaders will do it for you automatically.
     virtual void process(RenderTexture source, RenderTexture destination) = 0;
     void onEvent(evt::ShaderReload) override;
 
