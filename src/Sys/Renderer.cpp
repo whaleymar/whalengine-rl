@@ -2,27 +2,27 @@
 
 #include <algorithm>
 #include <raylib.h>
-#include "Components/Camera.h"
-#include "Gfx/BaseShader.h"
-#include "Gfx/RaylibUtil.h"
-#include "Systems/Graphics/Common.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
+#include "Gfx/BaseShader.h"
+#include "Gfx/RaylibUtil.h"
+#include "Gfx/Texture.h"
+
+#include "Components/Camera.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-
-#include "Gfx/Pipeline.h"
-#include "Gfx/Texture.h"
 
 #include "Settings.h"
 #include "Sys/System.h"
 
 #include "Systems/ColliderSystem.h"
+#include "Systems/Graphics/Common.h"
 #include "Systems/LightSystem.h"
 
 #include "Util/CameraUtil.h"
 #include "Util/Color.h"
+#include "Util/Print.h"
 
 namespace whal {
 
@@ -134,6 +134,7 @@ void Renderer::releaseTemporaryRT(RenderTexture rt) {
 
     if (ix == -1) {
         // user error, just exit
+        print("Renderer::releaseTemporaryRT: Tried to release an already-released RenderTexture");
         return;
     }
 
@@ -206,7 +207,7 @@ void Renderer::render() {
     EndTextureMode();
 
     // 3. ? Apply post processing
-    gfx::applyShaders(mainTex, cameraEntity.get<whal::Camera>().postprocess);
+    gfx::applyShaders(mainTex, cameraEntity.get<whal::Camera>().postEffects);
     // for (std::shared_ptr<BaseShader>& pShader : cameraEntity.get<whal::Camera>().postprocess) {
     //     pShader->process(mainTex, mainTex);
     // }
