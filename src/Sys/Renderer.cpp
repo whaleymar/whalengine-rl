@@ -131,10 +131,9 @@ void Renderer::render() {
                                            .cameraEntity = cameraEntity};
     buildRenderQueue(renderContext.cameraPosition.round());
 
-    // 1. ECS systems with draw-like methods are updated (this should probably happen automatically)
-    TextureManager::instance().renderBackgroundTextures();  // drawn to TextureID::Background
-    drawEntities(renderContext);                            // drawn to TextureID::Staging
-    drawLights(worldCamera);                                // drawn to TextureID::UpscaledLighting
+    // 1. IRender and IRenderLight systems are drawn
+    drawEntities(renderContext);  // drawn to TextureID::Staging
+    drawLights(worldCamera);      // drawn to TextureID::Lighting
 
     // 2. Renders everything to TextureID::Main
     RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
@@ -146,7 +145,7 @@ void Renderer::render() {
 
     // Lights.
     BeginBlendMode(BLEND_MULTIPLIED);
-    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::UpscaledLighting));
+    gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Lighting));
     EndBlendMode();
 
     // UI.
@@ -161,7 +160,7 @@ void Renderer::render() {
     // 4. Draw debug stuff.
 #ifndef NDEBUG
     if (Input.isOn(InputType::DEBUG)) {
-        BeginTextureMode(TextureManager::getRenderTexture(TextureID::Main));
+        BeginTextureMode(mainTex);
         BeginMode2D(worldCamera);
         // World.getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();

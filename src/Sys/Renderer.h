@@ -27,7 +27,8 @@ public:
 
     // Temporary Render Textures are convenient and stay cached for a few frames. You should manually release them
     // when you're done using them so another process can use it. Otherwise, they will be released at the end of the frame.
-    RenderTexture getTemporaryRT(s32 width, s32 height, PixelFormat format, TextureFilter filter = TEXTURE_FILTER_POINT);
+    RenderTexture getTemporaryRT(s32 width, s32 height, PixelFormat format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+                                 TextureFilter filter = TEXTURE_FILTER_POINT);
 
     // Gets a temporary Render Texture with width, height, and format matching the given texture
     RenderTexture getTemporaryRT(Texture reference, TextureFilter filter = TEXTURE_FILTER_POINT);

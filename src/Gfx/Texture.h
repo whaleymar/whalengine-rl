@@ -18,8 +18,6 @@ static const char* TEXNAME_PALETTE = "palette";
 // static does not have parallax
 enum class BGTexture { STATIC, FAR, MID, NEAR };
 
-static const char* TEXNAME_BGSTATIC = "bgstatic";
-
 class TextureAtlas {
 public:
     Corrade::Containers::Optional<Error> init(const Texture2D& texture, const char* atlasDataPath);
@@ -41,19 +39,10 @@ private:
 // - Outline
 enum class TextureID {
     Main,
-    Background,  // any repeating backgrounds use this
     Lighting,
-    UpscaledLighting,
-    BackgroundStatic,
-    BackgroundFar,
-    BackgroundMid,
-    BackgroundNear,
     OcclusionColor,
     OcclusionDepth,
     AllDepth,
-    EighthResBuf,
-    QuarterResBuf,
-    HalfResBuf,
     Bloom,
     _COUNT_DO_NOT_USE_ME,
 };
@@ -66,14 +55,6 @@ struct MultiTexture {
 };
 
 class TextureManager {
-    struct BGData {
-        Vector2f parallax;
-        Vector2i worldPosTopLeft;
-        Vector2i trueDimensions;
-        bool isRepeatX;
-        bool isRepeatY;
-    };
-
 public:
     static TextureManager& instance() {
         static TextureManager instance_;
@@ -89,16 +70,12 @@ public:
     static const TextureAtlas& getAtlas(const char* name) { return instance()._getAtlas(name); }
     static const Texture& getTexture(const char* name) { return instance()._getTexture(name); }
     static RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
-    static Vector2i getSize(TextureID id);
-
-    Corrade::Containers::Optional<Error> setBackgroundTextureToSprite(const char* atlasName, const char* spriteName, BGTexture dstBG,
-                                                                      Vector2f parallax, Vector2i offset, bool isRepeatX, bool isRepeatY);
-    void renderBackgroundTextures();
 
     void unloadAll();
 
 private:
     TextureManager();
+
     ~TextureManager();
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
@@ -110,9 +87,7 @@ private:
     const TextureAtlas& _getAtlas(const char* name);
     const Texture2D& _getTexture(const char* name);
     RenderTexture2D& _getRenderTexture(TextureID id);
-    void setRenderTexture(TextureID id, RenderTexture2D rTexture);
     bool isRenderTextureUsed(s32 ix) const;
-    bool isRenderTextureUsed(TextureID id) const { return isRenderTextureUsed(static_cast<s32>(id)); }
     void setIsRenderTextureUsed(s32 ix);
     void unloadRenderTexture(TextureID id);
 
@@ -120,13 +95,6 @@ private:
     std::vector<std::string> mTextureAtlasNames;
     std::vector<Texture2D> mTextures;
     std::vector<std::string> mTextureNames;
-
-    Vector2f mScrollFar;
-    Vector2f mScrollMid;
-    Vector2f mScrollNear;
-    BGData mBGDataFar;
-    BGData mBGDataMid;
-    BGData mBGDataNear;
 
     u32 mRTUsageMask;
 };
