@@ -101,8 +101,7 @@ struct MaterialData {
         }
 
         if (isFlagSet(FadeOutFlag)) {
-            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
-                .setTransition(Ease::InOutQuad);
+            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; }).setTransition(Ease::InQuad);
         }
 
         if (isFlagSet(GlowFlag)) {

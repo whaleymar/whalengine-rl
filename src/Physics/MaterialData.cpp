@@ -121,7 +121,7 @@ static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .bounciness = 0.0,
                                              .gravityCoef = -0.5,
                                              .frictionCoefs = {0.0, 0.0},
-                                             .fadeColor = Color{0, 0, 0, 64},
+                                             .fadeColor = Color{0, 0, 0, 0},
                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.4, 0.6)}};
 
 static const MaterialData S_MATERIAL_DEFAULT = S_MATERIAL_DUST;
