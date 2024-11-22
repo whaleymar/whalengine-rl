@@ -94,4 +94,30 @@ f32 fast_cos(f32 radians) {
     return S_COS_TABLE[index];
 }
 
+f32 normalizeAngle(f32 angle) {
+    f32 normalized = fmod(angle, 360.0);
+    if (normalized < 0) {
+        normalized += 360.0;
+    }
+    return normalized;
+}
+
+f32 getAngleDiff(f32 angle1, f32 angle2) {
+    // Normalize both angles to be within [0, 360)
+    angle1 = normalizeAngle(angle1);
+    angle2 = normalizeAngle(angle2);
+
+    // Calculate the difference
+    f32 diff = angle2 - angle1;
+
+    // Normalize the difference to the range [-180, 180]
+    if (diff > 180.0) {
+        diff -= 360.0;
+    } else if (diff < -180.0) {
+        diff += 360.0;
+    }
+
+    return diff;
+}
+
 }  // namespace math
