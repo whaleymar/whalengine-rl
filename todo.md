@@ -2,13 +2,11 @@
 
 NEXT GOAL: 
 - finish implementing acerola bloom tex
-- get rid of Pipeline class
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
-- Settings.h -> put in game? Or don't define anything && put the .cpp file in Game/ ?
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
@@ -30,9 +28,6 @@ NEXT GOAL:
 ## Web 
 - getting mouse position does not work
 - need to update a lot of shaders 
-
-## Rotation Fuckiness 
-- point lights are hard coded to rotate about bottom of transform
 
 ## Debug tools 
 - imgui integration

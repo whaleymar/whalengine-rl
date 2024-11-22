@@ -71,4 +71,10 @@ inline f32 cos(f32 radians) {
     return std::cos(radians);
 }
 
+// Helper function to normalize an angle to the range [0, 360)
+f32 normalizeAngle(f32 angle);
+
+// guaranteed to be in the range [-180, 180]
+f32 getAngleDiff(f32 angle1, f32 angle2);
+
 }  // namespace math
