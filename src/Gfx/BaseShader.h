@@ -10,7 +10,6 @@ namespace whal {
 
 class BaseShader : public IListen<evt::ShaderReload, true> {
 public:
-    // RESEARCH if I add data type + value to this, I can expose these values to imgui
     struct Uniform {
         std::string key;
         s32 handle;
@@ -19,9 +18,6 @@ public:
     BaseShader(const char* vsPath, const char* fsPath);
     virtual ~BaseShader();
 
-    // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
-    // gfx::applyShaders will do it for you automatically.
-    virtual void process(RenderTexture source, RenderTexture destination) = 0;
     void onEvent(evt::ShaderReload) override;
 
     void setFloat(const char* name, f32 value);
@@ -38,6 +34,7 @@ public:
     s32 tryNameToId(const char* name);
 
     bool isValid() const { return mIsReady; }
+    Shader get() const { return mShaderHandle; }
 
 protected:
     std::string mVertPath;
@@ -45,6 +42,14 @@ protected:
     Shader mShaderHandle;
     std::vector<Uniform> mNameToId;
     bool mIsReady;
+};
+
+class IShader {
+public:
+    // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
+    // gfx::applyShaders will do it for you automatically.
+    virtual void process(RenderTexture source, RenderTexture destination) = 0;
+    virtual ~IShader() {}
 };
 
 }  // namespace whal

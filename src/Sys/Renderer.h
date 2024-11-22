@@ -9,10 +9,10 @@
 
 namespace whal {
 
-class BaseShader;
+class IShader;
 namespace gfx {
 
-void applyShaders(RenderTexture target, const std::vector<std::shared_ptr<BaseShader>>& shaders);
+void applyShaders(RenderTexture target, const std::vector<std::shared_ptr<IShader>>& shaders);
 
 }  // namespace gfx
 
@@ -48,8 +48,10 @@ public:
     // Copy src RenderTexture into dst. Optionally use a shader when drawing.
     // If dimensions aren't the same, scaling happens automatically.
     // src and dest should not be the same RenderTexture.
+    // If no shader is specified, then the currently active shader will be used.
     void blit(RenderTexture src, RenderTexture dst, Shader shader = {.id = 0, .locs = nullptr}) const;
-    void blit(RenderTexture src, RenderTexture dst, std::shared_ptr<BaseShader>& shader);
+    void blit(RenderTexture src, RenderTexture dst, std::shared_ptr<IShader>& shader);
+    void blit(RenderTexture src, RenderTexture dst, IShader& shader);
 
 private:
     Renderer(const Renderer&) = delete;

@@ -120,4 +120,12 @@ f32 getAngleDiff(f32 angle1, f32 angle2) {
     return diff;
 }
 
+f32 gammaToLinear(f32 gamma) {
+    if (gamma <= 0.04045f) {
+        return gamma / 12.92f;
+    } else {
+        return std::pow((gamma + 0.055f) / 1.055f, 2.4f);
+    }
+}
+
 }  // namespace math
