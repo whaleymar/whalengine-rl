@@ -30,10 +30,10 @@ namespace whal {
 
 namespace gfx {
 
-void applyShaders(RenderTexture target, std::vector<std::shared_ptr<BaseShader>>& shaders) {
+void applyShaders(RenderTexture target, std::vector<std::shared_ptr<IShader>>& shaders) {
     RenderTexture swap = Graphics.getTemporaryRT(target.texture);
     bool isSwapTarget = true;
-    for (std::shared_ptr<BaseShader>& pShader : shaders) {
+    for (std::shared_ptr<IShader>& pShader : shaders) {
         if (isSwapTarget) {
             pShader->process(target, swap);
         } else {
@@ -163,7 +163,7 @@ void Renderer::blit(RenderTexture src, RenderTexture dst, Shader shader) const {
     EndTextureMode();
 }
 
-void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<BaseShader>& shader) {
+void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<IShader>& shader) {
     if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
         // scale first, then apply shader
         RenderTexture tmpSrc = getTemporaryRT(src.texture);
@@ -173,6 +173,19 @@ void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<BaseSh
         releaseTemporaryRT(tmpSrc);
     } else {
         shader->process(src, dst);
+    }
+}
+
+void Renderer::blit(RenderTexture src, RenderTexture dst, IShader& shader) {
+    if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
+        // scale first, then apply shader
+        RenderTexture tmpSrc = getTemporaryRT(src.texture);
+        blit(src, tmpSrc);
+
+        shader.process(tmpSrc, dst);
+        releaseTemporaryRT(tmpSrc);
+    } else {
+        shader.process(src, dst);
     }
 }
 

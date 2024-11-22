@@ -5,10 +5,10 @@
 
 namespace whal {
 
-class BaseShader;
+class IShader;
 
 struct Camera {
-    std::vector<std::shared_ptr<BaseShader>> postEffects;
+    std::vector<std::shared_ptr<IShader>> postEffects;
     // std::vector<std::shared_ptr<BaseShader>> lightEffects;
 };
 

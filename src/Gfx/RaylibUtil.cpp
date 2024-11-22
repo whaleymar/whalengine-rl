@@ -3,7 +3,6 @@
 
 #include "Gfx/Texture.h"
 #include "Settings.h"
-#include "Util/Color.h"
 #include "Util/Print.h"
 #include "raylib.h"
 #include "rlgl.h"
@@ -367,22 +366,6 @@ void DrawTextureDepth(Texture2D texture, Rectangle source, Rectangle dest, Vecto
 void DrawRenderTexture(RenderTexture renderTexture, Color color) {
     const auto tex = renderTexture.texture;
     DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
-}
-
-void ScaleTexture(RenderTexture src, RenderTexture dst) {
-    const Rectangle srcRect = Rectangle(0, 0, src.texture.width, -src.texture.height);
-    const Rectangle dstRect = Rectangle(0, 0, dst.texture.width, dst.texture.height);
-
-    BeginTextureMode(dst);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
-}
-
-void ScaleTexture(TextureID src, TextureID dst) {
-    const auto srcTex = TextureManager::getRenderTexture(src);
-    const auto dstTex = TextureManager::getRenderTexture(dst);
-    ScaleTexture(srcTex, dstTex);
 }
 
 // Draws correctly sized pixel even for higher resolution target textures.

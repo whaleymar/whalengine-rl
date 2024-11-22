@@ -10,24 +10,24 @@ static bool isPowerOfTwo(s32 n) {
     return (n & (n - 1)) == 0;
 }
 
-LightDenoise::LightDenoise() : BaseShader("", "whalengine/src/Shader/blur.glsl") {}
+LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {}
 
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
 // LightDenoise::LightDenoise() : BaseShader("", "whalengine/src/Shader/lightpassthrough.glsl") {}
 
 void LightDenoise::process(RenderTexture src, RenderTexture dst) {
-    assert(isValid());
+    assert(mDenoise.isValid());
     assert(isPowerOfTwo(dst.texture.width / src.texture.width) && isPowerOfTwo(dst.texture.height / src.texture.height) &&
            "dst must be bigger than src by a power of 2");
     assert((dst.texture.width / src.texture.width) == (dst.texture.height / src.texture.height) && "src and dst must have same width:height ratios");
 
-    setVector2("iResolution", Vector2(src.texture.width, src.texture.height));
+    mDenoise.setVector2("iResolution", Vector2(src.texture.width, src.texture.height));
 
     RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, TEXTURE_FILTER_BILINEAR);
 
     // blur the src with the shader
     // this is only performant when src is around quarter resolution
-    Graphics.blit(src, tmpSrc, mShaderHandle);
+    Graphics.blit(src, tmpSrc, mDenoise.get());
 
     // incrementally upscale by powers of 2 until we reach the dst resolution
     s32 srcWidth = src.texture.width;

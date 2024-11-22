@@ -7,7 +7,6 @@ in vec4 fragColor;
 // Input uniform values
 // default:
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
 
 // mine:
 
@@ -18,4 +17,3 @@ void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
     finalColor = texelColor*fragColor;
 }
-
