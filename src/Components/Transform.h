@@ -20,26 +20,26 @@ inline bool isCardinal(Direction d) {
 }
 
 template <typename T>
-inline Vector2T<T> directionToVector(Direction direction) {
+inline Vector2<T> directionToVector(Direction direction) {
     switch (direction) {
     case Direction::Neutral:
-        return Vector2T<T>::ZERO;
+        return Vector2<T>::ZERO;
     case Direction::N:
-        return Vector2T<T>::UP;
+        return Vector2<T>::UP;
     case Direction::S:
-        return Vector2T<T>::DOWN;
+        return Vector2<T>::DOWN;
     case Direction::E:
-        return Vector2T<T>::RIGHT;
+        return Vector2<T>::RIGHT;
     case Direction::W:
-        return Vector2T<T>::LEFT;
+        return Vector2<T>::LEFT;
     case Direction::NE:
-        return Vector2T<T>{1, 1};
+        return Vector2<T>{1, 1};
     case Direction::SE:
-        return Vector2T<T>{1, -1};
+        return Vector2<T>{1, -1};
     case Direction::NW:
-        return Vector2T<T>{-1, 1};
+        return Vector2<T>{-1, 1};
     case Direction::SW:
-        return Vector2T<T>{-1, -1};
+        return Vector2<T>{-1, -1};
     }
 }
 
@@ -120,12 +120,12 @@ struct PreciseTransform {
     static PreciseTransform tiles(s32 x, s32 y);
     static PreciseTransform fromTrans(Transform trans) {
         return PreciseTransform{.position = trans.position.as<f32>(),
-                                  .rotationDegrees = trans.rotationDegrees,
-                                  .facing = trans.facing,
-                                  .isManuallyMoved = trans.isManuallyMoved,
-                                  .depth = trans.depth,
-                                  .pivotOffset = trans.pivotOffset,
-                                  .scale = trans.scale};
+                                .rotationDegrees = trans.rotationDegrees,
+                                .facing = trans.facing,
+                                .isManuallyMoved = trans.isManuallyMoved,
+                                .depth = trans.depth,
+                                .pivotOffset = trans.pivotOffset,
+                                .scale = trans.scale};
     }
     Vector2f getRotatedPosition() const;
 

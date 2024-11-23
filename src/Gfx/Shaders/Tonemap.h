@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Gfx/BaseShader.h"
+#include "Gfx/Shader.h"
 namespace whal {
 
-class Tonemap : public IShader {
+class Tonemap : public IShaderProcess {
 public:
     Tonemap();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 private:
-    BaseShader mToneMap;
+    Shader mToneMap;
 };
 
 }  // namespace whal

@@ -9,10 +9,10 @@
 
 namespace whal {
 
-class IShader;
+class IShaderProcess;
 namespace gfx {
 
-void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IShader>>& shaders);
+void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IShaderProcess>>& shaders);
 
 }  // namespace gfx
 
@@ -50,8 +50,8 @@ public:
     // src and dest should not be the same RenderTexture.
     // If no shader is specified, then the currently active shader will be used.
     void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr}) const;
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShader>& shader);
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, IShader& shader);
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShaderProcess>& shader);
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, IShaderProcess& shader);
 
 private:
     Renderer(const Renderer&) = delete;
