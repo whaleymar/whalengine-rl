@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Gfx/BaseShader.h"
+#include "Gfx/Shader.h"
 namespace whal {
 
-class Bloom : public IShader {
+class Bloom : public IShaderProcess {
 public:
     Bloom();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
@@ -17,8 +17,8 @@ public:
     f32 intensity = 1.0;  // [Range(0.0f, 10.0f)]
 
 private:
-    BaseShader mThresh;
-    BaseShader mBlur;
+    Shader mThresh;
+    Shader mBlur;
 };
 
 }  // namespace whal

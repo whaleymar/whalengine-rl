@@ -5,8 +5,8 @@
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
-#include "Gfx/BaseShader.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/Shader.h"
 #include "Gfx/Texture.h"
 
 #include "Components/Camera.h"
@@ -30,10 +30,10 @@ namespace whal {
 
 namespace gfx {
 
-void applyShaders(rl::RenderTexture target, std::vector<std::shared_ptr<IShader>>& shaders) {
+void applyShaders(rl::RenderTexture target, std::vector<std::shared_ptr<IShaderProcess>>& shaders) {
     rl::RenderTexture swap = Graphics.getTemporaryRT(target.texture);
     bool isSwapTarget = true;
-    for (std::shared_ptr<IShader>& pShader : shaders) {
+    for (std::shared_ptr<IShaderProcess>& pShader : shaders) {
         if (isSwapTarget) {
             pShader->process(target, swap);
         } else {
@@ -163,7 +163,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     rl::EndTextureMode();
 }
 
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShader>& shader) {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShaderProcess>& shader) {
     if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
         // scale first, then apply shader
         rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
@@ -176,7 +176,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_pt
     }
 }
 
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, IShader& shader) {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, IShaderProcess& shader) {
     if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
         // scale first, then apply shader
         rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
@@ -221,11 +221,8 @@ void Renderer::render() {
     drawUI(renderContext);
     rl::EndTextureMode();
 
-    // 3. ? Apply post processing
-    gfx::applyShaders(mainTex, cameraEntity.get<whal::Camera>().postEffects);
-    // for (std::shared_ptr<BaseShader>& pShader : cameraEntity.get<whal::Camera>().postprocess) {
-    //     pShader->process(mainTex, mainTex);
-    // }
+    // 3. Apply post processing
+    gfx::applyShaders(mainTex, cameraEntity.get<Camera>().postEffects);
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG

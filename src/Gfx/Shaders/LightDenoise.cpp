@@ -13,7 +13,7 @@ static bool isPowerOfTwo(s32 n) {
 LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {}
 
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
-// LightDenoise::LightDenoise() : BaseShader("", "whalengine/src/Shader/lightpassthrough.glsl") {}
+// LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/lightpassthrough.glsl") {}
 
 void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mDenoise.isValid());

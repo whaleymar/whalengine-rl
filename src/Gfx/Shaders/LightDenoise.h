@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Gfx/BaseShader.h"
+#include "Gfx/Shader.h"
 namespace whal {
 
-class LightDenoise : public IShader {
+class LightDenoise : public IShaderProcess {
 public:
     LightDenoise();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
@@ -12,7 +12,7 @@ public:
     // s32 kernelSize = 3;  // MINIMUM 3, SHOULD BE ODD NUMBER
 
 private:
-    BaseShader mDenoise;
+    Shader mDenoise;
 };
 
 }  // namespace whal

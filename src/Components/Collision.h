@@ -148,8 +148,8 @@ protected:
 struct Momentum {
     static inline constexpr s32 MOMENTUM_STORAGE_COUNT = 5;
 
-    Vector2T<s16> momentumFramesLeft;
-    Vector2T<s16> nextIx;
+    Vector2<s16> momentumFramesLeft;
+    Vector2<s16> nextIx;
     Vector2f storedMomentum[MOMENTUM_STORAGE_COUNT];
     s32 cooldownFrames = 0;
 

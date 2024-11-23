@@ -8,15 +8,15 @@
 
 namespace whal {
 
-class BaseShader : public IListen<evt::ShaderReload, true> {
+class Shader : public IListen<evt::ShaderReload, true> {
 public:
     struct Uniform {
         std::string key;
         s32 handle;
     };
 
-    BaseShader(const char* vsPath, const char* fsPath);
-    virtual ~BaseShader();
+    Shader(const char* vsPath, const char* fsPath);
+    virtual ~Shader();
 
     void onEvent(evt::ShaderReload) override;
 
@@ -34,22 +34,22 @@ public:
     s32 tryNameToId(const char* name);
 
     bool isValid() const { return mIsReady; }
-    rl::Shader get() const { return mShaderHandle; }
+    rl::Shader get() const { return mHandle; }
 
 protected:
     std::string mVertPath;
     std::string mFragPath;
-    rl::Shader mShaderHandle;
+    rl::Shader mHandle;
     std::vector<Uniform> mNameToId;
     bool mIsReady;
 };
 
-class IShader {
+class IShaderProcess {
 public:
     // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
     // gfx::applyShaders will do it for you automatically.
     virtual void process(rl::RenderTexture source, rl::RenderTexture destination) = 0;
-    virtual ~IShader() {}
+    virtual ~IShaderProcess() {}
 };
 
 }  // namespace whal
