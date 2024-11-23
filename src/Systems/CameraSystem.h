@@ -7,9 +7,9 @@
 namespace whal {
 
 struct Camera;
-struct Transform2D;
+struct Transform;
 
-class CameraSystem : public ecs::ISystem<Camera, Transform2D>,
+class CameraSystem : public ecs::ISystem<Camera, Transform>,
                      public ecs::AttrUniqueEntity,
                      public IListen<evt::EnteredLevel, true, ecs::Entity, ActiveLevel&>,
                      public IListen<evt::Pause, true, bool> {

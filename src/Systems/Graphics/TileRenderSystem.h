@@ -5,10 +5,10 @@
 namespace whal {
 
 struct Sprite;
-struct Transform2D;
+struct Transform;
 struct Tile;
 
-class TileRenderSystem : public ecs::ISystem<Sprite, Transform2D, Tile>, public ecs::IRender, public ecs::IMonitorSystem {
+class TileRenderSystem : public ecs::ISystem<Sprite, Transform, Tile>, public ecs::IRender, public ecs::IMonitorSystem {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;

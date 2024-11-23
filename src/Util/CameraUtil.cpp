@@ -16,7 +16,7 @@ Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        lastPos = eOpt->get<Transform2D>().position;
+        lastPos = eOpt->get<Transform>().position;
     }
     return lastPos;
 }
@@ -46,7 +46,7 @@ void setCameraTarget(ecs::Entity target) {
 void setCameraPosition(Vector2i pos) {
     auto eOpt = getCamera();
     if (eOpt) {
-        eOpt->set(Transform2D(pos));
+        eOpt->set(Transform(pos));
     }
 }
 

@@ -58,7 +58,7 @@ struct MaterialData {
         entity.add(Lifetime(lifetime));
 
         if (isFlagSet(Collision)) {
-            auto collider = Collider::Actor(AABB(entity.get<Transform2D>(), {halfLen, halfLen}, Vector2i()));
+            auto collider = Collider::Actor(AABB(entity.get<Transform>(), {halfLen, halfLen}, Vector2i()));
             collider.setMaterial(id);
             entity.add(collider);
         }
@@ -114,7 +114,7 @@ struct MaterialData {
         }
 
         if (startScale != 1.0) {
-            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<Transform2D>().scale; })
+            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<Transform>().scale; })
                 .from(Vector2f(1.0, 1.0) * startScale);
         }
     }

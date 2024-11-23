@@ -11,10 +11,10 @@ namespace whal {
 
 struct PointLight;
 struct BoxLight;
-struct Transform2D;
+struct Transform;
 struct ShadowLight;
 
-class PointLightSystem : public ecs::ISystem<Transform2D, PointLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class PointLightSystem : public ecs::ISystem<Transform, PointLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;
@@ -25,7 +25,7 @@ private:
     // int mOcclusionDepthUniform;
 };
 
-class BoxLightSystem : public ecs::ISystem<Transform2D, BoxLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class BoxLightSystem : public ecs::ISystem<Transform, BoxLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;
@@ -38,7 +38,7 @@ private:
     int mOcclusionDepthUniform;
 };
 
-class ShadowLightSystem : public ecs::ISystem<Transform2D, ShadowLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class ShadowLightSystem : public ecs::ISystem<Transform, ShadowLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;

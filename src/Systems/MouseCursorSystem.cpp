@@ -9,7 +9,7 @@ void MouseCursorSystem::update() {
         Vector2i position = Input.getMouseWorld();
 
         // update transform
-        entity.get<Transform2D>().position = position;
+        entity.get<Transform>().position = position;
     }
 }
 

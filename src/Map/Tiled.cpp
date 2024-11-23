@@ -167,7 +167,7 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     if (eEntity.isExpected()) {
         auto lightEntity = eEntity.value();
         // idk why but i need 1 tile of extra height
-        auto trans = Transform2D(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
+        auto trans = Transform(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
         trans.depth = Depth::Foreground2;
         lightEntity.add(trans);
 
@@ -325,7 +325,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             entityData.isPoint = false;
 
         // add transform
-        Transform2D trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
+        Transform trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
         trans.depth = layerData.depth;
         entity.add(trans);
 
@@ -428,7 +428,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 //     ecs::Entity entity = eEntity.value();
 //     level.childEntities.insert(entity);
 //
-//     Transform2D trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
+//     Transform trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
 //     entity.add(trans);
 //
 //     entity.add(Sprite(layerData.depth, frame));
@@ -562,13 +562,13 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 }
 
 // convert top-left coordinate to bottom-middle
-Transform2D getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
+Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
     // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
     // heights to match tiles
 
-    Transform2D trans =
-        Transform2D::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2);
+    Transform trans =
+        Transform::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2);
     trans.position += level.worldOffset;
     return trans;
 }

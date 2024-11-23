@@ -30,7 +30,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
 void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto sprite = entity.get<Sprite>();
-        const auto& trans = entity.get<Transform2D>();
+        const auto& trans = entity.get<Transform>();
         const auto bb = trans.rotationDegrees == 0.0f ?
                             AABB(trans, sprite.frameSize / 2, Vector2i()) :
                             Box(trans.getRotatedPosition(), sprite.frameSize / 2, trans.rotationDegrees).getBoundingAABB();

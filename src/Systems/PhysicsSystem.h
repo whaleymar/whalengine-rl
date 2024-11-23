@@ -9,7 +9,7 @@
 
 namespace whal {
 
-struct Transform2D;
+struct Transform;
 struct Velocity;
 struct AngularVelocity;
 struct HitInfo;
@@ -17,13 +17,13 @@ struct HitInfo;
 // TODO parameter file
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;
 
-class PhysicsSystem : public ecs::ISystem<Transform2D, Velocity>, public ecs::IUpdate, public IListen<evt::Collision, true, ecs::Entity, HitInfo> {
+class PhysicsSystem : public ecs::ISystem<Transform, Velocity>, public ecs::IUpdate, public IListen<evt::Collision, true, ecs::Entity, HitInfo> {
 public:
     void update() override;
     void onEvent(evt::Collision, ecs::Entity, HitInfo) override;
 };
 
-class RotationPhysicsSystem : public ecs::ISystem<Transform2D, AngularVelocity>, public ecs::IUpdate {
+class RotationPhysicsSystem : public ecs::ISystem<Transform, AngularVelocity>, public ecs::IUpdate {
 public:
     void update() override;
 };

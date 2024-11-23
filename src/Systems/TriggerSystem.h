@@ -4,10 +4,10 @@
 
 namespace whal {
 
-struct Transform2D;
+struct Transform;
 struct Trigger;
 
-class TriggerSystem : public ecs::ISystem<Transform2D, Trigger>, public ecs::IUpdate {
+class TriggerSystem : public ecs::ISystem<Transform, Trigger>, public ecs::IUpdate {
 public:
     void update() override;
 };

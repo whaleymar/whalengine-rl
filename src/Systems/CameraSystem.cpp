@@ -23,7 +23,7 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             camera.remove<Follow>();
         }
 
-        if (camera.get<Transform2D>().position == focalPoint) {
+        if (camera.get<Transform>().position == focalPoint) {
             return;
         }
 
@@ -31,7 +31,7 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             .setTransition(Ease::InOutQuad)
             .asIgnoreSlowdown()
             .setOnUpdate(
-                [](ecs::Entity self, const Tween<Vector2f>&) { self.get<Transform2D>().position = self.get<PrecisePosition>().position.round(); })
+                [](ecs::Entity self, const Tween<Vector2f>&) { self.get<Transform>().position = self.get<PrecisePosition>().position.round(); })
 
             .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
         Time.setMultiplier(0.0);

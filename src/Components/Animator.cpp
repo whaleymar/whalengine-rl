@@ -50,7 +50,7 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
 }
 
 bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
-    Transform2D& trans = entity.get<Transform2D>();
+    Transform& trans = entity.get<Transform>();
 
     const f32 unsquishStep = Time.dt();
     trans.scale = {math::approach(trans.scale.x, 1.0, unsquishStep), math::approach(trans.scale.y, 1.0, unsquishStep)};

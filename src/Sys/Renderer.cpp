@@ -193,7 +193,7 @@ void Renderer::render() {
     // 0. Create render context and build the render queue.
     rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
-    worldCamera.rotation = cameraEntity.get<Transform2D>().rotationDegrees;
+    worldCamera.rotation = cameraEntity.get<Transform>().rotationDegrees;
     const gfx::RenderContext renderContext{.cameraPosition = cameraEntity.get<PrecisePosition>().position,
                                            .camera = worldCamera,
                                            .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),

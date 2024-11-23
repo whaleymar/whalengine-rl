@@ -32,26 +32,26 @@ struct ColorBufInfo {
     bool isUI;
 };
 
-// TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform2D (only calculated by Renderer if
+// TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform (only calculated by Renderer if
 // not culled)
-//  - difficult thing is that some classes (like DropShadowRenderer) manually alter the PreciseTransform2D calculation... so maybe not
+//  - difficult thing is that some classes (like DropShadowRenderer) manually alter the PreciseTransform calculation... so maybe not
 //  - getting rid of the bounding box could still be nice for efficiency?
 //    - also don't need IRender implementer to add piRender, renderer can add that to struct w/ PreciseTransform
 struct EntityRenderInfo {
     AABB boundingBox;
-    PreciseTransform2D preciseTransform;
+    PreciseTransform preciseTransform;
     ecs::Entity entity;
     const ecs::IRender* piRender;
     ColorBufInfo colorBuf = {};
 };
 
-PreciseTransform2D getPreciseTrans(ecs::Entity entity);
+PreciseTransform getPreciseTrans(ecs::Entity entity);
 
 // slightly more efficient if caller already has the transform
-PreciseTransform2D getPreciseTrans(ecs::Entity entity, const Transform2D& transform);
+PreciseTransform getPreciseTrans(ecs::Entity entity, const Transform& transform);
 void clampToPixelGrid(RaylibDrawParams& params);
 
-RaylibDrawParams getDrawParams(PreciseTransform2D transform, Vector2f frameSize, Vector2f cameraPosition);
+RaylibDrawParams getDrawParams(PreciseTransform transform, Vector2f frameSize, Vector2f cameraPosition);
 
 }  // namespace gfx
 }  // namespace whal

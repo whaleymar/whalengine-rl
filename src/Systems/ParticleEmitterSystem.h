@@ -4,10 +4,10 @@
 
 namespace whal {
 
-struct Transform2D;
+struct Transform;
 struct ParticleEmitter;
 
-class ParticleEmitterSystem : public ecs::ISystem<ParticleEmitter, Transform2D>, public ecs::IUpdate {
+class ParticleEmitterSystem : public ecs::ISystem<ParticleEmitter, Transform>, public ecs::IUpdate {
 public:
     void update() override;
 };

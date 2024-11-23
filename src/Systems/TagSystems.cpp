@@ -12,7 +12,7 @@ void AudioListenerSystem::update() {
         return;
     }
     auto listenerEntity = first();
-    Audio.setListenerPosition(listenerEntity.get<Transform2D>().position);
+    Audio.setListenerPosition(listenerEntity.get<Transform>().position);
 }
 
 }  // namespace whal

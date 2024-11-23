@@ -25,7 +25,7 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
 void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawRect>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
         const auto pTrans = gfx::getPreciseTrans(entity, trans);
         const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
                                                         Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();

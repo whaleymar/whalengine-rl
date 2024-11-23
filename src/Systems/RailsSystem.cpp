@@ -16,7 +16,7 @@ namespace whal {
 constexpr f32 SPEED_DIVISOR = 1.0f / 40.0f;
 
 void RailsSystem::onAdd(const ecs::Entity entity) {
-    auto& trans = entity.get<Transform2D>();
+    auto& trans = entity.get<Transform>();
     auto& rails = entity.get<RailsControl>();
     rails.prepareForFirstStep(trans);
     if (entity.has<Velocity>()) {
@@ -33,7 +33,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
     } else {
         dt = Time.dt();
     }
-    auto& transform = entity.get<Transform2D>();
+    auto& transform = entity.get<Transform>();
 
     const Vector2f delta = (rails.getTarget().position - transform.position).as<f32>();
     f32 distance = delta.len();
@@ -81,7 +81,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
         if (entity.has<Collider>()) {
             entity.get<Collider>().move(delta, nullptr, false, true, false, false, true);
         } else {
-            entity.set(Transform2D(rails.getTarget().position));
+            entity.set(Transform(rails.getTarget().position));
         }
 
         entity.remove<Velocity>();
@@ -126,7 +126,7 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
 
                 Schedule
                     .tween(entity, rails.getTarget().position, time,
-                           [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform2D>().position; })
+                           [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform>().position; })
                     .setTransition(rails.getTarget().movement)
                     .setOnEnd([](ecs::Entity entity, const Tween<Vector2i>&) {
                         auto& rails = entity.get<RailsControl>();

@@ -19,7 +19,7 @@ void ParticleEmitterSystem::update() {
     const Vector2f sampleSpeed = Vector2f::fromAngleFast(360.0f * Rng.uniform());
 
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
         const auto emitter = entity.get<ParticleEmitter>();
 
         s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * Time.getMultiplier());
@@ -72,7 +72,7 @@ void ParticleEmitterSystem::update() {
 
         spawnLocation += emitter.offset;
         for (s32 i = 0; i < nParticles; i++) {
-            auto eParticle = createParticle(Transform2D(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
+            auto eParticle = createParticle(Transform(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
             if (!eParticle.isExpected()) {
                 continue;
             }
