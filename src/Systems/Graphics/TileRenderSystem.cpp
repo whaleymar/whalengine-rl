@@ -20,7 +20,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
-    const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
+    const auto srcRect = rl::Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
     gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, frameSize, ctx.cameraPosition);
 
     // If we don't deactivate, we minimize the number of shader swaps.

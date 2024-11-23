@@ -17,17 +17,17 @@ void InputHandler::update() {
             continue;
         }
 
-        if (IsKeyPressed(key)) {
+        if (rl::IsKeyPressed(key)) {
             set(inputType);
-        } else if (IsKeyReleased(key)) {
+        } else if (rl::IsKeyReleased(key)) {
             reset(inputType);
         }
     }
-    mMouseScreenPosition = Vector2i(GetMousePosition());
+    mMouseScreenPosition = Vector2i(rl::GetMousePosition());
     for (auto [mouseButton, inputType] : S_MOUSEMAP) {
-        if (IsMouseButtonPressed(mouseButton)) {
+        if (rl::IsMouseButtonPressed(mouseButton)) {
             set(inputType);
-        } else if (IsMouseButtonReleased(mouseButton)) {
+        } else if (rl::IsMouseButtonReleased(mouseButton)) {
             reset(inputType);
         }
     }
@@ -77,26 +77,26 @@ void InputHandler::loadMappings() const {
     // TODO EVENTUALLY load from file once i have, like, menus working
     // TODO should put default mappings in Game/ directory
 
-    S_MOUSEMAP.insert({MOUSE_BUTTON_LEFT, InputType::M1});
-    S_KEYMAP.insert({KEY_UP, InputType::UP});
-    S_KEYMAP.insert({KEY_W, InputType::UP});
-    S_KEYMAP.insert({KEY_RIGHT, InputType::RIGHT});
-    S_KEYMAP.insert({KEY_D, InputType::RIGHT});
-    S_KEYMAP.insert({KEY_DOWN, InputType::DOWN});
-    S_KEYMAP.insert({KEY_S, InputType::DOWN});
-    S_KEYMAP.insert({KEY_LEFT, InputType::LEFT});
-    S_KEYMAP.insert({KEY_A, InputType::LEFT});
+    S_MOUSEMAP.insert({rl::MOUSE_BUTTON_LEFT, InputType::M1});
+    S_KEYMAP.insert({rl::KEY_UP, InputType::UP});
+    S_KEYMAP.insert({rl::KEY_W, InputType::UP});
+    S_KEYMAP.insert({rl::KEY_RIGHT, InputType::RIGHT});
+    S_KEYMAP.insert({rl::KEY_D, InputType::RIGHT});
+    S_KEYMAP.insert({rl::KEY_DOWN, InputType::DOWN});
+    S_KEYMAP.insert({rl::KEY_S, InputType::DOWN});
+    S_KEYMAP.insert({rl::KEY_LEFT, InputType::LEFT});
+    S_KEYMAP.insert({rl::KEY_A, InputType::LEFT});
     // S_KEYMAP.insert({KEY_C, InputType::JUMP});
     // S_KEYMAP.insert({KEY_X, InputType::AIM});
-    S_KEYMAP.insert({KEY_ESCAPE, InputType::PAUSE});
-    S_KEYMAP.insert({KEY_ENTER, InputType::OK});
+    S_KEYMAP.insert({rl::KEY_ESCAPE, InputType::PAUSE});
+    S_KEYMAP.insert({rl::KEY_ENTER, InputType::OK});
 
 #ifndef NDEBUG
-    S_KEYMAP.insert({KEY_ZERO, InputType::DEBUG});
-    S_KEYMAP.insert({KEY_M, InputType::MUSICTEST});
-    S_KEYMAP.insert({KEY_R, InputType::RELOADSCENE});
-    S_KEYMAP.insert({KEY_T, InputType::TIMETEST});
-    S_KEYMAP.insert({KEY_K, InputType::KILLPLAYER});
+    S_KEYMAP.insert({rl::KEY_ZERO, InputType::DEBUG});
+    S_KEYMAP.insert({rl::KEY_M, InputType::MUSICTEST});
+    S_KEYMAP.insert({rl::KEY_R, InputType::RELOADSCENE});
+    S_KEYMAP.insert({rl::KEY_T, InputType::TIMETEST});
+    S_KEYMAP.insert({rl::KEY_K, InputType::KILLPLAYER});
 #endif
 }
 

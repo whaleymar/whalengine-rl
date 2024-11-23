@@ -13,6 +13,10 @@
 
 #include "Util/Vector.h"
 
+namespace rl {
+typedef struct Color Color;
+}
+
 namespace whal {
 
 namespace ecs {
@@ -45,11 +49,11 @@ struct MaterialData {
     static MaterialData get(WorldMaterial material);
     bool isFlagSet(Flags flag) const { return (flags & flag) > 0; }
     f32 getDecayTime() const;
-    Color getColor() const;
+    rl::Color getColor() const;
 
     // T is a draw-like component. Must have a member called ".color" and one called "brightness"
     template <typename T>
-    void addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier = 1.0) const {
+    void addComponents(ecs::Entity entity, s32 halfLen, rl::Color color, f32 lifetimeMultiplier = 1.0) const {
         const f32 lifetime = getDecayTime() * lifetimeMultiplier;
         entity.add(Lifetime(lifetime));
 
@@ -79,7 +83,7 @@ struct MaterialData {
         if (isFlagSet(DecaySpeed)) {
             // want to add this one after some delay, in case particle gains speed in first few frames (like from gravity or something)
             Schedule.flow({entity}).addWait(0.25).add(
-                [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, Color color, Color fadeColor) {
+                [](ecs::Entity e, f32 minSpeedTPS, f32 decaySeconds, rl::Color color, rl::Color fadeColor) {
                     // Can't capture data in a lambda? Use a component! ECS!!! :D
                     struct DieWhenSpeedBelow {
                         f32 minSpeed;
@@ -89,19 +93,20 @@ struct MaterialData {
                         .minSpeed = minSpeedTPS,
                         .lifetime = decaySeconds,
                     });
-                    Schedule.tween(e, fadeColor, decaySeconds, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
+                    Schedule.tween(e, fadeColor, decaySeconds, [](ecs::Entity self) -> rl::Color& { return self.get<T>().color; })
                         .setTransition(Ease::InOutQuad)
-                        .setOnStart([](ecs::Entity self, const Tween<Color>&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
-                        .setDelayCondition([](ecs::Entity self, const Tween<Color>&) -> bool {
+                        .setOnStart([](ecs::Entity self, const Tween<rl::Color>&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
+                        .setDelayCondition([](ecs::Entity self, const Tween<rl::Color>&) -> bool {
                             return self.has<Velocity>() && self.get<Velocity>().total.len() >= self.get<DieWhenSpeedBelow>().minSpeed;
                         })
-                        .setOnEnd([](ecs::Entity self, const Tween<Color>&) { self.remove<DieWhenSpeedBelow>(); });
+                        .setOnEnd([](ecs::Entity self, const Tween<rl::Color>&) { self.remove<DieWhenSpeedBelow>(); });
                 },
                 entity, decayParams.decaySpeed.minSpeedTPS, decayParams.decaySpeed.decaySeconds, color, fadeColor);
         }
 
         if (isFlagSet(FadeOutFlag)) {
-            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; }).setTransition(Ease::InQuad);
+            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> rl::Color& { return self.get<T>().color; })
+                .setTransition(Ease::InQuad);
         }
 
         if (isFlagSet(GlowFlag)) {
@@ -116,12 +121,12 @@ struct MaterialData {
 
     const char* name;
     WorldMaterial id;
-    Color colorRange[2];
+    rl::Color colorRange[2];
     u8 flags = DecayTime | FadeOutFlag;
     f32 bounciness = 0.0;
     f32 gravityCoef = 1.0;
     Vector2f frictionCoefs = {1.0, 1.0};
-    Color fadeColor = Color(255, 255, 255, 0);
+    rl::Color fadeColor = rl::Color(255, 255, 255, 0);
     union {
         DecayTimeParams decayTime;
         DecaySpeedParams decaySpeed;

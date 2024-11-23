@@ -46,7 +46,7 @@ void NavigationSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         PreciseTransform2D tileCoord = PreciseTransform2D(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
         tileCoordStart = tileCoord.position;
         const gfx::RaylibDrawParams params = gfx::getDrawParams(tileCoord, frameSize, ctx.cameraPosition);
-        DrawRectanglePro(params.rect, params.origin, 0.0f, Color{100, 100, 255, 100});
+        rl::DrawRectanglePro(params.rect, params.origin, 0.0f, rl::Color{100, 100, 255, 100});
     }
 }
 

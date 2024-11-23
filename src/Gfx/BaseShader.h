@@ -22,11 +22,11 @@ public:
 
     void setFloat(const char* name, f32 value);
     void setInt(const char* name, s32 value);
-    void setTexture(const char* name, Texture value);
-    void setVector2(const char* name, Vector2 value);
+    void setTexture(const char* name, rl::Texture value);
+    void setVector2(const char* name, rl::Vector2 value);
     void setVector2(const char* name, Vector2f value);
-    void setVector3(const char* name, Vector3 value);
-    void setVector4(const char* name, Vector4 value);
+    void setVector3(const char* name, rl::Vector3 value);
+    void setVector4(const char* name, rl::Vector4 value);
 
     s32 nameToId(const char* name) const;
 
@@ -34,12 +34,12 @@ public:
     s32 tryNameToId(const char* name);
 
     bool isValid() const { return mIsReady; }
-    Shader get() const { return mShaderHandle; }
+    rl::Shader get() const { return mShaderHandle; }
 
 protected:
     std::string mVertPath;
     std::string mFragPath;
-    Shader mShaderHandle;
+    rl::Shader mShaderHandle;
     std::vector<Uniform> mNameToId;
     bool mIsReady;
 };
@@ -48,7 +48,7 @@ class IShader {
 public:
     // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
     // gfx::applyShaders will do it for you automatically.
-    virtual void process(RenderTexture source, RenderTexture destination) = 0;
+    virtual void process(rl::RenderTexture source, rl::RenderTexture destination) = 0;
     virtual ~IShader() {}
 };
 

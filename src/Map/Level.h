@@ -18,7 +18,7 @@ struct TileMap;
 struct Level {
     struct LevelInfo {
         bool isWorldEntryPoint = false;
-        Color ambientLight = WHITE;
+        rl::Color ambientLight = rl::WHITE;
     };
     std::string filepath;     // used for level comparisons
     Vector2f worldPosOrigin;  // top left

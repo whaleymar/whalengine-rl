@@ -32,20 +32,20 @@ static float packColorBufData(const gfx::ColorBufInfo& cbi) {
     return result;
 }
 
-static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Vector4 hdrColor, float angle, Vector2 origin,
-                                 Vector3 packedCBI);
+static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 position, float fontSize, rl::Vector4 hdrColor, float angle,
+                                 rl::Vector2 origin, rl::Vector3 packedCBI);
 
 // Draw text using font inside rectangle limits
-void DrawTextBoxed(Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                   float angle, Vector2f pivotOffset, float brightness, gfx::ColorBufInfo cbi) {
-    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, WHITE, angle, pivotOffset, brightness, cbi);
+void DrawTextBoxed(rl::Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
+                   rl::Color tint, float angle, Vector2f pivotOffset, float brightness, gfx::ColorBufInfo cbi) {
+    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, rl::WHITE, angle, pivotOffset, brightness, cbi);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
-void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
-                             Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset, float brightness,
-                             gfx::ColorBufInfo cbi) {
-    int length = TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
+void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap,
+                             bool center, rl::Color tint, int selectStart, int selectLength, rl::Color selectTint, float angle, Vector2f pivotOffset,
+                             float brightness, gfx::ColorBufInfo cbi) {
+    int length = rl::TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
     const auto rec = params.rect;
 
     float textOffsetY = 0;     // Offset between lines (on line break '\n')
@@ -67,21 +67,21 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
     Vector2f centerpoint = Vector2f(rec.x + rec.width / 2.0f, rec.y - rec.height / 2.0f) + pivotOffset;
 
     // calc HDR colors and pack the depth info
-    Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
+    rl::Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    Vector4 hdrSelectColor = ColorNormalize(selectTint);  // gets color as floats btwn 0-1
+    rl::Vector4 hdrSelectColor = ColorNormalize(selectTint);  // gets color as floats btwn 0-1
     hdrSelectColor.x *= brightness;
     hdrSelectColor.y *= brightness;
     hdrSelectColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(cbi), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(cbi), 0.0, 0.0};
 
     for (int i = 0, k = 0; i < length; i++, k++) {
         // Get next codepoint from byte string and glyph index in font
         int codepointByteCount = 0;
-        int codepoint = GetCodepoint(&text[i], &codepointByteCount);
-        int index = GetGlyphIndex(font, codepoint);
+        int codepoint = rl::GetCodepoint(&text[i], &codepointByteCount);
+        int index = rl::GetGlyphIndex(font, codepoint);
 
         // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
         // but we need to draw all of the bad bytes using the '?' symbol moving one byte
@@ -135,7 +135,7 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
                 const std::string lineStr = endLine == -1 ? std::string(text).substr(startLine == -1 ? 0 : startLine + 1) :
                                                             std::string(text).substr(startLine == -1 ? 0 : startLine + 1, endLine - startLine);
 
-                Vector2 textDimensions = MeasureTextEx(font, lineStr.c_str(), fontSize, spacing);
+                rl::Vector2 textDimensions = rl::MeasureTextEx(font, lineStr.c_str(), fontSize, spacing);
                 centerOffsetX = (rec.width - textDimensions.x) / 2;
 
                 isLineMeasureNeeded = false;
@@ -164,7 +164,7 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
                 // Draw current character glyph
                 if ((codepoint != ' ') && (codepoint != '\t')) {
                     Vector2f pos = Vector2f(rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY).rotate(-angle, centerpoint);
-                    DrawTextCodepointPro(font, codepoint, pos.asRL(), fontSize, isGlyphSelected ? hdrSelectColor : hdrColor, angle, Vector2{0, 0},
+                    DrawTextCodepointPro(font, codepoint, pos.asRL(), fontSize, isGlyphSelected ? hdrSelectColor : hdrColor, angle, rl::Vector2{0, 0},
                                          packedCBI);
                 }
             }
@@ -190,8 +190,8 @@ void DrawTextBoxedSelectable(Font font, const char* text, const RaylibDrawParams
 }
 
 // added rotation support :)
-static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, float fontSize, Vector4 hdrColor, float angle, Vector2 origin,
-                                 Vector3 packedCBI) {
+static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 position, float fontSize, rl::Vector4 hdrColor, float angle,
+                                 rl::Vector2 origin, rl::Vector3 packedCBI) {
     // Character index position in sprite font
     // NOTE: In case a codepoint is not available in the font, index returned points to '?'
     int index = GetGlyphIndex(font, codepoint);
@@ -199,189 +199,42 @@ static void DrawTextCodepointPro(Font font, int codepoint, Vector2 position, flo
 
     // Character destination rectangle on screen
     // NOTE: We consider glyphPadding on drawing
-    Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                        position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                        (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
-                        (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
+    rl::Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                            position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
+                            (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
+                            (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
 
     // Character source rectangle from font texture atlas
     // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects
-    Rectangle srcRec = {font.recs[index].x - (float)font.glyphPadding, font.recs[index].y - (float)font.glyphPadding,
-                        font.recs[index].width + 2.0f * font.glyphPadding, font.recs[index].height + 2.0f * font.glyphPadding};
+    rl::Rectangle srcRec = {font.recs[index].x - (float)font.glyphPadding, font.recs[index].y - (float)font.glyphPadding,
+                            font.recs[index].width + 2.0f * font.glyphPadding, font.recs[index].height + 2.0f * font.glyphPadding};
 
     // Draw the character texture on the screen
     DrawSpriteHDR(font.texture, srcRec, dstRec, origin, angle, hdrColor, packedCBI);
 }
 
-RenderTexture LoadRenderTextureDepthTex(int width, int height) {
-    RenderTexture2D target;
-
-    target.id = rlLoadFramebuffer();  // Load an empty framebuffer
-
-    if (target.id > 0) {
-        rlEnableFramebuffer(target.id);
-
-        // Create color texture (default to RGBA)
-        target.texture.id = rlLoadTexture(0, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-        target.texture.width = width;
-        target.texture.height = height;
-        target.texture.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        target.texture.mipmaps = 1;
-
-        // Create depth texture buffer (instead of raylib default renderbuffer)
-        target.depth.id = rlLoadTextureDepth(width, height, false);
-        target.depth.width = width;
-        target.depth.height = height;
-        target.depth.format = 19;  // DEPTH_COMPONENT_24BIT?
-        target.depth.mipmaps = 1;
-
-        // Attach color texture and depth texture to FBO
-        rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-        rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
-
-        // Check if fbo is complete with attachments (valid)
-        if (rlFramebufferComplete(target.id))
-            TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", target.id);
-
-        rlDisableFramebuffer();
-    } else
-        TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
-
-    return target;
-}
-
-// Unload render texture from GPU memory (VRAM)
-void UnloadRenderTextureDepthTex(RenderTexture target) {
-    if (target.id > 0) {
-        // Color texture attached to FBO is deleted
-        rlUnloadTexture(target.texture.id);
-        rlUnloadTexture(target.depth.id);
-
-        // NOTE: Depth texture is automatically
-        // queried and deleted before deleting framebuffer
-        rlUnloadFramebuffer(target.id);
-    }
-}
-
-// Draw a part of a texture (defined by a rectangle) with 'pro' parameters
-// NOTE: origin is relative to destination rectangle size
-void DrawTextureDepth(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float depth) {
-    // input depth is between 0 and 1, needs to be between -1 and 0
-
-    depth = depth - 1.0f;
-    // Check if texture is valid
-    if (texture.id > 0) {
-        float width = (float)texture.width;
-        float height = (float)texture.height;
-
-        bool flipX = false;
-
-        if (source.width < 0) {
-            flipX = true;
-            source.width *= -1;
-        }
-        if (source.height < 0)
-            source.y -= source.height;
-
-        Vector2 topLeft;
-        Vector2 topRight;
-        Vector2 bottomLeft;
-        Vector2 bottomRight;
-
-        // Only calculate rotation if needed
-        if (rotation == 0.0f) {
-            float x = dest.x - origin.x;
-            float y = dest.y - origin.y;
-            topLeft = (Vector2){x, y};
-            topRight = (Vector2){x + dest.width, y};
-            bottomLeft = (Vector2){x, y + dest.height};
-            bottomRight = (Vector2){x + dest.width, y + dest.height};
-        } else {
-            float sinRotation = sinf(rotation * DEG2RAD);
-            float cosRotation = cosf(rotation * DEG2RAD);
-            float x = dest.x;
-            float y = dest.y;
-            float dx = -origin.x;
-            float dy = -origin.y;
-
-            topLeft.x = x + dx * cosRotation - dy * sinRotation;
-            topLeft.y = y + dx * sinRotation + dy * cosRotation;
-
-            topRight.x = x + (dx + dest.width) * cosRotation - dy * sinRotation;
-            topRight.y = y + (dx + dest.width) * sinRotation + dy * cosRotation;
-
-            bottomLeft.x = x + dx * cosRotation - (dy + dest.height) * sinRotation;
-            bottomLeft.y = y + dx * sinRotation + (dy + dest.height) * cosRotation;
-
-            bottomRight.x = x + (dx + dest.width) * cosRotation - (dy + dest.height) * sinRotation;
-            bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
-        }
-
-        rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
-
-        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-        rlNormal3f(0.0f, 0.0f, 1.0f);  // Normal vector pointing towards viewer
-        // print(System::time.getFrame(), "Current depth is", RLGL.currentBatch->currentDepth);
-
-        // Top-left corner for texture and quad
-        if (flipX)
-            rlTexCoord2f((source.x + source.width) / width, source.y / height);
-        else
-            rlTexCoord2f(source.x / width, source.y / height);
-        rlVertex3f(topLeft.x, topLeft.y, depth);
-        // rlVertex2f(topLeft.x, topLeft.y);
-
-        // Bottom-left corner for texture and quad
-        if (flipX)
-            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
-        else
-            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
-        rlVertex3f(bottomLeft.x, bottomLeft.y, depth);
-        // rlVertex2f(bottomLeft.x, bottomLeft.y);
-
-        // Bottom-right corner for texture and quad
-        if (flipX)
-            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
-        else
-            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
-        rlVertex3f(bottomRight.x, bottomRight.y, depth);
-        // rlVertex2f(bottomRight.x, bottomRight.y);
-
-        // Top-right corner for texture and quad
-        if (flipX)
-            rlTexCoord2f(source.x / width, source.y / height);
-        else
-            rlTexCoord2f((source.x + source.width) / width, source.y / height);
-        rlVertex3f(topRight.x, topRight.y, depth);
-        // rlVertex2f(topRight.x, topRight.y);
-
-        rlEnd();
-        rlSetTexture(0);
-    }
-}
-
 // raylib's DrawTextureXYZ(RenderTexture.texture) draws upside down.
 // This opts for a less confusing approach.
-void DrawRenderTexture(RenderTexture renderTexture, Color color) {
+void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color) {
     const auto tex = renderTexture.texture;
-    DrawTextureRec(tex, Rectangle(0, 0, tex.width, -tex.height), Vector2(0, 0), color);
+    rl::DrawTextureRec(tex, rl::Rectangle(0, 0, tex.width, -tex.height), rl::Vector2(0, 0), color);
 }
 
 // Draws correctly sized pixel even for higher resolution target textures.
-void DrawPixel(Vector2i screenCoord, Color color) {
+void DrawPixel(Vector2i screenCoord, rl::Color color) {
     DrawRectangle(screenCoord.x, screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO, color);
 }
-void DrawPixel(Vector2i screenCoord, Color color, float brightness, gfx::ColorBufInfo cbi) {
-    DrawRectangleHDR(Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, color, brightness,
+void DrawPixel(Vector2i screenCoord, rl::Color color, float brightness, gfx::ColorBufInfo cbi) {
+    DrawRectangleHDR(rl::Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, color, brightness,
                      cbi);
 }
-void DrawPixel(Vector2i screenCoord, Vector4 hdrColor, Vector3 packedCBI) {
-    DrawRectangleHDR(Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, hdrColor, packedCBI);
+void DrawPixel(Vector2i screenCoord, rl::Vector4 hdrColor, rl::Vector3 packedCBI) {
+    DrawRectangleHDR(rl::Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, hdrColor,
+                     packedCBI);
 }
 
 // Draws pixelated ellipse even for higher resolution target textures.
-void DrawEllipse(Vector2f center, Vector2f radii, Color color, float brightness, gfx::ColorBufInfo cbi) {
+void DrawEllipse(Vector2f center, Vector2f radii, rl::Color color, float brightness, gfx::ColorBufInfo cbi) {
     const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
 
     // offset center by subpixel for better distance calculations
@@ -395,11 +248,11 @@ void DrawEllipse(Vector2f center, Vector2f radii, Color color, float brightness,
     const Vector2i high = highF.round();
     const Vector2f denoms = Vector2f(1.0f / (radii.x * radii.x), 1.0f / (radii.y * radii.y));
 
-    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+    rl::Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(cbi), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(cbi), 0.0, 0.0};
 
     Vector2f current = lowF;
     const f32 maxAlpha = hdrColor.w;
@@ -423,21 +276,22 @@ void DrawEllipse(Vector2f center, Vector2f radii, Color color, float brightness,
     }
 }
 
-void DrawEllipseFromRect(Rectangle rect, Color color, float brightness, gfx::ColorBufInfo cbi) {
+void DrawEllipseFromRect(rl::Rectangle rect, rl::Color color, float brightness, gfx::ColorBufInfo cbi) {
     DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color, brightness, cbi);
 }
 
-void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint, float brightness,
-                   gfx::ColorBufInfo colorBufInfo) {
-    Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
+void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Color tint,
+                   float brightness, gfx::ColorBufInfo colorBufInfo) {
+    rl::Vector4 hdrColor = ColorNormalize(tint);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(colorBufInfo), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(colorBufInfo), 0.0, 0.0};
     DrawSpriteHDR(texture, source, dest, origin, rotation, hdrColor, packedCBI);
 }
 
-void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Vector4 hdrColor, Vector3 packedCBI) {
+void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
+                   rl::Vector3 packedCBI) {
     // Check if texture is valid
     if (texture.id > 0) {
         float width = (float)texture.width;
@@ -452,19 +306,19 @@ void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 
         if (source.height < 0)
             source.y -= source.height;
 
-        Vector2 topLeft;
-        Vector2 topRight;
-        Vector2 bottomLeft;
-        Vector2 bottomRight;
+        rl::Vector2 topLeft;
+        rl::Vector2 topRight;
+        rl::Vector2 bottomLeft;
+        rl::Vector2 bottomRight;
 
         // Only calculate rotation if needed
         if (rotation == 0.0f) {
             float x = dest.x - origin.x;
             float y = dest.y - origin.y;
-            topLeft = (Vector2){x, y};
-            topRight = (Vector2){x + dest.width, y};
-            bottomLeft = (Vector2){x, y + dest.height};
-            bottomRight = (Vector2){x + dest.width, y + dest.height};
+            topLeft = (rl::Vector2){x, y};
+            topRight = (rl::Vector2){x + dest.width, y};
+            bottomLeft = (rl::Vector2){x, y + dest.height};
+            bottomRight = (rl::Vector2){x + dest.width, y + dest.height};
         } else {
             float sinRotation = sinf(rotation * DEG2RAD);
             float cosRotation = cosf(rotation * DEG2RAD);
@@ -486,68 +340,68 @@ void DrawSpriteHDR(Texture2D texture, Rectangle source, Rectangle dest, Vector2 
             bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
         }
 
-        rlSetTexture(texture.id);
-        rlBegin(RL_QUADS);
+        rl::rlSetTexture(texture.id);
+        rl::rlBegin(RL_QUADS);
 
-        rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
-        rlSetNormals(packedCBI);
+        rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+        rl::rlSetNormals(packedCBI);
 
         // Top-left corner for texture and quad
         if (flipX)
-            rlTexCoord2f((source.x + source.width) / width, source.y / height);
+            rl::rlTexCoord2f((source.x + source.width) / width, source.y / height);
         else
-            rlTexCoord2f(source.x / width, source.y / height);
-        rlVertex2f(topLeft.x, topLeft.y);
+            rl::rlTexCoord2f(source.x / width, source.y / height);
+        rl::rlVertex2f(topLeft.x, topLeft.y);
 
         // Bottom-left corner for texture and quad
         if (flipX)
-            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+            rl::rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
         else
-            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
-        rlVertex2f(bottomLeft.x, bottomLeft.y);
+            rl::rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+        rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
 
         // Bottom-right corner for texture and quad
         if (flipX)
-            rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+            rl::rlTexCoord2f(source.x / width, (source.y + source.height) / height);
         else
-            rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
-        rlVertex2f(bottomRight.x, bottomRight.y);
+            rl::rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+        rl::rlVertex2f(bottomRight.x, bottomRight.y);
 
         // Top-right corner for texture and quad
         if (flipX)
-            rlTexCoord2f(source.x / width, source.y / height);
+            rl::rlTexCoord2f(source.x / width, source.y / height);
         else
-            rlTexCoord2f((source.x + source.width) / width, source.y / height);
-        rlVertex2f(topRight.x, topRight.y);
+            rl::rlTexCoord2f((source.x + source.width) / width, source.y / height);
+        rl::rlVertex2f(topRight.x, topRight.y);
 
-        rlEnd();
-        rlSetTexture(0);
+        rl::rlEnd();
+        rl::rlSetTexture(0);
     }
 }
 
-void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Color color, float brightness, gfx::ColorBufInfo colorBufInfo) {
-    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, rl::Color color, float brightness, gfx::ColorBufInfo colorBufInfo) {
+    rl::Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(colorBufInfo), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(colorBufInfo), 0.0, 0.0};
     DrawRectangleHDR(rec, origin, rotation, hdrColor, packedCBI);
 }
 
-void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Vector4 hdrColor, Vector3 packedCBI) {
-    Vector2 topLeft = {};
-    Vector2 topRight = {};
-    Vector2 bottomLeft = {};
-    Vector2 bottomRight = {};
+void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor, rl::Vector3 packedCBI) {
+    rl::Vector2 topLeft = {};
+    rl::Vector2 topRight = {};
+    rl::Vector2 bottomLeft = {};
+    rl::Vector2 bottomRight = {};
 
     // Only calculate rotation if needed
     if (rotation == 0.0f) {
         float x = rec.x - origin.x;
         float y = rec.y - origin.y;
-        topLeft = (Vector2){x, y};
-        topRight = (Vector2){x + rec.width, y};
-        bottomLeft = (Vector2){x, y + rec.height};
-        bottomRight = (Vector2){x + rec.width, y + rec.height};
+        topLeft = (rl::Vector2){x, y};
+        topRight = (rl::Vector2){x + rec.width, y};
+        bottomLeft = (rl::Vector2){x, y + rec.height};
+        bottomRight = (rl::Vector2){x + rec.width, y + rec.height};
     } else {
         float sinRotation = sinf(rotation * DEG2RAD);
         float cosRotation = cosf(rotation * DEG2RAD);
@@ -594,85 +448,86 @@ void DrawRectangleHDR(Rectangle rec, Vector2 origin, float rotation, Vector4 hdr
 
     rlSetTexture(0);
 #else
-    rlBegin(RL_TRIANGLES);
+    rl::rlBegin(RL_TRIANGLES);
 
-    rlSetNormals(packedCBI);
-    rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+    rl::rlSetNormals(packedCBI);
+    rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
 
-    rlVertex2f(topLeft.x, topLeft.y);
-    rlVertex2f(bottomLeft.x, bottomLeft.y);
-    rlVertex2f(topRight.x, topRight.y);
+    rl::rlVertex2f(topLeft.x, topLeft.y);
+    rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
+    rl::rlVertex2f(topRight.x, topRight.y);
 
-    rlVertex2f(topRight.x, topRight.y);
-    rlVertex2f(bottomLeft.x, bottomLeft.y);
-    rlVertex2f(bottomRight.x, bottomRight.y);
+    rl::rlVertex2f(topRight.x, topRight.y);
+    rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
+    rl::rlVertex2f(bottomRight.x, bottomRight.y);
 
-    rlEnd();
+    rl::rlEnd();
 #endif
 }
 
 // Draw a triangle strip defined by points
 // NOTE: Every new vertex connects with previous two
-void DrawTriangleStripHDR(const Vector2* points, int pointCount, Vector4 hdrColor, Vector3 packedCBI) {
+void DrawTriangleStripHDR(const rl::Vector2* points, int pointCount, rl::Vector4 hdrColor, rl::Vector3 packedCBI) {
     if (pointCount >= 3) {
-        rlBegin(RL_TRIANGLES);
-        rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
-        rlSetNormals(packedCBI);
+        rl::rlBegin(RL_TRIANGLES);
+        rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+        rl::rlSetNormals(packedCBI);
 
         for (int i = 2; i < pointCount; i++) {
             if ((i % 2) == 0) {
-                rlVertex2f(points[i].x, points[i].y);
-                rlVertex2f(points[i - 2].x, points[i - 2].y);
-                rlVertex2f(points[i - 1].x, points[i - 1].y);
+                rl::rlVertex2f(points[i].x, points[i].y);
+                rl::rlVertex2f(points[i - 2].x, points[i - 2].y);
+                rl::rlVertex2f(points[i - 1].x, points[i - 1].y);
             } else {
-                rlVertex2f(points[i].x, points[i].y);
-                rlVertex2f(points[i - 1].x, points[i - 1].y);
-                rlVertex2f(points[i - 2].x, points[i - 2].y);
+                rl::rlVertex2f(points[i].x, points[i].y);
+                rl::rlVertex2f(points[i - 1].x, points[i - 1].y);
+                rl::rlVertex2f(points[i - 2].x, points[i - 2].y);
             }
         }
-        rlEnd();
+        rl::rlEnd();
     }
 }
 
-void DrawLineHDR(Vector2 startPos, Vector2 endPos, float thick, Color color, float brightness, gfx::ColorBufInfo cbi) {
-    Vector2 delta = {endPos.x - startPos.x, endPos.y - startPos.y};
+void DrawLineHDR(rl::Vector2 startPos, rl::Vector2 endPos, float thick, rl::Color color, float brightness, gfx::ColorBufInfo cbi) {
+    rl::Vector2 delta = {endPos.x - startPos.x, endPos.y - startPos.y};
     float length = sqrtf(delta.x * delta.x + delta.y * delta.y);
-    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+    rl::Vector4 hdrColor = rl::ColorNormalize(color);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(cbi), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(cbi), 0.0, 0.0};
 
     if ((length > 0) && (thick > 0)) {
         float scale = thick / (2 * length);
 
-        Vector2 radius = {-scale * delta.y, scale * delta.x};
-        Vector2 strip[4] = {{startPos.x - radius.x, startPos.y - radius.y},
-                            {startPos.x + radius.x, startPos.y + radius.y},
-                            {endPos.x - radius.x, endPos.y - radius.y},
-                            {endPos.x + radius.x, endPos.y + radius.y}};
+        rl::Vector2 radius = {-scale * delta.y, scale * delta.x};
+        rl::Vector2 strip[4] = {{startPos.x - radius.x, startPos.y - radius.y},
+                                {startPos.x + radius.x, startPos.y + radius.y},
+                                {endPos.x - radius.x, endPos.y - radius.y},
+                                {endPos.x + radius.x, endPos.y + radius.y}};
 
         DrawTriangleStripHDR(strip, 4, hdrColor, packedCBI);
     }
 }
 
 // Draw spline segment: Quadratic Bezier, 2 points, 1 control point
-void DrawSplineSegmentBezierQuadraticHDR(Vector2 p1, Vector2 c2, Vector2 p3, float thick, Color color, float brightness, gfx::ColorBufInfo cbi) {
+void DrawSplineSegmentBezierQuadraticHDR(rl::Vector2 p1, rl::Vector2 c2, rl::Vector2 p3, float thick, rl::Color color, float brightness,
+                                         gfx::ColorBufInfo cbi) {
     constexpr s32 SPLINE_SEGMENT_DIVISIONS = 24;
     const float step = 1.0f / SPLINE_SEGMENT_DIVISIONS;
 
-    Vector2 previous = p1;
-    Vector2 current = {0, 0};
+    rl::Vector2 previous = p1;
+    rl::Vector2 current = {0, 0};
     float t = 0.0f;
 
-    Vector2 points[2 * SPLINE_SEGMENT_DIVISIONS + 2];
+    rl::Vector2 points[2 * SPLINE_SEGMENT_DIVISIONS + 2];
     std::memset(points, 0, sizeof(points));
 
-    Vector4 hdrColor = ColorNormalize(color);  // gets color as floats btwn 0-1
+    rl::Vector4 hdrColor = rl::ColorNormalize(color);  // gets color as floats btwn 0-1
     hdrColor.x *= brightness;
     hdrColor.y *= brightness;
     hdrColor.z *= brightness;
-    auto packedCBI = Vector3{packColorBufData(cbi), 0.0, 0.0};
+    auto packedCBI = rl::Vector3{packColorBufData(cbi), 0.0, 0.0};
 
     for (int i = 1; i <= SPLINE_SEGMENT_DIVISIONS; i++) {
         t = step * (float)i;
@@ -711,12 +566,12 @@ MultiTexture CreateMultiTexture() {
     MultiTexture mt;
     const s32 width = WINDOW_WIDTH_RENDER;
     const s32 height = WINDOW_HEIGHT_RENDER;
-    const auto hdrFormat = PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
-    const auto ldrFormat = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+    const auto hdrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
+    const auto ldrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
     mt.tex = LoadRenderTextureFormat(width, height, hdrFormat);
 
-    rlEnableFramebuffer(mt.tex.id);
+    rl::rlEnableFramebuffer(mt.tex.id);
 
     // Load additional buffers
     mt.depth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
@@ -724,14 +579,14 @@ MultiTexture CreateMultiTexture() {
     mt.occlusionDepth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
 
     // Activate and attach the buffers
-    rlActiveDrawBuffers(4);
-    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.depth, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, RL_ATTACHMENT_COLOR_CHANNEL2, RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, RL_ATTACHMENT_COLOR_CHANNEL3, RL_ATTACHMENT_TEXTURE2D, 0);
+    rl::rlActiveDrawBuffers(4);
+    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
 
     // Automatically calls rlDisableFramebuffer()
-    if (!rlFramebufferComplete(mt.tex.id)) {
+    if (!rl::rlFramebufferComplete(mt.tex.id)) {
         print("failed to create MultiTexture");
     }
 

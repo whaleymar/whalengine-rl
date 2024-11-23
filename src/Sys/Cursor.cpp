@@ -25,7 +25,7 @@ void CursorManager::set(Sprite sprite) const {
         entity.remove<Sprite>();
         entity.add(sprite);
     }
-    HideCursor();
+    rl::HideCursor();
 }
 
 void CursorManager::setDefault() const {
@@ -33,7 +33,7 @@ void CursorManager::setDefault() const {
     if (isCustomCursorActive) {
         MouseCursorSystem::first().kill();
     }
-    ShowCursor();
+    rl::ShowCursor();
 }
 
 }  // namespace whal

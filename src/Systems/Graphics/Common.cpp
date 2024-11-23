@@ -63,9 +63,9 @@ RaylibDrawParams getDrawParams(PreciseTransform2D transform, Vector2f frameSize,
     origin *= VIRTUAL_SCREEN_RATIO;
 
     return RaylibDrawParams{
-        .rect = Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},
-        .origin = Vector2{origin.x, origin.y},
-        .position = Vector2{screenPosition.x, screenPosition.y},
+        .rect = rl::Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},
+        .origin = rl::Vector2{origin.x, origin.y},
+        .position = rl::Vector2{screenPosition.x, screenPosition.y},
     };
 }
 

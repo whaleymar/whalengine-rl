@@ -47,7 +47,7 @@ void clearMapCache() {
     S_TEMPLATE_MANAGER.clearCache();
 }
 
-Color parseColor(const std::string& hexString) {
+rl::Color parseColor(const std::string& hexString) {
     s32 r, g, b, a;
     // format is "#aarrggbb"
     std::istringstream(hexString.substr(1, 2)) >> std::hex >> a;
@@ -55,10 +55,10 @@ Color parseColor(const std::string& hexString) {
     std::istringstream(hexString.substr(5, 2)) >> std::hex >> g;
     std::istringstream(hexString.substr(7, 2)) >> std::hex >> b;
 
-    return Color(r, g, b, a);
+    return rl::Color(r, g, b, a);
 }
 
-bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst) {
+bool tryReadColor(const nlohmann::json& data, std::string_view key, rl::Color* dst) {
     if (data.contains(key)) {
         std::string hexString = readString(data, key);
         *dst = parseColor(hexString);
@@ -479,7 +479,7 @@ const TileSet& getTileSet(const TileMap& map, s32 blockId) {
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     const TileSet& tset = getTileSet(map, blockId);
     std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
-    Corrade::Containers::Optional<Rectangle> tsetFrameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
+    Corrade::Containers::Optional<rl::Rectangle> tsetFrameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
         return Error(whal_format("Couldn't find {} in sprite table", spritePath));

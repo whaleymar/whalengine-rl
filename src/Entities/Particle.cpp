@@ -26,7 +26,7 @@ constexpr f32 MIN_SPEED_BURST = 5.0f;
 constexpr f32 MAX_SPEED_BURST = 20.0f;
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
-static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color color, f32 lifetime) {
+static Expected<ecs::Entity> createParticleBase(Transform2D transform, rl::Color color, f32 lifetime) {
     auto expected = World.entity(false);
     if (!expected.isExpected()) {
         return expected;
@@ -45,7 +45,7 @@ static Expected<ecs::Entity> createParticleBase(Transform2D transform, Color col
 
 Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
-    const Color color = materialData.getColor();
+    const rl::Color color = materialData.getColor();
 
     auto expected = World.entity(false);
     if (!expected.isExpected()) {
@@ -73,22 +73,22 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     return particle;
 }
 
-Expected<ecs::Entity> createParticleSprite(Transform2D transform, Color color, f32 lifetime) {
-    auto expected = createParticleBase(transform, color, lifetime);
-    if (!expected.isExpected()) {
-        return expected;
-    }
-    auto _ = ecs::DeferActivate(expected.value());
-    auto particle = expected.value();
-
-    auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
-    particle.add(Sprite(*frame));
-
-    s32 radius = PIXELS_PER_TILE * 1;
-    particle.add(PointLight{radius, 0, color});
-
-    return particle;
-}
+// Expected<ecs::Entity> createParticleSprite(Transform2D transform, rl::Color color, f32 lifetime) {
+//     auto expected = createParticleBase(transform, color, lifetime);
+//     if (!expected.isExpected()) {
+//         return expected;
+//     }
+//     auto _ = ecs::DeferActivate(expected.value());
+//     auto particle = expected.value();
+//
+//     auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
+//     particle.add(Sprite(*frame));
+//
+//     s32 radius = PIXELS_PER_TILE * 1;
+//     particle.add(PointLight{radius, 0, color});
+//
+//     return particle;
+// }
 
 void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier,
                    f32 speedMultiplier) {

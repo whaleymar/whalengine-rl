@@ -16,8 +16,8 @@ namespace whal {
 static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
 
 TextRenderSystem::TextRenderSystem() {
-    mFont = new Font();
-    *mFont = LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
+    mFont = new rl::Font();
+    *mFont = rl::LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
 }
 
 TextRenderSystem::~TextRenderSystem() {
@@ -26,8 +26,8 @@ TextRenderSystem::~TextRenderSystem() {
 }
 
 void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
-    constexpr s32 spacing = 0;  // PARAM
-    const Color tint = WHITE;   // PARAM
+    constexpr s32 spacing = 0;         // PARAM
+    const rl::Color tint = rl::WHITE;  // PARAM
 
     const DrawText draw = eCtx.entity.get<DrawText>();
     const auto& trans = eCtx.preciseTransform;
@@ -57,11 +57,11 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // needs half tile offset for some reason; might be an issue with map data:
     // dstPosition += Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
 
-    Rectangle dstRect = Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
+    rl::Rectangle dstRect = rl::Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
 
     gfx::RaylibDrawParams params = gfx::RaylibDrawParams{
         .rect = dstRect,
-        .origin = Vector2{0, 0},
+        .origin = rl::Vector2{0, 0},
         .position = dstPosition.asRL(),
     };
 

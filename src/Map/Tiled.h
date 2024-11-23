@@ -12,7 +12,9 @@
 #include "Gfx/Depth.h"
 #include "Util/Types.h"
 
+namespace rl {
 typedef struct Color Color;
+}
 
 namespace whal {
 
@@ -34,8 +36,8 @@ Transform2D getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
-Color parseColor(const std::string& hexString);
-bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst);
+rl::Color parseColor(const std::string& hexString);
+bool tryReadColor(const nlohmann::json& data, std::string_view key, rl::Color* dst);
 Depth parseDepth(const std::string& depthString);
 bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst);
 

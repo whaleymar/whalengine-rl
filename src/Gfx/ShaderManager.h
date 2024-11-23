@@ -2,7 +2,9 @@
 
 #include "Util/Types.h"
 
+namespace rl {
 typedef struct Shader Shader;
+}
 
 namespace whal {
 
@@ -23,7 +25,7 @@ enum class Shaders : s16 {
 
 class ScopedShader {
 public:
-    ScopedShader(Shader shader, bool isActivated = false);
+    ScopedShader(rl::Shader shader, bool isActivated = false);
     ~ScopedShader();
 };
 
@@ -34,7 +36,7 @@ public:
         return instance_;
     }
 
-    static Shader get(Shaders shaderEnum);
+    static rl::Shader get(Shaders shaderEnum);
     static void activate(Shaders shaderEnum);
     static ScopedShader activateScoped(Shaders shaderEnum);
 
@@ -43,7 +45,7 @@ public:
     void reloadShaders();
 
 private:
-    Shader _get(Shaders shaderEnum) const;
+    rl::Shader _get(Shaders shaderEnum) const;
     void setIsUsed(s32 index);
     bool getIsUsed(s32 index) const;
 

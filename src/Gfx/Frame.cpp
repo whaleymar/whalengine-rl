@@ -4,7 +4,7 @@
 
 namespace whal {
 
-Frame::Frame(Rectangle rect) : atlasPosition(rect.x, rect.y), size(rect.width, rect.height) {}
+Frame::Frame(rl::Rectangle rect) : atlasPosition(rect.x, rect.y), size(rect.width, rect.height) {}
 
 Frame::Frame(Vector2i atlasPosition, Vector2i dimensions) : atlasPosition(atlasPosition), size(dimensions) {}
 

@@ -8,15 +8,14 @@
 
 #include "Util/Print.h"
 #include "Util/Vector.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
 
-IDraw::IDraw(Color color_) : color(color_) {}
+IDraw::IDraw(rl::Color color_) : color(color_) {}
 
-Sprite::Sprite(Frame frame, Color color_) : IDraw(color_), frameSize(frame.size), atlasPosition(frame.atlasPosition) {}
+Sprite::Sprite(Frame frame, rl::Color color_) : IDraw(color_), frameSize(frame.size), atlasPosition(frame.atlasPosition) {}
 
-Expected<Sprite> Sprite::fromPath(const char* spritePath, Color color_) {
+Expected<Sprite> Sprite::fromPath(const char* spritePath, rl::Color color_) {
     const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
     auto frame = spriteTexture.getFrame(spritePath);
     if (frame) {
@@ -30,6 +29,6 @@ void Sprite::setFrame(Frame frame) {
     atlasPosition = frame.atlasPosition;
 }
 
-DrawRect::DrawRect(Color color_, Vector2i frameSize_) : IDraw(color_), frameSize(frameSize_) {}
+DrawRect::DrawRect(rl::Color color_, Vector2i frameSize_) : IDraw(color_), frameSize(frameSize_) {}
 
 }  // namespace whal

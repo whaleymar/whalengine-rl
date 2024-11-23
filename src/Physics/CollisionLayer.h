@@ -3,8 +3,6 @@
 #include <unordered_map>
 #include "Util/Types.h"
 
-typedef struct Color Color;
-
 namespace whal {
 
 struct Transform2D;

@@ -7,7 +7,7 @@ namespace whal {
 
 Tonemap::Tonemap() : mToneMap("", "whalengine/src/Shader/toneMapping.glsl") {}
 
-void Tonemap::process(RenderTexture src, RenderTexture dst) {
+void Tonemap::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mToneMap.isValid());
     Graphics.blit(src, dst, mToneMap.get());
 }

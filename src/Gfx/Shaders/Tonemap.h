@@ -6,7 +6,7 @@ namespace whal {
 class Tonemap : public IShader {
 public:
     Tonemap();
-    void process(RenderTexture source, RenderTexture dest) override;
+    void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 private:
     BaseShader mToneMap;

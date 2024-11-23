@@ -12,7 +12,7 @@ namespace whal {
 class IShader;
 namespace gfx {
 
-void applyShaders(RenderTexture target, const std::vector<std::shared_ptr<IShader>>& shaders);
+void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IShader>>& shaders);
 
 }  // namespace gfx
 
@@ -20,8 +20,8 @@ struct System;
 
 class Renderer {
     struct RTInfo {
-        RenderTexture rt;
-        TextureFilter filter;  // store filter so it's only changed when necessary
+        rl::RenderTexture rt;
+        rl::TextureFilter filter;  // store filter so it's only changed when necessary
         s32 unusedFrames = 0;
     };
 
@@ -36,22 +36,22 @@ public:
 
     // Temporary Render Textures are convenient and stay cached for a few frames. You should manually release them
     // when you're done using them so another process can use it. Otherwise, they will be released at the end of the frame.
-    RenderTexture getTemporaryRT(s32 width, s32 height, PixelFormat format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-                                 TextureFilter filter = TEXTURE_FILTER_POINT);
+    rl::RenderTexture getTemporaryRT(s32 width, s32 height, rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+                                     rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT);
 
     // Gets a temporary Render Texture with width, height, and format matching the given texture
-    RenderTexture getTemporaryRT(Texture reference, TextureFilter filter = TEXTURE_FILTER_POINT);
+    rl::RenderTexture getTemporaryRT(rl::Texture reference, rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT);
 
     // Release a temporary Render Texture. Call in reverse allocation order for best performance.
-    void releaseTemporaryRT(RenderTexture rt);
+    void releaseTemporaryRT(rl::RenderTexture rt);
 
     // Copy src RenderTexture into dst. Optionally use a shader when drawing.
     // If dimensions aren't the same, scaling happens automatically.
     // src and dest should not be the same RenderTexture.
     // If no shader is specified, then the currently active shader will be used.
-    void blit(RenderTexture src, RenderTexture dst, Shader shader = {.id = 0, .locs = nullptr}) const;
-    void blit(RenderTexture src, RenderTexture dst, std::shared_ptr<IShader>& shader);
-    void blit(RenderTexture src, RenderTexture dst, IShader& shader);
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr}) const;
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShader>& shader);
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, IShader& shader);
 
 private:
     Renderer(const Renderer&) = delete;
@@ -65,7 +65,7 @@ private:
     void scaleDepthBuffers(gfx::RenderContext ctx) const;
     void drawUI(const gfx::RenderContext ctx) const;
 
-    Camera2D mRaylibCamera;
+    rl::Camera2D mRaylibCamera;
     std::vector<gfx::EntityRenderInfo> mRenderQueue;
     std::vector<gfx::EntityRenderInfo> mUIRenderQueue;  // UI is stored in a separate queue so it's not affected by lighting
 
