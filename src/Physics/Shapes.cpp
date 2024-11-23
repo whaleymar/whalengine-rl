@@ -76,7 +76,7 @@ bool AABB::contains(Vector2i point) const {
 
 constexpr static f32 S_DEBUG_SHAPE_THICKNESS = 2.0f;
 
-void AABB::draw(Vector2f cameraPos, Color color) const {
+void AABB::draw(Vector2f cameraPos, rl::Color color) const {
     Vector2f position(left(), bottom());
     Vector2f size = Vector2f(mHalf.x, mHalf.y) * 2;
 
@@ -87,7 +87,7 @@ void AABB::draw(Vector2f cameraPos, Color color) const {
     dstPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
     size *= VIRTUAL_SCREEN_RATIO;
 
-    DrawRectangleLinesEx(Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), S_DEBUG_SHAPE_THICKNESS, color);
+    DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), S_DEBUG_SHAPE_THICKNESS, color);
 }
 #endif
 
@@ -153,11 +153,11 @@ void Circle::setPosition(Transform2D transform, Vector2i colliderOffset) {
 }
 
 #ifndef NDEBUG
-void Circle::draw(Vector2f cameraPos, Color color) const {
+void Circle::draw(Vector2f cameraPos, rl::Color color) const {
     Vector2f dstPosition = {mCenter.x - cameraPos.x, -1 * mCenter.y + cameraPos.y};
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     dstPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
-    DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);  // no thickness param :(
+    rl::DrawCircleLines(dstPosition.x, dstPosition.y, mRadius * VIRTUAL_SCREEN_RATIO, color);  // no thickness param :(
 }
 #endif
 
@@ -292,7 +292,7 @@ bool Shape::isOverlapping(const Circle& other) const {
 }
 
 #ifndef NDEBUG
-void Shape::draw(Vector2f cameraPos, Color color) const {
+void Shape::draw(Vector2f cameraPos, rl::Color color) const {
     switch (mShape) {
     case ShapeTag::AABB:
         mAABB.draw(cameraPos, color);

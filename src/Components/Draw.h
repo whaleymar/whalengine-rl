@@ -17,17 +17,17 @@ enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
 struct IDraw {
     IDraw() = default;
-    IDraw(Color color_);
+    IDraw(rl::Color color_);
 
-    Color color = WHITE;
+    rl::Color color = rl::WHITE;
     f32 brightness = 1.0f;
 };
 
 struct Sprite : public IDraw {
     Sprite() = default;
-    Sprite(Frame frame, Color color_ = WHITE);
+    Sprite(Frame frame, rl::Color color_ = rl::WHITE);
 
-    static Expected<Sprite> fromPath(const char* spritePath, Color color_ = WHITE);
+    static Expected<Sprite> fromPath(const char* spritePath, rl::Color color_ = rl::WHITE);
     void setFrame(Frame frame);
 
     Vector2i frameSize;
@@ -35,7 +35,7 @@ struct Sprite : public IDraw {
 };
 
 struct DrawRect : public IDraw {
-    DrawRect(Color color_ = WHITE, Vector2i frameSize_ = {8, 8});
+    DrawRect(rl::Color color_ = rl::WHITE, Vector2i frameSize_ = {8, 8});
 
     Vector2i frameSize;
 };
@@ -43,7 +43,7 @@ struct DrawRect : public IDraw {
 struct DrawBezierQuad {
     Vector2i controlPointOffset;
     Vector2i endPointOffset;
-    Color color = WHITE;
+    rl::Color color = rl::WHITE;
     f32 thickness = 1.0;
     f32 brightness = 1.0f;
     Depth depth = Depth::Level;
@@ -51,7 +51,7 @@ struct DrawBezierQuad {
 
 struct DrawStraightLine {
     s32 length;
-    Color color = WHITE;
+    rl::Color color = rl::WHITE;
     f32 thickness = 1.0;
     f32 brightness = 1.0f;
     bool isRotateAboutCenter = false;
@@ -60,7 +60,7 @@ struct DrawStraightLine {
 struct DrawText {
     std::string text;
     Vector2i frameSize;
-    Color color = WHITE;
+    rl::Color color = rl::WHITE;
     f32 brightness = 1.0f;
     bool isCentered = false;
 };

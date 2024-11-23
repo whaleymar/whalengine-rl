@@ -438,7 +438,7 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = parseColor(hexcode);
+        rl::Color color = parseColor(hexcode);
         draw.color = color;
     }
 
@@ -460,7 +460,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = parseColor(hexcode);
+        rl::Color color = parseColor(hexcode);
         sprite.color = color;
     }
 
@@ -499,7 +499,7 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        Color color = parseColor(hexcode);
+        rl::Color color = parseColor(hexcode);
         sprite.color = color;
     }
 
@@ -756,7 +756,7 @@ void addComponentText(const nlohmann::json& values, const nlohmann::json& allObj
     if (values.contains("color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["color"];
-        Color color = parseColor(hexcode);
+        rl::Color color = parseColor(hexcode);
         text.color = color;
     }
 

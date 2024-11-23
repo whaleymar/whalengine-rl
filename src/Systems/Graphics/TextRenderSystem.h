@@ -2,7 +2,9 @@
 
 #include "whalECS/src/ECS.h"
 
+namespace rl {
 typedef struct Font Font;
+}
 
 namespace whal {
 
@@ -17,7 +19,7 @@ public:
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;
 
 private:
-    Font* mFont;
+    rl::Font* mFont;
 };
 
 }  // namespace whal

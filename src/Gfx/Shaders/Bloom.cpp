@@ -14,24 +14,24 @@ Bloom::Bloom() : mThresh("", "whalengine/src/Shader/threshold.glsl"), mBlur("", 
     // intensity = 0.5;
 }
 
-void Bloom::process(RenderTexture src, RenderTexture dst) {
+void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mThresh.isValid() && mBlur.isValid());
 
-    RenderTexture bloomTex = TextureManager::getRenderTexture(TextureID::Bloom);
-    auto fmt = static_cast<PixelFormat>(src.texture.format);
-    auto filter = TEXTURE_FILTER_BILINEAR;
-    RenderTexture halfRes = Graphics.getTemporaryRT(src.texture.width / 2, src.texture.height / 2, fmt, filter);
-    RenderTexture quarterRes = Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, fmt, filter);
-    RenderTexture eightRes = Graphics.getTemporaryRT(src.texture.width / 8, src.texture.height / 8, fmt, filter);
+    rl::RenderTexture bloomTex = TextureManager::getRenderTexture(TextureID::Bloom);
+    auto fmt = static_cast<rl::PixelFormat>(src.texture.format);
+    auto filter = rl::TEXTURE_FILTER_BILINEAR;
+    rl::RenderTexture halfRes = Graphics.getTemporaryRT(src.texture.width / 2, src.texture.height / 2, fmt, filter);
+    rl::RenderTexture quarterRes = Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, fmt, filter);
+    rl::RenderTexture eightRes = Graphics.getTemporaryRT(src.texture.width / 8, src.texture.height / 8, fmt, filter);
 
-    BeginShaderMode(mThresh.get());
+    rl::BeginShaderMode(mThresh.get());
     mThresh.setFloat("_Threshold", threshold);
     mThresh.setFloat("_SoftThreshold", softThreshold);
     Graphics.blit(src, bloomTex);
-    EndShaderMode();
+    rl::EndShaderMode();
 
     // downscale
-    BeginShaderMode(mBlur.get());
+    rl::BeginShaderMode(mBlur.get());
     Graphics.blit(bloomTex, halfRes);
     Graphics.blit(halfRes, quarterRes);
     Graphics.blit(quarterRes, eightRes);
@@ -40,7 +40,7 @@ void Bloom::process(RenderTexture src, RenderTexture dst) {
     Graphics.blit(eightRes, quarterRes);
     Graphics.blit(quarterRes, halfRes);
     Graphics.blit(halfRes, bloomTex);
-    EndShaderMode();
+    rl::EndShaderMode();
 
     Graphics.releaseTemporaryRT(quarterRes);
     Graphics.releaseTemporaryRT(halfRes);
@@ -48,14 +48,14 @@ void Bloom::process(RenderTexture src, RenderTexture dst) {
     // Draw Additively
     // TODO use HDR draw function so intensity modifier isn't clamped to LDR
     const f32 gc = math::gammaToLinear(intensity);
-    const Color tint = ColorFromNormalized(Vector4{gc, gc, gc, 1.0f});
-    BeginTextureMode(dst);
-    ClearBackground(Colors::CLEAR);
+    const rl::Color tint = rl::ColorFromNormalized(rl::Vector4{gc, gc, gc, 1.0f});
+    rl::BeginTextureMode(dst);
+    rl::ClearBackground(Colors::CLEAR);
     gfx::DrawRenderTexture(src);
-    BeginBlendMode(BLEND_ADDITIVE);
+    rl::BeginBlendMode(rl::BLEND_ADDITIVE);
     gfx::DrawRenderTexture(bloomTex, tint);
-    EndBlendMode();
-    EndTextureMode();
+    rl::EndBlendMode();
+    rl::EndTextureMode();
 }
 
 }  // namespace whal

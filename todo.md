@@ -24,9 +24,10 @@ NEXT GOAL:
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
+    - consolidate pointlight and shadowlight
 
 ## Web 
-- getting mouse position does not work
+- getting mouse position does not work (may be fixed w/ raylib 5.5)
 - need to update a lot of shaders 
 
 ## Debug tools 

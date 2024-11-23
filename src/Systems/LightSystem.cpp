@@ -24,7 +24,7 @@
 
 namespace whal {
 
-const Color COLOR_AMBIENT = Color(0, 0, 0, 255);
+const rl::Color COLOR_AMBIENT = rl::Color(0, 0, 0, 255);
 
 void PointLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
@@ -35,7 +35,7 @@ void PointLightSystem::onEvent(evt::ShaderReload) {
 void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
     auto cameraPos = getCameraPositionPrecise();
 
-    Shader shader = ShaderManager::get(Shaders::PointLight);
+    rl::Shader shader = ShaderManager::get(Shaders::PointLight);
     ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::PointLight);
 
     // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
@@ -49,7 +49,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
+        rl::Color color = rl::Color(light.color.r, light.color.g, light.color.b, light.color.a);
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
@@ -58,21 +58,21 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
         color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
 
-        Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        SetShaderValue(shader, mPositionUniform, &screenPosV, SHADER_UNIFORM_VEC2);
+        rl::Vector2 screenPosV(screenPosition.x, screenPosition.y);
+        rl::SetShaderValue(shader, mPositionUniform, &screenPosV, rl::SHADER_UNIFORM_VEC2);
 
         // const f32 lightDepth = depthToFloat(trans.depth);
         // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
         // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
 
-        const Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
-        const Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
-        DrawTexturePro(colorTex, srcRect, dstRect, Vector2(0, 0), 0, color);
+        const rl::Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
+        const rl::Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
+        rl::DrawTexturePro(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
     }
 }
 
 void BoxLightSystem::onEvent(evt::ShaderReload) {
-    Shader shader = ShaderManager::get(Shaders::BoxLight);
+    rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
     mPositionUniform = GetShaderLocation(shader, "lightpos");
     mHalflenUniform = GetShaderLocation(shader, "lighthalflen");
     mRadiusUniform = GetShaderLocation(shader, "lightradius");
@@ -82,7 +82,7 @@ void BoxLightSystem::onEvent(evt::ShaderReload) {
 
 void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
     auto cameraPos = getCameraPositionPrecise();
-    Shader shader = ShaderManager::get(Shaders::BoxLight);
+    rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
 
     const auto randomTexture = Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     for (auto [entityid, entity] : getEntitiesMutable()) {
@@ -99,7 +99,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        Color color = Color(light.color.r, light.color.g, light.color.b, light.color.a);
+        rl::Color color = rl::Color(light.color.r, light.color.g, light.color.b, light.color.a);
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
@@ -111,12 +111,12 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         // light falls off quadratically
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
 
-        Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        Vector2 halfLenV(light.halfLen.x, light.halfLen.y);
+        rl::Vector2 screenPosV(screenPosition.x, screenPosition.y);
+        rl::Vector2 halfLenV(light.halfLen.x, light.halfLen.y);
         f32 fRadius = static_cast<f32>(radius);
-        SetShaderValue(shader, mPositionUniform, &screenPosV.x, SHADER_UNIFORM_VEC2);
-        SetShaderValue(shader, mHalflenUniform, &halfLenV.x, SHADER_UNIFORM_VEC2);
-        SetShaderValue(shader, mRadiusUniform, &fRadius, SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(shader, mPositionUniform, &screenPosV.x, rl::SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(shader, mHalflenUniform, &halfLenV.x, rl::SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(shader, mRadiusUniform, &fRadius, rl::SHADER_UNIFORM_FLOAT);
 
         // const f32 lightDepth = depthToFloat(trans.depth);
         // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
@@ -126,20 +126,20 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i destPosition = screenPosition - lightBounds;
         const Vector2i destSize = lightBounds * 2;
 
-        const Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
-        const Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
+        const rl::Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
+        const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
-        DrawTexturePro(randomTexture.texture, srcRect, dstRect, Vector2(0, 0), 0, color);
+        rl::DrawTexturePro(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
     }
     Graphics.releaseTemporaryRT(randomTexture);
 }
 
 void ShadowLightSystem::onEvent(evt::ShaderReload) {
-    mLightPosUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
-    mRadiusUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
-    mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
-    mDepthBufUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "depthBuf");
-    mOcclDepthBufUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
+    mLightPosUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
+    mRadiusUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
+    mLightDepthUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
+    mDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "depthBuf");
+    mOcclDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
 }
 
 void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
@@ -161,19 +161,19 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
 
         const Vector2i entityPos = trans.position;
         const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));
-        const Vector2 screenPosRL = Vector2(screenPos.x, screenPos.y);
+        const rl::Vector2 screenPosRL = rl::Vector2(screenPos.x, screenPos.y);
         const f32 lightRadiusPixels = light.radius;
         const f32 lightDepth = static_cast<f32>(trans.depth) / 255.0f * depthScalar;
 
         // Set shader values
-        SetShaderValue(shader, mLightPosUniform, &screenPosRL, SHADER_UNIFORM_VEC2);
-        SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, SHADER_UNIFORM_FLOAT);
-        SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
-        SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
-        SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
+        rl::SetShaderValue(shader, mLightPosUniform, &screenPosRL, rl::SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, rl::SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
+        rl::SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
 
-        DrawTextureRec(colorTex, Rectangle(0, 0, colorTex.width, -colorTex.height), Vector2(0, 0), light.color);
-        EndShaderMode();
+        rl::DrawTextureRec(colorTex, rl::Rectangle(0, 0, colorTex.width, -colorTex.height), rl::Vector2(0, 0), light.color);
+        rl::EndShaderMode();
     }
 }
 

@@ -30,8 +30,8 @@ namespace whal {
 
 namespace gfx {
 
-void applyShaders(RenderTexture target, std::vector<std::shared_ptr<IShader>>& shaders) {
-    RenderTexture swap = Graphics.getTemporaryRT(target.texture);
+void applyShaders(rl::RenderTexture target, std::vector<std::shared_ptr<IShader>>& shaders) {
+    rl::RenderTexture swap = Graphics.getTemporaryRT(target.texture);
     bool isSwapTarget = true;
     for (std::shared_ptr<IShader>& pShader : shaders) {
         if (isSwapTarget) {
@@ -52,7 +52,7 @@ void applyShaders(RenderTexture target, std::vector<std::shared_ptr<IShader>>& s
 }  // namespace gfx
 
 Renderer::Renderer() {
-    mRaylibCamera.target = Vector2(0.0f, 0.0f);
+    mRaylibCamera.target = rl::Vector2(0.0f, 0.0f);
     mRaylibCamera.zoom = 1.0f;
     mRaylibCamera.rotation = 0.0f;
 }
@@ -96,7 +96,7 @@ void Renderer::tick() {
     mUsedRTs.clear();
 }
 
-RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, PixelFormat format, TextureFilter filter) {
+rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelFormat format, rl::TextureFilter filter) {
     // iterate backwards, since the most recently used stuff is in the back
     for (s32 i = static_cast<s32>(mAvailableRTs.size()) - 1; i >= 0; --i) {
         auto& it = mAvailableRTs[i];
@@ -106,7 +106,7 @@ RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, PixelFormat format
             mAvailableRTs.erase(mAvailableRTs.begin() + i);
             if (result.filter != filter) {
                 result.filter = filter;
-                SetTextureFilter(result.rt.texture, filter);
+                rl::SetTextureFilter(result.rt.texture, filter);
             }
             mUsedRTs.push_back(result);
             return result.rt;
@@ -114,17 +114,17 @@ RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, PixelFormat format
     }
 
     // Nothing was found, create a new RenderTexture
-    RenderTexture rt = LoadRenderTextureFormat(width, height, format);
-    SetTextureFilter(rt.texture, filter);
+    rl::RenderTexture rt = rl::LoadRenderTextureFormat(width, height, format);
+    rl::SetTextureFilter(rt.texture, filter);
     mUsedRTs.push_back({.rt = rt, .filter = filter});
     return rt;
 }
 
-RenderTexture Renderer::getTemporaryRT(Texture reference, TextureFilter filter) {
-    return getTemporaryRT(reference.width, reference.height, static_cast<PixelFormat>(reference.format), filter);
+rl::RenderTexture Renderer::getTemporaryRT(rl::Texture reference, rl::TextureFilter filter) {
+    return getTemporaryRT(reference.width, reference.height, static_cast<rl::PixelFormat>(reference.format), filter);
 }
 
-void Renderer::releaseTemporaryRT(RenderTexture rt) {
+void Renderer::releaseTemporaryRT(rl::RenderTexture rt) {
     s32 ix = -1;
     // iterate in reverse since we are most likely to release a recently created one
     for (s32 i = static_cast<s32>(mUsedRTs.size()) - 1; i >= 0; --i) {
@@ -146,27 +146,27 @@ void Renderer::releaseTemporaryRT(RenderTexture rt) {
     mAvailableRTs.push_back(released);
 }
 
-void Renderer::blit(RenderTexture src, RenderTexture dst, Shader shader) const {
-    const Rectangle srcRect = Rectangle(0, 0, src.texture.width, -src.texture.height);
-    const Rectangle dstRect = Rectangle(0, 0, dst.texture.width, dst.texture.height);
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader) const {
+    const rl::Rectangle srcRect = rl::Rectangle(0, 0, src.texture.width, -src.texture.height);
+    const rl::Rectangle dstRect = rl::Rectangle(0, 0, dst.texture.width, dst.texture.height);
 
-    BeginTextureMode(dst);
-    ClearBackground(Colors::CLEAR);
+    rl::BeginTextureMode(dst);
+    rl::ClearBackground(Colors::CLEAR);
     const bool isCustomShader = shader.id != 0;
     if (isCustomShader) {
-        BeginShaderMode(shader);
-        DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-        EndShaderMode();
+        rl::BeginShaderMode(shader);
+        rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+        rl::EndShaderMode();
     } else {
-        DrawTexturePro(src.texture, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
+        rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     }
-    EndTextureMode();
+    rl::EndTextureMode();
 }
 
-void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<IShader>& shader) {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShader>& shader) {
     if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
         // scale first, then apply shader
-        RenderTexture tmpSrc = getTemporaryRT(src.texture);
+        rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
         blit(src, tmpSrc);
 
         shader->process(tmpSrc, dst);
@@ -176,10 +176,10 @@ void Renderer::blit(RenderTexture src, RenderTexture dst, std::shared_ptr<IShade
     }
 }
 
-void Renderer::blit(RenderTexture src, RenderTexture dst, IShader& shader) {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, IShader& shader) {
     if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
         // scale first, then apply shader
-        RenderTexture tmpSrc = getTemporaryRT(src.texture);
+        rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
         blit(src, tmpSrc);
 
         shader.process(tmpSrc, dst);
@@ -191,7 +191,7 @@ void Renderer::blit(RenderTexture src, RenderTexture dst, IShader& shader) {
 
 void Renderer::render() {
     // 0. Create render context and build the render queue.
-    Camera2D worldCamera = mRaylibCamera;
+    rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform2D>().rotationDegrees;
     const gfx::RenderContext renderContext{.cameraPosition = cameraEntity.get<PrecisePosition>().position,
@@ -205,21 +205,21 @@ void Renderer::render() {
     drawLights(renderContext);    // drawn to TextureID::Lighting
 
     // 2. Renders everything to TextureID::Main
-    RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
-    BeginTextureMode(mainTex);
-    ClearBackground(Colors::CLEAR);
+    rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
+    rl::BeginTextureMode(mainTex);
+    rl::ClearBackground(Colors::CLEAR);
 
     // Game Objects.
     gfx::DrawRenderTexture(mStagingTexture.tex);
 
     // Lights.
-    BeginBlendMode(BLEND_MULTIPLIED);
+    rl::BeginBlendMode(rl::BLEND_MULTIPLIED);
     gfx::DrawRenderTexture(TextureManager::getRenderTexture(TextureID::Lighting));
-    EndBlendMode();
+    rl::EndBlendMode();
 
     // UI.
     drawUI(renderContext);
-    EndTextureMode();
+    rl::EndTextureMode();
 
     // 3. ? Apply post processing
     gfx::applyShaders(mainTex, cameraEntity.get<whal::Camera>().postEffects);
@@ -230,12 +230,12 @@ void Renderer::render() {
     // 4. Draw debug stuff.
 #ifndef NDEBUG
     if (Input.isOn(InputType::DEBUG)) {
-        BeginTextureMode(mainTex);
-        BeginMode2D(worldCamera);
+        rl::BeginTextureMode(mainTex);
+        rl::BeginMode2D(worldCamera);
         // World.getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();
-        EndMode2D();
-        EndTextureMode();
+        rl::EndMode2D();
+        rl::EndTextureMode();
     }
 #endif
 }
@@ -250,48 +250,48 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth);
     const auto targetOcclDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     const auto targetColorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
-    const Rectangle srcRect = Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
-    const Rectangle dstRect = Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+    const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
+    const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
-    BeginTextureMode(targetDepthTex);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(depthTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
+    rl::BeginTextureMode(targetDepthTex);
+    rl::ClearBackground(Colors::CLEAR);
+    rl::DrawTexturePro(depthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
 
-    BeginTextureMode(targetOcclDepthTex);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(occlDepthTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
+    rl::BeginTextureMode(targetOcclDepthTex);
+    rl::ClearBackground(Colors::CLEAR);
+    rl::DrawTexturePro(occlDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
 
-    BeginTextureMode(targetColorTex);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(colorTex, srcRect, dstRect, Vector2{0, 0}, 0.0f, WHITE);
-    EndTextureMode();
+    rl::BeginTextureMode(targetColorTex);
+    rl::ClearBackground(Colors::CLEAR);
+    rl::DrawTexturePro(colorTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
 }
 
 // this does what the old Mega-GraphicsSystem used to do.
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
-    BeginTextureMode(mStagingTexture.tex);
-    ClearBackground(Colors::CLEAR);
-    BeginMode2D(renderContext.camera);
+    rl::BeginTextureMode(mStagingTexture.tex);
+    rl::ClearBackground(Colors::CLEAR);
+    rl::BeginMode2D(renderContext.camera);
     for (auto renderInfo : mRenderQueue) {
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
-    EndMode2D();
-    EndTextureMode();
+    rl::EndMode2D();
+    rl::EndTextureMode();
 
     scaleDepthBuffers(renderContext);
 }
 
 void Renderer::drawLights(gfx::RenderContext renderContext) {
-    RenderTexture lightTex =
-        Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, TEXTURE_FILTER_BILINEAR);
-    BeginTextureMode(lightTex);
-    BeginMode2D(renderContext.camera);
-    ClearBackground(BLACK);
+    rl::RenderTexture lightTex =
+        Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, rl::TEXTURE_FILTER_BILINEAR);
+    rl::BeginTextureMode(lightTex);
+    rl::BeginMode2D(renderContext.camera);
+    rl::ClearBackground(rl::BLACK);
 
-    BeginBlendMode(BLEND_ADDITIVE);
+    rl::BeginBlendMode(rl::BLEND_ADDITIVE);
     for (const ecs::IRenderLight* pLightSystem : World.getLightSystems()) {
         pLightSystem->draw(renderContext);
     }
@@ -299,9 +299,9 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     // World.getSystem<BoxLightSystem>()->drawEntities();
     // World.getSystem<ShadowLightSystem>()->drawEntities();
 
-    EndBlendMode();
-    EndMode2D();
-    EndTextureMode();
+    rl::EndBlendMode();
+    rl::EndMode2D();
+    rl::EndTextureMode();
 
     // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
     static LightDenoise lightingPipeline;
@@ -312,11 +312,11 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
 }
 
 void Renderer::drawUI(const gfx::RenderContext ctx) const {
-    BeginMode2D(ctx.camera);
+    rl::BeginMode2D(ctx.camera);
     for (auto renderInfo : mUIRenderQueue) {
         renderInfo.piRender->draw(renderInfo, ctx);
     }
-    EndMode2D();
+    rl::EndMode2D();
 }
 
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {

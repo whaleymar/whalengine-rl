@@ -15,15 +15,15 @@ LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
 // LightDenoise::LightDenoise() : BaseShader("", "whalengine/src/Shader/lightpassthrough.glsl") {}
 
-void LightDenoise::process(RenderTexture src, RenderTexture dst) {
+void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mDenoise.isValid());
     assert(isPowerOfTwo(dst.texture.width / src.texture.width) && isPowerOfTwo(dst.texture.height / src.texture.height) &&
            "dst must be bigger than src by a power of 2");
     assert((dst.texture.width / src.texture.width) == (dst.texture.height / src.texture.height) && "src and dst must have same width:height ratios");
 
-    mDenoise.setVector2("iResolution", Vector2(src.texture.width, src.texture.height));
+    mDenoise.setVector2("iResolution", rl::Vector2(src.texture.width, src.texture.height));
 
-    RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, TEXTURE_FILTER_BILINEAR);
+    rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_BILINEAR);
 
     // blur the src with the shader
     // this is only performant when src is around quarter resolution
@@ -34,8 +34,8 @@ void LightDenoise::process(RenderTexture src, RenderTexture dst) {
     s32 srcHeight = src.texture.height;
     while (srcWidth != dst.texture.width) {
         // scale to a new texture twice as big
-        RenderTexture swap =
-            Graphics.getTemporaryRT(srcWidth * 2, srcHeight * 2, static_cast<PixelFormat>(src.texture.format), TEXTURE_FILTER_BILINEAR);
+        rl::RenderTexture swap =
+            Graphics.getTemporaryRT(srcWidth * 2, srcHeight * 2, static_cast<rl::PixelFormat>(src.texture.format), rl::TEXTURE_FILTER_BILINEAR);
         Graphics.blit(tmpSrc, swap);
 
         // multiply width

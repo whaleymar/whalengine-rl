@@ -14,14 +14,14 @@ class TextureAtlas;
 namespace gfx {
 
 struct RaylibDrawParams {
-    Rectangle rect;  // includes position
-    Vector2 origin;
-    Vector2 position;  // for convenience
+    rl::Rectangle rect;  // includes position
+    rl::Vector2 origin;
+    rl::Vector2 position;  // for convenience
 };
 
 struct RenderContext {
     Vector2f cameraPosition;
-    Camera2D camera;
+    rl::Camera2D camera;
     const TextureAtlas& atlas;
     ecs::Entity cameraEntity;
 };

@@ -195,16 +195,16 @@ public:
         }
 
         // Raylib initialization
-        SetTraceLogLevel(LOG_WARNING);
-        InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), mGameHandler.GetWindowTitle());
-        SetExitKey(KEY_NULL);  // Escape quits by default
+        rl::SetTraceLogLevel(rl::LOG_WARNING);
+        rl::InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), mGameHandler.GetWindowTitle());
+        rl::SetExitKey(rl::KEY_NULL);  // Escape quits by default
 
-        SetTargetFPS(mGameHandler.GetTargetFPS());
+        rl::SetTargetFPS(mGameHandler.GetTargetFPS());
 
         // Set application icon for desktop builds
 #ifndef __EMSCRIPTEN__
-        if (FileExists(ICON_IMAGE_PATH)) {
-            mIconImage = LoadImage(ICON_IMAGE_PATH);
+        if (rl::FileExists(ICON_IMAGE_PATH)) {
+            mIconImage = rl::LoadImage(ICON_IMAGE_PATH);
             SetWindowIcon(mIconImage);
         }
 #endif
@@ -247,11 +247,11 @@ public:
         emscripten_set_main_loop(mGameHandler.EngineUpdate, 0,
                                  1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
 #else
-        while (!WindowShouldClose() && !mGameHandler.EngineIsQuit()) {
+        while (!rl::WindowShouldClose() && !mGameHandler.EngineIsQuit()) {
             mGameHandler.EngineUpdate();
             // hot reloading
 #if defined(DYNLIB)
-            if (IsKeyPressed(KEY_R)) {
+            if (IsKeyPressed(rl::KEY_R)) {
                 unloadGame();
                 mGameHandler.EngineEnd();
                 print("Recompiling", DL_PATH);
@@ -286,15 +286,15 @@ public:
 
         // Raylib end
 #ifndef __EMSCRIPTEN__
-        if (FileExists(ICON_IMAGE_PATH)) {
+        if (rl::FileExists(ICON_IMAGE_PATH)) {
             UnloadImage(mIconImage);
         }
 #endif
-        CloseWindow();
+        rl::CloseWindow();
     }
 
 private:
-    Image mIconImage;
+    rl::Image mIconImage;
     GameHandler mGameHandler;
     IGame* mGame;
 };

@@ -5,15 +5,15 @@
 
 namespace whal {
 
-static Shader load(const std::string& vspath, const std::string& fspath) {
+static rl::Shader load(const std::string& vspath, const std::string& fspath) {
     const char* vsfinal = vspath == "" ? 0 : vspath.c_str();
     const char* fsfinal = fspath == "" ? 0 : fspath.c_str();
-    return LoadShader(vsfinal, fsfinal);
+    return rl::LoadShader(vsfinal, fsfinal);
 }
 
 BaseShader::BaseShader(const char* vsPath, const char* fsPath) : mVertPath(vsPath), mFragPath(fsPath) {
     mShaderHandle = load(mVertPath, mFragPath);
-    if (IsShaderValid(mShaderHandle)) {
+    if (rl::IsShaderValid(mShaderHandle)) {
         mIsReady = true;
     } else {
         mIsReady = false;
@@ -22,16 +22,16 @@ BaseShader::BaseShader(const char* vsPath, const char* fsPath) : mVertPath(vsPat
 
 BaseShader::~BaseShader() {
     if (mIsReady) {
-        UnloadShader(mShaderHandle);
+        rl::UnloadShader(mShaderHandle);
     }
 }
 
 void BaseShader::onEvent(evt::ShaderReload) {
     if (mIsReady) {
-        UnloadShader(mShaderHandle);
+        rl::UnloadShader(mShaderHandle);
     }
     mShaderHandle = load(mVertPath, mFragPath);
-    if (IsShaderValid(mShaderHandle)) {
+    if (rl::IsShaderValid(mShaderHandle)) {
         mIsReady = true;
     } else {
         mIsReady = false;
@@ -42,7 +42,7 @@ void BaseShader::onEvent(evt::ShaderReload) {
     std::vector<Uniform> oldUniforms = mNameToId;
     mNameToId.clear();
     for (auto [key, handle] : oldUniforms) {
-        s32 newHandle = GetShaderLocation(mShaderHandle, key.c_str());
+        s32 newHandle = rl::GetShaderLocation(mShaderHandle, key.c_str());
         if (newHandle != -1) {
             mNameToId.push_back({key, newHandle});
         }
@@ -52,43 +52,43 @@ void BaseShader::onEvent(evt::ShaderReload) {
 void BaseShader::setFloat(const char* name, f32 value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_FLOAT);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_FLOAT);
 }
 
 void BaseShader::setInt(const char* name, s32 value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_INT);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_INT);
 }
 
-void BaseShader::setTexture(const char* name, Texture value) {
+void BaseShader::setTexture(const char* name, rl::Texture value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValueTexture(mShaderHandle, handle, value);
+    rl::SetShaderValueTexture(mShaderHandle, handle, value);
 }
 
-void BaseShader::setVector2(const char* name, Vector2 value) {
+void BaseShader::setVector2(const char* name, rl::Vector2 value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_VEC2);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_VEC2);
 }
 
 void BaseShader::setVector2(const char* name, Vector2f value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_VEC2);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_VEC2);
 }
 
-void BaseShader::setVector3(const char* name, Vector3 value) {
+void BaseShader::setVector3(const char* name, rl::Vector3 value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_VEC3);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_VEC3);
 }
 
-void BaseShader::setVector4(const char* name, Vector4 value) {
+void BaseShader::setVector4(const char* name, rl::Vector4 value) {
     s32 handle = tryNameToId(name);
     assert(handle != -1);
-    SetShaderValue(mShaderHandle, handle, &value, SHADER_UNIFORM_VEC4);
+    rl::SetShaderValue(mShaderHandle, handle, &value, rl::SHADER_UNIFORM_VEC4);
 }
 
 s32 BaseShader::nameToId(const char* name) const {
@@ -107,7 +107,7 @@ s32 BaseShader::tryNameToId(const char* name) {
     }
 
     // not in table, try adding it
-    handle = GetShaderLocation(mShaderHandle, name);
+    handle = rl::GetShaderLocation(mShaderHandle, name);
     if (handle != -1) {
         mNameToId.push_back({name, handle});
     }

@@ -65,7 +65,7 @@ void AudioClip::unload() {
 #ifndef __EMSCRIPTEN__
         mSound->release();
 #else
-        UnloadSound(mSound);
+        rl::UnloadSound(mSound);
 #endif
     }
 }
@@ -81,8 +81,8 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
         return Error(sprint("Error loading clip:", path, "\nGot error:", err));
     }
 #else
-    mSound = LoadSound(path);
-    if (!IsSoundReady(mSound)) {
+    mSound = rl::LoadSound(path);
+    if (!rl::IsSoundReady(mSound)) {
         mIsValid = false;
         return Error(sprint("Error loading audio clip: ", path));
     }
@@ -127,11 +127,11 @@ Corrade::Containers::Optional<Error> AudioPlayer::init() {
 
 #else
 
-    InitAudioDevice();
-    if (!IsAudioDeviceReady()) {
+    rl::InitAudioDevice();
+    if (!rl::IsAudioDeviceReady()) {
         return Error("Audio device not ready");
     }
-    AttachAudioMixedProcessor(ProcessAudio);
+    rl::AttachAudioMixedProcessor(ProcessAudio);
     mIsValid = true;
 
 #endif
@@ -150,8 +150,8 @@ AudioPlayer::~AudioPlayer() {
         mSystem->close();
         mSystem->release();
 #else
-        DetachAudioMixedProcessor(ProcessAudio);
-        CloseAudioDevice();
+        rl::DetachAudioMixedProcessor(ProcessAudio);
+        rl::CloseAudioDevice();
 #endif
     }
 }
@@ -196,16 +196,16 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
 
 #else
 
-    mMusic = LoadMusicStream(path);
-    if (!IsMusicReady(mMusic)) {
+    mMusic = rl::LoadMusicStream(path);
+    if (!rl::IsMusicReady(mMusic)) {
         print("couldn't load music stream: ", path);
         return;
     }
 
     // looping? prob have to use seek() in update() TODO
 
-    SetMusicVolume(mMusic, volume);
-    PlayMusicStream(mMusic);
+    rl::SetMusicVolume(mMusic, volume);
+    rl::PlayMusicStream(mMusic);
 
 #endif
 
@@ -247,23 +247,23 @@ void AudioPlayer::update() {
 
 #else
     if (mIsPlayingMusic) {
-        UpdateMusicStream(mMusic);
-        if (!IsMusicStreamPlaying(mMusic)) {
+        rl::UpdateMusicStream(mMusic);
+        if (!rl::IsMusicStreamPlaying(mMusic)) {
             stopMusic();
         }
     }
     if (!mIsClipsPaused) {
-        std::vector<Sound> clipsNew;
+        std::vector<rl::Sound> clipsNew;
         for (auto sound : mClipSounds) {
-            if (IsSoundPlaying(sound)) {
+            if (rl::IsSoundPlaying(sound)) {
                 clipsNew.push_back(sound);
             }
         }
         mClipSounds = std::move(clipsNew);
     }
-    std::vector<Sound> clipsNew;
+    std::vector<rl::Sound> clipsNew;
     for (auto sound : mMenuSounds) {
-        if (IsSoundPlaying(sound)) {
+        if (rl::IsSoundPlaying(sound)) {
             clipsNew.push_back(sound);
         }
     }
@@ -293,8 +293,8 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
     playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
 #else
-    SetSoundVolume(clip.get(), volume);
-    PlaySound(clip.get());
+    rl::SetSoundVolume(clip.get(), volume);
+    rl::PlaySound(clip.get());
     mClipSounds.push_back(clip.get());
 #endif
 }
@@ -305,8 +305,8 @@ void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter,
 #ifndef __EMSCRIPTEN__
     playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
 #else
-    SetSoundVolume(clip.get(), volume);
-    PlaySound(clip.get());
+    rl::SetSoundVolume(clip.get(), volume);
+    rl::PlaySound(clip.get());
     mMenuSounds.push_back(clip.get());
 #endif
 }
@@ -366,7 +366,7 @@ void AudioPlayer::stopMusic() {
     }
 #else
     if (mIsPlayingMusic) {
-        UnloadMusicStream(mMusic);
+        rl::UnloadMusicStream(mMusic);
     }
 #endif
     mIsPlayingMusic = false;
@@ -386,11 +386,11 @@ void AudioPlayer::stopClips() {
 #else
 
     for (auto sound : mClipSounds) {
-        StopSound(sound);
+        rl::StopSound(sound);
     }
 
     for (auto sound : mMenuSounds) {
-        StopSound(sound);
+        rl::StopSound(sound);
     }
 
 #endif
@@ -408,7 +408,7 @@ void AudioPlayer::setMusicVolume(f32 volume) {
     }
 #else
     if (mIsPlayingMusic && IsMusicStreamPlaying(mMusic)) {
-        SetMusicVolume(mMusic, volume);
+        rl::SetMusicVolume(mMusic, volume);
     }
 
 #endif
@@ -430,7 +430,7 @@ bool AudioPlayer::isMusicPaused() const {
     mMusicChannel->getPaused(&isPaused);
     return isPaused;
 #else
-    return mIsPlayingMusic && !IsMusicStreamPlaying(mMusic);
+    return mIsPlayingMusic && !rl::IsMusicStreamPlaying(mMusic);
 #endif
 }
 
@@ -449,9 +449,9 @@ void AudioPlayer::pauseMusic(bool pause) {
     mMusicChannel->setPaused(pause);
 #else
     if (pause) {
-        PauseMusicStream(mMusic);
+        rl::PauseMusicStream(mMusic);
     } else {
-        ResumeMusicStream(mMusic);
+        rl::ResumeMusicStream(mMusic);
     }
 #endif
 }
@@ -462,9 +462,9 @@ void AudioPlayer::pauseClips(bool pause) {
 #else
     for (auto sound : mClipSounds) {
         if (pause) {
-            PauseSound(sound);
+            rl::PauseSound(sound);
         } else {
-            ResumeSound(sound);
+            rl::ResumeSound(sound);
         }
     }
     mIsClipsPaused = pause;

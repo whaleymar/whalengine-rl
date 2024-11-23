@@ -30,7 +30,7 @@ struct Uniforms {
     int iPalette;
 };
 
-static std::array<Shader, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_SHADERS;
+static std::array<rl::Shader, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_SHADERS;
 static std::array<Uniforms, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_UNIFORMS;
 
 static void ActivateShader(Shaders shaderEnum) {
@@ -38,19 +38,19 @@ static void ActivateShader(Shaders shaderEnum) {
     s32 ix = static_cast<s32>(shaderEnum);
     Uniforms uniforms = S_UNIFORMS[ix];
 
-    BeginShaderMode(shader);
+    rl::BeginShaderMode(shader);
 
     if (uniforms.isSet(Uniforms::TimeStamp)) {
         const f32 iTime = Time.getElapsed();
-        SetShaderValue(shader, uniforms.iTime, &iTime, SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(shader, uniforms.iTime, &iTime, rl::SHADER_UNIFORM_FLOAT);
     }
 
     if (uniforms.isSet(Uniforms::VirtualResolution)) {
         const f32 iResolution[2] = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
-        SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(shader, uniforms.iResolution, &iResolution, rl::SHADER_UNIFORM_VEC2);
     } else if (uniforms.isSet(Uniforms::Resolution)) {
         const f32 iResolution[2] = {FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER};
-        SetShaderValue(shader, uniforms.iResolution, &iResolution, SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(shader, uniforms.iResolution, &iResolution, rl::SHADER_UNIFORM_VEC2);
     }
 
     // not working
@@ -59,14 +59,14 @@ static void ActivateShader(Shaders shaderEnum) {
     // }
 }
 
-ScopedShader::ScopedShader(Shader shader, bool isActivated) {
+ScopedShader::ScopedShader(rl::Shader shader, bool isActivated) {
     if (!isActivated) {
-        BeginShaderMode(shader);
+        rl::BeginShaderMode(shader);
     }
 }
 
 ScopedShader::~ScopedShader() {
-    EndShaderMode();
+    rl::EndShaderMode();
 }
 
 void ShaderManager::loadShaders() {
@@ -100,12 +100,12 @@ void ShaderManager::loadShaders() {
         std::string fragPath = shaderInfo[i].fragPath ? std::string(shaderInfo[i].fragPath) + ".web" : "";
         const char* cVertexPath = vertexPath.empty() ? NULL : vertexPath.c_str();
         const char* cFragPath = fragPath.empty() ? NULL : fragPath.c_str();
-        Shader shader = LoadShader(cVertexPath, cFragPath);
+        rl::Shader shader = rl::LoadShader(cVertexPath, cFragPath);
         if (cFragPath) {
             print("Loaded Shader: ", cFragPath);
         }
 #else
-        Shader shader = LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        rl::Shader shader = rl::LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
 #endif
         s32 ix = static_cast<s32>(shaderInfo[i].shaderEnum);
         S_SHADERS[ix] = shader;
@@ -114,10 +114,10 @@ void ShaderManager::loadShaders() {
         S_UNIFORMS[ix].uniformFlags = shaderInfo[i].uniformFlags;
 
         if (S_UNIFORMS[ix].isSet(Uniforms::TimeStamp)) {
-            S_UNIFORMS[ix].iTime = GetShaderLocation(shader, "iTime");
+            S_UNIFORMS[ix].iTime = rl::GetShaderLocation(shader, "iTime");
         }
         if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
-            S_UNIFORMS[ix].iResolution = GetShaderLocation(shader, "iResolution");
+            S_UNIFORMS[ix].iResolution = rl::GetShaderLocation(shader, "iResolution");
         }
 
         // not working
@@ -131,7 +131,7 @@ void ShaderManager::unloadAll() {
     const s32 maxShaderCount = static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME);
     for (size_t i = 0; i < maxShaderCount; i++) {
         if (getIsUsed(i)) {
-            UnloadShader(S_SHADERS[i]);
+            rl::UnloadShader(S_SHADERS[i]);
         }
     }
 }
@@ -143,7 +143,7 @@ void ShaderManager::reloadShaders() {
     Event.emit<evt::ShaderReload>();
 }
 
-Shader ShaderManager::get(Shaders shaderEnum) {
+rl::Shader ShaderManager::get(Shaders shaderEnum) {
     return instance()._get(shaderEnum);
 }
 
@@ -156,7 +156,7 @@ ScopedShader ShaderManager::activateScoped(Shaders shaderEnum) {
     return ScopedShader(instance()._get(shaderEnum), true);
 }
 
-Shader ShaderManager::_get(Shaders shaderEnum) const {
+rl::Shader ShaderManager::_get(Shaders shaderEnum) const {
     s32 ix = static_cast<s32>(shaderEnum);
     assert(getIsUsed(ix) && "Shader not registered for passed enum");
     return S_SHADERS[ix];

@@ -48,14 +48,14 @@ public:
     FMOD::Sound* get() const { return mSound; }
 #else
     bool isValid() const { return mIsValid; }
-    Sound get() const { return mSound; }
+    rl::Sound get() const { return mSound; }
 #endif
 
 private:
 #ifndef __EMSCRIPTEN__
     FMOD::Sound* mSound = nullptr;
 #else
-    Sound mSound;
+    rl::Sound mSound;
     bool mIsValid = false;
 #endif
 };
@@ -111,7 +111,7 @@ private:
     FMOD::System* mSystem = nullptr;
     FMOD::DSP* mLowpassFilter = nullptr;
 #else
-    Music mMusic;
+    rl::Music mMusic;
     std::vector<Sound> mClipSounds;
     std::vector<Sound> mMenuSounds;
     bool mIsClipsPaused = false;

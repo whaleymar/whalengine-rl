@@ -35,15 +35,15 @@ void drawColliders() {
     // auto cameraPos = toFloatVec(getCameraPosition());
     for (const auto [entityid, entity] : ColliderSystem::getEntitiesMutable()) {
         const auto collider = entity.get<Collider>();
-        Color color;
+        rl::Color color;
         if (collider.isActor()) {
-            color = MAGENTA;
+            color = rl::MAGENTA;
         } else if (collider.isSolid()) {
-            color = RED;
+            color = rl::RED;
         } else if (collider.isSemiSolid()) {
             color = Colors::WHAL_PINK;
         } else {
-            color = BLUE;
+            color = rl::BLUE;
         }
         collider.getShape().draw(cameraPos, color);
     }

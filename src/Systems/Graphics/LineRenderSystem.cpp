@@ -33,8 +33,8 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
     const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform2D>(), line);
-    const Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
-    const Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
+    const rl::Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
+    const rl::Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
 
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.

@@ -10,7 +10,7 @@ namespace whal {
 struct IEmitLight {
     s32 radius = 1;
     s32 heightOffset = 0;
-    Color color = WHITE;
+    rl::Color color = rl::WHITE;
 };
 
 // TODO get rid of the inheritance, use dependency injection

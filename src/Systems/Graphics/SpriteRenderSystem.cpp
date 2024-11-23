@@ -17,12 +17,12 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
-    const Rectangle srcRect = Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
+    const rl::Rectangle srcRect = rl::Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
     gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, frameSize, ctx.cameraPosition);
 
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
-    BeginShaderMode(ShaderManager::get(Shaders::Default));
+    rl::BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color,
                        sprite.brightness, eCtx.colorBuf);
 }

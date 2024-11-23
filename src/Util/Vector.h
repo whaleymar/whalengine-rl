@@ -19,7 +19,7 @@ struct Vector2T {
 
     Vector2T(const Vector2T<T>& other) : x(other.x), y(other.y) {}
 
-    Vector2T(Vector2 rlVec) : x(rlVec.x), y(rlVec.y) {}
+    Vector2T(rl::Vector2 rlVec) : x(rlVec.x), y(rlVec.y) {}
 
     static inline const Vector2T<T> UP{0, 1};
     static inline const Vector2T<T> DOWN{0, -1};
@@ -90,7 +90,7 @@ struct Vector2T {
     }
 
     // Converts to raylib Vector2 struct
-    inline Vector2 asRL() const { return Vector2{static_cast<f32>(x), static_cast<f32>(y)}; }
+    inline rl::Vector2 asRL() const { return rl::Vector2{static_cast<f32>(x), static_cast<f32>(y)}; }
 
     inline Vector2T<s32> round() const { return Vector2T<s32>(std::roundf(x), std::roundf(y)); }
 

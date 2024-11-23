@@ -31,9 +31,9 @@ void parse_error_handler(const char* what, void* where) {
 
 namespace whal {
 
-static std::array<RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
+static std::array<rl::RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
-Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture, const char* atlasDataPath) {
+Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const char* atlasDataPath) {
     using namespace rapidxml;
 
     mTexture = texture;
@@ -74,7 +74,7 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const Texture2D& texture
         Vector2i dimensions = {std::stoi(spriteNode->first_attribute("w")->value()), std::stoi(spriteNode->first_attribute("h")->value())};
 
         // ignoring trim and rotate unless i need them
-        Rectangle frame = Rectangle(atlasPosition.x, atlasPosition.y, dimensions.x, dimensions.y);
+        rl::Rectangle frame = rl::Rectangle(atlasPosition.x, atlasPosition.y, dimensions.x, dimensions.y);
         mTable.insert({name, frame});
     }
 
@@ -87,7 +87,7 @@ Vector2f TextureAtlas::getSize() const {
     return Vector2f(mTexture.width, mTexture.height);
 }
 
-Corrade::Containers::Optional<Rectangle> TextureAtlas::getFrame(const char* name) const {
+Corrade::Containers::Optional<rl::Rectangle> TextureAtlas::getFrame(const char* name) const {
     auto search = mTable.find(name);
     if (search == mTable.end()) {
         return NULLOPT;
@@ -95,54 +95,54 @@ Corrade::Containers::Optional<Rectangle> TextureAtlas::getFrame(const char* name
     return search->second;
 }
 
-Corrade::Containers::Optional<RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const char* frameName) const {
-    Corrade::Containers::Optional<Rectangle> frameOpt = getFrame(frameName);
+Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const char* frameName) const {
+    Corrade::Containers::Optional<rl::Rectangle> frameOpt = getFrame(frameName);
     if (!frameOpt) {
         return NULLOPT;
     }
 
     s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_GAME);
     s32 height = std::max(frameOpt->height, FWINDOW_HEIGHT_GAME);
-    RenderTexture2D texture = LoadRenderTexture(width, height);
+    rl::RenderTexture2D texture = rl::LoadRenderTexture(width, height);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
-    Rectangle dstRect = Rectangle(0, 0, frameOpt->width, frameOpt->height);
+    rl::Rectangle dstRect = rl::Rectangle(0, 0, frameOpt->width, frameOpt->height);
 
-    BeginTextureMode(texture);
-    ClearBackground(Colors::CLEAR);
-    DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, WHITE);
-    EndTextureMode();
+    rl::BeginTextureMode(texture);
+    rl::ClearBackground(Colors::CLEAR);
+    rl::DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
 
     return texture;
 }
 
-Texture MultiTexture::getOcclusionColor() const {
-    return Texture{
+rl::Texture MultiTexture::getOcclusionColor() const {
+    return rl::Texture{
         .id = occlusionColor,
         .width = WINDOW_WIDTH_RENDER,
         .height = WINDOW_HEIGHT_RENDER,
         .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
     };
 }
 
-Texture MultiTexture::getDepth() const {
-    return Texture{
+rl::Texture MultiTexture::getDepth() const {
+    return rl::Texture{
         .id = depth,
         .width = WINDOW_WIDTH_RENDER,
         .height = WINDOW_HEIGHT_RENDER,
         .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
     };
 }
 
-Texture MultiTexture::getOcclusionDepth() const {
-    return Texture{
+rl::Texture MultiTexture::getOcclusionDepth() const {
+    return rl::Texture{
         .id = occlusionDepth,
         .width = WINDOW_WIDTH_RENDER,
         .height = WINDOW_HEIGHT_RENDER,
         .mipmaps = 1,
-        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
     };
 }
 
@@ -151,23 +151,23 @@ struct RenderTextureInfo {
     TextureID id;
     s32 width;
     s32 height;
-    TextureFilter filter;
+    rl::TextureFilter filter;
     bool isHDR;
 };
 
 static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
-    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_POINT, true},
-    {TextureID::Lighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_BILINEAR, true},
-    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
-    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
-    {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, TEXTURE_FILTER_POINT, false},
-    {TextureID::Bloom, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_POINT, true},
+    {TextureID::Lighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::Bloom, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_BILINEAR, true},
 };
 
 TextureManager::TextureManager() {
     for (auto rtInfo : S_RENDER_TEX_INFO) {
-        auto format = rtInfo.isHDR ? PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        RenderTexture2D renderTexture = LoadRenderTextureFormat(rtInfo.width, rtInfo.height, format);
+        auto format = rtInfo.isHDR ? rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        rl::RenderTexture2D renderTexture = LoadRenderTextureFormat(rtInfo.width, rtInfo.height, format);
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;
         setIsRenderTextureUsed(ix);
@@ -185,7 +185,7 @@ TextureManager::~TextureManager() {
     }
 }
 
-Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Texture2D texture, const char* name) {
+Corrade::Containers::Optional<Error> TextureManager::registerTexture(const rl::Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
         print(whal_format("Texture with name '{}' already registered", name), ". Replacing it.");
@@ -198,7 +198,7 @@ Corrade::Containers::Optional<Error> TextureManager::registerTexture(const Textu
     return NULLOPT;
 }
 
-Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const Texture2D texture, const char* atlasDataPath, const char* name) {
+Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const rl::Texture2D texture, const char* atlasDataPath, const char* name) {
     s32 ix = getTextureAtlasIndex(name);
     if (ix >= 0) {
         return Error(whal_format("Texture Atlas with name '{}' already registered", name));
@@ -214,7 +214,7 @@ Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const 
 }
 
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char* imagePath, const char* name) {
-    Texture2D texture = LoadTexture(imagePath);
+    rl::Texture2D texture = rl::LoadTexture(imagePath);
     if (!IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
     }
@@ -222,7 +222,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const char*
 }
 
 Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name) {
-    Texture2D texture = LoadTexture(imagePath);
+    rl::Texture2D texture = rl::LoadTexture(imagePath);
     if (!IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
     }
@@ -240,7 +240,7 @@ Corrade::Containers::Optional<Error> TextureManager::removeAtlas(const char* nam
     return NULLOPT;
 }
 
-RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {
+rl::RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {
     s32 ix = static_cast<s32>(id);
     assert(isRenderTextureUsed(ix));
     return S_RENDER_TEXTURES[ix];
@@ -281,7 +281,7 @@ s32 TextureManager::getTextureAtlasIndex(std::string name) const {
     return -1;
 }
 
-const Texture2D& TextureManager::_getTexture(const char* name) {
+const rl::Texture2D& TextureManager::_getTexture(const char* name) {
     return mTextures[getTextureIndex(name)];
 }
 

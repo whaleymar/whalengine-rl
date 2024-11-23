@@ -11,9 +11,9 @@ namespace whal {
 
 void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto bezier = eCtx.entity.get<DrawBezierQuad>();
-    Vector2 p1 = eCtx.preciseTransform.getRotatedPosition().asRL();
-    Vector2 controlPoint = eCtx.preciseTransform.apply(bezier.controlPointOffset.as<f32>()).asRL();
-    Vector2 p2 = eCtx.preciseTransform.apply(bezier.endPointOffset.as<f32>()).asRL();
+    rl::Vector2 p1 = eCtx.preciseTransform.getRotatedPosition().asRL();
+    rl::Vector2 controlPoint = eCtx.preciseTransform.apply(bezier.controlPointOffset.as<f32>()).asRL();
+    rl::Vector2 p2 = eCtx.preciseTransform.apply(bezier.endPointOffset.as<f32>()).asRL();
 
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.

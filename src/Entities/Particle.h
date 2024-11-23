@@ -5,7 +5,9 @@
 #include "Util/Types.h"
 #include "whalECS/src/Expected.h"
 
+namespace rl {
 typedef struct Color Color;
+}
 
 namespace whal {
 

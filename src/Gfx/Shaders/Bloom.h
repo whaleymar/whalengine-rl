@@ -6,7 +6,7 @@ namespace whal {
 class Bloom : public IShader {
 public:
     Bloom();
-    void process(RenderTexture source, RenderTexture dest) override;
+    void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
     f32 threshold = 1.5;  // [Range(0.0f, 10.0f)]
 
