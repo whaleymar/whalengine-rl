@@ -12,7 +12,7 @@ RailsControl::RailsControl(f32 moveSpeed_, std::vector<CheckPoint> checkPoints_,
     : mCheckpoints(checkPoints_), speed(moveSpeed_), waitTime(waitTime_), arrivalCallback(callback), curActionTime(waitTime_),
       endBehavior(cycleBehavior_) {}
 
-void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform2D& trans) {
+void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans) {
     mCheckpoints = std::move(checkpoints);
     prepareForFirstStep(trans);
 }
@@ -87,7 +87,7 @@ bool RailsControl::isNextStepAutomatic() const {
            (curTarget != 0 && (endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_LOOP || endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK));
 }
 
-void RailsControl::prepareForFirstStep(Transform2D& trans) {
+void RailsControl::prepareForFirstStep(Transform& trans) {
     if (isValid()) {
         // set transform to match starting checkpoint
         Vector2i target = getTarget().position;

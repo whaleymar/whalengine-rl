@@ -70,7 +70,7 @@ void PhysicsSystem::onEvent(evt::Collision, ecs::Entity movingEntity, HitInfo hi
 // syncs collider in case position changed in another system
 static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
     for (auto& [entityid, entity] : physicsEntities) {
-        Transform2D& trans = entity.get<Transform2D>();
+        Transform& trans = entity.get<Transform>();
         const bool isManuallyMoved = trans.isManuallyMoved;
         trans.isManuallyMoved = false;
         if (isManuallyMoved && entity.has<PrecisePosition>()) {
@@ -126,7 +126,7 @@ void PhysicsSystem::update() {
         const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x;
         const f32 frictionStepAir = dt * FRICTION_AIR * frictionMultiplier.y;
         const f32 gravityStep = dt * GRAVITY * 3;
-        Transform2D& trans = entity.get<Transform2D>();
+        Transform& trans = entity.get<Transform>();
         Velocity& vel = entity.get<Velocity>();
 
         // if impulse ends, use residual
@@ -227,7 +227,7 @@ void RotationPhysicsSystem::update() {
 
         // multiply by -1 so rotations are clockwise by default
         const f32 toAdd = -1.0f * 360.0f * angularVelocity.rotationsPerSecond * dt;
-        auto& trans = entity.get<Transform2D>();
+        auto& trans = entity.get<Transform>();
         trans.rotationDegrees += toAdd;
     }
 }

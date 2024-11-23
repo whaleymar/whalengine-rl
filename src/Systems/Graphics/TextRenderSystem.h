@@ -9,9 +9,9 @@ typedef struct Font Font;
 namespace whal {
 
 struct DrawText;
-struct Transform2D;
+struct Transform;
 
-class TextRenderSystem : public ecs::ISystem<DrawText, Transform2D>, public ecs::IRender {
+class TextRenderSystem : public ecs::ISystem<DrawText, Transform>, public ecs::IRender {
 public:
     TextRenderSystem();
     ~TextRenderSystem();

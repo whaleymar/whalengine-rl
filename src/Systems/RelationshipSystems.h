@@ -11,7 +11,7 @@ struct Attach;
 struct Orbit;
 struct Follow;
 struct Velocity;
-struct Transform2D;
+struct Transform;
 
 class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem, public IListen<evt::Death, true, ecs::Entity> {
 public:
@@ -20,19 +20,19 @@ public:
     void onEvent(evt::Death, ecs::Entity entity) override;
 };
 
-class AttachSystem : public ecs::ISystem<Attach, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
+class AttachSystem : public ecs::ISystem<Attach, Transform>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override {}
     void update() override;
 };
 
-class OrbitSystem : public ecs::ISystem<Orbit, Transform2D>, public ecs::IUpdate {
+class OrbitSystem : public ecs::ISystem<Orbit, Transform>, public ecs::IUpdate {
 public:
     void update() override;
 };
 
-class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform2D>,
+class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform>,
                      public ecs::IUpdate,
                      public ecs::IMonitorSystem,
                      public IListen<evt::Death, true, ecs::Entity> {

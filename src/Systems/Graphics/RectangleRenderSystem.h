@@ -5,9 +5,9 @@
 namespace whal {
 
 struct DrawRect;
-struct Transform2D;
+struct Transform;
 
-class RectangleRenderSystem : public ecs::ISystem<DrawRect, Transform2D>, public ecs::IRender {
+class RectangleRenderSystem : public ecs::ISystem<DrawRect, Transform>, public ecs::IRender {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;

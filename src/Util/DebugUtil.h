@@ -30,7 +30,7 @@ class Entity;
 
 namespace whal {}  // namespace whal
 
-DECLARE_COMPONENT(whal::Transform2D);
+DECLARE_COMPONENT(whal::Transform);
 DECLARE_COMPONENT(whal::Velocity);
 DECLARE_COMPONENT(whal::AngularVelocity);
 DECLARE_COMPONENT(whal::RailsControl);

@@ -15,7 +15,7 @@ void CursorManager::set(Sprite sprite) const {
     if (!isCustomCursorActive) {
         auto entity = World.entity().value();
         entity.add(Name("Cursor"));
-        Transform2D trans;
+        Transform trans;
         trans.depth = Depth::UIClose;
         entity.add(trans);
         entity.add(sprite);

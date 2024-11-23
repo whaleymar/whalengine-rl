@@ -8,11 +8,11 @@
 
 namespace whal::gfx {
 
-PreciseTransform2D getPreciseTrans(ecs::Entity entity) {
-    assert(entity.has<Transform2D>());
+PreciseTransform getPreciseTrans(ecs::Entity entity) {
+    assert(entity.has<Transform>());
 
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(entity.get<Transform2D>());
-    if (entity.has<PreciseTransform2D>()) {
+    PreciseTransform pTrans = PreciseTransform::fromTrans(entity.get<Transform>());
+    if (entity.has<PreciseTransform>()) {
         pTrans.position = entity.get<PrecisePosition>().position;
     } else if (entity.has<Collider>()) {
         // Make physics movement look smooth even though it's pixel perfect
@@ -24,9 +24,9 @@ PreciseTransform2D getPreciseTrans(ecs::Entity entity) {
     return pTrans;
 }
 
-PreciseTransform2D getPreciseTrans(ecs::Entity entity, const Transform2D& transform) {
-    PreciseTransform2D pTrans = PreciseTransform2D::fromTrans(transform);
-    if (entity.has<PreciseTransform2D>()) {
+PreciseTransform getPreciseTrans(ecs::Entity entity, const Transform& transform) {
+    PreciseTransform pTrans = PreciseTransform::fromTrans(transform);
+    if (entity.has<PreciseTransform>()) {
         pTrans.position = entity.get<PrecisePosition>().position;
     } else if (entity.has<Collider>()) {
         // Make physics movement look smooth even though it's pixel perfect
@@ -47,7 +47,7 @@ void clampToPixelGrid(RaylibDrawParams& params) {
     params.rect.y = params.position.y;
 }
 
-RaylibDrawParams getDrawParams(PreciseTransform2D transform, Vector2f frameSize, Vector2f cameraPosition) {
+RaylibDrawParams getDrawParams(PreciseTransform transform, Vector2f frameSize, Vector2f cameraPosition) {
     Vector2f size = frameSize * transform.scale;
     const Vector2f positionF = transform.getRotatedPosition();
     Vector2f screenPosition(positionF.x - cameraPosition.x, cameraPosition.y - positionF.y);

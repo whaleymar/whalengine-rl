@@ -50,7 +50,7 @@ void ControllerSystem::update() {
             }
         }
 
-        auto& trans = entity.get<Transform2D>();
+        auto& trans = entity.get<Transform>();
         if (impulseX > 0) {
             trans.facing = Facing::Right;
         } else if (impulseX < 0) {
@@ -65,7 +65,7 @@ void FreeControlSystem::update() {
     }
 
     for (auto& [entityid, entity] : getEntitiesMutable()) {
-        auto& trans = entity.get<Transform2D>();
+        auto& trans = entity.get<Transform>();
         Vector2f delta;
         if (Input.isOn(InputType::LEFT)) {
             delta += Vector2f::LEFT;
@@ -132,7 +132,7 @@ void JumpSystem::update() {
                 } else if (vel.total.x < 0) {
                     direction = Direction::NW;
                 }
-                particleBurst(entity.get<Transform2D>(), direction, rb.groundMaterial, 8, Depth::Foreground3, 0.5, 0.5);
+                particleBurst(entity.get<Transform>(), direction, rb.groundMaterial, 8, Depth::Foreground3, 0.5, 0.5);
 
             } else if (jumpControl.isTryingJump() && jumpControl.isJumping) {
                 // jump button pressed and entity still in jump state

@@ -45,7 +45,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
             continue;
         }
         PointLight light = entity.get<PointLight>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
@@ -95,7 +95,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::BoxLight);
 
         BoxLight light = entity.get<BoxLight>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
@@ -157,7 +157,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         ShaderManager::activate(Shaders::ShadowLight);
 
         const auto light = entity.get<ShadowLight>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
 
         const Vector2i entityPos = trans.position;
         const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));

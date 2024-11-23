@@ -7,7 +7,7 @@
 
 namespace whal {
 
-struct Transform2D;
+struct Transform;
 
 namespace ecs {
 class Entity;

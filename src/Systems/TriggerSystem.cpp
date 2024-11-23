@@ -12,7 +12,7 @@ void TriggerSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         std::vector<ecs::Entity> newInsideList;
         auto& trigger = entity.get<Trigger>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
 
         // update trigger zone w/ transform
         trigger.shape.setPosition(trans, trigger.offset);

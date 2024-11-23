@@ -5,7 +5,7 @@
 
 namespace whal {
 
-struct Transform2D;
+struct Transform;
 
 namespace CollisionLayer {
 enum Layer : u16 {

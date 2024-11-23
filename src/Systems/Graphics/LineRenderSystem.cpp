@@ -15,7 +15,7 @@ struct LinePoints {
     Vector2i p2;
 };
 
-static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStraightLine line) {
+static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStraightLine line) {
     Vector2i startPos;
     Vector2i endPos;
     if (line.isRotateAboutCenter) {
@@ -32,7 +32,7 @@ static LinePoints getRotatedPoints(Vector2f position, Transform2D trans, DrawStr
 
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
-    const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform2D>(), line);
+    const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform>(), line);
     const rl::Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
     const rl::Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
 
@@ -45,7 +45,7 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawStraightLine>();
-        const auto trans = entity.get<Transform2D>();
+        const auto trans = entity.get<Transform>();
         const auto pTrans = gfx::getPreciseTrans(entity, trans);
         const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
 

@@ -6,11 +6,11 @@ namespace whal {
 
 struct Player;
 struct AudioListener;
-struct Transform2D;
+struct Transform;
 
 class PlayerSystem : public ecs::ISystem<Player> {};
 
-class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform2D>,
+class AudioListenerSystem : public ecs::ISystem<AudioListener, Transform>,
                             public ecs::IUpdate,
                             public ecs::AttrUniqueEntity,
                             public ecs::AttrUpdateDuringPause {

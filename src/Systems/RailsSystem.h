@@ -6,9 +6,9 @@ namespace whal {
 
 struct RailsControl;
 struct Velocity;
-struct Transform2D;
+struct Transform;
 
-class RailsSystem : public ecs::ISystem<RailsControl, Transform2D>, public ecs::IUpdate, public ecs::IMonitorSystem {
+class RailsSystem : public ecs::ISystem<RailsControl, Transform>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:
     void onAdd(const ecs::Entity) override;
     void onRemove(const ecs::Entity) override {}

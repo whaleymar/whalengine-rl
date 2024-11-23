@@ -21,7 +21,7 @@ void NavigationSystem::onEvent(evt::ButtonPress, InputType input) {
     if (pSys->getEntitiesMutable().empty()) {
         return;
     }
-    auto start = pSys->first().get<Transform2D>().position;
+    auto start = pSys->first().get<Transform>().position;
     auto end = Input.getMouseWorld();
     auto lvl = System::getGame().getScene().getLevelAt(start);
     if (!lvl) {
@@ -43,7 +43,7 @@ void NavigationSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
     const Vector2f frameSize(8, 8);
     for (auto step : path.tiles) {
-        PreciseTransform2D tileCoord = PreciseTransform2D(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
+        PreciseTransform tileCoord = PreciseTransform(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
         tileCoordStart = tileCoord.position;
         const gfx::RaylibDrawParams params = gfx::getDrawParams(tileCoord, frameSize, ctx.cameraPosition);
         rl::DrawRectanglePro(params.rect, params.origin, 0.0f, rl::Color{100, 100, 255, 100});

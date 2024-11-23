@@ -152,7 +152,7 @@ static TileInfo getTile(u32 tileMask) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffsetPixels = Transform2D::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
+    Vector2i worldOffsetPixels = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
     ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
@@ -166,7 +166,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
         lvl.navGrid.push_back(std::vector<bool>(map.heightTiles, true));
 
         for (s32 y = 0; y < map.heightTiles; y++) {
-            Transform2D trans = Transform2D(Transform2D::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
+            Transform trans = Transform(Transform::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
             Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);  // no idea if this is correct
             trans.facing = Facing::Right;
             s32 ix = map.widthTiles * y + x;
@@ -291,7 +291,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     s32 centerY = lvl.worldPosOrigin.y - startPoint.second - (meshHeightTiles - 2) / 2;
 
     Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
-    auto collider = Collider::Solid(Transform2D({centerX, centerY}), halflen);
+    auto collider = Collider::Solid(Transform({centerX, centerY}), halflen);
 
     auto eEntity = World.entity();
     if (!eEntity.isExpected()) {
@@ -299,7 +299,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     } else {
         auto entity = eEntity.value();
         entity.add(collider);
-        entity.add(Transform2D(collider.getShape().getPositionEdge(Vector2i::DOWN)));
+        entity.add(Transform(collider.getShape().getPositionEdge(Vector2i::DOWN)));
         lvl.childEntities.insert(entity);
     }
 }

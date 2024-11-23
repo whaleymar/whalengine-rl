@@ -4,14 +4,10 @@
 
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"
-#include "Components/Light.h"
 #include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
-
-#include "Gfx/Frame.h"
-#include "Gfx/Texture.h"
 
 #include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
@@ -26,24 +22,7 @@ constexpr f32 MIN_SPEED_BURST = 5.0f;
 constexpr f32 MAX_SPEED_BURST = 20.0f;
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
-static Expected<ecs::Entity> createParticleBase(Transform2D transform, rl::Color color, f32 lifetime) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
-    }
-    auto particle = expected.value();
-
-    particle.add(transform);
-    particle.add(Name("particle"));
-    particle.add(PrecisePosition::fromTrans(transform));
-    particle.add(Lifetime(lifetime));
-    particle.add<Particle>();
-    particle.add<Velocity>();
-
-    return particle;
-}
-
-Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
+Expected<ecs::Entity> createParticle(Transform transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
     const rl::Color color = materialData.getColor();
 
@@ -73,24 +52,7 @@ Expected<ecs::Entity> createParticle(Transform2D transform, WorldMaterial materi
     return particle;
 }
 
-// Expected<ecs::Entity> createParticleSprite(Transform2D transform, rl::Color color, f32 lifetime) {
-//     auto expected = createParticleBase(transform, color, lifetime);
-//     if (!expected.isExpected()) {
-//         return expected;
-//     }
-//     auto _ = ecs::DeferActivate(expected.value());
-//     auto particle = expected.value();
-//
-//     auto frame = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame("actor/mana-gauge1");
-//     particle.add(Sprite(*frame));
-//
-//     s32 radius = PIXELS_PER_TILE * 1;
-//     particle.add(PointLight{radius, 0, color});
-//
-//     return particle;
-// }
-
-void particleBurst(Transform2D transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier,
+void particleBurst(Transform transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier,
                    f32 speedMultiplier) {
     const f32 angle = directionToAngle(direction);
     const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1}, Vector2i());
@@ -109,7 +71,7 @@ void particleBurst(Transform2D transform, Direction direction, WorldMaterial mat
         const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, Rng.uniform()) * speedMultiplier;
 
         ecs::Entity particle;
-        auto eParticle = createParticle(Transform2D(spawnLocation), material, depth, lifetimeMultiplier);
+        auto eParticle = createParticle(Transform(spawnLocation), material, depth, lifetimeMultiplier);
         if (eParticle.isExpected()) {
             particle = eParticle.value();
         } else {

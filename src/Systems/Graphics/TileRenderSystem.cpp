@@ -37,7 +37,7 @@ void TileRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) con
 }
 
 void TileRenderSystem::onAdd(ecs::Entity entity) {
-    const auto& trans = entity.get<Transform2D>();
+    const auto& trans = entity.get<Transform>();
     const auto bb = AABB(trans, Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE) / 2, Vector2i());
 
     entity.get<Tile>().renderInfo = gfx::EntityRenderInfo{

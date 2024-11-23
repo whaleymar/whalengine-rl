@@ -72,7 +72,7 @@ enum class Facing : u8 {
 };
 
 // entity position in pixels
-struct Transform2D {
+struct Transform {
     Vector2i position;
     f32 rotationDegrees = 0.0;      // counterclockwise
     Facing facing = Facing::Right;  // draw calls flipped if facing left
@@ -81,14 +81,14 @@ struct Transform2D {
     Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
     Vector2f scale = Vector2f::ONE;
 
-    static Transform2D pixels(s32 x, s32 y);
-    static Transform2D tiles(s32 x, s32 y);
+    static Transform pixels(s32 x, s32 y);
+    static Transform tiles(s32 x, s32 y);
     Vector2i getRotatedPosition() const;
 
     // Get an offset's transformed position
     Vector2i apply(Vector2i relOffset) const;
 
-    // Calculate this Transform2D's root position using an offset's transformed position
+    // Calculate this Transform's root position using an offset's transformed position
     Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
 
 #ifndef NDEBUG
@@ -96,16 +96,16 @@ struct Transform2D {
 #endif
 };
 
-// TODO thinking of making this an OPTIONAL REPLACEMENT for Transform2D (an entity would have one or the other), but using floats for position
-// and hopefully using CRTP to give this and Transform2D a common interface which works with the ECS
-// and then defining some ecs::Any<Transform2D, PreciseTransform2D> thingy which systems can use
+// TODO thinking of making this an OPTIONAL REPLACEMENT for Transform (an entity would have one or the other), but using floats for position
+// and hopefully using CRTP to give this and Transform a common interface which works with the ECS
+// and then defining some ecs::Any<Transform, PreciseTransform> thingy which systems can use
 struct PrecisePosition {
     Vector2f position;
 
-    static PrecisePosition fromTrans(Transform2D trans) { return PrecisePosition{trans.position.as<f32>()}; }
+    static PrecisePosition fromTrans(Transform trans) { return PrecisePosition{trans.position.as<f32>()}; }
 };
 
-struct PreciseTransform2D {
+struct PreciseTransform {
     Vector2f position;
 
     f32 rotationDegrees = 0.0;      // counterclockwise
@@ -116,10 +116,10 @@ struct PreciseTransform2D {
     Vector2f scale = Vector2f::ONE;
     f32 floatHeight = 0.0f;
 
-    static PreciseTransform2D pixels(s32 x, s32 y);
-    static PreciseTransform2D tiles(s32 x, s32 y);
-    static PreciseTransform2D fromTrans(Transform2D trans) {
-        return PreciseTransform2D{.position = trans.position.as<f32>(),
+    static PreciseTransform pixels(s32 x, s32 y);
+    static PreciseTransform tiles(s32 x, s32 y);
+    static PreciseTransform fromTrans(Transform trans) {
+        return PreciseTransform{.position = trans.position.as<f32>(),
                                   .rotationDegrees = trans.rotationDegrees,
                                   .facing = trans.facing,
                                   .isManuallyMoved = trans.isManuallyMoved,
@@ -132,7 +132,7 @@ struct PreciseTransform2D {
     // Get an offset's transformed position
     Vector2f apply(Vector2f relOffset) const;
 
-    // Calculate this Transform2D's root position using an offset's transformed position
+    // Calculate this Transform's root position using an offset's transformed position
     Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
 };
 

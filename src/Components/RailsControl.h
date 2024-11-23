@@ -11,7 +11,7 @@ namespace ecs {
 class Entity;
 }
 
-struct Transform2D;
+struct Transform;
 
 struct RailsControl {
     // Automatic: moves by itself
@@ -54,7 +54,7 @@ public:
     bool isPhysicsEntity;
     u32 curTarget = 0;
 
-    void setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform2D& trans);
+    void setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans);
     CheckPoint getTarget() const;
     void startManually();
     void step();
@@ -65,7 +65,7 @@ public:
     bool isNextStepAutomatic() const;
     bool isAtFirstCheckpoint() const { return curTarget == 0; }
     bool isAtLastCheckpoint() const { return curTarget == (mCheckpoints.size() - 1); }
-    void prepareForFirstStep(Transform2D& trans);
+    void prepareForFirstStep(Transform& trans);
 };
 
 }  // namespace whal

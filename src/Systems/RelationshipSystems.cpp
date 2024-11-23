@@ -40,10 +40,10 @@ void AttachSystem::onAdd(ecs::Entity entity) {
 
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        Transform2D& trans = entity.get<Transform2D>();
+        Transform& trans = entity.get<Transform>();
         Attach& attach = entity.get<Attach>();
         const ecs::Entity targetEntity(attach.targetEntityID);
-        const auto targetTrans = targetEntity.get<Transform2D>();
+        const auto targetTrans = targetEntity.get<Transform>();
         const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
                                          attach.directionParam == Attach::DirectionParam::UseFacingForOffset) &&
                                                 targetTrans.facing == Facing::Left ?
@@ -67,13 +67,13 @@ void AttachSystem::update() {
 void OrbitSystem::update() {
     const f32 dt = Time.dt();
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        auto& trans = entity.get<Transform2D>();
+        auto& trans = entity.get<Transform>();
         Orbit& orbit = entity.get<Orbit>();
         const ecs::Entity targetEntity(orbit.targetID);
         if (!orbit.isTargetInitialized) {
             orbit.initTarget(entity);
         }
-        const Vector2i orbitTarget = targetEntity.get<Transform2D>().position + orbit.targetOffset;
+        const Vector2i orbitTarget = targetEntity.get<Transform>().position + orbit.targetOffset;
 
         // if we get the current angle and add to that, it has this cool "follow if target moving, orbit if target is still" effect, but not sure if
         // that's useful for anything
@@ -92,14 +92,14 @@ void OrbitSystem::update() {
 
 void FollowSystem::update() {
     for (auto [entityid, entity] : getEntitiesMutable()) {
-        Transform2D trans = entity.get<Transform2D>();
+        Transform trans = entity.get<Transform>();
         auto& follow = entity.get<Follow>();
         if (!follow.isTargetInitialized) {
             follow.initTarget(entity);
         }
 
         ecs::Entity targetEntity(follow.targetEntityID);
-        Transform2D targetTrans = targetEntity.get<Transform2D>();
+        Transform targetTrans = targetEntity.get<Transform>();
         // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
         f32 lookAheadX = follow.lookAhead.x;
         f32 lookAheadY = follow.lookAhead.y;
@@ -195,7 +195,7 @@ void FollowSystem::update() {
         ecs::Entity debugTargetTracker(follow.debugTargetTrackerID);
         ecs::Entity debugPositionTracker(follow.debugPositionTrackerID);
 
-        debugTargetTracker.set(Transform2D(follow.currentTarget));
+        debugTargetTracker.set(Transform(follow.currentTarget));
         debugPositionTracker.set(trans);
 #endif  // !NDEBUG
     }

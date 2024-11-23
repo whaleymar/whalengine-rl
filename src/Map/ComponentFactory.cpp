@@ -400,7 +400,7 @@ void addComponentRailsControl(const nlohmann::json& values, const nlohmann::json
     }
 
     RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : DefaultRailsControl;
-    rails.setCheckpoints(checkpoints, entity.get<Transform2D>());
+    rails.setCheckpoints(checkpoints, entity.get<Transform>());
 
     std::string cycleBehavior = "ManualStart";
     tryReadString(values, "CycleBehavior", &cycleBehavior);
@@ -453,7 +453,7 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
 
     s32 rotationDegrees;
     if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
-        entity.get<Transform2D>().rotationDegrees = rotationDegrees;
+        entity.get<Transform>().rotationDegrees = rotationDegrees;
     }
 
     // ARGB
@@ -492,7 +492,7 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
 
     s32 rotationDegrees;
     if (tryReadInt(values, "rotationDegrees", &rotationDegrees)) {
-        entity.get<Transform2D>().rotationDegrees = rotationDegrees;
+        entity.get<Transform>().rotationDegrees = rotationDegrees;
     }
 
     // ARGB
@@ -561,11 +561,11 @@ void addComponentCollider(const nlohmann::json& values, const nlohmann::json& al
         const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, level, false).position;
 
         const auto offset = otherTrans - thisTrans;
-        Transform2D transOffset = entity.get<Transform2D>();
+        Transform transOffset = entity.get<Transform>();
         collider.setShape(AABB(transOffset, halflen, offset));
     } else {
         // there's no default shape object. Instead use the entity's dimensions
-        collider.setShape(AABB(entity.get<Transform2D>(), entityData.size / 2, Vector2i()));
+        collider.setShape(AABB(entity.get<Transform>(), entityData.size / 2, Vector2i()));
     }
     entity.add(collider);
 }
@@ -594,19 +594,19 @@ void addComponentTrigger(const nlohmann::json& values, const nlohmann::json& all
 
         if (shapeObj.contains("ellipse")) {
             const s32 radius = std::max(halflen.x, halflen.y);
-            trigger.shape = Circle(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflen.y), radius);
+            trigger.shape = Circle(entity.get<Transform>().position + trigger.offset + Vector2i(0, halflen.y), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>().position + trigger.offset + Vector2i(0, halflen.y), halflen);
+            trigger.shape = AABB(entity.get<Transform>().position + trigger.offset + Vector2i(0, halflen.y), halflen);
         }
     } else {
         // TODO offsets, like i do w/ colliders
         if (allObjects[idToIndex.at(entityData.id).first].contains("ellipse")) {
             const s32 radius = std::max(entityData.size.x, entityData.size.y) / 2;
-            trigger.shape = Circle(entity.get<Transform2D>(), radius);
+            trigger.shape = Circle(entity.get<Transform>(), radius);
 
         } else {
-            trigger.shape = AABB(entity.get<Transform2D>(), entityData.size / 2, Vector2i());
+            trigger.shape = AABB(entity.get<Transform>(), entityData.size / 2, Vector2i());
         }
     }
 
@@ -629,7 +629,7 @@ void addComponentAttach(const nlohmann::json& values, const nlohmann::json& allO
     ecs::Entity target = idToIndex.at(targetId).second;
     attach.targetEntityID = target.id();
 
-    auto thisPosition = entity.get<Transform2D>().position;
+    auto thisPosition = entity.get<Transform>().position;
 
     // other isn't guaranteed to have been parsed. Calculate its transform manually
     const auto& targetObj = allObjects[idToIndex.at(targetId).first];
@@ -727,7 +727,7 @@ void addTagComponents(const nlohmann::json& values, const nlohmann::json& allObj
     }
 
     if (tryReadBool(values, "PrecisePosition", &hasTag) && hasTag) {
-        entity.add(PrecisePosition::fromTrans(entity.get<Transform2D>()));
+        entity.add(PrecisePosition::fromTrans(entity.get<Transform>()));
         hasTag = false;
     }
 
@@ -807,7 +807,7 @@ void addComponentOrbit(const nlohmann::json& values, const nlohmann::json& allOb
     tryReadFloat(values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
     const Vector2i entityDimensions = entityData.size;
-    const Vector2i entityTrans = entity.get<Transform2D>().position;
+    const Vector2i entityTrans = entity.get<Transform>().position;
 
     if (!values.contains("Target")) {
         print("Error: Orbit component requires a Target");

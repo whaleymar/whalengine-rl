@@ -8,8 +8,8 @@ namespace ecs {
 class Entity;
 }
 
-struct Transform2D;
+struct Transform;
 
-Expected<ecs::Entity> createCamera(Transform2D transform);
+Expected<ecs::Entity> createCamera(Transform transform);
 
 }  // namespace whal

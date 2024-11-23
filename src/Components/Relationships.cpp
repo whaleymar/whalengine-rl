@@ -32,7 +32,7 @@ void Orbit::initTarget(ecs::Entity self) {
     }
 
     // initialize current angle
-    const Vector2i delta = self.get<Transform2D>().position - targetEntity.get<Transform2D>().position;
+    const Vector2i delta = self.get<Transform>().position - targetEntity.get<Transform>().position;
     currentAngle = delta.isZero() ? 0.0f : delta.as<f32>().angle();
 }
 
@@ -41,7 +41,7 @@ Follow::Follow(ecs::Entity target_) : targetEntityID(target_.id()) {}
 void Follow::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
     ecs::Entity targetEntity(targetEntityID);
-    currentTarget = targetEntity.get<Transform2D>().position;
+    currentTarget = targetEntity.get<Transform>().position;
 
     // this is kind of hacky. Definitely shouldn't be adding children dynamically like this for game logic
     // #ifndef NDEBUG
@@ -52,7 +52,7 @@ void Follow::initTarget(ecs::Entity self) {
     //     auto eOpt = ecs::World::getInstance().entity();
     //     if (eOpt.isExpected()) {
     //         auto debugTargetTracker = eOpt.value();
-    //         debugTargetTracker.add<Transform2D>();
+    //         debugTargetTracker.add<Transform>();
     //         debugTargetTracker.add(DrawDebug(Colors::Emerald));
     //         debugTargetTracker.add(Name("TargetTracker"));
     //         debugTargetTrackerID = debugTargetTracker.id();
@@ -62,7 +62,7 @@ void Follow::initTarget(ecs::Entity self) {
     //     auto eOpt2 = ecs::World::getInstance().entity();
     //     if (eOpt2.isExpected()) {
     //         auto debugPositionTracker = eOpt2.value();
-    //         debugPositionTracker.add<Transform2D>();
+    //         debugPositionTracker.add<Transform>();
     //         debugPositionTracker.add(DrawDebug(Colors::Magenta));
     //         debugPositionTracker.add(Name("PositionTracker"));
     //         debugPositionTrackerID = debugPositionTracker.id();

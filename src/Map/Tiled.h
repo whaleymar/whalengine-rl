@@ -22,7 +22,7 @@ struct Frame;
 struct TileMap;
 struct TileSet;
 struct Scene;
-struct Transform2D;
+struct Transform;
 struct ActiveLevel;
 
 namespace ecs {
@@ -32,7 +32,7 @@ class Entity;
 Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
-Transform2D getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const ActiveLevel& level, bool isPoint);
+Transform getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const ActiveLevel& level, bool isPoint);
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();

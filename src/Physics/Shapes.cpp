@@ -15,7 +15,7 @@ namespace whal {
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
 // note: mHalf is not scaled with the transform, but mCenter's location does. mHalf should eventually scale, but it requires some effort
-AABB::AABB(Transform2D transform, Vector2i half, Vector2i colliderOffset) : mCenter(transform.apply(colliderOffset)), mHalf(half) {}
+AABB::AABB(Transform transform, Vector2i half, Vector2i colliderOffset) : mCenter(transform.apply(colliderOffset)), mHalf(half) {}
 
 AABB AABB::fromPoints(Vector2i p1, Vector2i p2) {
     Vector2i min;
@@ -56,7 +56,7 @@ void AABB::setPosition(Vector2i center) {
     mCenter = center;
 }
 
-void AABB::setPosition(Transform2D transform, Vector2i colliderOffset) {
+void AABB::setPosition(Transform transform, Vector2i colliderOffset) {
     mCenter = transform.apply(colliderOffset);
 }
 
@@ -141,13 +141,13 @@ Vector2i AABB::getClosestPointTo(Vector2i point) const {
 
 Circle::Circle(Vector2i center, s32 radius) : mCenter(center), mRadius(radius) {}
 
-Circle::Circle(Transform2D transform, s32 radius) : mCenter(transform.position.x, transform.position.y + radius), mRadius(radius) {}
+Circle::Circle(Transform transform, s32 radius) : mCenter(transform.position.x, transform.position.y + radius), mRadius(radius) {}
 
 void Circle::setPosition(Vector2i center) {
     mCenter = center;
 }
 
-void Circle::setPosition(Transform2D transform, Vector2i colliderOffset) {
+void Circle::setPosition(Transform transform, Vector2i colliderOffset) {
     // TODO needs testing
     mCenter = transform.apply(colliderOffset);
 }
@@ -244,7 +244,7 @@ void Shape::setPosition(Vector2i center) {
     }
 }
 
-void Shape::setPosition(Transform2D transform, Vector2i colliderOffset) {
+void Shape::setPosition(Transform transform, Vector2i colliderOffset) {
     switch (mShape) {
     case ShapeTag::AABB:
         mAABB.setPosition(transform, colliderOffset);

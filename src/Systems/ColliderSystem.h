@@ -15,12 +15,12 @@ struct RaycastHit;
 void drawColliders();
 #endif
 
-struct Transform2D;
+struct Transform;
 
-class ColliderSystem : public ecs::ISystem<Collider, Transform2D>, public ecs::IMonitorSystem {
+class ColliderSystem : public ecs::ISystem<Collider, Transform>, public ecs::IMonitorSystem {
 public:
     ColliderSystem();
-    static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform2D nextPosition, Vector2i colliderOffset);
+    static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform nextPosition, Vector2i colliderOffset);
     static void updateShape(ecs::Entity entity, const AABB& previousShape, const AABB& newShape);
     static std::vector<ecs::Entity> query(const AABB& aabb);
 
