@@ -7,7 +7,10 @@ NEXT GOAL:
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
-- editing globals like physics gravity/friction values from game would be nice, but that might balloon compile times (maybe I can use extern?)
+- editing globals like physics gravity/friction values from game -> put in Settings.cpp
+
+## Bugs 
+- use after free in Audio module. No guarantee that AudioPlayer destructor runs after all sounds are free'd so sounds can try to access audioplayer after its been destroyed.
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
