@@ -10,13 +10,12 @@
 
 namespace whal {
 
-Expected<ecs::Entity> createBlock(Transform transform) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
+ecs::Entity createBlock(Transform transform) {
+    auto block = World.entity(false);
+    if (!block.isValid()) {
+        return block;
     }
-    auto _ = ecs::DeferActivate(expected.value());
-    auto block = expected.value();
+    auto _ = ecs::DeferActivate(block);
 
     block.add(transform);
     block.add(DrawRect());
@@ -28,13 +27,12 @@ Expected<ecs::Entity> createBlock(Transform transform) {
     return block;
 }
 
-Expected<ecs::Entity> createBlock(Transform transform, DrawRect rect) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
+ecs::Entity createBlock(Transform transform, DrawRect rect) {
+    auto block = World.entity(false);
+    if (!block.isValid()) {
+        return block;
     }
-    auto _ = ecs::DeferActivate(expected.value());
-    auto block = expected.value();
+    auto _ = ecs::DeferActivate(block);
 
     block.add(transform);
     block.add(rect);
@@ -46,13 +44,12 @@ Expected<ecs::Entity> createBlock(Transform transform, DrawRect rect) {
     return block;
 }
 
-Expected<ecs::Entity> createBlock(Transform transform, Sprite sprite, WorldMaterial material) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
+ecs::Entity createBlock(Transform transform, Sprite sprite, WorldMaterial material) {
+    auto block = World.entity(false);
+    if (!block.isValid()) {
+        return block;
     }
-    auto _ = ecs::DeferActivate(expected.value());
-    auto block = expected.value();
+    auto _ = ecs::DeferActivate(block);
 
     block.add(transform);
     block.add(sprite);
@@ -64,12 +61,12 @@ Expected<ecs::Entity> createBlock(Transform transform, Sprite sprite, WorldMater
     return block;
 }
 
-Expected<ecs::Entity> createDecal(Transform transform, Sprite sprite, bool activate) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
+ecs::Entity createDecal(Transform transform, Sprite sprite, bool activate) {
+    auto decal = World.entity(false);
+    if (!decal.isValid()) {
+        return decal;
     }
-    auto decal = expected.value();
+    auto _ = ecs::DeferActivate(decal);
 
     decal.add(transform);
     decal.add(sprite);

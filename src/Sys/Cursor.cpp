@@ -13,7 +13,7 @@ namespace whal {
 void CursorManager::set(Sprite sprite) const {
     const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
     if (!isCustomCursorActive) {
-        auto entity = World.entity().value();
+        auto entity = World.entity();
         entity.add(Name("Cursor"));
         Transform trans;
         trans.depth = Depth::UIClose;

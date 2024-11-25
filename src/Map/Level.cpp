@@ -215,12 +215,11 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         Sprite sprite = Sprite(*frame);
 
                         trans.depth = layer.metadata.depth;
-                        auto eEntity = createDecal(trans, sprite, false);
-                        if (!eEntity.isExpected()) {
-                            print(eEntity.error());
+                        auto e = createDecal(trans, sprite, false);
+                        if (!e.isValid()) {
+                            print("Couldn't allocate entity for tile");
                             continue;
                         }
-                        ecs::Entity e = *eEntity;
                         const TileSet& tset = getTileSet(map, blockID);
                         // TODO collider position not matching rotation -- rotateAboutCenter should be a transform component and then change that AABB
                         // constructor that takes transforms
@@ -293,11 +292,10 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
     auto collider = Collider::Solid(Transform({centerX, centerY}), halflen);
 
-    auto eEntity = World.entity();
-    if (!eEntity.isExpected()) {
+    auto entity = World.entity();
+    if (!entity.isValid()) {
         print("Error creating entity for mesh");
     } else {
-        auto entity = eEntity.value();
         entity.add(collider);
         entity.add(Transform(collider.getShape().getPositionEdge(Vector2i::DOWN)));
         lvl.childEntities.insert(entity);
