@@ -6,8 +6,9 @@ namespace whal {
 
 struct DrawBezierQuad;
 struct Transform;
+struct Invisible;
 
-class BezierRenderSystem : public ecs::ISystem<DrawBezierQuad, Transform>, public ecs::IRender {
+class BezierRenderSystem : public ecs::ISystem<DrawBezierQuad, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;

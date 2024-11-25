@@ -341,7 +341,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
         renderSystem.pIRender->addToQueue(tmpDrawList);
         for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
             // Filter out hidden entities and entities outside of the viewport
-            if (!renderInfo.entity.has<Invisible>() && cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
+            if (cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
                 if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
                     renderInfo.preciseTransform.depth == Depth::UIClose) {
                     mUIRenderQueue.emplace_back(renderInfo.boundingBox, renderInfo.preciseTransform, renderInfo.entity, renderInfo.piRender,

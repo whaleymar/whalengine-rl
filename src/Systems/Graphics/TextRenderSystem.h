@@ -10,8 +10,9 @@ namespace whal {
 
 struct DrawText;
 struct Transform;
+struct Invisible;
 
-class TextRenderSystem : public ecs::ISystem<DrawText, Transform>, public ecs::IRender {
+class TextRenderSystem : public ecs::ISystem<DrawText, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:
     TextRenderSystem();
     ~TextRenderSystem();

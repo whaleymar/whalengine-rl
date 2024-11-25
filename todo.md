@@ -101,6 +101,7 @@ NEXT GOAL:
 - Get web and windows builds working again
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
+- invisibility tag should affect children
 
 ---------------------------------------------------------------------------------------------------------------------------
 

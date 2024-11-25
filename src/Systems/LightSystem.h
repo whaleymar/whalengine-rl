@@ -13,8 +13,11 @@ struct PointLight;
 struct BoxLight;
 struct Transform;
 struct ShadowLight;
+struct Invisible;
 
-class PointLightSystem : public ecs::ISystem<Transform, PointLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class PointLightSystem : public ecs::ISystem<Transform, PointLight, ecs::Exclude<Invisible>>,
+                         public ecs::IRenderLight,
+                         public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;
@@ -25,7 +28,9 @@ private:
     // int mOcclusionDepthUniform;
 };
 
-class BoxLightSystem : public ecs::ISystem<Transform, BoxLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class BoxLightSystem : public ecs::ISystem<Transform, BoxLight, ecs::Exclude<Invisible>>,
+                       public ecs::IRenderLight,
+                       public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;
@@ -38,7 +43,9 @@ private:
     int mOcclusionDepthUniform;
 };
 
-class ShadowLightSystem : public ecs::ISystem<Transform, ShadowLight>, public ecs::IRenderLight, public IListen<evt::ShaderReload, true> {
+class ShadowLightSystem : public ecs::ISystem<Transform, ShadowLight, ecs::Exclude<Invisible>>,
+                          public ecs::IRenderLight,
+                          public IListen<evt::ShaderReload, true> {
 public:
     void draw(const gfx::RenderContext&) const override;
     void onEvent(evt::ShaderReload) override;
