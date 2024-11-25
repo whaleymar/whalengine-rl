@@ -292,9 +292,6 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     for (const ecs::IRenderLight* pLightSystem : World.getLightSystems()) {
         pLightSystem->draw(renderContext);
     }
-    // World.getSystem<PointLightSystem>()->drawEntities();
-    // World.getSystem<BoxLightSystem>()->drawEntities();
-    // World.getSystem<ShadowLightSystem>()->drawEntities();
 
     rl::EndBlendMode();
     rl::EndMode2D();

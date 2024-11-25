@@ -6,9 +6,11 @@
 
 namespace whal {
 
+#ifndef NDEBUG
 static bool isPowerOfTwo(s32 n) {
     return (n & (n - 1)) == 0;
 }
+#endif
 
 LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {}
 
@@ -23,7 +25,8 @@ void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
 
     mDenoise.setVector2("iResolution", rl::Vector2(src.texture.width, src.texture.height));
 
-    rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_BILINEAR);
+    // rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_BILINEAR);
+    rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_POINT);
 
     // blur the src with the shader
     // this is only performant when src is around quarter resolution
@@ -35,7 +38,8 @@ void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
     while (srcWidth != dst.texture.width) {
         // scale to a new texture twice as big
         rl::RenderTexture swap =
-            Graphics.getTemporaryRT(srcWidth * 2, srcHeight * 2, static_cast<rl::PixelFormat>(src.texture.format), rl::TEXTURE_FILTER_BILINEAR);
+            // Graphics.getTemporaryRT(srcWidth * 2, srcHeight * 2, static_cast<rl::PixelFormat>(src.texture.format), rl::TEXTURE_FILTER_BILINEAR);
+            Graphics.getTemporaryRT(srcWidth * 2, srcHeight * 2, static_cast<rl::PixelFormat>(src.texture.format), rl::TEXTURE_FILTER_POINT);
         Graphics.blit(tmpSrc, swap);
 
         // multiply width
