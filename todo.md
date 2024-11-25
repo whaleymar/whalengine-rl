@@ -88,12 +88,9 @@ NEXT GOAL:
 - collider offsets + rotation + scaling doesn't work quite right
 
 ## Misc
-- go all-in on custom raylib++ fork -> namespace the library and get rid of the bloat
 - ECS parallelization (low priority)
-- Logger queue that runs on another thread
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
-- dialogue system (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Possible Shader workflow: Unity Shader Graph -> view code -> export code as GLSL?

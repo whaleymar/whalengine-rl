@@ -1,7 +1,5 @@
 #pragma once
 
-#include <raylib.h>
-
 #include "Gfx/Depth.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"

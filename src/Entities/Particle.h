@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Components/Transform.h"
 #include "Gfx/Depth.h"
 #include "Util/Types.h"
 #include "whalECS/src/Expected.h"
