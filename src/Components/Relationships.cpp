@@ -42,48 +42,13 @@ void Follow::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
     ecs::Entity targetEntity(targetEntityID);
     currentTarget = targetEntity.get<Transform>().position;
-
-    // this is kind of hacky. Definitely shouldn't be adding children dynamically like this for game logic
-    // #ifndef NDEBUG
-    //     if (self.has<Children>()) {
-    //         self.remove<Children>();
-    //     }
-    //     self.add<Children>();
-    //     auto eOpt = ecs::World::getInstance().entity();
-    //     if (eOpt.isExpected()) {
-    //         auto debugTargetTracker = eOpt.value();
-    //         debugTargetTracker.add<Transform>();
-    //         debugTargetTracker.add(DrawDebug(Colors::Emerald));
-    //         debugTargetTracker.add(Name("TargetTracker"));
-    //         debugTargetTrackerID = debugTargetTracker.id();
-    //         self.get<Children>().add(debugTargetTracker);
-    //     }
-    //
-    //     auto eOpt2 = ecs::World::getInstance().entity();
-    //     if (eOpt2.isExpected()) {
-    //         auto debugPositionTracker = eOpt2.value();
-    //         debugPositionTracker.add<Transform>();
-    //         debugPositionTracker.add(DrawDebug(Colors::Magenta));
-    //         debugPositionTracker.add(Name("PositionTracker"));
-    //         debugPositionTrackerID = debugPositionTracker.id();
-    //         self.get<Children>().add(debugPositionTracker);
-    //     }
-    // #endif
 }
 
 void Children::add(ecs::Entity entity) {
     if (whal_find(entityIDs.begin(), entityIDs.end(), entity) != entityIDs.end()) {
-        // print("skipping duplicate add");
-        // if (entity.has<Name>()) {
-        //     print("\tduplicate was", entity.get<Name>());
-        // }
         return;
     }
-    // if (entity.has<Name>()) {
-    //     print("adding", entity.get<Name>(), "to child list");
-    // }
     entityIDs.push_back(entity.id());
-    // print("num children: ", entities.size());
 }
 
 }  // namespace whal

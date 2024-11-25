@@ -14,14 +14,13 @@
 
 namespace whal {
 
-Expected<ecs::Entity> createCamera(Transform trans) {
-    auto expected = World.entity(false);
-    if (!expected.isExpected()) {
-        return expected;
+ecs::Entity createCamera(Transform trans) {
+    auto camera = World.entity(false);
+    if (!camera.isValid()) {
+        return camera;
     }
-    auto _ = ecs::DeferActivate(expected.value());
+    auto _ = ecs::DeferActivate(camera);
 
-    auto camera = expected.value();
     camera.add(trans);
     camera.add(PrecisePosition::fromTrans(trans));
     camera.add(Name("Camera"));

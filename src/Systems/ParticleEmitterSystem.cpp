@@ -72,11 +72,10 @@ void ParticleEmitterSystem::update() {
 
         spawnLocation += emitter.offset;
         for (s32 i = 0; i < nParticles; i++) {
-            auto eParticle = createParticle(Transform(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
-            if (!eParticle.isExpected()) {
+            auto particle = createParticle(Transform(spawnLocation), emitter.material, emitter.depth, emitter.lifetimeMultiplier);
+            if (!particle.isValid()) {
                 continue;
             }
-            auto particle = eParticle.value();
 
             particle.add(Velocity(velocity));
         }
