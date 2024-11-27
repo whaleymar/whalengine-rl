@@ -229,19 +229,25 @@ public:
         mGameHandler.EngineSetGame(*mGame);
         if (mGame->start()) {
             print("Error initializing game");
+            unloadGame(false);
+            mGameHandler.EngineEnd();
             return true;
         }
 
         if (!mGameHandler.EngineIsValid()) {
             print("Game initialization is not valid. Make sure you registered an update function with System::setGameUpdate()");
+            unloadGame(false);
+            mGameHandler.EngineEnd();
             return true;
         }
 
         return false;
     }
 
-    void unloadGame() {
-        mGame->end();
+    void unloadGame(bool nicely = true) {
+        if (nicely) {
+            mGame->end();
+        }
         mGameHandler.DestroyGameCB(mGame);
         mGame = nullptr;
         mGameHandler.EngineReset();
@@ -282,7 +288,10 @@ public:
                     print("Error Restarting Engine Modules");
                     return;
                 }
-                loadGame();
+                bool isError = loadGame();
+                if (isError) {
+                    break;
+                }
                 print("Loaded Game");
 
                 mGameHandler.SetEditorMode(isEditorMode);

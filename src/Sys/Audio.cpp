@@ -64,8 +64,10 @@ void AudioClip::unload() {
     if (isValid()) {
 #ifndef __EMSCRIPTEN__
         mSound->release();
+        mSound = nullptr;
 #else
         rl::UnloadSound(mSound);
+        mIsValid = false;
 #endif
     }
 }
@@ -141,7 +143,7 @@ Corrade::Containers::Optional<Error> AudioPlayer::init() {
 
 AudioPlayer::AudioPlayer() {}
 
-AudioPlayer::~AudioPlayer() {
+void AudioPlayer::end() {
     if (mIsValid) {
 #ifndef __EMSCRIPTEN__
         if (mLowpassFilter != nullptr) {
