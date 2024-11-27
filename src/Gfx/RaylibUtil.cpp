@@ -220,6 +220,12 @@ void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color) {
     rl::DrawTextureRec(tex, rl::Rectangle(0, 0, tex.width, -tex.height), rl::Vector2(0, 0), color);
 }
 
+void DrawRenderTextureHDR(rl::RenderTexture renderTexture, rl::Vector4 color) {
+    const auto tex = renderTexture.texture;
+    DrawSpriteHDR(tex, rl::Rectangle(0, 0, tex.width, -tex.height), rl::Rectangle(0, 0, tex.width, tex.height), rl::Vector2(0, 0), 0.0f, color,
+                  rl::Vector3(0, 0, 0));
+}
+
 // Draws correctly sized pixel even for higher resolution target textures.
 void DrawPixel(Vector2i screenCoord, rl::Color color) {
     DrawRectangle(screenCoord.x, screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO, color);

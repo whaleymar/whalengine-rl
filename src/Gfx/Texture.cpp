@@ -205,10 +205,13 @@ static std::vector<const char*> getTextureNames() {
 #ifndef NDEBUG
 void TextureManager::_drawTargetGui() {
     static auto texNames = getTextureNames();
-    if (ImGui::TreeNode("Target Texture")) {
-        ImGui::Combo("Texture", &selection, texNames.data(), texNames.size());
-        ImGui::TreePop();
-    }
+    // ImGui::TreeNode("Target Texture");
+    // ImGui::BeginChild("Target Texture", ImVec2(-1, -1));
+    ImGui::Begin("Target Texture");
+    ImGui::Combo("Texture", &selection, texNames.data(), texNames.size());
+    // ImGui::TreePop();
+    // ImGui::EndChild();
+    ImGui::End();
 }
 
 void TextureManager::_setTargetTexture() {

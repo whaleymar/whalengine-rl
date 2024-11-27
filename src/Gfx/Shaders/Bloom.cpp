@@ -49,29 +49,28 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     Graphics.releaseTemporaryRT(quarterRes);
     Graphics.releaseTemporaryRT(halfRes);
 
-    // Draw Additively
-    // TODO use HDR draw function so intensity modifier isn't clamped to LDR
+    // Draw Original Scene, then draw Bloom Additively
     const f32 gc = math::gammaToLinear(intensity);
-    const rl::Color tint = rl::ColorFromNormalized(rl::Vector4{gc, gc, gc, 1.0f});
     rl::BeginTextureMode(dst);
     rl::ClearBackground(Colors::CLEAR);
     gfx::DrawRenderTexture(src);
     rl::BeginBlendMode(rl::BLEND_ADDITIVE);
-    gfx::DrawRenderTexture(bloomTex, tint);
+    gfx::DrawRenderTextureHDR(bloomTex, rl::Vector4(gc, gc, gc, 1.0f));
     rl::EndBlendMode();
     rl::EndTextureMode();
 }
 
 #ifndef NDEBUG
 void Bloom::draw() {
-    ImGui::Separator();
-    if (ImGui::TreeNode("Bloom")) {
-        ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
-        ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);
-        ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f);
-        ImGui::TreePop();
-    }
-    // ImGui::End();
+    // ImGui::TreeNode("Bloom")
+    ImGui::Begin("Bloom");
+    // ImGui::BeginChild("Bloom");
+    ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
+    ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);
+    ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f);
+    // ImGui::TreePop();
+    ImGui::End();
+    // ImGui::EndChild();
 }
 #endif
 

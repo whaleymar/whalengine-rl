@@ -28,6 +28,7 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, gfx::RaylibDrawPar
                              float brightness, gfx::ColorBufInfo cbi);
 
 void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color = rl::WHITE);
+void DrawRenderTextureHDR(rl::RenderTexture renderTexture, rl::Vector4 color);
 
 ////////////////////////////
 // CUSTOM SHAPE FUNCTIONS //
