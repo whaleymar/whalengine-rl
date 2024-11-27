@@ -36,9 +36,8 @@ NEXT GOAL:
 ## Debug tools 
 - imgui integration
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
-    - changing shader uniforms dynamically would also be cool
-    - change which RenderTexture I'm looking at 
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
+    - toggle which shaders are used in the camera's pipeline
 
 ## Triggers 
 - consolidate with colliders like unity. Makes a lot less work :) 
