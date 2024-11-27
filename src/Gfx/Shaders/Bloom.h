@@ -8,6 +8,10 @@ public:
     Bloom();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
+#ifndef NDEBUG
+    void draw() override;
+#endif
+
     f32 threshold = 1.5;  // [Range(0.0f, 10.0f)]
 
     // When softThreshold is 0, the shader has a "hard knee" & there is no gradient

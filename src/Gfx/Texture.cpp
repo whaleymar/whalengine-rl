@@ -8,15 +8,21 @@
 #include <string>
 
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
 #include "Util/Color.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
+#include "imgui.h"
 
 #define RAPIDXML_NO_EXCEPTIONS
 #include "RapidXML/rapidxml.hpp"
+
+#ifndef NDEBUG
+#include "rfl/enums.hpp"
+#endif
 
 namespace rapidxml {
 
@@ -184,6 +190,44 @@ TextureManager::~TextureManager() {
         }
     }
 }
+
+#ifndef NDEBUG
+static std::vector<const char*> getTextureNames() {
+    std::vector<const char*> texNames;
+    auto enumNames = rfl::get_enumerator_array<TextureID>();
+    for (size_t i = 0; i < enumNames.size(); i++) {
+        texNames.push_back(enumNames[i].first.data());
+    }
+    return texNames;
+}
+#endif
+
+#ifndef NDEBUG
+void TextureManager::_drawTargetGui() {
+    static auto texNames = getTextureNames();
+    if (ImGui::TreeNode("Target Texture")) {
+        ImGui::Combo("Texture", &selection, texNames.data(), texNames.size());
+        ImGui::TreePop();
+    }
+}
+
+void TextureManager::_setTargetTexture() {
+    // do nothing if invalid or default selection
+    if (!isRenderTextureUsed(selection) || static_cast<TextureID>(selection) == TextureID::Main) {
+        return;
+    }
+
+    // ok, now set TextureID::Main to whatever we selected
+    rl::RenderTexture rt = getRenderTexture(static_cast<TextureID>(selection));
+    rl::RenderTexture mainTex = getRenderTexture(TextureID::Main);
+
+    if (S_RENDER_TEX_INFO[selection].isHDR) {
+        Graphics.blit(rt, mainTex, ShaderManager::get(Shaders::ToneMap));
+    } else {
+        Graphics.blit(rt, mainTex);
+    }
+}
+#endif
 
 Corrade::Containers::Optional<Error> TextureManager::registerTexture(const rl::Texture2D texture, const char* name) {
     s32 ix = getTextureIndex(name);

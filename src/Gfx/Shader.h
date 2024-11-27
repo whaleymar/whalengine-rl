@@ -6,6 +6,10 @@
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
+#ifndef NDEBUG
+#include "Util/ImguiUtil.h"
+#endif
+
 namespace whal {
 
 class Shader : public IListen<evt::ShaderReload, true> {
@@ -44,12 +48,19 @@ protected:
     bool mIsReady;
 };
 
-class IShaderProcess {
+class IShaderProcess
+#ifndef NDEBUG
+    : public IRenderDebug
+#endif
+{
 public:
     // source and destination should not be the same RenderTexture. Use Graphics.getTemporaryRT if you need a temporary swap texture, or
     // gfx::applyShaders will do it for you automatically.
     virtual void process(rl::RenderTexture source, rl::RenderTexture destination) = 0;
     virtual ~IShaderProcess() {}
+#ifndef NDEBUG
+    void draw() override {}
+#endif
 };
 
 }  // namespace whal
