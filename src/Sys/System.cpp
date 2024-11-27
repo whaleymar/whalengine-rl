@@ -112,6 +112,7 @@ bool System::start() {
 void System::end() {
     Schedule.end();
     Schedule.await();
+    Audio.end();
     ShaderManager::instance().unloadAll();
 }
 

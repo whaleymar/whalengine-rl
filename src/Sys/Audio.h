@@ -68,8 +68,8 @@ public:
     friend AudioClip;
 
     AudioPlayer();
-    ~AudioPlayer();
     Corrade::Containers::Optional<Error> init();
+    void end();
 
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
