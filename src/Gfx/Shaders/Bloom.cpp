@@ -64,13 +64,11 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
 void Bloom::draw() {
     // ImGui::TreeNode("Bloom")
     ImGui::Begin("Bloom");
-    // ImGui::BeginChild("Bloom");
     ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
     ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);
     ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f);
     // ImGui::TreePop();
     ImGui::End();
-    // ImGui::EndChild();
 }
 #endif
 

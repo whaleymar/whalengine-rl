@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Gfx/Shaders/Posterize.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -203,6 +204,12 @@ void Renderer::render() {
     // 1. IRender and IRenderLight systems are drawn
     drawEntities(renderContext);  // drawn to TextureID::Staging
     drawLights(renderContext);    // drawn to TextureID::Lighting
+
+    // posterize before applying lighting
+    // static Posterize sPosterize;
+    // auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
+    // blit(mStagingTexture.tex, tmpTex);
+    // sPosterize.process(tmpTex, mStagingTexture.tex);
 
     // 2. Renders everything to TextureID::Main
     rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);

@@ -19,7 +19,6 @@ struct Uniforms {
         TimeStamp = 1,
         Resolution = 1 << 1,
         VirtualResolution = 1 << 2,  // mutually exclusive w/ Resolution
-        Palette = 1 << 3,
     };
 
     bool isSet(flags flag) { return (uniformFlags & flag) > 0; }
@@ -27,7 +26,6 @@ struct Uniforms {
     u32 uniformFlags = None;
     int iTime;
     int iResolution;
-    int iPalette;
 };
 
 static std::array<rl::Shader, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_SHADERS;
@@ -52,11 +50,6 @@ static void ActivateShader(Shaders shaderEnum) {
         const f32 iResolution[2] = {FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER};
         rl::SetShaderValue(shader, uniforms.iResolution, &iResolution, rl::SHADER_UNIFORM_VEC2);
     }
-
-    // not working
-    // if (uniforms.isSet(Uniforms::Palette)) {
-    //     SetShaderValueTexture(shader, uniforms.iPalette, TextureManager::instance().getTexture(TEXNAME_PALETTE));
-    // }
 }
 
 ScopedShader::ScopedShader(rl::Shader shader, bool isActivated) {
@@ -81,7 +74,7 @@ void ShaderManager::loadShaders() {
         {Shaders::Default, "whalengine/src/Shader/spritevert.glsl", "whalengine/src/Shader/spritefrag.glsl"},
         {Shaders::PointLight, 0, "whalengine/src/Shader/pointlight.glsl"},
         {Shaders::BoxLight, 0, "whalengine/src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
-        {Shaders::Quantize, 0, "whalengine/src/Shader/quantize.glsl", Uniforms::Palette},
+        // {Shaders::Quantize, 0, "whalengine/src/Shader/quantize.glsl"},
         {Shaders::ToneMap, 0, "whalengine/src/Shader/toneMapping.glsl"},
         {Shaders::ShadowLight, 0, "whalengine/src/Shader/shadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
         {Shaders::Blur, 0, "whalengine/src/Shader/blur.glsl", Uniforms::Resolution},
@@ -119,11 +112,6 @@ void ShaderManager::loadShaders() {
         if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
             S_UNIFORMS[ix].iResolution = rl::GetShaderLocation(shader, "iResolution");
         }
-
-        // not working
-        // if (S_UNIFORMS[ix].isSet(Uniforms::Palette)) {
-        //     S_UNIFORMS[ix].iPalette = GetShaderLocation(shader, "iPalette");
-        // }
     }
 }
 

@@ -6,14 +6,14 @@ in vec4 fragColor;
 
 // Input uniform values
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
 
 // mine:
-uniform sampler2D iPalette;
+uniform sampler2D _Palette;
 
 // Output fragment color
 out vec4 finalColor;
 
+// hard-coded to a 16x16x16 color palette
  #define MAXCOLOR 15.0
  #define COLORS 16.0
  #define WIDTH 256.0
@@ -21,13 +21,12 @@ out vec4 finalColor;
 
 // REGULAR POSTERIZATION SHADER 
 float gamma = 0.6;
-float numColors = 64.0;
 vec4 quantize(vec4 color) {
     vec3 texelColor = color.rgb;
     texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
-    texelColor = texelColor*numColors;
+    texelColor = texelColor*COLORS;
     texelColor = floor(texelColor);
-    texelColor = texelColor/numColors;
+    texelColor = texelColor/COLORS;
     texelColor = pow(texelColor, vec3(1.0/gamma));
 
     return vec4(texelColor, color.a);
@@ -48,8 +47,8 @@ vec4 applyPalette(vec4 px) {
     vec2 lut_pos_l = vec2(cell_l / COLORS + r_offset, g_offset); 
     vec2 lut_pos_h = vec2(cell_h / COLORS + r_offset, g_offset);
 
-    vec4 graded_color_l = texture(iPalette, lut_pos_l);
-    vec4 graded_color_h = texture(iPalette, lut_pos_h);
+    vec4 graded_color_l = texture(_Palette, lut_pos_l);
+    vec4 graded_color_h = texture(_Palette, lut_pos_h);
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 
@@ -58,7 +57,14 @@ vec4 applyPalette(vec4 px) {
 
 void main() {
     vec4 texelColor = texture(texture0, fragTexCoord.xy);
+
+    // debugging which texture is bound
+    // vec4 texelColorTEST = texture(_Palette, fragTexCoord.xy);
+
+    // texelColor = clamp(texelColor, vec4(0.), vec4(1.));
+    finalColor = applyPalette(texelColor);
+
+    // quantization on pixel art seems unecessary
     // finalColor = quantize(texelColor);
-    // finalColor = applyPalette(texelColor);
-    finalColor = applyPalette(quantize(texelColor));
+    // finalColor = applyPalette(quantize(texelColor));
 }
