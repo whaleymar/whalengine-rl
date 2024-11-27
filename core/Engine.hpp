@@ -43,6 +43,7 @@ public:
     using BoolCB = bool (*)();
     using FloatFunc = void (*)(float);
     using StrGetter = const char* (*)();
+    using BoolSetter = void (*)(bool);
 
     GameHandler() = default;
     bool isValid() const { return mLibHandle != nullptr; }
@@ -123,6 +124,8 @@ public:
         GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
         GetTargetFPS = getSymbol<IntGetter>("WhalGetTargetFPS");
         GetWindowTitle = getSymbol<StrGetter>("WhalGetWindowTitle");
+        GetEditorMode = getSymbol<BoolCB>("WhalIsEditorMode");
+        SetEditorMode = getSymbol<BoolSetter>("WhalSetEditorMode");
 
         if (mAllLoadsSuccessful) {
             print("Loaded library successfully");
@@ -148,6 +151,8 @@ public:
         GetWindowHeight = WhalGetRenderHeight;
         GetTargetFPS = WhalGetTargetFPS;
         GetWindowTitle = WhalGetWindowTitle;
+        GetEditorMode = WhalIsEditorMode;
+        SetEditorMode = WhalSetEditorMode;
         return false;
 
 #endif
@@ -179,6 +184,8 @@ public:
     StrGetter GetWindowTitle;
     GameCreator CreateGameCB;
     GameDestructor DestroyGameCB;
+    BoolCB GetEditorMode;
+    BoolSetter SetEditorMode;
 
 private:
     void* mLibHandle = nullptr;
@@ -252,6 +259,9 @@ public:
             // hot reloading
 #if defined(DYNLIB)
             if (IsKeyPressed(rl::KEY_R)) {
+                // maintain previous editor state
+                const bool isEditorMode = mGameHandler.GetEditorMode();
+
                 unloadGame();
                 mGameHandler.EngineEnd();
                 print("Recompiling", DL_PATH);
@@ -274,6 +284,8 @@ public:
                 }
                 loadGame();
                 print("Loaded Game");
+
+                mGameHandler.SetEditorMode(isEditorMode);
             }
 #endif
         }

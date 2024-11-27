@@ -6,6 +6,10 @@
 #include "Util/MathUtil.h"
 #include "raylib.h"
 
+#ifndef NDEBUG
+#include "imgui.h"
+#endif
+
 namespace whal {
 
 Bloom::Bloom() : mThresh("", "whalengine/src/Shader/threshold.glsl"), mBlur("", "whalengine/src/Shader/BoxBlur.glsl") {
@@ -57,5 +61,18 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     rl::EndBlendMode();
     rl::EndTextureMode();
 }
+
+#ifndef NDEBUG
+void Bloom::draw() {
+    ImGui::Separator();
+    if (ImGui::TreeNode("Bloom")) {
+        ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
+        ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f);
+        ImGui::TreePop();
+    }
+    // ImGui::End();
+}
+#endif
 
 }  // namespace whal

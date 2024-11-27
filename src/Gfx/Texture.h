@@ -65,6 +65,15 @@ public:
         return instance_;
     }
 
+    // gets main render texture for drawing (TextureID::Main in non-debug builds)
+#ifndef NDEBUG
+    static void setTargetTexture() { instance()._setTargetTexture(); }
+    static void drawTargetGui() { instance()._drawTargetGui(); }
+    void _setTargetTexture();
+    void _drawTargetGui();
+    s32 selection = 0;
+#endif
+
     Corrade::Containers::Optional<Error> registerTexture(const rl::Texture2D texture, const char* name);
     Corrade::Containers::Optional<Error> registerTextureAtlas(const rl::Texture2D texture, const char* altasDataPath, const char* name);
     Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);

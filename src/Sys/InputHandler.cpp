@@ -25,6 +25,9 @@ void InputHandler::update() {
     }
     mMouseScreenPosition = Vector2i(rl::GetMousePosition());
     for (auto [mouseButton, inputType] : S_MOUSEMAP) {
+        if (!isInputEnabled(inputType)) {
+            continue;
+        }
         if (rl::IsMouseButtonPressed(mouseButton)) {
             set(inputType);
         } else if (rl::IsMouseButtonReleased(mouseButton)) {
