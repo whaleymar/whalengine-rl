@@ -38,6 +38,7 @@ public:
     s32 tryNameToId(const char* name);
 
     bool isValid() const { return mIsReady; }
+    void invalidate() { mIsReady = false; }
     rl::Shader get() const { return mHandle; }
 
 protected:

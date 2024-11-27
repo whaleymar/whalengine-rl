@@ -1,3 +1,4 @@
+#ifndef NDEBUG
 #include "ImguiUtil.h"
 
 namespace whal {
@@ -17,3 +18,4 @@ IRenderDebug::~IRenderDebug() {
 }
 
 }  // namespace whal
+#endif

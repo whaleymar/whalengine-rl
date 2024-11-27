@@ -2,11 +2,9 @@
 
 #ifndef NDEBUG
 #include <unordered_set>
-#endif
 
 namespace whal {
 
-#ifndef NDEBUG
 class IRenderDebug;
 class ImguiMgr {
 public:
@@ -22,19 +20,16 @@ public:
 private:
     std::unordered_set<IRenderDebug*> mObjs;
 };
-#endif
 
 // make sure an empty class definition exists for inheritance reasons
 class IRenderDebug {
-#ifndef NDEBUG
 public:
     virtual ~IRenderDebug();
     virtual void draw() = 0;
 
 protected:
     IRenderDebug();
-
-#endif
 };
 
 }  // namespace whal
+#endif
