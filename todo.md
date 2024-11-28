@@ -1,16 +1,12 @@
 # To Do 
 
 NEXT GOAL: 
-- HDR drawTexture method
 - HDR color struct
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game -> put in Settings.cpp
-
-## Bugs 
-- use after free in Audio module. No guarantee that AudioPlayer destructor runs after all sounds are free'd so sounds can try to access audioplayer after its been destroyed.
 
 ## Components (some of these are duplicates of other tasks)
 - BoxLight in map 
@@ -27,6 +23,7 @@ NEXT GOAL:
 - tile performance: can put tile Sprite components in a shared LUT and store index in tile component?
     - can also write a faster variant of getDrawParams that omits unused stuff like rotation/scaling
         - should also try passing trans as a reference in those funcs
+- posterization shader doesn't work right with HDR colors
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight

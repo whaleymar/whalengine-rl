@@ -50,45 +50,73 @@ void Shader::onEvent(evt::ShaderReload) {
 }
 
 void Shader::setFloat(const char* name, f32 value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_FLOAT);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Float,
+        .val = {.uniFloat = value},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setInt(const char* name, s32 value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_INT);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Int,
+        .val = {.uniInt = value},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setTexture(const char* name, rl::Texture value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValueTexture(mHandle, handle, value);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Texture,
+        .val = {.uniTex = value},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setVector2(const char* name, rl::Vector2 value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_VEC2);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Vec2,
+        .val = {.uniVec2 = value},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setVector2(const char* name, Vector2f value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_VEC2);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Vec2,
+        .val = {.uniVec2 = value.asRL()},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setVector3(const char* name, rl::Vector3 value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_VEC3);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Vec3,
+        .val = {.uniVec3 = value},
+        .uniformLoc = loc,
+    });
 }
 
 void Shader::setVector4(const char* name, rl::Vector4 value) {
-    s32 handle = tryNameToId(name);
-    assert(handle != -1);
-    rl::SetShaderValue(mHandle, handle, &value, rl::SHADER_UNIFORM_VEC4);
+    s32 loc = tryNameToId(name);
+    // assert(handle != -1);
+    Graphics.queueUniform(UniformVariant{
+        .tag = UniformVariant::UniformType::Vec4,
+        .val = {.uniVec4 = value},
+        .uniformLoc = loc,
+    });
 }
 
 s32 Shader::nameToId(const char* name) const {

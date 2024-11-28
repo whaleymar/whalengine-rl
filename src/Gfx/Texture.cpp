@@ -11,6 +11,7 @@
 #include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
+#include "Sys/System.h"
 #include "Util/Color.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
