@@ -16,6 +16,7 @@ class Entity;
 struct Transform;
 struct Sprite;
 enum class WorldMaterial : u8;
+enum class Direction : u8;
 
 ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth depth = Depth::Level, f32 lifetimeMultiplier = 1.0);
 

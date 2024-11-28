@@ -28,23 +28,19 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     rl::RenderTexture quarterRes = Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, fmt, filter);
     rl::RenderTexture eightRes = Graphics.getTemporaryRT(src.texture.width / 8, src.texture.height / 8, fmt, filter);
 
-    rl::BeginShaderMode(mThresh.get());
     mThresh.setFloat("_Threshold", threshold);
     mThresh.setFloat("_SoftThreshold", softThreshold);
-    Graphics.blit(src, bloomTex);
-    rl::EndShaderMode();
+    Graphics.blit(src, bloomTex, mThresh.get());
 
     // downscale
-    rl::BeginShaderMode(mBlur.get());
-    Graphics.blit(bloomTex, halfRes);
-    Graphics.blit(halfRes, quarterRes);
-    Graphics.blit(quarterRes, eightRes);
+    Graphics.blit(bloomTex, halfRes, mBlur.get());
+    Graphics.blit(halfRes, quarterRes, mBlur.get());
+    Graphics.blit(quarterRes, eightRes, mBlur.get());
 
     // upscale
-    Graphics.blit(eightRes, quarterRes);
-    Graphics.blit(quarterRes, halfRes);
-    Graphics.blit(halfRes, bloomTex);
-    rl::EndShaderMode();
+    Graphics.blit(eightRes, quarterRes, mBlur.get());
+    Graphics.blit(quarterRes, halfRes, mBlur.get());
+    Graphics.blit(halfRes, bloomTex, mBlur.get());
 
     Graphics.releaseTemporaryRT(quarterRes);
     Graphics.releaseTemporaryRT(halfRes);
@@ -62,12 +58,10 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
 
 #ifndef NDEBUG
 void Bloom::draw() {
-    // ImGui::TreeNode("Bloom")
     ImGui::Begin("Bloom");
     ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
     ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);
     ImGui::SliderFloat("Intensity", &intensity, 0.0f, 10.0f);
-    // ImGui::TreePop();
     ImGui::End();
 }
 #endif

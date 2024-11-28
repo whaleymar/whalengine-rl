@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <raylib.h>
-#include "Gfx/Shaders/Posterize.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -147,7 +146,7 @@ void Renderer::releaseTemporaryRT(rl::RenderTexture rt) {
     mAvailableRTs.push_back(released);
 }
 
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader) const {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader) {
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, src.texture.width, -src.texture.height);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, dst.texture.width, dst.texture.height);
 
@@ -156,6 +155,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     const bool isCustomShader = shader.id != 0;
     if (isCustomShader) {
         rl::BeginShaderMode(shader);
+        setUniforms(shader);
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
         rl::EndShaderMode();
     } else {
@@ -366,6 +366,53 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
 
     std::sort(mRenderQueue.begin(), mRenderQueue.end(), isBelow);
     std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);
+}
+
+void Renderer::queueUniform(UniformVariant uniform) {
+    mUniformQueue.push_back(uniform);
+}
+
+void Renderer::setUniforms(rl::Shader shader) {
+    if (mUniformQueue.size() == 0) {
+        return;
+    }
+
+    for (auto uniform : mUniformQueue) {
+        uniform.set(shader);
+    }
+    mUniformQueue.clear();
+}
+
+void UniformVariant::set(rl::Shader handle) const {
+    switch (tag) {
+    case UniformType::Float:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniFloat, rl::SHADER_UNIFORM_FLOAT);
+        break;
+    case UniformType::Vec2:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec2, rl::SHADER_UNIFORM_VEC2);
+        break;
+    case UniformType::Vec3:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec3, rl::SHADER_UNIFORM_VEC3);
+        break;
+    case UniformType::Vec4:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec4, rl::SHADER_UNIFORM_VEC4);
+        break;
+    case UniformType::Int:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniInt, rl::SHADER_UNIFORM_INT);
+        break;
+    case UniformType::Vec2i:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec2i, rl::SHADER_UNIFORM_IVEC2);
+        break;
+    case UniformType::Vec3i:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec3i, rl::SHADER_UNIFORM_IVEC3);
+        break;
+    case UniformType::Vec4i:
+        rl::SetShaderValue(handle, uniformLoc, &val.uniVec4i, rl::SHADER_UNIFORM_IVEC4);
+        break;
+    case UniformType::Texture:
+        rl::SetShaderValueTexture(handle, uniformLoc, val.uniTex);
+        break;
+    }
 }
 
 }  // namespace whal

@@ -18,6 +18,38 @@ void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IS
 
 struct System;
 
+struct UniformVariant {
+    enum class UniformType {
+        Float,
+        Vec2,
+        Vec3,
+        Vec4,
+        Int,
+        Vec2i,
+        Vec3i,
+        Vec4i,
+        Texture,
+    };
+
+    UniformType tag;
+
+    union {
+        f32 uniFloat;
+        rl::Vector2 uniVec2;
+        rl::Vector3 uniVec3;
+        rl::Vector4 uniVec4;
+        s32 uniInt;
+        s32 uniVec2i[2];
+        s32 uniVec3i[3];
+        s32 uniVec4i[4];
+        rl::Texture uniTex;
+    } val;
+
+    s32 uniformLoc;
+
+    void set(rl::Shader handle) const;
+};
+
 class Renderer {
     struct RTInfo {
         rl::RenderTexture rt;
@@ -49,9 +81,20 @@ public:
     // If dimensions aren't the same, scaling happens automatically.
     // src and dest should not be the same RenderTexture.
     // If no shader is specified, then the currently active shader will be used.
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr}) const;
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr});
+
+    // these aren't used, might delete
     void blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShaderProcess>& shader);
     void blit(rl::RenderTexture src, rl::RenderTexture dst, IShaderProcess& shader);
+
+    // Queue a shader's uniform value to be set the next time `blit` is run with a shader.
+    // Alternatively, `setUniforms` can set them manually.
+    // Note: queuing is necessary because setUniformValueTexture *MUST* be called after BeginTextureMode
+    // Setting other uniforms beforehand works, but isn't best practice. Better to queue them all.
+    void queueUniform(UniformVariant uniform);
+
+    // Set the queued uniform values.
+    void setUniforms(rl::Shader shader);
 
 private:
     Renderer(const Renderer&) = delete;
@@ -74,6 +117,8 @@ private:
     std::vector<RTInfo> mUsedRTs;
 
     MultiTexture mStagingTexture;
+
+    std::vector<UniformVariant> mUniformQueue;
 };
 
 }  // namespace whal
