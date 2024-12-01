@@ -16,7 +16,7 @@ namespace whal {
 
 // Exactly the same as SpriteRenderSystem::draw
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
-    const auto sprite = eCtx.entity.get<Sprite>();
+    const auto& sprite = eCtx.entity.get<Sprite>();
     const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
