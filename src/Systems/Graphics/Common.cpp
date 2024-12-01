@@ -1,4 +1,5 @@
 #include "Common.h"
+#include <cstring>
 #include <raylib.h>
 
 #include "Components/Collision.h"
@@ -7,6 +8,25 @@
 #include "Settings.h"
 
 namespace whal::gfx {
+
+const ColorBufInfo ColorBufInfo::NONE = {0, false, false};
+
+rl::Vector3 ColorBufInfo::asRL() const {
+    u32 packed = 0;
+    packed |= static_cast<u32>(depth);
+
+    if (isOccluder) {
+        packed |= (1 << 8);
+    }
+
+    if (isUI) {
+        packed |= (1 << 9);
+    }
+
+    f32 result;
+    std::memcpy(&result, &packed, sizeof(f32));
+    return rl::Vector3{result, 0.0f, 0.0f};
+}
 
 PreciseTransform getPreciseTrans(ecs::Entity entity) {
     assert(entity.has<Transform>());

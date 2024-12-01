@@ -48,10 +48,10 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     // Draw Original Scene, then draw Bloom Additively
     const f32 gc = math::gammaToLinear(intensity);
     rl::BeginTextureMode(dst);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     gfx::DrawRenderTexture(src);
     rl::BeginBlendMode(rl::BLEND_ADDITIVE);
-    gfx::DrawRenderTextureHDR(bloomTex, rl::Vector4(gc, gc, gc, 1.0f));
+    gfx::DrawRenderTextureHDR(bloomTex, Color{gc, gc, gc, 1.0f});
     rl::EndBlendMode();
     rl::EndTextureMode();
 }

@@ -1,5 +1,6 @@
 #include "Transform.h"
 
+#include "Gfx/Color.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
@@ -58,9 +59,9 @@ Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffse
 // Draws the root position + transformed root, according to the rotation + scale + pivot
 void Transform::draw() const {
     const Vector2f cameraPos = getCameraPositionPrecise();
-    gfx::DrawPixel(worldToScreenCoords(position.as<f32>(), cameraPos), rl::RED);
+    gfx::DrawPixel(worldToScreenCoords(position.as<f32>(), cameraPos), Colors::Red);
     auto unrounded = _getRotatedPosition(position.as<f32>(), scale, pivotOffset.as<f32>(), rotationDegrees, 0.0f);
-    gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos), rl::GREEN);
+    gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos), Colors::Green);
 }
 #endif
 

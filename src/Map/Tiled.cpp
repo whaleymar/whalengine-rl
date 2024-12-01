@@ -47,7 +47,7 @@ void clearMapCache() {
     S_TEMPLATE_MANAGER.clearCache();
 }
 
-rl::Color parseColor(const std::string& hexString) {
+Color parseColor(const std::string& hexString) {
     s32 r, g, b, a;
     // format is "#aarrggbb"
     std::istringstream(hexString.substr(1, 2)) >> std::hex >> a;
@@ -55,10 +55,10 @@ rl::Color parseColor(const std::string& hexString) {
     std::istringstream(hexString.substr(5, 2)) >> std::hex >> g;
     std::istringstream(hexString.substr(7, 2)) >> std::hex >> b;
 
-    return rl::Color(r, g, b, a);
+    return Color::fromRGB(r, g, b, a);
 }
 
-bool tryReadColor(const nlohmann::json& data, std::string_view key, rl::Color* dst) {
+bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst) {
     if (data.contains(key)) {
         std::string hexString = readString(data, key);
         *dst = parseColor(hexString);

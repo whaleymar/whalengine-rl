@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Util/Color.h"
+#include "Gfx/Color.h"
 #include "Util/Vector.h"
 
 enum class Ease {
@@ -64,4 +64,8 @@ inline Vector2i ease(const Vector2i n1, Vector2i n2, f32 t, Ease easeFunc) {
 
 inline rl::Color ease(rl::Color c1, rl::Color c2, f32 t, Ease easeFunc) {
     return whal::Colors::lerp(c1, c2, getEaseProgress(t, easeFunc));
+}
+
+inline whal::Color ease(whal::Color c1, whal::Color c2, f32 t, Ease easeFunc) {
+    return whal::Color::lerp(c1, c2, getEaseProgress(t, easeFunc));
 }

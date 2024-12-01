@@ -12,6 +12,7 @@ namespace whal {
 
 struct HitInfo;
 struct Transform;
+struct Color;
 
 class AABB {
 public:
@@ -37,7 +38,7 @@ public:
     bool contains(const AABB& other) const;
     bool contains(Vector2i point) const;
 #ifndef NDEBUG
-    void draw(Vector2f cameraPos, rl::Color color) const;
+    void draw(Vector2f cameraPos, Color color) const;
 #endif
 
     s32 top() const { return mCenter.y + mHalf.y; }
@@ -70,7 +71,7 @@ public:
     AABB getBoundingBox() const;
 
 #ifndef NDEBUG
-    void draw(Vector2f cameraPos, rl::Color color) const;
+    void draw(Vector2f cameraPos, Color color) const;
 #endif
 
 private:
@@ -105,7 +106,7 @@ public:
     bool isOverlapping(const AABB& other) const;
     bool isOverlapping(const Circle& other) const;
 #ifndef NDEBUG
-    void draw(Vector2f cameraPos, rl::Color color) const;
+    void draw(Vector2f cameraPos, Color color) const;
 #endif
 
 private:

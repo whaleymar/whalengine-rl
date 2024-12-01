@@ -9,6 +9,7 @@
 #include "Components/Transform.h"
 
 #include "Events/Events.h"
+#include "Gfx/Color.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
@@ -18,13 +19,12 @@
 #include "Systems/TagSystems.h"
 
 #include "Util/CameraUtil.h"
-#include "Util/Color.h"
 #include "Util/Easing.h"
 #include "Util/Vector.h"
 
 namespace whal {
 
-const rl::Color COLOR_AMBIENT = rl::Color(0, 0, 0, 255);
+const Color COLOR_AMBIENT = Colors::Black;
 
 void PointLightSystem::onEvent(evt::ShaderReload) {
     mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
@@ -49,7 +49,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         const Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        rl::Color color = rl::Color(light.color.r, light.color.g, light.color.b, light.color.a);
+        Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
@@ -67,7 +67,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
 
         const rl::Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
         const rl::Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
-        rl::DrawTexturePro(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
+        gfx::DrawSpriteHDR(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
     }
 }
 
@@ -99,14 +99,14 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
         Vector2i screenPosition =
             Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-        rl::Color color = rl::Color(light.color.r, light.color.g, light.color.b, light.color.a);
+        Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
 
         // apply fading
-        color = Colors::lerp(COLOR_AMBIENT, color, intensity);
+        color = Color::lerp(COLOR_AMBIENT, color, intensity);
 
         // light falls off quadratically
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
@@ -129,7 +129,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const rl::Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
         const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
-        rl::DrawTexturePro(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
+        gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
     }
     Graphics.releaseTemporaryRT(randomTexture);
 }
@@ -172,7 +172,8 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
         rl::SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
 
-        rl::DrawTextureRec(colorTex, rl::Rectangle(0, 0, colorTex.width, -colorTex.height), rl::Vector2(0, 0), light.color);
+        // TODO HDR draw func
+        rl::DrawTextureRec(colorTex, rl::Rectangle(0, 0, colorTex.width, -colorTex.height), rl::Vector2(0, 0), light.color.asLDR());
         rl::EndShaderMode();
     }
 }

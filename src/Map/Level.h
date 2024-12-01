@@ -9,6 +9,7 @@
 #include "whalECS/src/Expected.h"
 
 #include "Components/Relationships.h"
+#include "Gfx/Color.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -18,7 +19,7 @@ struct TileMap;
 struct Level {
     struct LevelInfo {
         bool isWorldEntryPoint = false;
-        rl::Color ambientLight = rl::WHITE;
+        Color ambientLight = Colors::White;
     };
     std::string filepath;     // used for level comparisons
     Vector2f worldPosOrigin;  // top left

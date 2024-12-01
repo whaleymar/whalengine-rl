@@ -28,7 +28,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color,
-                       sprite.brightness, eCtx.colorBuf);
+                       eCtx.colorBuf);
 }
 
 void TileRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

@@ -19,7 +19,7 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, rect.brightness, eCtx.colorBuf);
+    gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, eCtx.colorBuf);
 }
 
 void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

@@ -438,11 +438,14 @@ void addComponentDraw(const nlohmann::json& values, const nlohmann::json& allObj
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        rl::Color color = parseColor(hexcode);
+        Color color = parseColor(hexcode);
         draw.color = color;
     }
 
-    tryReadFloat(values, "Brightness", &draw.brightness);
+    f32 brightness;
+    if (tryReadFloat(values, "Brightness", &brightness)) {
+        draw.color.scale(brightness);
+    }
     entity.add(draw);
 }
 
@@ -460,11 +463,14 @@ void addComponentSprite(const nlohmann::json& values, const nlohmann::json& allO
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        rl::Color color = parseColor(hexcode);
+        Color color = parseColor(hexcode);
         sprite.color = color;
     }
 
-    tryReadFloat(values, "Brightness", &sprite.brightness);
+    f32 brightness;
+    if (tryReadFloat(values, "Brightness", &brightness)) {
+        sprite.color.scale(brightness);
+    }
 
     std::string spritePath = "";
     if (values.contains("Sprite")) {
@@ -499,11 +505,14 @@ void addComponentAnimator(const nlohmann::json& values, const nlohmann::json& al
     if (values.contains("Color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["Color"];
-        rl::Color color = parseColor(hexcode);
+        Color color = parseColor(hexcode);
         sprite.color = color;
     }
 
-    tryReadFloat(values, "Brightness", &sprite.brightness);
+    f32 brightness;
+    if (tryReadFloat(values, "Brightness", &brightness)) {
+        sprite.color.scale(brightness);
+    }
     entity.add(sprite);
 }
 
@@ -756,7 +765,7 @@ void addComponentText(const nlohmann::json& values, const nlohmann::json& allObj
     if (values.contains("color")) {
         std::string hexcode = "#ffffffff";
         hexcode = values["color"];
-        rl::Color color = parseColor(hexcode);
+        Color color = parseColor(hexcode);
         text.color = color;
     }
 

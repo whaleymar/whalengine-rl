@@ -18,8 +18,7 @@ void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawSplineSegmentBezierQuadraticHDR(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color, bezier.brightness,
-                                             eCtx.colorBuf);
+    gfx::DrawSplineSegmentBezierQuadraticHDR(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color, eCtx.colorBuf);
 }
 
 void BezierRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

@@ -12,7 +12,6 @@
 #include "Settings.h"
 
 #include "Sys/System.h"
-#include "Util/Color.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
@@ -116,7 +115,7 @@ Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgrou
     rl::Rectangle dstRect = rl::Rectangle(0, 0, frameOpt->width, frameOpt->height);
 
     rl::BeginTextureMode(texture);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
