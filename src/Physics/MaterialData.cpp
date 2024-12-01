@@ -3,9 +3,7 @@
 #include <cmath>
 
 #include "Components/Draw.h"
-#include "Physics/Shapes.h"
 #include "Sys/System.h"
-#include "Util/Color.h"
 
 namespace whal {
 
@@ -21,13 +19,13 @@ f32 MaterialData::getDecayTime() const {
                                   MAX_LIFETIME_SECONDS;
 }
 
-rl::Color MaterialData::getColor() const {
-    return Colors::lerp(colorRange[0], colorRange[1], Rng.uniform());
+Color MaterialData::getColor() const {
+    return Color::lerp(colorRange[0], colorRange[1], Rng.uniform());
 }
 
 static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",
                                              .id = WorldMaterial::Dirt,
-                                             .colorRange = {rl::DARKBROWN, rl::BROWN},
+                                             .colorRange = {Colors::DarkBrown, Colors::Brown},
                                              .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
                                              .bounciness = 0.0,
                                              .gravityCoef = -0.5,
@@ -36,7 +34,7 @@ static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",
 
 static const MaterialData S_MATERIAL_ROCK = {.name = "Rock",
                                              .id = WorldMaterial::Rock,
-                                             .colorRange = {rl::DARKGRAY, rl::GRAY},
+                                             .colorRange = {Colors::DarkGray, Colors::Gray},
                                              .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
                                              .bounciness = 0.0,
                                              .gravityCoef = 1.0,
@@ -45,7 +43,7 @@ static const MaterialData S_MATERIAL_ROCK = {.name = "Rock",
 
 static const MaterialData S_MATERIAL_SOFT = {.name = "Soft",
                                              .id = WorldMaterial::Soft,
-                                             .colorRange = {rl::BEIGE, rl::WHITE},
+                                             .colorRange = {Colors::Beige, Colors::White},
                                              .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
                                              .bounciness = 0.0,
                                              .gravityCoef = 1.0,
@@ -54,7 +52,7 @@ static const MaterialData S_MATERIAL_SOFT = {.name = "Soft",
 
 static const MaterialData S_MATERIAL_WOOD = {.name = "Wood",
                                              .id = WorldMaterial::Wood,
-                                             .colorRange = {rl::DARKBROWN, rl::BEIGE},
+                                             .colorRange = {Colors::DarkBrown, Colors::Beige},
                                              .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
                                              .bounciness = 0.25,
                                              .gravityCoef = 1.0,
@@ -64,7 +62,7 @@ static const MaterialData S_MATERIAL_WOOD = {.name = "Wood",
 static const MaterialData S_MATERIAL_GRASS = {
     .name = "Grass",
     .id = WorldMaterial::Grass,
-    .colorRange = {rl::DARKGREEN, rl::GREEN},
+    .colorRange = {Colors::DarkGreen, Colors::Green},
     .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
     .bounciness = 0.0,
     .gravityCoef = 0.0,
@@ -75,7 +73,7 @@ static const MaterialData S_MATERIAL_GRASS = {
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",
                                               .id = WorldMaterial::Water,
-                                              .colorRange = {rl::DARKBLUE, Colors::LIGHT_BLUE},
+                                              .colorRange = {Colors::DarkBlue, Colors::LightBlue},
                                               .flags = MaterialData::Liquid | MaterialData::Collision | MaterialData::RigidBodyFlag |
                                                        MaterialData::DecayTime | MaterialData::FadeOutFlag,
                                               .bounciness = 0.0,
@@ -85,7 +83,7 @@ static const MaterialData S_MATERIAL_WATER = {.name = "Water",
 
 static const MaterialData S_MATERIAL_METAL = {.name = "Metal",
                                               .id = WorldMaterial::Metal,
-                                              .colorRange = {rl::DARKGRAY, rl::GRAY},
+                                              .colorRange = {Colors::DarkGray, Colors::Gray},
                                               .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
                                               .bounciness = 0.0,
                                               .gravityCoef = 1.0,
@@ -94,7 +92,7 @@ static const MaterialData S_MATERIAL_METAL = {.name = "Metal",
 
 static const MaterialData S_MATERIAL_RUBBER = {.name = "Rubber",
                                                .id = WorldMaterial::Rubber,
-                                               .colorRange = {rl::DARKGRAY, rl::BLACK},
+                                               .colorRange = {Colors::DarkGray, Colors::Black},
                                                .flags = MaterialData::DecayTime | MaterialData::Collision | MaterialData::RigidBodyFlag,
                                                .bounciness = 1.0,
                                                .gravityCoef = 1.0,
@@ -104,7 +102,7 @@ static const MaterialData S_MATERIAL_RUBBER = {.name = "Rubber",
 static const MaterialData S_MATERIAL_DUST = {
     .name = "Dust",
     .id = WorldMaterial::Dust,
-    .colorRange = {rl::BEIGE, rl::WHITE},
+    .colorRange = {Colors::Beige, Colors::White},
     .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
     .bounciness = 0.0,
     .gravityCoef = 0.0,
@@ -115,13 +113,13 @@ static const MaterialData S_MATERIAL_DUST = {
 
 static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
                                              .id = WorldMaterial::Fire,
-                                             .colorRange = {rl::ORANGE, rl::RED},
+                                             .colorRange = {Colors::Orange, Colors::Red},
                                              .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecayTime |
                                                       MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag,
                                              .bounciness = 0.0,
                                              .gravityCoef = -0.5,
                                              .frictionCoefs = {0.0, 0.0},
-                                             .fadeColor = rl::Color{0, 0, 0, 0},
+                                             .fadeColor = Colors::Clear,
                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.4, 0.6)}};
 
 static const MaterialData S_MATERIAL_DEFAULT = S_MATERIAL_DUST;
@@ -129,20 +127,19 @@ static const MaterialData S_MATERIAL_DEFAULT = S_MATERIAL_DUST;
 static const MaterialData S_MATERIAL_EMBER = {
     .name = "Ember",
     .id = WorldMaterial::Ember,
-    .colorRange = {rl::ORANGE, rl::RED},
+    .colorRange = {Colors::Orange, Colors::Red},
     .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
              MaterialData::Collision,
     .bounciness = 1.0,
     .gravityCoef = 1.0,
     .frictionCoefs = {0.25, 0.0},
-    .fadeColor = rl::Color(rl::ORANGE.r, rl::ORANGE.g, rl::ORANGE.b, 100),
+    .fadeColor = Color(Colors::Orange.r, Colors::Orange.g, Colors::Orange.b, 0.25),
     .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
 };
 
 static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
                                                .id = WorldMaterial::Ember,
-                                               // .colorRange = {RED, {Colors::Pink.r, Colors::Pink.g, Colors::Pink.b, 255}},
-                                               .colorRange = {rl::PINK, rl::PINK},
+                                               .colorRange = {Colors::Pink, Colors::Pink},
                                                .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed |
                                                         MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
                                                .bounciness = 1.0,
@@ -153,7 +150,7 @@ static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
 static const MaterialData S_MATERIAL_TINYDUST = {
     .name = "Dust",
     .id = WorldMaterial::TinyDust,
-    .colorRange = {rl::BEIGE, rl::WHITE},
+    .colorRange = {Colors::Beige, Colors::White},
     .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
     .bounciness = 0.0,
     .gravityCoef = 0.0,

@@ -12,8 +12,11 @@
 #include "Systems/TriggerSystem.h"
 
 #include "Util/CameraUtil.h"
-#include "Util/Color.h"
 #include "Util/Vector.h"
+
+#ifndef NDEBUG
+#include "Gfx/Color.h"
+#endif
 
 namespace whal {
 
@@ -35,21 +38,21 @@ void drawColliders() {
     // auto cameraPos = toFloatVec(getCameraPosition());
     for (const auto [entityid, entity] : ColliderSystem::getEntitiesMutable()) {
         const auto collider = entity.get<Collider>();
-        rl::Color color;
+        Color color;
         if (collider.isActor()) {
-            color = rl::MAGENTA;
+            color = Colors::Magenta;
         } else if (collider.isSolid()) {
-            color = rl::RED;
+            color = Colors::Red;
         } else if (collider.isSemiSolid()) {
-            color = Colors::WHAL_PINK;
+            color = Colors::Pink;
         } else {
-            color = rl::BLUE;
+            color = Colors::Blue;
         }
         collider.getShape().draw(cameraPos, color);
     }
 
     for (const auto& [entityid, entity] : TriggerSystem::getEntitiesMutable()) {
-        entity.get<Trigger>().shape.draw(cameraPos, Colors::EMERALD);
+        entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
     }
 }
 #endif

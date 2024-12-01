@@ -21,7 +21,6 @@
 #include "Systems/LightSystem.h"
 
 #include "Util/CameraUtil.h"
-#include "Util/Color.h"
 #include "Util/Print.h"
 
 #include "Gfx/Shaders/LightDenoise.h"
@@ -151,7 +150,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, dst.texture.width, dst.texture.height);
 
     rl::BeginTextureMode(dst);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     const bool isCustomShader = shader.id != 0;
     if (isCustomShader) {
         rl::BeginShaderMode(shader);
@@ -214,7 +213,7 @@ void Renderer::render() {
     // 2. Renders everything to TextureID::Main
     rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
     rl::BeginTextureMode(mainTex);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
 
     // Game Objects.
     gfx::DrawRenderTexture(mStagingTexture.tex);
@@ -258,17 +257,17 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
     rl::BeginTextureMode(targetDepthTex);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(depthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
     rl::BeginTextureMode(targetOcclDepthTex);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(occlDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
     rl::BeginTextureMode(targetColorTex);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(colorTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 }
@@ -277,7 +276,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
     rl::BeginTextureMode(mStagingTexture.tex);
-    rl::ClearBackground(Colors::CLEAR);
+    rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     for (auto renderInfo : mRenderQueue) {
         renderInfo.piRender->draw(renderInfo, renderContext);

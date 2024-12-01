@@ -1,16 +1,15 @@
 #pragma once
 
+#include "Gfx/Color.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
-
-#include <raylib.h>
 
 namespace whal {
 
 struct IEmitLight {
     s32 radius = 1;
     s32 heightOffset = 0;
-    rl::Color color = rl::WHITE;
+    Color color = Colors::White;
 };
 
 // TODO get rid of the inheritance, use dependency injection

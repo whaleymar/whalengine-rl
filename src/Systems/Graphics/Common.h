@@ -26,10 +26,14 @@ struct RenderContext {
     ecs::Entity cameraEntity;
 };
 
+// Stores arbitrary per-pixel information into a separate buffer when drawing.
 struct ColorBufInfo {
     u8 depth;
     bool isOccluder;
     bool isUI;
+
+    rl::Vector3 asRL() const;
+    static const ColorBufInfo NONE;
 };
 
 // TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform (only calculated by Renderer if

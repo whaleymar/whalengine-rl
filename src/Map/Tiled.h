@@ -9,6 +9,7 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
+#include "Gfx/Color.h"
 #include "Gfx/Depth.h"
 #include "Util/Types.h"
 
@@ -36,8 +37,8 @@ Transform getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const A
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
-rl::Color parseColor(const std::string& hexString);
-bool tryReadColor(const nlohmann::json& data, std::string_view key, rl::Color* dst);
+Color parseColor(const std::string& hexString);
+bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst);
 Depth parseDepth(const std::string& depthString);
 bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst);
 

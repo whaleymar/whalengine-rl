@@ -24,7 +24,7 @@ constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
 ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
-    const rl::Color color = materialData.getColor();
+    const Color color = materialData.getColor();
 
     auto particle = World.entity(false);
     if (!particle.isValid()) {

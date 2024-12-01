@@ -1,8 +1,8 @@
 #pragma once
 
-#include <raylib.h>
 #include <string>
 
+#include "Gfx/Color.h"
 #include "Gfx/Depth.h"
 #include "Util/Vector.h"
 
@@ -17,17 +17,17 @@ enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
 struct IDraw {
     IDraw() = default;
-    IDraw(rl::Color color_);
+    IDraw(Color color_);
 
-    rl::Color color = rl::WHITE;
-    f32 brightness = 1.0f;
+    Color color = Colors::White;
 };
 
 struct Sprite : public IDraw {
+    // TODO get rid of constructor, use static fromFrame
     Sprite() = default;
-    Sprite(Frame frame, rl::Color color_ = rl::WHITE);
+    Sprite(Frame frame, Color color_ = Colors::White);
 
-    static Expected<Sprite> fromPath(const char* spritePath, rl::Color color_ = rl::WHITE);
+    static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
     void setFrame(Frame frame);
 
     Vector2i frameSize;
@@ -35,7 +35,7 @@ struct Sprite : public IDraw {
 };
 
 struct DrawRect : public IDraw {
-    DrawRect(rl::Color color_ = rl::WHITE, Vector2i frameSize_ = {8, 8});
+    DrawRect(Color color_ = Colors::White, Vector2i frameSize_ = {8, 8});
 
     Vector2i frameSize;
 };
@@ -43,7 +43,7 @@ struct DrawRect : public IDraw {
 struct DrawBezierQuad {
     Vector2i controlPointOffset;
     Vector2i endPointOffset;
-    rl::Color color = rl::WHITE;
+    Color color = Colors::White;
     f32 thickness = 1.0;
     f32 brightness = 1.0f;
     Depth depth = Depth::Level;
@@ -51,7 +51,7 @@ struct DrawBezierQuad {
 
 struct DrawStraightLine {
     s32 length;
-    rl::Color color = rl::WHITE;
+    Color color = Colors::White;
     f32 thickness = 1.0;
     f32 brightness = 1.0f;
     bool isRotateAboutCenter = false;
@@ -60,7 +60,7 @@ struct DrawStraightLine {
 struct DrawText {
     std::string text;
     Vector2i frameSize;
-    rl::Color color = rl::WHITE;
+    Color color = Colors::White;
     f32 brightness = 1.0f;
     bool isCentered = false;
 };

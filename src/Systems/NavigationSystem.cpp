@@ -4,6 +4,7 @@
 #ifndef NDEBUG
 #include "Components/Transform.h"
 #include "Events/Events.h"
+#include "Gfx/Color.h"
 #include "IGame.h"
 #include "Map/Level.h"
 #include "Map/Path.h"
@@ -46,7 +47,7 @@ void NavigationSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         PreciseTransform tileCoord = PreciseTransform(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
         tileCoordStart = tileCoord.position;
         const gfx::RaylibDrawParams params = gfx::getDrawParams(tileCoord, frameSize, ctx.cameraPosition);
-        rl::DrawRectanglePro(params.rect, params.origin, 0.0f, rl::Color{100, 100, 255, 100});
+        rl::DrawRectanglePro(params.rect, params.origin, 0.0f, Color::fromRGB(100, 100, 255, 100).asLDR());
     }
 }
 

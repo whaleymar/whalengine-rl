@@ -27,7 +27,7 @@ TextRenderSystem::~TextRenderSystem() {
 
 void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     constexpr s32 spacing = 0;         // PARAM
-    const rl::Color tint = rl::WHITE;  // PARAM
+    const Color tint = Colors::White;  // PARAM
 
     const DrawText draw = eCtx.entity.get<DrawText>();
     const auto& trans = eCtx.preciseTransform;
@@ -68,8 +68,8 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, ColorTint(draw.color, tint),
-                       trans.rotationDegrees, pivotOffsetScreen, draw.brightness, eCtx.colorBuf);
+    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotationDegrees,
+                       pivotOffsetScreen, eCtx.colorBuf);
 }
 
 void TextRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {

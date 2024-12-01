@@ -39,7 +39,7 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, line.brightness, eCtx.colorBuf);
+    gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
 }
 
 void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
