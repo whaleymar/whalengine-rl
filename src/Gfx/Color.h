@@ -21,7 +21,6 @@ typedef struct Color Color;
 
 }  // namespace rl
 
-// TODO consolidate with Util/Color.h
 namespace whal {
 
 // HDR Color
