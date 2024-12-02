@@ -149,7 +149,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
     const auto depthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
     const auto occlDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
-    const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
+    const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
     // must match what's in spritefrag.glsl
     const f32 depthScalar = 20.0f;
@@ -172,8 +172,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
         rl::SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
 
-        // TODO HDR draw func
-        rl::DrawTextureRec(colorTex, rl::Rectangle(0, 0, colorTex.width, -colorTex.height), rl::Vector2(0, 0), light.color.asLDR());
+        gfx::DrawRenderTextureHDR(colorTex, light.color);
         rl::EndShaderMode();
     }
 }
