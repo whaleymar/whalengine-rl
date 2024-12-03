@@ -1,10 +1,12 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <vector>
 #include "Util/FileUtils.h"
 #include "Util/String.h"
+#include "Util/Types.h"
 
 namespace whal {
 

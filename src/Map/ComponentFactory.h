@@ -2,10 +2,14 @@
 
 #include <unordered_map>
 
+#include "Util/Print.h"
 #include "json_fwd.hpp"
 
 #include "Util/DynamicFactory.h"
+#include "Util/ISerialize.h"
 #include "Util/Vector.h"
+
+#define REGISTER_COMPONENT(component) static const bool S_INITFLAG_##component = component::S_IS_REGISTERED;
 
 namespace whal {
 
@@ -43,5 +47,34 @@ bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::str
 bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst);
 bool tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst);
 bool tryReadString(const nlohmann::json& data, std::string_view key, std::string* dst);
+
+struct ComponentFactoryNew : SerializeFactory<ComponentFactoryNew, MAX_COMPONENTS> {
+    template <typename T>
+    static void DefaultLoadImpl(ecs::Entity entity, void* data) {
+        print("Running ComponentFactoryNew::DefaultLoadImpl");
+    }
+
+    template <typename T>
+    static void* DefaultSaveImpl(ecs::Entity entity) {
+        print("Running ComponentFactoryNew::DefaultSaveImpl");
+        return nullptr;
+    }
+};
+
+// COMPONENT TEST
+
+struct TestCmp : ISerialize<TestCmp, ComponentFactoryNew> {
+    static void loadImpl(ecs::Entity e, void* data) { print("running TestCmp::loadImpl"); }
+
+    static void* saveImpl(ecs::Entity e) {
+        print("running TestCmp::saveImpl");
+        return nullptr;
+    }
+};
+
+constexpr bool SB = CustomLoad<TestCmp>;
+constexpr bool SB2 = CustomSave<TestCmp>;
+
+REGISTER_COMPONENT(TestCmp)
 
 }  // namespace whal
