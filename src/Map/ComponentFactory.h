@@ -63,16 +63,13 @@ bool tryReadString(const nlohmann::json& data, std::string_view key, std::string
 // NEW IMPLEMENTATION
 /////////////////////////////////////////////////////////////////////
 
-// Tiled Data types I need to handle:
-// int, float, string, bool
-//
-struct ComponentFactoryNew : SerializeFactory<ComponentFactoryNew, MAX_COMPONENTS> {
+struct ComponentFactoryNew : SerializeFactory<ComponentFactoryNew> {
     template <typename T>
     static void DefaultLoadImpl(ecs::Entity entity, void* data) {
         print("Running ComponentFactoryNew::DefaultLoadImpl");
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
-        if (ctx.isTiledData) {
-        }
+        // const LoadContext& ctx = *static_cast<LoadContext*>(data);
+        // if (ctx.isTiledData) {
+        // }
     }
 
     template <typename T>

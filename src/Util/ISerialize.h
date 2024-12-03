@@ -1,8 +1,10 @@
 #pragma once
 
-#include <type_traits>
+#include <unordered_map>
+
 #include "ECS.h"
 #include "STL_reduce.h"
+#include "Traits.h"
 #include "TypeName.h"
 
 namespace whal {
@@ -44,16 +46,22 @@ struct SerializeFuncs {
     SaveMethod save;
 };
 
-// so I can use is_base_of:
-struct ISerializeFactory {};
-
 // Pass Self as a template parameter so each implementation gets its own lookup table
-template <typename Self, size_t N>
-struct SerializeFactory : ISerializeFactory {
+template <typename Self>
+struct SerializeFactory {
     SerializeFactory() = delete;
 
-    static constexpr bool Register(std::string_view name, SerializeFuncs creatorFuncs) { return mFactoryTable.insert(name, creatorFuncs); }
-    static std::optional<SerializeFuncs> Get(std::string_view name) { return mFactoryTable.at(name); }
+    static bool Register(std::string_view name, SerializeFuncs creatorFuncs) {
+        mFactoryTable.insert({name, creatorFuncs});
+        return true;
+    }
+    static std::optional<SerializeFuncs> Get(std::string_view name) {
+        if (mFactoryTable.contains(name)) {
+            return mFactoryTable.at(name);
+        } else {
+            return std::nullopt;
+        }
+    }
 
     template <typename T>
     static void DefaultLoad(ecs::Entity entity, void* data) {
@@ -66,8 +74,8 @@ struct SerializeFactory : ISerializeFactory {
     }
 
 private:
-    static inline constinit Map<std::string_view, SerializeFuncs, N> mFactoryTable;
-    // TODO add a static unordered_map member which is populated by mFactoryTable once .finish() gets called
+    // static inline constinit Map<std::string_view, SerializeFuncs, N> mFactoryTable; // i don't see the point
+    static inline std::unordered_map<std::string_view, SerializeFuncs> mFactoryTable;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -100,7 +108,7 @@ concept DefaultSave = requires {
 // 2. Factory Implements static DefaultLoadImpl method
 // 3. Factory Implements static DefaultSaveImpl method
 template <typename T>
-concept IsValidFactory = requires { std::is_base_of_v<ISerializeFactory, T>&& DefaultLoad<T>&& DefaultSave<T>; };
+concept IsValidFactory = requires { is_base_of_template<SerializeFactory, T>::value&& DefaultLoad<T>&& DefaultSave<T>; };
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////// INTERFACE //////////////////////////////////////
