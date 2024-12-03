@@ -90,4 +90,28 @@ struct TileMap {
     std::vector<TileSet> tilesets;
 };
 
+// metadata about a Tiled Property (ie a custom type)
+// TODO parse this info from the Tiled .tiled-project file into a map & pass it into the loader functions
+struct PropertyType {
+    enum class DataType {
+        Int,
+        String,
+        Float,
+        Bool,
+        Object,
+        Enum,
+        Color,
+        Class,
+    };
+
+    struct EnumInfo {
+        bool isString;
+        bool isFlags;
+    };
+
+    std::string name;
+    DataType dtype;
+    EnumInfo enumInfo;  // only defined when dtype == Enum
+};
+
 }  // namespace whal
