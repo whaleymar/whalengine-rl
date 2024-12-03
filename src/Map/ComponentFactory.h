@@ -9,7 +9,7 @@
 #include "Util/ISerialize.h"
 #include "Util/Vector.h"
 
-#define REGISTER_COMPONENT(component) static const bool S_INITFLAG_##component = component::S_IS_REGISTERED;
+#define REGISTER_COMPONENT(component) static inline const bool S_INITFLAG_##component = component::S_IS_REGISTERED;
 
 namespace whal {
 
@@ -21,9 +21,21 @@ struct ActiveLevel;
 struct EntityMapData;
 struct Follow;
 
+// passed as const reference when loading components
+struct LoadContext {
+    const nlohmann::json& values;  // should rename this to `componentData` or something
+    const nlohmann::json& allObjects;
+    const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex;
+    const EntityMapData& entityData;
+    const ActiveLevel& level;
+    const LayerData& layerData;
+    bool isTiledData = false;
+};
+
 // there is no base component class, so I'll pass the entity to the creation function instead of returning a component
-using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, std::pair<s32, ecs::Entity>>&,
-                                EntityMapData, const ActiveLevel&, ecs::Entity, LayerData layerData);
+// using ComponentAdder = void (*)(const nlohmann::json&, const nlohmann::json&, const std::unordered_map<s32, std::pair<s32, ecs::Entity>>&,
+// EntityMapData, const ActiveLevel&, ecs::Entity, LayerData layerData);
+using ComponentAdder = void (*)(ecs::Entity, const LoadContext&);
 class ComponentFactory : public DynamicFactory<ComponentAdder> {
 public:
     ComponentFactory();
@@ -34,7 +46,6 @@ public:
 Follow loadFollowComponent(const nlohmann::json& values, const ActiveLevel& level);
 
 // Utility Functions
-
 s32 readInt(const nlohmann::json& json, std::string_view key);
 s32 readFloat(const nlohmann::json& json, std::string_view key);
 Vector2i readVector2i(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
@@ -48,10 +59,20 @@ bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::str
 bool tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst);
 bool tryReadString(const nlohmann::json& data, std::string_view key, std::string* dst);
 
+/////////////////////////////////////////////////////////////////////
+// NEW IMPLEMENTATION
+/////////////////////////////////////////////////////////////////////
+
+// Tiled Data types I need to handle:
+// int, float, string, bool
+//
 struct ComponentFactoryNew : SerializeFactory<ComponentFactoryNew, MAX_COMPONENTS> {
     template <typename T>
     static void DefaultLoadImpl(ecs::Entity entity, void* data) {
         print("Running ComponentFactoryNew::DefaultLoadImpl");
+        const LoadContext& ctx = *static_cast<LoadContext*>(data);
+        if (ctx.isTiledData) {
+        }
     }
 
     template <typename T>
@@ -60,21 +81,5 @@ struct ComponentFactoryNew : SerializeFactory<ComponentFactoryNew, MAX_COMPONENT
         return nullptr;
     }
 };
-
-// COMPONENT TEST
-
-struct TestCmp : ISerialize<TestCmp, ComponentFactoryNew> {
-    static void loadImpl(ecs::Entity e, void* data) { print("running TestCmp::loadImpl"); }
-
-    static void* saveImpl(ecs::Entity e) {
-        print("running TestCmp::saveImpl");
-        return nullptr;
-    }
-};
-
-constexpr bool SB = CustomLoad<TestCmp>;
-constexpr bool SB2 = CustomSave<TestCmp>;
-
-REGISTER_COMPONENT(TestCmp)
 
 }  // namespace whal

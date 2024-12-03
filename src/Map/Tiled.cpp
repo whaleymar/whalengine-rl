@@ -92,7 +92,18 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             continue;
         }
 
-        creatorFunc(property["value"], allObjects, idToIndex, entityData, level, entity, layerData);
+        const LoadContext ctx = {
+            .values = property["value"],
+            .allObjects = allObjects,
+            .idToIndex = idToIndex,
+            .entityData = entityData,
+            .level = level,
+            .layerData = layerData,
+        };
+
+        creatorFunc(entity, ctx);
+
+        // creatorFunc(property["value"], allObjects, idToIndex, entityData, level, entity, layerData);
     }
 }
 
