@@ -46,13 +46,8 @@ NEXT GOAL: SERIALIZATION
     - might be able to do this if I export the map project instead of saving https://discourse.mapeditor.org/t/is-it-possible-to-force-tiled-to-output-a-custom-property-even-when-default-value-is-selected/6272/6
     - one problem I'm having is with relative template paths -- I should keep the Tiled project in the Game's root directory to fix this (would make all paths easier to work with)
 - the process of adding a new component is still annoying. Using a reflection library to improve that would be nice?
-    - could have components inherit a ISerialize interface (`.save` and `.load` methods) && when the ECS world registers that component, it (via a registered `onComponentRegistered` callback) registers the component type (?) w/ some manager which maps the component name to the type, so when loading it can see the type name & dispatch the correct `.load` method, and when saving it can check if each component inherits the interface & call its `.save` method
     - i could make a component for tiled object ID and use that to know which objects to save
-- things not on the tile grid have their collision/trigger boxes messed up
 - respawn map objects
-- object layers
-    - special metadata
-        - camera strat (might want to rework)
 - SingleEntityLayer
     - basically i want to draw a bunch of tiles and have it (effectively) be one entity that moves together
     - nice when I want more complex geometry or i just want an object to be drawn with tiles
@@ -64,12 +59,6 @@ NEXT GOAL: SERIALIZATION
 - could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 - Should use the Tiled collision editor for tile collision
-- Instead of instancing each tile as an entity, levels should be an entity with a TileMap component which does the following:
-    - non-animated tiles are drawn once to a RenderTexture (via its own system) on load, so a bunch of stuff doesn't have to be re-drawn every frame 
-        - not sure how this would work with depth... maybe this only works with side-scroller games...
-    - give it a SuperCollider/ParentCollider component which has all the individual tile colliders as ChildColliders
-        - this might get slow if I do a linear search over Child colliders. I could use a QuadTree but instantiating that might also be slow...
-    - animated tiles stay as their own entities, but are children of the level 
 
 ## Sprite Editing workflow
 - .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
@@ -79,14 +68,8 @@ NEXT GOAL: SERIALIZATION
 - follow a spline whose points are defined in the level.
     - can use this to find the closest point on a spline to the player: https://homepage.math.uiowa.edu/~atkinson/ftp/CurvesAndSufacesClosestPoint.pdf
 
-## Prefab Injection 
-- want to auto-register prefab classes without having to manually add everything to a static list like I do now 
-- considering using the Static Initialization / Inversion of Control pattern used by Google's test suite (gtest)
-    - github.com/google/googletest/blob/main/googletest/include/gtest/gtest.h
-    - https://www.cppstories.com/2023/ub-factory-constinit/ -- cpp20 approach (?)
-
 ## Physics 
-- collider offsets + rotation + scaling doesn't work quite right
+- colliders need to scale with transform
 
 ## Misc
 - ECS parallelization (low priority)

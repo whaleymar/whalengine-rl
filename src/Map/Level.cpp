@@ -53,30 +53,7 @@ Level Scene::getStartLevel() const {
 
 Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
     auto eActiveLevel = getLoadedLevel(getStartLevel());
-    if (eActiveLevel.isExpected()) {
-        initialSpawnPoint = eActiveLevel.value()->initialSpawnPoint;
-    }
     return eActiveLevel;
-}
-
-Vector2i Scene::getClosestSpawnPoint(ActiveLevel& activeLevel, Vector2i referencePoint) {
-    if (activeLevel.spawnPoints.size() == 0) {
-        return activeLevel.worldPosOrigin.as<s32>();
-    }
-
-    Vector2i closestPoint = activeLevel.spawnPoints[0];
-    f32 bestDistance = (closestPoint - referencePoint).as<f32>().len();
-
-    for (size_t i = 1; i < activeLevel.spawnPoints.size(); i++) {
-        Vector2i point = activeLevel.spawnPoints[i];
-        f32 distance = (point - referencePoint).as<f32>().len();
-        if (distance < bestDistance) {
-            closestPoint = point;
-            bestDistance = distance;
-        }
-    }
-
-    return closestPoint;
 }
 
 Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
@@ -153,7 +130,7 @@ static TileInfo getTile(u32 tileMask) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
-    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}, {}, {}};
+    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}};
     TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
 
