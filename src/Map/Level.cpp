@@ -189,7 +189,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                         print(frame.error());
                         continue;
                     } else {
-                        Sprite sprite = Sprite(*frame);
+                        Sprite sprite = Sprite::fromFrame(*frame);
 
                         trans.depth = layer.metadata.depth;
                         auto e = createDecal(trans, sprite, false);

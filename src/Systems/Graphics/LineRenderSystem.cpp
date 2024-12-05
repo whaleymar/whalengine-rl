@@ -11,20 +11,20 @@
 namespace whal {
 
 struct LinePoints {
-    Vector2i p1;
-    Vector2i p2;
+    Vector2f p1;
+    Vector2f p2;
 };
 
 static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStraightLine line) {
-    Vector2i startPos;
-    Vector2i endPos;
+    Vector2f startPos;
+    Vector2f endPos;
     if (line.isRotateAboutCenter) {
         Vector2f halfLine = Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length) * 0.5f;
-        startPos = (position - halfLine).round();
-        endPos = (position + halfLine).round();
+        startPos = position - halfLine;
+        endPos = position + halfLine;
     } else {
-        startPos = trans.position;
-        endPos = trans.position + (Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length)).round();
+        startPos = trans.position.as<f32>();
+        endPos = trans.position.as<f32>() + Vector2f::fromAngle(trans.rotationDegrees) * static_cast<f32>(line.length);
     }
 
     return LinePoints{startPos, endPos};
@@ -33,8 +33,8 @@ static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStrai
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
     const LinePoints points = getRotatedPoints(eCtx.preciseTransform.position, eCtx.entity.get<Transform>(), line);
-    const rl::Vector2 p1 = worldToScreenCoords(points.p1.as<f32>(), ctx.cameraPosition).asRL();
-    const rl::Vector2 p2 = worldToScreenCoords(points.p2.as<f32>(), ctx.cameraPosition).asRL();
+    const rl::Vector2 p1 = worldToScreenCoords(points.p1, ctx.cameraPosition).asRL();
+    const rl::Vector2 p2 = worldToScreenCoords(points.p2, ctx.cameraPosition).asRL();
 
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
@@ -50,7 +50,7 @@ void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) con
         const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
 
         queue.emplace_back(gfx::EntityRenderInfo{
-            .boundingBox = AABB::fromPoints(points.p1, points.p2),
+            .boundingBox = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>()),
             .preciseTransform = pTrans,
             .entity = entity,
             .piRender = this,
