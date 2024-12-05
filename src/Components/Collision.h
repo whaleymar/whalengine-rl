@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Map/ComponentFactory.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
@@ -30,7 +31,7 @@ struct Wiggle {
     WiggleCallback callback = defaultWiggle;
 };
 
-class Collider {
+class Collider : public ISerialize<Collider, ComponentFactory> {
     friend PhysicsSystem;
     friend TweenPositionSystem;
 
@@ -119,6 +120,8 @@ public:
                                                                          bool updateRigidBodyFlags = false) const;
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSign, Vector2i moveNormal, Vector2i correctionBuffer);
+
+    static void loadImpl(ecs::Entity entity, void* data);
 
 protected:
     void updateEntityPosition();

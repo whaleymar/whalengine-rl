@@ -4,6 +4,7 @@
 
 #include "Gfx/Color.h"
 #include "Gfx/Depth.h"
+#include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
 template <typename T>
@@ -15,14 +16,7 @@ struct Frame;
 
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
-struct IDraw {
-    IDraw() = default;
-    IDraw(Color color_);
-
-    Color color = Colors::White;
-};
-
-struct Sprite : public IDraw {
+struct Sprite : ISerialize<Sprite, ComponentFactory> {
     // TODO get rid of constructor, use static fromFrame
     Sprite() = default;
     Sprite(Frame frame, Color color_ = Colors::White);
@@ -32,12 +26,18 @@ struct Sprite : public IDraw {
 
     Vector2i frameSize;
     Vector2i atlasPosition;
+    Color color = Colors::White;
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
-struct DrawRect : public IDraw {
+struct DrawRect : ISerialize<DrawRect, ComponentFactory> {
     DrawRect(Color color_ = Colors::White, Vector2i frameSize_ = {8, 8});
 
     Vector2i frameSize;
+    Color color = Colors::White;
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
 struct DrawBezierQuad {
@@ -57,12 +57,14 @@ struct DrawStraightLine {
     bool isRotateAboutCenter = false;
 };
 
-struct DrawText {
+struct DrawText : ISerialize<DrawText, ComponentFactory> {
     std::string text;
     Vector2i frameSize;
     Color color = Colors::White;
     f32 brightness = 1.0f;
     bool isCentered = false;
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
 }  // namespace whal

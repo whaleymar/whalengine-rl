@@ -18,13 +18,13 @@ class AABB {
 public:
     AABB() = default;
     AABB(Vector2i center, Vector2i half = {0, 0});
-    AABB(Transform transform, Vector2i half, Vector2i colliderOffset);
+    AABB(Transform transform, Vector2i half, Vector2i relativeOffset = Vector2i::ZERO);
 
     static AABB fromPoints(Vector2i p1, Vector2i p2);
     static AABB fromPoints(Vector2i p1, Vector2i p2, Vector2i p3);
 
     void setPosition(Vector2i center);
-    void setPosition(Transform transform, Vector2i colliderOffset);
+    void setPosition(Transform transform, Vector2i relativeOffset);
     Vector2i getPosition() const { return mCenter; }
 
     Vector2i getHalf() const { return mHalf; }
@@ -57,10 +57,10 @@ class Circle {
 public:
     Circle() = default;
     Circle(Vector2i center, s32 radius = 0);
-    Circle(Transform transform, s32 radius);
+    Circle(Transform transform, s32 radius, Vector2i relativeOffset = Vector2i::ZERO);
 
     void setPosition(Vector2i center);
-    void setPosition(Transform transform, Vector2i colliderOffset);
+    void setPosition(Transform transform, Vector2i relativeOffset);
     Vector2i getPosition() const { return mCenter; }
 
     s32 getRadius() const { return mRadius; }

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Map/ComponentFactory.h"
 #include "Util/Types.h"
 
 #include "Gfx/Frame.h"
@@ -29,7 +30,7 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
  */
 
 using AnimInfo = std::vector<std::tuple<const char*, s32, s32, f32>>;
-struct Animator {
+struct Animator : ISerialize<Animator, ComponentFactory> {
     Animator() = default;
     Animator(AnimInfo animInfo, bool isLooping_ = true);
     Animator(AnimInfo animInfo, AnimBrain brain_, bool isLooping_ = true);
@@ -48,6 +49,8 @@ struct Animator {
     void nextFrame();
     void resetAnimation();
     void setLooping(bool loop);
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
 // an animation is a sequence of same-sized frames

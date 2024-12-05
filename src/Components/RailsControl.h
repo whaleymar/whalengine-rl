@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "Map/ComponentFactory.h"
 #include "Util/Easing.h"
 #include "Util/Vector.h"
 
@@ -13,7 +14,7 @@ class Entity;
 
 struct Transform;
 
-struct RailsControl {
+struct RailsControl : ISerialize<RailsControl, ComponentFactory> {
     // Automatic: moves by itself
     // Manual_FirstStep: requires manual start, then moves by itself through all checkpoints and waits at the start again
     // Manual_AllSteps: requires manual start at each checkpoint
@@ -66,6 +67,8 @@ public:
     bool isAtFirstCheckpoint() const { return curTarget == 0; }
     bool isAtLastCheckpoint() const { return curTarget == (mCheckpoints.size() - 1); }
     void prepareForFirstStep(Transform& trans);
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
 }  // namespace whal

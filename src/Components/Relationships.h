@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -12,7 +13,7 @@ class Entity;
 
 }  // namespace ecs
 
-struct Attach {
+struct Attach : ISerialize<Attach, ComponentFactory> {
     enum class DirectionParam { IgnoreFacing, UseFacingForOffset, UseFacingForAll };
 
     Attach() = default;
@@ -27,9 +28,11 @@ struct Attach {
 
     // managed:
     bool isTargetInitialized = false;
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
-struct Orbit {
+struct Orbit : ISerialize<Orbit, ComponentFactory> {
     Orbit() = default;
     Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i targetOffset_ = {0, 0});
 
@@ -45,6 +48,8 @@ struct Orbit {
     // managed:
     f32 currentAngle;
     bool isTargetInitialized = false;
+
+    static void loadImpl(ecs::Entity entity, void* data);
 };
 
 // in general, dead zone should be bigger than lookahead

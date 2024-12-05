@@ -8,6 +8,7 @@
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
+
 #include "IGame.h"
 #include "Map/Level.h"
 #include "Systems/ColliderSystem.h"
@@ -15,10 +16,12 @@
 #include "Events/Events.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
+#include "Physics/HitInfo.h"
 #include "Physics/MaterialData.h"
 
-#include "Physics/HitInfo.h"
 #include "Sys/System.h"
+
+#include "Util/JsonUtil.h"
 #include "Util/MathUtil.h"
 
 namespace whal {
@@ -106,7 +109,6 @@ void Collider::setCollisionCallback(CollisionCallback callback) {
 
 void Collider::setEntity(ecs::Entity entity) {
     mSelf = entity;
-    // mShape = AABB(mSelf.get<Transform>(), mShape.getHalf(), mOffset);
 }
 
 // syncs other engine components (Transform, PrecisePosition, and Trigger) with collider position
@@ -835,6 +837,29 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSign, Vector2i
         }
     }
     return false;
+}
+
+void Collider::loadImpl(ecs::Entity entity, void* data) {
+    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+
+    Collider collider = entity.has<Collider>() ? entity.get<Collider>() : Collider{};
+    CollisionDir collisionDir = collider.getCollisionDir();
+    WorldMaterial material = collider.getMaterial();
+
+    if (tryReadVal(ctx.values, "CollisionDir", &collisionDir)) {
+        collider.setCollisionDir(collisionDir);
+    }
+    if (tryReadVal(ctx.values, "Material", &material)) {
+        collider.setMaterial(material);
+    }
+
+    std::string layerName;
+    if (tryReadVal(ctx.values, "Layer", &layerName)) {
+        collider.setCollisionLayer(CollisionLayer::fromString(layerName.c_str()));
+    }
+
+    collider.setShape(readShapeOrDefault(ctx, entity, "Shape", &collider.mOffset).getAABB());
+    entity.add(collider);
 }
 
 void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {
