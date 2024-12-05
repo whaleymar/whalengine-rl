@@ -438,15 +438,6 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
                 level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).position;
-                // print("loaded camerapoint with pos", cameraPoint, "-->", level.cameraFocalPoint);
-
-            } else if (objType == "Map_InitialSpawnPoint") {
-                Vector2i spawnPoint = readVector2i(object, "x", "y");
-                const Vector2i spawnPointWorldCoords = getTransformFromMapPosition(spawnPoint, {0, 0}, level, true).position;
-                level.spawnPoints.push_back(spawnPointWorldCoords);
-                level.initialSpawnPoint = spawnPointWorldCoords;
-            } else {
-                // print("Unrecognized object type: ", objType);
             }
             continue;
         }
@@ -505,8 +496,14 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             EntityBuilder builderFunc = nullptr;
             Prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
+                // print("got template entry for", name);
                 builderFunc(entity, *pPrefab, level);
+                // } else {
+                //     print("did NOT got template entry for", name);
+                //     print("prefab name is ", prefabName.c_str());
             }
+            // } else {
+            //     print(name, "does not have prefab");
         }
 
         // add object components with factory
