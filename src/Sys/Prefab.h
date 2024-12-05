@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Map/ComponentFactory.h"
+// #include "Map/ComponentFactory.h"
 #include "Map/EntityFactory.h"
 namespace whal {
 
@@ -13,7 +13,7 @@ public:
     PrefabManager() = default;
 
     EntityFactory entity;
-    ComponentFactory component;
+    // ComponentFactory component;
 
 private:
     PrefabManager(const PrefabManager&) = delete;

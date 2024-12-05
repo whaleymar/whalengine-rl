@@ -1,7 +1,11 @@
 #include "RailsControl.h"
 
 #include "Components/Transform.h"
+#include "Map/Level.h"
+#include "Map/Tiled.h"
 #include "Settings.h"
+#include "Util/Print.h"
+#include "json.hpp"
 
 namespace whal {
 
@@ -97,6 +101,92 @@ void RailsControl::prepareForFirstStep(Transform& trans) {
         // o.w., make sure start position matches transform
         startPosition = trans.position.as<f32>();
     }
+}
+
+// returns true if checkpoints form a cycle
+static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const ActiveLevel& level) {
+    static const char* KEY_VALUE = "value";
+
+    // generic rewrite:
+    const s32 parentX = readInt(checkpointData, "x");
+    const s32 parentY = readInt(checkpointData, "y");
+    assert(checkpointData.contains("properties") && "Checkpoint object has no properties");
+    const auto& properties = checkpointData["properties"];
+    std::vector<Ease> moveProps;
+    for (const auto& moveProperty : properties) {
+        const s32 moveIx = moveProperty[KEY_VALUE];
+        moveProps.push_back(static_cast<Ease>(moveIx));
+    }
+
+    bool isCycle = checkpointData.contains("polygon");
+    std::string pathKey;
+    if (isCycle) {
+        pathKey = "polygon";
+    } else {
+        pathKey = "polyline";
+    }
+    size_t ix = 0;
+    for (const auto& point : checkpointData[pathKey]) {
+        const s32 x = readInt(point, "x");
+        const s32 y = readInt(point, "y");
+        const Vector2i mapPos = {x + parentX, parentY + y};
+        const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
+
+        Ease moveType;
+        if (ix >= moveProps.size()) {
+            print("Checkpoints object with ID", readInt(checkpointData, "id"), "in level", level.filepath, "has", moveProps.size(),
+                  "move type params but it has more points");
+            moveType = Ease::Linear;
+        } else {
+            moveType = moveProps[ix];
+        }
+        RailsControl::CheckPoint chkPoint(trans, moveType);
+        dstCheckpoints.push_back(chkPoint);
+
+        ix++;
+    }
+
+    return isCycle;
+}
+
+void RailsControl::loadImpl(ecs::Entity entity, void* data) {
+    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+
+    std::vector<RailsControl::CheckPoint> checkpoints;
+    bool isCycle = false;
+    if (ctx.values.contains("Checkpoints")) {
+        s32 id = ctx.values["Checkpoints"];
+        const nlohmann::json checkPointObj = ctx.allObjects.at(ctx.idToIndex.at(id).first);
+        isCycle = loadCheckpoints(checkPointObj, checkpoints, ctx.level);
+    }
+
+    RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : RailsControl{};
+    rails.setCheckpoints(checkpoints, entity.get<Transform>());
+
+    std::string cycleBehavior = "ManualStart";
+    tryReadString(ctx.values, "CycleBehavior", &cycleBehavior);
+    if (isCycle) {
+        if (cycleBehavior == "Automatic") {
+            rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_LOOP;
+        } else if (cycleBehavior == "ManualStart") {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_LOOP;
+        } else {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_ALLSTEPS_LOOP;
+        }
+    } else {
+        if (cycleBehavior == "Automatic") {
+            rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_BACKTRACK;
+        } else if (cycleBehavior == "ManualStart") {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK;
+        } else {
+            rails.endBehavior = RailsControl::CycleBehavior::MANUAL_ALLSTEPS_BACKTRACK;
+        }
+    }
+
+    tryReadFloat(ctx.values, "speed", &rails.speed);
+    tryReadFloat(ctx.values, "waitTime", &rails.waitTime);
+
+    entity.add(rails);
 }
 
 }  // namespace whal

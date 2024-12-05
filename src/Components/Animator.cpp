@@ -2,12 +2,17 @@
 
 #include <cassert>
 #include <cstring>
-
-#include "Components/Draw.h"
-#include "Gfx/Texture.h"
+#include "Map/Tiled.h"
 #include "whalECS/src/ECS.h"
 
+#include "Components/Draw.h"
+
+#include "Gfx/Texture.h"
+
+#include "Map/AnimationFactory.h"
+
 #include "Sys/System.h"
+
 #include "Util/Print.h"
 
 namespace whal {
@@ -117,6 +122,28 @@ Frame Animation::getFrame(s32 ix) const {
 
 s32 Animation::getFrameCount() const {
     return frames.size();
+}
+
+void Animator::loadImpl(ecs::Entity entity, void* data) {
+    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
+    std::string animatorName = readString(ctx.values, "Animator");
+    Animator animator = AnimationFactory::get(animatorName.c_str());
+    entity.add(animator);
+    sprite.setFrame(animator.getFrame());
+
+    s32 rotationDegrees;
+    if (tryReadInt(ctx.values, "rotationDegrees", &rotationDegrees)) {
+        entity.get<Transform>().rotationDegrees = rotationDegrees;
+    }
+
+    tryReadColor(ctx.values, "Color", &sprite.color);
+
+    f32 brightness;
+    if (tryReadFloat(ctx.values, "Brightness", &brightness)) {
+        sprite.color.scale(brightness);
+    }
+    entity.add(sprite);
 }
 
 }  // namespace whal

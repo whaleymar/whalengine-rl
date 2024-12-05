@@ -55,7 +55,7 @@ struct MaterialData {
     template <typename T>
     void addComponents(ecs::Entity entity, s32 halfLen, Color color, f32 lifetimeMultiplier = 1.0) const {
         const f32 lifetime = getDecayTime() * lifetimeMultiplier;
-        entity.add(Lifetime(lifetime));
+        entity.add(Lifetime{.secondsRemaining = lifetime});
 
         if (isFlagSet(Collision)) {
             auto collider = Collider::Actor(AABB(entity.get<Transform>(), {halfLen, halfLen}, Vector2i()));
@@ -71,7 +71,7 @@ struct MaterialData {
         }
 
         if (isFlagSet(Light)) {
-            entity.add(PointLight{halfLen * 2, 0, color});
+            entity.add(PointLight{.radius = halfLen * 2, .heightOffset = 0, .color = color});
 
             // if fading, then decrease light with time
             if (isFlagSet(FadeOutFlag)) {
@@ -95,7 +95,9 @@ struct MaterialData {
                     });
                     Schedule.tween(e, fadeColor, decaySeconds, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
                         .setTransition(Ease::InOutQuad)
-                        .setOnStart([](ecs::Entity self, const Tween<Color>&) { self.add(Lifetime(self.get<DieWhenSpeedBelow>().lifetime)); })
+                        .setOnStart([](ecs::Entity self, const Tween<Color>&) {
+                            self.add(Lifetime{.secondsRemaining = self.get<DieWhenSpeedBelow>().lifetime});
+                        })
                         .setDelayCondition([](ecs::Entity self, const Tween<Color>&) -> bool {
                             return self.has<Velocity>() && self.get<Velocity>().total.len() >= self.get<DieWhenSpeedBelow>().minSpeed;
                         })

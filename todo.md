@@ -1,7 +1,7 @@
 # To Do 
 
-NEXT GOAL: 
-- 
+NEXT GOAL: SERIALIZATION
+- convert entity factory into new version
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

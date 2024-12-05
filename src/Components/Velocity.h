@@ -1,13 +1,15 @@
 #pragma once
 
+#include "Map/ComponentFactory.h"
+#include "Map/Tiled.h"
 #include "Util/Vector.h"
 
 namespace whal {
 
 // velocity in pixels per second
-struct Velocity {
+struct Velocity : ISerialize<Velocity, ComponentFactory> {
     Velocity() = default;
-    Velocity(Vector2f velocity);
+    Velocity(Vector2f velocity) : stable(velocity) {}
 
     Vector2f stable;
     Vector2f impulse;
@@ -15,6 +17,14 @@ struct Velocity {
 
     // immediately going from impulse -> nothing feels very jarring. this is used to have a smoother transition
     Vector2f residualImpulse;
+
+    static void loadImpl(ecs::Entity entity, void* data) {
+        const LoadContext& ctx = *static_cast<LoadContext*>(data);
+        Velocity velocity = entity.has<Velocity>() ? entity.get<Velocity>() : Velocity{};
+        tryReadVector2f(ctx.values, "velX", "velY", &velocity.stable);
+
+        entity.add(velocity);
+    }
 };
 
 // positive is clockwise, negative is counterclockwise

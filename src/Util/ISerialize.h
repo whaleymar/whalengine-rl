@@ -1,41 +1,29 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "ECS.h"
-#include "STL_reduce.h"
 #include "Traits.h"
 #include "TypeName.h"
 
 namespace whal {
 
-// Key-Value map with constexpr constructor and methods.
-// From https://www.cppstories.com/2023/ub-factory-constinit/
-// I don't think the methods are actually constexpr, it doesn't make sense to me and the compiler hates them
-// they *might* work in c++23, which would be nice because I can avoid the macro and make the ISerialize registration use constinit
-template <typename Key, typename Value, size_t Size>
+template <typename Key, typename Value>
 struct Map {
-    std::array<std::pair<Key, Value>, Size> data;
-    size_t slot_{0};
+    std::vector<std::pair<Key, Value>> data;
+    size_t size = 0;
 
-    // constexpr bool insert(const Key& key, const Value& val) {
     bool insert(const Key& key, const Value& val) {
-        if (slot_ < Size) {
-            data[slot_] = std::make_pair(key, val);
-            ++slot_;
-            return true;
-        }
-        return false;
+        data.push_back({key, val});
+        ++size;
+        return true;
     }
 
-    // [[nodiscard]] constexpr std::optional<Value> at(const Key& key) const {
     [[nodiscard]] std::optional<Value> at(const Key& key) const {
-        const auto itr = stl::find_if(begin(data), end(data), [&key](const auto& v) { return v.first == key; });
-        if (itr != end(data)) {
-            return itr->second;
-        } else {
-            return std::nullopt;
+        for (auto [k, v] : data) {
+            if (k == key) {
+                return v;
+            }
         }
+        return std::nullopt;
     }
 };
 
@@ -51,17 +39,8 @@ template <typename Self>
 struct SerializeFactory {
     SerializeFactory() = delete;
 
-    static bool Register(std::string_view name, SerializeFuncs creatorFuncs) {
-        mFactoryTable.insert({name, creatorFuncs});
-        return true;
-    }
-    static std::optional<SerializeFuncs> Get(std::string_view name) {
-        if (mFactoryTable.contains(name)) {
-            return mFactoryTable.at(name);
-        } else {
-            return std::nullopt;
-        }
-    }
+    static bool Register(std::string_view name, SerializeFuncs creatorFuncs) { return mFactoryTable.insert(name, creatorFuncs); }
+    static std::optional<SerializeFuncs> Get(std::string_view name) { return mFactoryTable.at(name); }
 
     template <typename T>
     static void DefaultLoad(ecs::Entity entity, void* data) {
@@ -74,8 +53,8 @@ struct SerializeFactory {
     }
 
 private:
-    // static inline constinit Map<std::string_view, SerializeFuncs, N> mFactoryTable; // i don't see the point
-    static inline std::unordered_map<std::string_view, SerializeFuncs> mFactoryTable;
+    // constinit is necessary to guarantee the factory exists before any static variables are initialized (otherwise it would be UB)
+    static inline constinit Map<std::string_view, SerializeFuncs> mFactoryTable;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -117,6 +96,13 @@ concept IsValidFactory = requires { is_base_of_template<SerializeFactory, T>::va
 template <typename T, class Factory>
     requires IsValidFactory<Factory>
 struct ISerialize {
+    static void forceInit() {
+        (void)S_IS_REGISTERED;  // force the compiler to initialize S_IS_REGISTERED
+    }
+
+    // By calling forceInit here, it's guaranteed that T is registered in the factory before the program starts.
+    ISerialize() { forceInit(); }
+
     static void load(ecs::Entity entity, void* data) {
         if constexpr (CustomLoad<T>) {
             T::loadImpl(entity, data);
@@ -138,3 +124,8 @@ struct ISerialize {
 };
 
 }  // namespace whal
+
+// This macro manually registers a type with its factory.
+// This is only necessary when the type is never constructed anywhere in the program.
+// Otherwise, registration is automatic.
+#define REGISTER_SERIALIZE(type) static inline const bool S_INITFLAG_##type = type::S_IS_REGISTERED;
