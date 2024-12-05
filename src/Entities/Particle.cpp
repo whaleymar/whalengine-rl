@@ -40,11 +40,16 @@ ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth de
     particle.add<Velocity>();
 
     if (materialData.particleShape == DrawTag::Line) {
-        particle.add(DrawStraightLine(3, color, 1.0, true));
+        particle.add(DrawStraightLine{
+            .length = 3,
+            .color = color,
+            .thickness = 1.0,
+            .isRotateAboutCenter = true,
+        });
         materialData.addComponents<DrawStraightLine>(particle, 1, color, lifetimeMultiplier);
-        particle.add<AngularVelocity>();
+        particle.add(AngularVelocity{.rotationsPerSecond = Rng.range(0.25f, 2.0f)});
     } else {
-        particle.add(DrawRect(color, Vector2i(1, 1)));
+        particle.add(DrawRect::create(color, Vector2i(1, 1)));
         materialData.addComponents<DrawRect>(particle, 1, color, lifetimeMultiplier);
     }
 

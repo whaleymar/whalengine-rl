@@ -18,7 +18,7 @@ ecs::Entity createBlock(Transform transform) {
     auto _ = ecs::DeferActivate(block);
 
     block.add(transform);
-    block.add(DrawRect());
+    block.add<DrawRect>();
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;

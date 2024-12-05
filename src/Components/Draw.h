@@ -17,11 +17,9 @@ struct Frame;
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
 struct Sprite : ISerialize<Sprite, ComponentFactory> {
-    // TODO get rid of constructor, use static fromFrame
-    Sprite() = default;
-    Sprite(Frame frame, Color color_ = Colors::White);
-
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
+    static Sprite fromFrame(Frame frame, Color color_ = Colors::White);
+
     void setFrame(Frame frame);
 
     Vector2i frameSize;
@@ -32,7 +30,7 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
 };
 
 struct DrawRect : ISerialize<DrawRect, ComponentFactory> {
-    DrawRect(Color color_ = Colors::White, Vector2i frameSize_ = {8, 8});
+    static DrawRect create(Color color = Colors::White, Vector2i frameSize = {8, 8});
 
     Vector2i frameSize;
     Color color = Colors::White;

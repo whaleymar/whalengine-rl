@@ -3,7 +3,6 @@
 #include <cstring>
 #include <raylib.h>
 #include "Map/Tiled.h"
-#include "json.hpp"
 
 #include "Components/Transform.h"
 
@@ -15,21 +14,36 @@
 
 namespace whal {
 
-Sprite::Sprite(Frame frame, Color color_) : frameSize(frame.size), atlasPosition(frame.atlasPosition), color(color_) {}
-
 Expected<Sprite> Sprite::fromPath(const char* spritePath, Color color_) {
     const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
     auto frame = spriteTexture.getFrame(spritePath);
     if (frame) {
-        return Sprite(*frame, color_);
+        return fromFrame(*frame, color_);
     }
     return Error(whal_format("Couldn't find {} in texture atlas", spritePath));
+}
+
+Sprite Sprite::fromFrame(Frame frame, Color color) {
+    return Sprite{
+        .frameSize = frame.size,
+        .atlasPosition = frame.atlasPosition,
+        .color = color,
+    };
 }
 
 void Sprite::setFrame(Frame frame) {
     frameSize = frame.size;
     atlasPosition = frame.atlasPosition;
 }
+
+namespace stl {
+template <class ForwardIt, class T = typename std::iterator_traits<ForwardIt>::value_type>
+void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_value) {
+    for (; first != last; ++first)
+        if (*first == old_value)
+            *first = new_value;
+}
+}  // namespace stl
 
 void Sprite::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
@@ -48,9 +62,8 @@ void Sprite::loadImpl(ecs::Entity entity, void* data) {
     }
 
     std::string spritePath = "";
-    if (ctx.values.contains("Sprite")) {
-        spritePath = ctx.values["Sprite"];
-        std::replace(spritePath.begin(), spritePath.end(), '\\', '/');
+    if (tryReadString(ctx.values, "Sprite", &spritePath)) {
+        stl::replace(spritePath.begin(), spritePath.end(), '\\', '/');
     }
     auto eSprite = Sprite::fromPath(spritePath.c_str());
     if (eSprite.isExpected()) {
@@ -62,7 +75,12 @@ void Sprite::loadImpl(ecs::Entity entity, void* data) {
     }
 }
 
-DrawRect::DrawRect(Color color_, Vector2i frameSize_) : frameSize(frameSize_), color(color_) {}
+DrawRect DrawRect::create(Color color, Vector2i frameSize) {
+    return DrawRect{
+        .frameSize = frameSize,
+        .color = color,
+    };
+}
 
 void DrawRect::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);

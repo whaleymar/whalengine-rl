@@ -27,6 +27,8 @@ NEXT GOAL: SERIALIZATION
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
     - consolidate pointlight and shadowlight
+- follow this tutorial to properly generate a Signed Distance Field, which will make shadows much faster
+    - https://jason.today/gi 
 
 ## Web 
 - getting mouse position does not work (may be fixed w/ raylib 5.5)
@@ -40,6 +42,8 @@ NEXT GOAL: SERIALIZATION
 
 ## Triggers 
 - consolidate with colliders like unity. Makes a lot less work :) 
+    - would need to finally add non-aabb shapes to collider though
+    - i'm thinking QuadTree stays exactly the same (AABB only) and there's an extra isOverlapping step that non-aabb shapes have to do post-query
 
 ## Map 
 - would like to do away with the default component function if possible
@@ -70,38 +74,30 @@ NEXT GOAL: SERIALIZATION
 
 ## Physics 
 - colliders need to scale with transform
+    - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
 
 ## Misc
+- define some common tween functions (transform position, rotation, sprite scale, etc) in a header
+- rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
+    - also want to support tags for effects, like the text moving in a wave pattern
+- invisibility tag should affect children
+
+## Misc (low priority)
 - ECS parallelization (low priority)
 - controller support (low priority)
 - input remapping (saved to file too) (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
-- Possible Shader workflow: Unity Shader Graph -> view code -> export code as GLSL?
-- define some common tween functions (transform position, rotation, sprite scale, etc) in a header
-- should collider size change with scale? that's how it works in unity
-    - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
-- if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 - Get web and windows builds working again
-- rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
-    - also want to support tags for effects, like the text moving in a wave pattern
-- invisibility tag should affect children
+- if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 
 ---------------------------------------------------------------------------------------------------------------------------
 
 # Research & Ideas
 things i might want to (re)consider in the future -- ctrl+f for "RESEARCH" 
 
-## Map:
-- bake tile data into a mesh & use that for lighting
-- serializing component structs into Tiled propertytypes would be cool, so I don't have to do so much work to add a new component, but it's probably not feasible bc edge cases
-
 ## Other:
 - should use 3rd party lib for Expected cause my impl sucks
-- triggers which have some constraint, like X>=50
-
-## ECS:
-- the entity.set<T> problem (with IMonitor systems): it doesn't really make sense to handle the problem at the system level, because not all component modifications matter. If anything, could do an event callback for when a component is modified and let systems listen for specific component modifications
 
 Random note: how to save texture to image:
 ```cpp
