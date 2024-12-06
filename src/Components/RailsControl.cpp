@@ -3,6 +3,7 @@
 #include "Components/Transform.h"
 #include "Map/Level.h"
 #include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "Settings.h"
 #include "Util/Print.h"
 #include "json.hpp"
@@ -164,7 +165,7 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
     rails.setCheckpoints(checkpoints, entity.get<Transform>());
 
     std::string cycleBehavior = "ManualStart";
-    tryReadString(ctx.values, "CycleBehavior", &cycleBehavior);
+    tryRead(ctx.values, "CycleBehavior", &cycleBehavior);
     if (isCycle) {
         if (cycleBehavior == "Automatic") {
             rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_LOOP;
@@ -183,8 +184,8 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
         }
     }
 
-    tryReadFloat(ctx.values, "speed", &rails.speed);
-    tryReadFloat(ctx.values, "waitTime", &rails.waitTime);
+    tryRead(ctx.values, "speed", &rails.speed);
+    tryRead(ctx.values, "waitTime", &rails.waitTime);
 
     entity.add(rails);
 }

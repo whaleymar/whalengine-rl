@@ -1,6 +1,6 @@
 #include "TriggerZone.h"
 
-#include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "Util/JsonUtil.h"
 
 namespace whal {

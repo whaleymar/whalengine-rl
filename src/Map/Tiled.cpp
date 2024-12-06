@@ -7,7 +7,6 @@
 
 #include "Settings.h"
 
-// #include "Components/Draw.h"   // for background sprites
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Name.h"
 #include "Components/Transform.h"
@@ -17,12 +16,11 @@
 
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
+#include "TiledParse.h"
+
 #include "Sys/System.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
-#include "rfl/enums.hpp"
-
-#include <sstream>
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
@@ -32,6 +30,8 @@ static const char* MAP_DIR = "data/map";
 
 static ResourceManager<nlohmann::json, 50> S_TEMPLATE_MANAGER;
 static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
+std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = {};
+std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
 static TileSet parseTileset(const std::string& basename, s32 firstgid);
 static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
@@ -43,176 +43,9 @@ static const nlohmann::json& getMapFile(std::string_view mapFile);
 static const nlohmann::json& getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 
-s32 readInt(const nlohmann::json& data, std::string_view key) {
-    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return data[key];
-}
-
-bool tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst) {
-    if (data.contains(key)) {
-        *dst = data[key];
-        return true;
-    }
-    return false;
-}
-
-s32 readFloat(const nlohmann::json& data, std::string_view key) {
-    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return data[key];
-}
-
-bool tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst) {
-    if (data.contains(key)) {
-        *dst = data[key];
-        return true;
-    }
-    return false;
-}
-
-Vector2i readVector2i(const nlohmann::json& data, const char* xKey, const char* yKey) {
-    DBG_ASSERT(data.contains(xKey), data.contains(yKey) && whal_format("Missing keys: {} & {}", xKey, yKey).c_str());
-    return Vector2i(data[xKey], data[yKey]);
-}
-
-bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst) {
-    bool foundOne = false;
-    if (data.contains(xKey)) {
-        dst->x = data[xKey];
-        foundOne = true;
-    }
-    if (data.contains(yKey)) {
-        dst->y = data[yKey];
-        foundOne = true;
-    }
-    return foundOne;
-}
-
-Vector2f readVector2f(const nlohmann::json& data, const char* xKey, const char* yKey) {
-    DBG_ASSERT(data.contains(xKey), data.contains(yKey) && whal_format("Missing keys: {} & {}", xKey, yKey).c_str());
-    return Vector2f(data[xKey], data[yKey]);
-}
-
-bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
-    bool foundOne = false;
-    if (data.contains(xKey)) {
-        dst->x = data[xKey];
-        foundOne = true;
-    }
-    if (data.contains(yKey)) {
-        dst->y = data[yKey];
-        foundOne = true;
-    }
-    return foundOne;
-}
-
-bool readBool(const nlohmann::json& data, std::string_view key) {
-    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return data[key];
-}
-
-bool tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst) {
-    if (data.contains(key)) {
-        *dst = data[key];
-        return true;
-    }
-    return false;
-}
-
-std::string readString(const nlohmann::json& data, std::string_view key) {
-    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return data[key];
-}
-
-bool tryReadString(const nlohmann::json& data, std::string_view key, std::string* dst) {
-    if (data.contains(key)) {
-        *dst = data[key];
-        return true;
-    }
-    return false;
-}
-
-Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset) {
-    DBG_ASSERT(ctx.values.contains(key), whal_format("Missing key: {}", key).c_str());
-
-    s32 shapeId = readInt(ctx.values, key);
-    // calc distance between this object and Shape for the offset
-    const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
-    const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
-    const Vector2i halflen = otherDims / 2;
-    const Vector2i thisTrans = getTransformFromMapPosition(ctx.entityData.position, ctx.entityData.size, ctx.level, ctx.entityData.isPoint).position;
-
-    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, ctx.level, false).position;
-    const auto offset = otherTrans - thisTrans;
-
-    if (dstOffset != nullptr) {
-        *dstOffset = offset;
-    }
-
-    Shape shape;
-
-    print("the offset is ", offset);
-    print("the halflen is ", halflen);
-    auto tmp = entity.get<Transform>().apply(offset);
-    print("predicted position is", tmp);
-    if (shapeObj.contains("ellipse")) {
-        const s32 radius = std::max(halflen.x, halflen.y);
-        shape = Circle(entity.get<Transform>(), radius, offset);
-    } else {
-        // no field for rectangle, it's the default
-        shape = AABB(entity.get<Transform>(), halflen, offset);
-    }
-
-    print("actual position is", shape.getPosition());
-    print("transform is", entity.get<Transform>().position);
-
-    return shape;
-}
-
-Shape getDefaultShape(const LoadContext& ctx, ecs::Entity entity) {
-    // would be used for a default ellipse getter (if I need one):
-    // const s32 radius = std::max(ctx.entityData.size.x, ctx.entityData.size.y) / 2;
-    return AABB(entity.get<Transform>(), ctx.entityData.size / 2, Vector2i());
-}
-
-bool tryReadShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Shape* dst, Vector2i* dstOffset) {
-    if (ctx.values.contains(key)) {
-        *dst = readShape(ctx, entity, key, dstOffset);
-        return true;
-    }
-    return false;
-}
-
-Shape readShapeOrDefault(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset) {
-    Shape shape;
-    if (tryReadShape(ctx, entity, key, &shape, dstOffset)) {
-        return shape;
-    }
-    return getDefaultShape(ctx, entity);
-}
-
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
     S_TEMPLATE_MANAGER.clearCache();
-}
-
-Color readColor(const std::string& hexString) {
-    s32 r, g, b, a;
-    // format is "#aarrggbb"
-    std::istringstream(hexString.substr(1, 2)) >> std::hex >> a;
-    std::istringstream(hexString.substr(3, 2)) >> std::hex >> r;
-    std::istringstream(hexString.substr(5, 2)) >> std::hex >> g;
-    std::istringstream(hexString.substr(7, 2)) >> std::hex >> b;
-
-    return Color::fromRGB(r, g, b, a);
-}
-
-bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst) {
-    if (data.contains(key)) {
-        std::string hexString = readString(data, key);
-        *dst = readColor(hexString);
-        return true;
-    }
-    return false;
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
@@ -248,10 +81,10 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             .entityData = entityData,
             .level = level,
             .layerData = layerData,
+            .isTiledData = true,
         };
 
         serializerOpt->load(entity, (void*)&ctx);  // >:)
-        // creatorFunc(entity, ctx);
     }
 }
 
@@ -355,19 +188,6 @@ static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     return layerDepth;
 }
 
-bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst) {
-    if (data.contains(key)) {
-        std::string str = readString(data, key);
-        *dst = readDepth(str);
-        return true;
-    }
-    return false;
-}
-
-Depth readDepth(const std::string& depthString) {
-    return rfl::string_to_enum<Depth>(depthString).value();
-}
-
 void parseTileLayer(const nlohmann::json& layer, TileMap& map) {
     s32 width = readInt(layer, "width");
     s32 height = readInt(layer, "height");
@@ -413,7 +233,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
     for (const auto& object : objects) {
         bool isVisible = true;
-        if (tryReadBool(object, "visible", &isVisible) && !isVisible) {
+        if (tryRead(object, "visible", &isVisible) && !isVisible) {
             continue;
         }
         std::string objType = "";
@@ -458,19 +278,19 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         bool hasPosition = false;
         entityData.isPoint = true;
         if (pPrefab) {
-            hasPosition = tryReadVector2i(*pPrefab, "x", "y", &entityData.position);
+            hasPosition = tryRead(*pPrefab, "x", "y", &entityData.position);
         }
-        hasPosition = tryReadVector2i(object, "x", "y", &entityData.position) || hasPosition;
+        hasPosition = tryRead(object, "x", "y", &entityData.position) || hasPosition;
         if (!hasPosition) {
             print("Entity with ID", entityData.id, "has no coordinates");
             entity.kill();
             continue;
         }
         if (pPrefab) {
-            if (tryReadVector2i(*pPrefab, "width", "height", &entityData.size))
+            if (tryRead(*pPrefab, "width", "height", &entityData.size))
                 entityData.isPoint = false;
         }
-        if (tryReadVector2i(object, "width", "height", &entityData.size))
+        if (tryRead(object, "width", "height", &entityData.size))
             entityData.isPoint = false;
 
         // add transform
@@ -480,7 +300,7 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // add name
         std::string name = "";
-        if (tryReadString(object, "name", &name)) {
+        if (tryRead(object, "name", &name)) {
             entity.add(Name(name.c_str()));
             print("created entity: ", name);
         }
@@ -653,12 +473,74 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     return newFrame;
 }
 
+static TiledDataType getDtype(const std::string& name) {
+    if (name == "int") {
+        return TiledDataType::Int;
+    } else if (name == "string") {
+        return TiledDataType::String;
+    } else if (name == "float") {
+        return TiledDataType::Float;
+    } else if (name == "bool") {
+        return TiledDataType::Bool;
+    } else if (name == "object") {
+        return TiledDataType::Object;
+    } else if (name == "enum") {
+        return TiledDataType::Enum;
+    } else if (name == "color") {
+        return TiledDataType::Color;
+    } else if (name == "class") {
+        return TiledDataType::Class;
+    }
+    DBG_ASSERT(false, whal_format("unrecognized property type: {}", name));
+}
+
+// parses all the data types in a project
 void parseMapProject(const char* mapfile) {
     const auto data = getWorldFile(mapfile);
-    // TODO this is where property type data should be parsed for the default tiled parser
-    // for (auto& propType : data["propertyTypes"]) {
-    //     Prefab.component.makeDefaultComponent(propType);
-    // }
+    for (const auto& propType : data["propertyTypes"]) {
+        const std::string name = readString(propType, "name");
+        const TiledDataType dtype = getDtype(propType["type"]);
+        if (dtype == TiledDataType::Enum) {
+            // for enums, check how the data is stored (packed int, basic int, or string)
+            const std::string storage = readString(propType, "storageType");
+            const bool isString = storage == "string";
+            const bool isFlags = readBool(propType, "valuesAsFlags");
+
+            ComponentFactory::propertyTypes.insert({std::move(name), PropertyType{
+                                                                         .dtype = dtype,
+                                                                         .enumInfo =
+                                                                             {
+                                                                                 .isString = isString,
+                                                                                 .isFlags = isFlags,
+                                                                             },
+                                                                     }});
+        } else if (dtype == TiledDataType::Class) {
+            if (propType.contains("members")) {
+                // parse types of class members
+                for (const auto& member : propType["members"]) {
+                    std::string memberName = readString(member, "name");
+                    memberName = name + ":" + memberName;
+                    const TiledDataType memberType = getDtype(member["type"]);
+                    if (memberType == TiledDataType::Class) {
+                        // this is a class, so we need to store its propertyType
+                        std::string memberPropType = "";  // is possible that it's null
+                        tryRead(member, "propertyType", &memberPropType);
+                        ComponentFactory::memberTypes.insert({std::move(memberName), {memberType, std::move(memberPropType)}});
+                    } else {
+                        // propertyType doesn't matter, do empty string
+                        ComponentFactory::memberTypes.insert({std::move(memberName), {memberType, ""}});
+                    }
+                }
+            }
+            ComponentFactory::propertyTypes.insert(
+                {std::move(name), PropertyType{.dtype = dtype, .enumInfo = {.isString = false, .isFlags = false}}});
+
+        } else {
+            // for other types, just the dtype is enough information
+            ComponentFactory::propertyTypes.insert(
+                {std::move(name), PropertyType{.dtype = dtype, .enumInfo = {.isString = false, .isFlags = false}}});
+        }
+    }
 }
 
 // parses a level's parameters and returns its LevelInfo struct
@@ -669,8 +551,8 @@ static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
             Level::LevelInfo lvlInfo;
-            tryReadColor(mapInfo, "AmbientLight", &lvlInfo.ambientLight);
-            tryReadBool(mapInfo, "isWorldEntryPoint", &lvlInfo.isWorldEntryPoint);
+            tryRead(mapInfo, "AmbientLight", &lvlInfo.ambientLight);
+            tryRead(mapInfo, "isWorldEntryPoint", &lvlInfo.isWorldEntryPoint);
             return lvlInfo;
         }
     }
@@ -766,7 +648,7 @@ const nlohmann::json& getTemplate(std::string_view templateFile) {
 std::string getTypeFromTemplate(const std::string& templateFile) {
     const auto& prefabData = getTemplate(templateFile);
     std::string objType = "";
-    tryReadString(prefabData, "type", &objType);
+    tryRead(prefabData, "type", &objType);
     return objType;
 }
 
@@ -776,10 +658,10 @@ Vector2i getObjectSize(const nlohmann::json& objectData) {
     if (objectData.contains("template")) {
         auto templateFile = readString(objectData, "template");
         const auto& prefab = getTemplate(templateFile);
-        tryReadVector2i(prefab, "width", "height", &size);
+        tryRead(prefab, "width", "height", &size);
     }
 
-    tryReadVector2i(objectData, "width", "height", &size);
+    tryRead(objectData, "width", "height", &size);
     return size;
 }
 

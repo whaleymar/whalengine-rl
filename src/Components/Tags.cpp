@@ -2,7 +2,7 @@
 
 #include "Components/Collision.h"
 #include "Components/Transform.h"
-#include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 
 namespace whal {
 
@@ -10,27 +10,27 @@ void TagLoader::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
 
     bool hasTag = false;
-    if (tryReadBool(ctx.values, "Player", &hasTag) && hasTag) {
+    if (tryRead(ctx.values, "Player", &hasTag) && hasTag) {
         entity.add<Player>();
         hasTag = false;
     }
 
-    if (tryReadBool(ctx.values, "PrecisePosition", &hasTag) && hasTag) {
+    if (tryRead(ctx.values, "PrecisePosition", &hasTag) && hasTag) {
         entity.add(PrecisePosition::fromTrans(entity.get<Transform>()));
         hasTag = false;
     }
 
-    if (tryReadBool(ctx.values, "Wiggle", &hasTag) && hasTag) {
+    if (tryRead(ctx.values, "Wiggle", &hasTag) && hasTag) {
         entity.add<Wiggle>();
         hasTag = false;
     }
 
-    if (tryReadBool(ctx.values, "Invisible", &hasTag) && hasTag) {
+    if (tryRead(ctx.values, "Invisible", &hasTag) && hasTag) {
         entity.add<Invisible>();
         hasTag = false;
     }
 
-    if (tryReadBool(ctx.values, "BlocksLight", &hasTag) && hasTag) {
+    if (tryRead(ctx.values, "BlocksLight", &hasTag) && hasTag) {
         entity.add<BlocksLight>();
         hasTag = false;
     }

@@ -7,6 +7,8 @@
 
 namespace whal {
 
+struct Color;
+
 template <typename T>
 T readVal(const nlohmann::json& data, std::string_view key) {
     DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());

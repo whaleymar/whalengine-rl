@@ -9,7 +9,6 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
-#include "Gfx/Color.h"
 #include "Gfx/Depth.h"
 #include "Util/Types.h"
 
@@ -25,8 +24,6 @@ struct TileSet;
 struct Scene;
 struct Transform;
 struct ActiveLevel;
-class Shape;
-struct LoadContext;
 
 namespace ecs {
 class Entity;
@@ -39,31 +36,6 @@ Transform getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const A
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
-
-// JSON PARSING UTILITY FUNCTIONS
-s32 readInt(const nlohmann::json& json, std::string_view key);
-s32 readFloat(const nlohmann::json& json, std::string_view key);
-Vector2i readVector2i(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
-Vector2f readVector2f(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
-bool readBool(const nlohmann::json& data, std::string_view key);
-std::string readString(const nlohmann::json& json, std::string_view key);
-Color readColor(const std::string& hexString);
-Depth readDepth(const std::string& depthString);
-bool tryReadInt(const nlohmann::json& data, std::string_view key, s32* dst);
-bool tryReadFloat(const nlohmann::json& data, std::string_view key, f32* dst);
-bool tryReadVector2i(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst);
-bool tryReadVector2f(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst);
-bool tryReadBool(const nlohmann::json& data, std::string_view key, bool* dst);
-bool tryReadString(const nlohmann::json& data, std::string_view key, std::string* dst);
-bool tryReadColor(const nlohmann::json& data, std::string_view key, Color* dst);
-bool tryReadDepth(const nlohmann::json& data, std::string_view key, Depth* dst);
-
-// different API:
-Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset = nullptr);
-Shape getDefaultShape(const LoadContext& ctx, ecs::Entity entity);  // uses shape of Tiled object instead of a Property
-bool tryReadShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Shape* dst, Vector2i* dstOffset = nullptr);
-Shape readShapeOrDefault(const LoadContext& ctx, ecs::Entity entity, std::string_view key,
-                         Vector2i* dstOffset = nullptr);  // tries to get a custom shape, returns default shape if none present
 
 struct LayerData {
     Depth depth;
@@ -113,27 +85,26 @@ struct TileMap {
     std::vector<TileSet> tilesets;
 };
 
-// metadata about a Tiled Property (ie a custom type)
-// TODO parse this info from the Tiled .tiled-project file into a map & pass it into the loader functions
-struct PropertyType {
-    enum class DataType {
-        Int,
-        String,
-        Float,
-        Bool,
-        Object,
-        Enum,
-        Color,
-        Class,
-    };
+// Supported data types in Tiled
+enum class TiledDataType {
+    Int,
+    String,
+    Float,
+    Bool,
+    Object,
+    Enum,
+    Color,
+    Class,
+};
 
+// metadata about a Tiled Property (ie a custom type)
+struct PropertyType {
     struct EnumInfo {
         bool isString;
         bool isFlags;
     };
 
-    std::string name;
-    DataType dtype;
+    TiledDataType dtype;
     EnumInfo enumInfo;  // only defined when dtype == Enum
 };
 

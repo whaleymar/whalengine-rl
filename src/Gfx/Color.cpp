@@ -1,5 +1,6 @@
 #include "Color.h"
 
+#include <ostream>
 #include <raylib.h>
 #include "Util/MathUtil.h"
 
@@ -36,6 +37,10 @@ Color Color::fromRL(rl::Color color, f32 brightness) {
 
 Color Color::fromRGB(s32 r, s32 g, s32 b, s32 a, f32 brightness) {
     return fromRL(rl::Color{static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b), static_cast<u8>(a)}, brightness);
+}
+
+std::ostream& operator<<(std::ostream& out, Color const& self) {
+    return out << "(" << self.r << ", " << self.g << ", " << self.b << ", " << self.a << ")";
 }
 
 namespace Colors {

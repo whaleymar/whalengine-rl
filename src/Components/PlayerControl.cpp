@@ -31,7 +31,4 @@ bool Jumper::canJump() const {
     return buffer.framesLeft > 0;
 }
 
-Jumper::Jumper(f32 jumpInitialVelocity_, f32 jumpSecondsMax_, f32 coyoteTimeSecondsMax_)
-    : jumpInitialVelocity(jumpInitialVelocity_), jumpSecondsMax(jumpSecondsMax_), coyoteTimeSecondsMax(coyoteTimeSecondsMax_) {}
-
 }  // namespace whal

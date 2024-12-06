@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Map/ComponentFactory.h"
-#include "Map/Tiled.h"
+#include "Util/ISerialize.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -22,20 +22,9 @@ struct BufferedInput {
 
 struct PlayerControl : ISerialize<PlayerControl, ComponentFactory> {
     f32 moveSpeed = 80;
-
-    static void loadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
-        PlayerControl control = entity.has<PlayerControl>() ? entity.get<PlayerControl>() : PlayerControl{};
-        tryReadFloat(ctx.values, "speed", &control.moveSpeed);
-
-        entity.add(control);
-    }
 };
 
 struct Jumper : ISerialize<Jumper, ComponentFactory> {
-    Jumper() = default;
-    Jumper(f32 jumpInitialVelocity, f32 jumpSecondsMax, f32 coyoteTimeSecondsMax);
-
     bool isTryingJump() const;
     bool canJump() const;
 
@@ -49,17 +38,7 @@ struct Jumper : ISerialize<Jumper, ComponentFactory> {
     f32 coyoteSecondsRemaining = 0;
     BufferedInput buffer;
     bool isJumping = false;
-
-    static void loadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
-        Jumper jumper = entity.has<Jumper>() ? entity.get<Jumper>() : Jumper{};
-
-        tryReadFloat(ctx.values, "jumpInitialVelocity", &jumper.jumpInitialVelocity);
-        tryReadFloat(ctx.values, "jumpSecondsMax", &jumper.jumpSecondsMax);
-        tryReadFloat(ctx.values, "coyoteTimeSecondsMax", &jumper.coyoteTimeSecondsMax);
-
-        entity.add(jumper);
-    }
 };
+REGISTER_SERIALIZE(Jumper)
 
 }  // namespace whal

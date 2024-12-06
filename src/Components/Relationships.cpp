@@ -2,6 +2,7 @@
 
 #include "Components/Transform.h"
 #include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "Util/JsonUtil.h"
 #include "Util/Print.h"
 #include "whalECS/src/ECS.h"
@@ -26,7 +27,7 @@ void Attach::loadImpl(ecs::Entity entity, void* data) {
     Attach attach = entity.has<Attach>() ? entity.get<Attach>() : Attach{};
 
     s32 targetId;
-    if (!tryReadInt(ctx.values, "target", &targetId)) {
+    if (!tryRead(ctx.values, "target", &targetId)) {
         print("Entity with Map id ", ctx.entityData.id, "has attach component with no target");
         return;
     }
@@ -69,7 +70,7 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
     Orbit orbit = entity.has<Orbit>() ? entity.get<Orbit>() : Orbit{};
 
-    tryReadFloat(ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
+    tryRead(ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
     const Vector2i entityDimensions = ctx.entityData.size;
     const Vector2i entityTrans = entity.get<Transform>().position;
@@ -83,7 +84,7 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
     const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
     Vector2i otherDimensions = Vector2i::ZERO;
     bool isPoint = true;
-    if (tryReadVector2i(shapeObj, "width", "height", &otherDimensions)) {
+    if (tryRead(shapeObj, "width", "height", &otherDimensions)) {
         isPoint = false;
     }
     const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimensions, ctx.level, isPoint).position;

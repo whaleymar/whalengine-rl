@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iosfwd>
 #include "Util/Types.h"
 
 namespace rl {
@@ -54,6 +55,8 @@ struct Color {
     static Color fromRL(rl::Color color, f32 brightness = 1.0f);
     static Color fromRGB(s32 r, s32 g, s32 b, s32 a = 255, f32 brightness = 1.0f);
 };
+
+std::ostream& operator<<(std::ostream& out, Color const& self);
 
 namespace Colors {
 
