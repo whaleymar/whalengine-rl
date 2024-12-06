@@ -1,7 +1,6 @@
 # To Do 
 
-NEXT GOAL: SERIALIZATION
-- convert entity factory into new version
+NEXT GOAL: 
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -46,21 +45,10 @@ NEXT GOAL: SERIALIZATION
     - i'm thinking QuadTree stays exactly the same (AABB only) and there's an extra isOverlapping step that non-aabb shapes have to do post-query
 
 ## Map 
-- would like to do away with the default component function if possible
-    - might be able to do this if I export the map project instead of saving https://discourse.mapeditor.org/t/is-it-possible-to-force-tiled-to-output-a-custom-property-even-when-default-value-is-selected/6272/6
-    - one problem I'm having is with relative template paths -- I should keep the Tiled project in the Game's root directory to fix this (would make all paths easier to work with)
-- the process of adding a new component is still annoying. Using a reflection library to improve that would be nice?
-    - i could make a component for tiled object ID and use that to know which objects to save
+- put tiled project in game's root directory so paths are easier to work with
+    - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?
 - respawn map objects
-- SingleEntityLayer
-    - basically i want to draw a bunch of tiles and have it (effectively) be one entity that moves together
-    - nice when I want more complex geometry or i just want an object to be drawn with tiles
-    - implementation plan: create class which layers can use. If they use this SingleEntityLayer class, then create a parent entity which owns all tile entities
-    - the layer has component properties
-    - all tiles are attached to parent
-    - would need some way to say "if collision and collider has parent, try running parent callback"
 - background/foreground layers should be written to a texture?
-- could try having all entities in a level inactive until an onLevelEntered event happens (and we're entering that specific level)
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 - Should use the Tiled collision editor for tile collision
 

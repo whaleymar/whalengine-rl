@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <cstring>
-#include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "whalECS/src/ECS.h"
 
 #include "Components/Draw.h"
@@ -133,14 +133,14 @@ void Animator::loadImpl(ecs::Entity entity, void* data) {
     sprite.setFrame(animator.getFrame());
 
     s32 rotationDegrees;
-    if (tryReadInt(ctx.values, "rotationDegrees", &rotationDegrees)) {
+    if (tryRead(ctx.values, "rotationDegrees", &rotationDegrees)) {
         entity.get<Transform>().rotationDegrees = rotationDegrees;
     }
 
-    tryReadColor(ctx.values, "Color", &sprite.color);
+    tryRead(ctx.values, "Color", &sprite.color);
 
     f32 brightness;
-    if (tryReadFloat(ctx.values, "Brightness", &brightness)) {
+    if (tryRead(ctx.values, "Brightness", &brightness)) {
         sprite.color.scale(brightness);
     }
     entity.add(sprite);

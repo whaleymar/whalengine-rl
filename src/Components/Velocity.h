@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Map/ComponentFactory.h"
-#include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -21,7 +21,7 @@ struct Velocity : ISerialize<Velocity, ComponentFactory> {
     static void loadImpl(ecs::Entity entity, void* data) {
         const LoadContext& ctx = *static_cast<LoadContext*>(data);
         Velocity velocity = entity.has<Velocity>() ? entity.get<Velocity>() : Velocity{};
-        tryReadVector2f(ctx.values, "velX", "velY", &velocity.stable);
+        tryRead(ctx.values, "stable", &velocity.stable);
 
         entity.add(velocity);
     }

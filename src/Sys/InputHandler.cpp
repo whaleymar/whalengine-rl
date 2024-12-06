@@ -89,7 +89,7 @@ void InputHandler::loadMappings() const {
     S_KEYMAP.insert({rl::KEY_S, InputType::DOWN});
     S_KEYMAP.insert({rl::KEY_LEFT, InputType::LEFT});
     S_KEYMAP.insert({rl::KEY_A, InputType::LEFT});
-    // S_KEYMAP.insert({KEY_C, InputType::JUMP});
+    // S_KEYMAP.insert({rl::KEY_C, InputType::JUMP});
     // S_KEYMAP.insert({KEY_X, InputType::AIM});
     S_KEYMAP.insert({rl::KEY_ESCAPE, InputType::PAUSE});
     S_KEYMAP.insert({rl::KEY_ENTER, InputType::OK});

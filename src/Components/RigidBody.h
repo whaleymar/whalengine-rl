@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Map/ComponentFactory.h"
-#include "Map/Tiled.h"
+#include "Map/TiledParse.h"
 #include "Physics/Material.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -9,9 +9,6 @@
 namespace whal {
 
 struct RigidBody : ISerialize<RigidBody, ComponentFactory> {
-    RigidBody() = default;
-    RigidBody(Vector2f frictionMult) : frictionMultiplier(frictionMult) {}
-
     void setGrounded(WorldMaterial material);
     void setNotGrounded();
 
@@ -24,17 +21,6 @@ struct RigidBody : ISerialize<RigidBody, ComponentFactory> {
     WorldMaterial groundMaterial = WorldMaterial::None;
     bool isLanding = false;
     bool isGrounded = false;
-
-    static void loadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
-        RigidBody rb = entity.has<RigidBody>() ? entity.get<RigidBody>() : RigidBody{};
-
-        tryReadVector2f(ctx.values, "momentumMultiplierX", "momentumMultiplierY", &rb.momentumMultiplier);
-        tryReadVector2f(ctx.values, "frictionGround", "frictionAir", &rb.frictionMultiplier);
-        tryReadFloat(ctx.values, "gravityMultiplier", &rb.gravityMultiplier);
-
-        entity.add(rb);
-    }
 };
 
 }  // namespace whal
