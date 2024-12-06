@@ -27,7 +27,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
                        eCtx.colorBuf);
 }
 
-void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
+void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto sprite = entity.get<Sprite>();
         const auto& trans = entity.get<Transform>();
@@ -35,11 +35,10 @@ void SpriteRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) c
                             AABB(trans, sprite.frameSize / 2, Vector2i()) :
                             Box(trans.getRotatedPosition(), sprite.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.push_back(gfx::EntityRenderInfo{
+        queue.push_back(gfx::EntityRenderLoc{
             .boundingBox = bb,
             .preciseTransform = gfx::getPreciseTrans(entity, trans),
             .entity = entity,
-            .piRender = this,
         });
     }
 }

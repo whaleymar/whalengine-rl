@@ -109,8 +109,7 @@ private:
     void drawUI(const gfx::RenderContext ctx) const;
 
     rl::Camera2D mRaylibCamera;
-    std::vector<gfx::EntityRenderInfo> mRenderQueue;
-    std::vector<gfx::EntityRenderInfo> mUIRenderQueue;  // UI is stored in a separate queue so it's not affected by lighting
+    gfx::RenderQueue mRenderQueue;
 
     // this will work for low #s, but I might need to use a stack or another data structure in the future
     std::vector<RTInfo> mAvailableRTs;

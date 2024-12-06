@@ -11,7 +11,7 @@ struct Invisible;
 class BezierRenderSystem : public ecs::ISystem<DrawBezierQuad, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
-    void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;
+    void addToQueue(gfx::RenderQueue&) const override;
 };
 
 }  // namespace whal

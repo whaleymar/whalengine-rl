@@ -31,32 +31,21 @@ struct Wiggle {
     WiggleCallback callback = defaultWiggle;
 };
 
+struct ColliderParams {
+    WorldMaterial material = WorldMaterial::None;
+    CollisionDir collisionDir = CollisionDir::ALL;
+    CollisionCallback onCollisionEnter = nullptr;
+    CollisionCallback onSquish = &defaultSquish;
+    Vector2i offset = Vector2i::ZERO;
+};
+
 class Collider : public ISerialize<Collider, ComponentFactory> {
     friend PhysicsSystem;
     friend TweenPositionSystem;
 
 public:
     Collider() = default;
-    // TODO struct for all the optional args
-    Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-             CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
-    Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material = WorldMaterial::None,
-             CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish,
-             Vector2i offset = Vector2i::ZERO);
-
-    // static creator functions
-    static Collider Actor(AABB shape, CollisionCallback squish_ = &defaultSquish);
-    static Collider Actor(Transform transform, Vector2i halflen, CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
-    static Collider Solid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                          CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
-    static Collider Solid(Transform transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                          CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
-                          CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
-    static Collider SemiSolid(AABB shape, WorldMaterial material = WorldMaterial::None, CollisionCallback onCollisionEnter_ = nullptr,
-                              CollisionDir collisionDir = CollisionDir::ALL, CollisionCallback squish_ = &defaultSquish);
-    static Collider SemiSolid(Transform transform, Vector2i halflen, WorldMaterial material = WorldMaterial::None,
-                              CollisionCallback onCollisionEnter_ = nullptr, CollisionDir collisionDir = CollisionDir::ALL,
-                              CollisionCallback squish_ = &defaultSquish, Vector2i offset = Vector2i::ZERO);
+    Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, ColliderParams params = ColliderParams{});
 
     const AABB& getShape() const { return mShape; }
     AABB& getShapeMutable() { return mShape; }

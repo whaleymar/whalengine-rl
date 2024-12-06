@@ -111,16 +111,18 @@ static const MaterialData S_MATERIAL_DUST = {
     .startScale = 2.0,
 };
 
-static const MaterialData S_MATERIAL_FIRE = {.name = "Fire",
-                                             .id = WorldMaterial::Fire,
-                                             .colorRange = {Colors::Orange, Colors::Red},
-                                             .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecayTime |
-                                                      MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag,
-                                             .bounciness = 0.0,
-                                             .gravityCoef = -0.5,
-                                             .frictionCoefs = {0.0, 0.0},
-                                             .fadeColor = Colors::Clear,
-                                             .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.4, 0.6)}};
+static const MaterialData S_MATERIAL_FIRE = {
+    .name = "Fire",
+    .id = WorldMaterial::Fire,
+    .colorRange = {Colors::Orange, Colors::Red},
+    .flags = MaterialData::Light | MaterialData::DecayTime | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag,
+    .bounciness = 0.0,
+    .gravityCoef = -0.5,
+    .frictionCoefs = {0.0, 0.0},
+    .fadeColor = Colors::Clear,
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.4, 0.6)},
+    .brightness = 2.0,
+};
 
 static const MaterialData S_MATERIAL_DEFAULT = S_MATERIAL_DUST;
 
@@ -128,24 +130,26 @@ static const MaterialData S_MATERIAL_EMBER = {
     .name = "Ember",
     .id = WorldMaterial::Ember,
     .colorRange = {Colors::Orange, Colors::Red},
-    .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag |
-             MaterialData::Collision,
+    .flags = MaterialData::Light | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
     .bounciness = 1.0,
     .gravityCoef = 1.0,
     .frictionCoefs = {0.25, 0.0},
     .fadeColor = Color(Colors::Orange.r, Colors::Orange.g, Colors::Orange.b, 0.25),
     .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+    .brightness = 1.5,
 };
 
-static const MaterialData S_MATERIAL_POISON = {.name = "Ember",
-                                               .id = WorldMaterial::Ember,
-                                               .colorRange = {Colors::Pink, Colors::Pink},
-                                               .flags = MaterialData::Light | MaterialData::GlowFlag | MaterialData::DecaySpeed |
-                                                        MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
-                                               .bounciness = 1.0,
-                                               .gravityCoef = 1.0,
-                                               .frictionCoefs = {0.25, 0.0},
-                                               .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+static const MaterialData S_MATERIAL_POISON = {
+    .name = "Ember",
+    .id = WorldMaterial::Ember,
+    .colorRange = {Colors::Pink, Colors::Pink},
+    .flags = MaterialData::Light | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
+    .bounciness = 1.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {0.25, 0.0},
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+    .brightness = 2.0,
+};
 
 static const MaterialData S_MATERIAL_TINYDUST = {
     .name = "Dust",

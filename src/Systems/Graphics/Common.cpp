@@ -4,6 +4,7 @@
 
 #include "Components/Collision.h"
 #include "Components/Floating.h"
+#include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Settings.h"
 
@@ -26,6 +27,23 @@ rl::Vector3 ColorBufInfo::asRL() const {
     f32 result;
     std::memcpy(&result, &packed, sizeof(f32));
     return rl::Vector3{result, 0.0f, 0.0f};
+}
+
+void RenderQueue::push_back(const EntityRenderLoc& renderInfo) {
+    if (mCameraViewBox.isOverlapping(renderInfo.boundingBox)) {
+        if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
+            renderInfo.preciseTransform.depth == Depth::UIClose) {
+            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, renderInfo.entity, mpIRender,
+                                  gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                                    .isOccluder = renderInfo.entity.has<BlocksLight>(),
+                                                    .isUI = true});
+        } else {
+            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, renderInfo.entity, mpIRender,
+                                      gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                                        .isOccluder = renderInfo.entity.has<BlocksLight>(),
+                                                        .isUI = false});
+        }
+    }
 }
 
 PreciseTransform getPreciseTrans(ecs::Entity entity) {
@@ -68,19 +86,11 @@ void clampToPixelGrid(RaylibDrawParams& params) {
 }
 
 RaylibDrawParams getDrawParams(PreciseTransform transform, Vector2f frameSize, Vector2f cameraPosition) {
-    Vector2f size = frameSize * transform.scale;
+    const Vector2f size = frameSize * transform.scale * VIRTUAL_SCREEN_RATIO;
     const Vector2f positionF = transform.getRotatedPosition();
-    Vector2f screenPosition(positionF.x - cameraPosition.x, cameraPosition.y - positionF.y);
-
-    // rotate about center
-    Vector2f origin;
-    origin = size * Vector2f(0.5, 0.5);
-
-    // Scale everything up
-    screenPosition *= VIRTUAL_SCREEN_RATIO;
-    screenPosition += Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
-    size *= VIRTUAL_SCREEN_RATIO;
-    origin *= VIRTUAL_SCREEN_RATIO;
+    const Vector2f screenPosition = Vector2f(positionF.x - cameraPosition.x, cameraPosition.y - positionF.y) * VIRTUAL_SCREEN_RATIO +
+                                    Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
+    const Vector2f origin = size * Vector2f(0.5, 0.5);
 
     return RaylibDrawParams{
         .rect = rl::Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},

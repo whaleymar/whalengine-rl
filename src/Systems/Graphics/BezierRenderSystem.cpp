@@ -21,17 +21,16 @@ void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     gfx::DrawSplineSegmentBezierQuadraticHDR(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color, eCtx.colorBuf);
 }
 
-void BezierRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
+void BezierRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawBezierQuad>();
         const PreciseTransform pTrans = gfx::getPreciseTrans(entity);
         const Vector2i position = pTrans.position.round();
 
-        queue.emplace_back(gfx::EntityRenderInfo{
+        queue.push_back(gfx::EntityRenderLoc{
             .boundingBox = AABB::fromPoints(position, position + line.controlPointOffset, position + line.endPointOffset),
             .preciseTransform = pTrans,
             .entity = entity,
-            .piRender = this,
         });
     }
 }

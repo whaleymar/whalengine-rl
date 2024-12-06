@@ -10,7 +10,6 @@
 #include "Gfx/Texture.h"
 
 #include "Components/Camera.h"
-#include "Components/Tags.h"
 #include "Components/Transform.h"
 
 #include "Settings.h"
@@ -278,7 +277,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::BeginTextureMode(mStagingTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
-    for (auto renderInfo : mRenderQueue) {
+    for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
     rl::EndMode2D();
@@ -313,7 +312,7 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
 
 void Renderer::drawUI(const gfx::RenderContext ctx) const {
     rl::BeginMode2D(ctx.camera);
-    for (auto renderInfo : mUIRenderQueue) {
+    for (auto renderInfo : mRenderQueue.mUIQueue) {
         renderInfo.piRender->draw(renderInfo, ctx);
     }
     rl::EndMode2D();
@@ -325,7 +324,7 @@ static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRende
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        return entity1.boundingBox.bottom() > entity2.boundingBox.bottom();
+        return entity1.bottom > entity2.bottom;
     } else {
         return false;  // doesn't really matter
     }
@@ -334,37 +333,18 @@ static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRende
 void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     // .clear() doesn't affect capacity
     mRenderQueue.clear();
-    mUIRenderQueue.clear();
-    static std::vector<gfx::EntityRenderInfo> tmpDrawList;  // make it static to minimize memory allocations per frame
-    tmpDrawList.clear();
 
+    // Configure camera view box for culling
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
-    for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
-        tmpDrawList.reserve(renderSystem.pSystem->getEntitiesVirtual().size());  // reserve space in case capacity is too low
-        renderSystem.pIRender->addToQueue(tmpDrawList);
-        for (const gfx::EntityRenderInfo& renderInfo : tmpDrawList) {
-            // Filter out hidden entities and entities outside of the viewport
-            if (cameraViewBox.isOverlapping(renderInfo.boundingBox)) {
-                if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
-                    renderInfo.preciseTransform.depth == Depth::UIClose) {
-                    mUIRenderQueue.emplace_back(renderInfo.boundingBox, renderInfo.preciseTransform, renderInfo.entity, renderInfo.piRender,
-                                                gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
-                                                                  .isOccluder = renderInfo.entity.has<BlocksLight>(),
-                                                                  .isUI = true});
-                } else {
-                    mRenderQueue.emplace_back(renderInfo.boundingBox, renderInfo.preciseTransform, renderInfo.entity, renderInfo.piRender,
-                                              gfx::ColorBufInfo{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
-                                                                .isOccluder = renderInfo.entity.has<BlocksLight>(),
-                                                                .isUI = false});
-                }
-            }
-        }
+    mRenderQueue.setViewBox(cameraViewBox);
 
-        tmpDrawList.clear();
+    for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
+        mRenderQueue.setActiveRenderer(renderSystem.pIRender);
+        renderSystem.pIRender->addToQueue(mRenderQueue);
     }
 
-    std::sort(mRenderQueue.begin(), mRenderQueue.end(), isBelow);
-    std::sort(mUIRenderQueue.begin(), mUIRenderQueue.end(), isBelow);
+    std::sort(mRenderQueue.mNormalQueue.begin(), mRenderQueue.mNormalQueue.end(), isBelow);
+    std::sort(mRenderQueue.mUIQueue.begin(), mRenderQueue.mUIQueue.end(), isBelow);
 }
 
 void Renderer::queueUniform(UniformVariant uniform) {

@@ -198,8 +198,6 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
                             continue;
                         }
                         const TileSet& tset = getTileSet(map, blockID);
-                        // TODO collider position not matching rotation -- rotateAboutCenter should be a transform component and then change that AABB
-                        // constructor that takes transforms
                         s32 tileID = blockID - tset.firstgid;
                         tset.addTileComponents(e, tileID, lvl, layer.metadata, mapPosition);
 
@@ -267,7 +265,7 @@ void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32
     s32 centerY = lvl.worldPosOrigin.y - startPoint.second - (meshHeightTiles - 2) / 2;
 
     Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
-    auto collider = Collider::Solid(Transform({centerX, centerY}), halflen);
+    auto collider = Collider(Transform({centerX, centerY}), halflen, CollisionLayer::Solid);
 
     auto entity = World.entity();
     if (!entity.isValid()) {

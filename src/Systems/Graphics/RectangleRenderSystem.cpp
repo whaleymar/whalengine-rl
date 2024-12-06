@@ -22,7 +22,7 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
     gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, rect.color, eCtx.colorBuf);
 }
 
-void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
+void RectangleRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto draw = entity.get<DrawRect>();
         const auto trans = entity.get<Transform>();
@@ -30,11 +30,10 @@ void RectangleRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue
         const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
                                                         Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.emplace_back(gfx::EntityRenderInfo{
+        queue.push_back(gfx::EntityRenderLoc{
             .boundingBox = bb,
             .preciseTransform = pTrans,
             .entity = entity,
-            .piRender = this,
         });
     }
 }
