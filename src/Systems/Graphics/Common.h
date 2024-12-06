@@ -9,6 +9,7 @@
 
 namespace whal {
 
+class Renderer;
 class TextureAtlas;
 
 namespace gfx {
@@ -36,17 +37,39 @@ struct ColorBufInfo {
     static const ColorBufInfo NONE;
 };
 
-// TODO split this into 2 structs. One with just the AABB (only needed for culling) and one with PreciseTransform (only calculated by Renderer if
-// not culled)
-//  - difficult thing is that some classes (like DropShadowRenderer) manually alter the PreciseTransform calculation... so maybe not
-//  - getting rid of the bounding box could still be nice for efficiency?
-//    - also don't need IRender implementer to add piRender, renderer can add that to struct w/ PreciseTransform
 struct EntityRenderInfo {
-    AABB boundingBox;
+    f32 bottom;
     PreciseTransform preciseTransform;
     ecs::Entity entity;
     const ecs::IRender* piRender;
     ColorBufInfo colorBuf = {};
+};
+
+struct EntityRenderLoc {
+    AABB boundingBox;
+    PreciseTransform preciseTransform;
+    ecs::Entity entity;
+};
+
+class RenderQueue {
+    friend Renderer;
+
+public:
+    void push_back(const EntityRenderLoc& thing);
+    void setViewBox(const AABB& viewBox) { mCameraViewBox = viewBox; }
+    void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
+    void clear() {
+        mNormalQueue.clear();
+        mUIQueue.clear();
+    }
+
+private:
+    std::vector<EntityRenderInfo> mNormalQueue;
+    std::vector<EntityRenderInfo> mUIQueue;  // UI separate so it's not affected by lighting
+
+    // draw state:
+    ecs::IRender* mpIRender;
+    AABB mCameraViewBox;
 };
 
 PreciseTransform getPreciseTrans(ecs::Entity entity);

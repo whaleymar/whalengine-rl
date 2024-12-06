@@ -17,7 +17,7 @@ public:
     TextRenderSystem();
     ~TextRenderSystem();
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
-    void addToQueue(std::vector<gfx::EntityRenderInfo>&) const override;
+    void addToQueue(gfx::RenderQueue&) const override;
 
 private:
     rl::Font* mFont;

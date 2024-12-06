@@ -22,7 +22,7 @@ ecs::Entity createBlock(Transform transform) {
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid));
 
     return block;
 }
@@ -39,7 +39,7 @@ ecs::Entity createBlock(Transform transform, DrawRect rect) {
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL)));
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid));
 
     return block;
 }
@@ -56,7 +56,10 @@ ecs::Entity createBlock(Transform transform, Sprite sprite, WorldMaterial materi
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider::Solid(transform, Vector2i(widthTileHL, heightTileHL), material));
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid,
+                       ColliderParams{
+                           .material = material,
+                       }));
 
     return block;
 }

@@ -61,47 +61,9 @@ void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other
     callbackEntityCollider.squish(other, hitNormal);
 }
 
-Collider::Collider(AABB shape, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
-                   CollisionCallback squish_)
-    : mShape(shape), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_), mSquishCallback(squish_), mMaterial(material),
-      mCollisionDir(collisionDir), mCollisionMask(layer) {}
-
-Collider::Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                   CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset)
-    : mShape(AABB(transform, halflen, offset)), mOffset(offset), mCollisionLayer(layer), mOnCollisionEnter(onCollisionEnter_),
-      mSquishCallback(squish_), mMaterial(material), mCollisionDir(collisionDir), mCollisionMask(layer) {}
-
-Collider Collider::Actor(AABB shape, CollisionCallback squish_) {
-    auto collider = Collider(shape, CollisionLayer::Actor);
-    collider.setSquishCallback(squish_);
-    return collider;
-}
-
-Collider Collider::Actor(Transform transform, Vector2i halflen, CollisionCallback squish_, Vector2i offset) {
-    auto collider = Collider(transform, halflen, CollisionLayer::Actor, WorldMaterial::None, nullptr, CollisionDir::ALL, &defaultSquish, offset);
-    collider.setSquishCallback(squish_);
-    return collider;
-}
-
-Collider Collider::Solid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
-                         CollisionCallback squish_) {
-    return Collider(shape, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_);
-}
-
-Collider Collider::Solid(Transform transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                         CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset) {
-    return Collider(transform, halflen, CollisionLayer::Solid, material, onCollisionEnter_, collisionDir, squish_, offset);
-}
-
-Collider Collider::SemiSolid(AABB shape, WorldMaterial material, CollisionCallback onCollisionEnter_, CollisionDir collisionDir,
-                             CollisionCallback squish_) {
-    return Collider(shape, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_);
-}
-
-Collider Collider::SemiSolid(Transform transform, Vector2i halflen, WorldMaterial material, CollisionCallback onCollisionEnter_,
-                             CollisionDir collisionDir, CollisionCallback squish_, Vector2i offset) {
-    return Collider(transform, halflen, CollisionLayer::SemiSolid, material, onCollisionEnter_, collisionDir, squish_, offset);
-}
+Collider::Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, ColliderParams params)
+    : mShape(AABB(transform, halflen, params.offset)), mOffset(params.offset), mCollisionLayer(layer), mOnCollisionEnter(params.onCollisionEnter),
+      mSquishCallback(params.onSquish), mMaterial(params.material), mCollisionDir(params.collisionDir), mCollisionMask(layer) {}
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
@@ -575,8 +537,12 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const auto prevColliderPos = AABB(mShape.getPosition() - moveVec, mShape.getHalf());
-    const auto prevColliderState = Collider(prevColliderPos, mCollisionLayer, mMaterial, nullptr, mCollisionDir);
+    const auto prevColliderState = Collider(Transform{.position = mShape.getPosition() - moveVec}, mShape.getHalf(), mCollisionLayer,
+                                            ColliderParams{
+                                                .material = mMaterial,
+                                                .collisionDir = mCollisionDir,
+                                                .onCollisionEnter = nullptr,
+                                            });
 
     assert(math::abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 

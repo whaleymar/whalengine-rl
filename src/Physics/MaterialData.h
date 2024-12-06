@@ -30,10 +30,9 @@ struct MaterialData {
         RigidBodyFlag = 1 << 1,
         Liquid = 1 << 2,
         Light = 1 << 3,
-        GlowFlag = 1 << 4,
-        DecayTime = 1 << 5,
-        DecaySpeed = 1 << 6,
-        FadeOutFlag = 1 << 7,
+        DecayTime = 1 << 4,
+        DecaySpeed = 1 << 5,
+        FadeOutFlag = 1 << 6,
     };
 
     struct DecayTimeParams {
@@ -58,7 +57,7 @@ struct MaterialData {
         entity.add(Lifetime{.secondsRemaining = lifetime});
 
         if (isFlagSet(Collision)) {
-            auto collider = Collider::Actor(AABB(entity.get<Transform>(), {halfLen, halfLen}, Vector2i()));
+            auto collider = Collider(entity.get<Transform>(), {halfLen, halfLen}, CollisionLayer::Actor);
             collider.setMaterial(id);
             entity.add(collider);
         }
@@ -110,8 +109,8 @@ struct MaterialData {
             Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; }).setTransition(Ease::InQuad);
         }
 
-        if (isFlagSet(GlowFlag)) {
-            entity.get<T>().color.scale(2.0);  // TODO brightness modifier in material struct, not flag
+        if (brightness != 1.0) {
+            entity.get<T>().color.scale(brightness);
         }
 
         if (startScale != 1.0) {
@@ -134,6 +133,7 @@ struct MaterialData {
     } decayParams;
     f32 startScale = 1.0;
     DrawTag particleShape = DrawTag::Rect;
+    f32 brightness = 1.0;
 };
 
 }  // namespace whal

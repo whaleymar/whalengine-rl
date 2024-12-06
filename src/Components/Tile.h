@@ -6,7 +6,7 @@ namespace whal {
 
 // Tiles can cache their render info since they don't move
 struct Tile {
-    gfx::EntityRenderInfo renderInfo;
+    gfx::EntityRenderLoc renderInfo;
 };
 
 }  // namespace whal

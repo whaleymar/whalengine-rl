@@ -42,18 +42,17 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
 }
 
-void LineRenderSystem::addToQueue(std::vector<gfx::EntityRenderInfo>& queue) const {
+void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (auto [entityid, entity] : getEntitiesMutable()) {
         const auto line = entity.get<DrawStraightLine>();
         const auto trans = entity.get<Transform>();
         const auto pTrans = gfx::getPreciseTrans(entity, trans);
         const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
 
-        queue.emplace_back(gfx::EntityRenderInfo{
+        queue.push_back(gfx::EntityRenderLoc{
             .boundingBox = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>()),
             .preciseTransform = pTrans,
             .entity = entity,
-            .piRender = this,
         });
     }
 }
