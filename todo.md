@@ -18,10 +18,10 @@ NEXT GOAL:
 - use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
     - would apply to sprite color, not necessarily bloom. Can use it as a transparency mask, brightness mask, etc.
 - need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
-- tile performance: can put tile Sprite components in a shared LUT and store index in tile component?
-    - can also write a faster variant of getDrawParams that omits unused stuff like rotation/scaling
-        - should also try passing trans as a reference in those funcs
 - posterization shader doesn't work right with HDR colors
+- apply texture overlay on tiled and other sprites:
+    - https://godotshaders.com/shader/repeated-texture-overlay-for-tilemaps/
+    - animating it would be sick
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -63,6 +63,14 @@ NEXT GOAL:
 ## Physics 
 - colliders need to scale with transform
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
+
+## Rendering Performance (if needed)
+- tile performance: can put tile Sprite components in a shared LUT and store index in tile component?
+- put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
+    - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
+- one of these:
+    - have render systems maintain their entities sorted, then can merge using std::merge
+    - cache entity positions from previous frame, remove and re-insert entities whose positions changed
 
 ## Misc
 - define some common tween functions (transform position, rotation, sprite scale, etc) in a header
