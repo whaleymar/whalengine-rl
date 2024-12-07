@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include "Util/Easing.h"
 #include "whalECS/src/ECS.h"
@@ -161,6 +162,10 @@ public:
     // i would like this to be private but friending std::shared_ptr doesn't work
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
+
+    Tween(T target, f32 duration, std::type_identity_t<std::function<T&(ecs::Entity)>> const& getter, ecs::Entity entity)
+        : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
+
     ~Tween() = default;
 
     f32 getProgress() const { return (mElapsedTime - mDelay) / mDuration; }
@@ -266,7 +271,8 @@ private:
     T mStartValue;
     T mEndValue;
     T mTweenValue;
-    TweenManager::ValueGetter<T> mGetter;
+    // TweenManager::ValueGetter<T> mGetter;
+    std::function<T&(ecs::Entity)> mGetter;
     ecs::Entity mEntity;
     TweenCallback mOnStart = nullptr;
     TweenCallback mOnEnd = nullptr;

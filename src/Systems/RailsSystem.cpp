@@ -124,9 +124,7 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
                 const f32 segmentDistance = (targetPosF - rails.startPosition).len();
                 const f32 time = segmentDistance / rails.speed;
 
-                Schedule
-                    .tween(entity, rails.getTarget().position, time,
-                           [](ecs::Entity entity) -> Vector2i& { return entity.get<Transform>().position; })
+                Schedule.tween(entity, rails.getTarget().position, time, &Transform::position)
                     .setTransition(rails.getTarget().movement)
                     .setOnEnd([](ecs::Entity entity, const Tween<Vector2i>&) {
                         auto& rails = entity.get<RailsControl>();
