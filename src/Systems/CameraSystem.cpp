@@ -27,7 +27,7 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, [](ecs::Entity self) -> auto& { return self.get<PrecisePosition>().position; })
+        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &PrecisePosition::position)
             .setTransition(Ease::InOutQuad)
             .asIgnoreSlowdown()
             .setOnUpdate(

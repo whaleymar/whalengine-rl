@@ -73,7 +73,6 @@ NEXT GOAL:
     - cache entity positions from previous frame, remove and re-insert entities whose positions changed
 
 ## Misc
-- define some common tween functions (transform position, rotation, sprite scale, etc) in a header
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children

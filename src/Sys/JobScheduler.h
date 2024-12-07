@@ -133,6 +133,15 @@ public:
         return Tweener(tween);
     }
 
+    // example usage: `Schedule.tween(entity, 360.0f, 2, &Transform::rotationDegrees)`
+    template <typename Component, typename T>
+    Tweener<T> tween(ecs::Entity entity, T target, f32 duration, T Component::*member) {
+        const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, entity);
+        mTweenMgr.mTweens.push_back(tween);
+        return Tweener(tween);
+    }
+
 private:
     JobScheduler(const JobScheduler&) = delete;
     void operator=(const JobScheduler&) = delete;

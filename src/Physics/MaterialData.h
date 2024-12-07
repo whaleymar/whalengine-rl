@@ -74,8 +74,7 @@ struct MaterialData {
 
             // if fading, then decrease light with time
             if (isFlagSet(FadeOutFlag)) {
-                Schedule.tween(entity, 0, lifetime, [](ecs::Entity self) -> s32& { return self.get<PointLight>().radius; })
-                    .setTransition(Ease::InQuad);
+                Schedule.tween(entity, 0, lifetime, &PointLight::radius).setTransition(Ease::InQuad);
             }
         }
 
@@ -92,7 +91,7 @@ struct MaterialData {
                         .minSpeed = minSpeedTPS,
                         .lifetime = decaySeconds,
                     });
-                    Schedule.tween(e, fadeColor, decaySeconds, [](ecs::Entity self) -> Color& { return self.get<T>().color; })
+                    Schedule.tween(e, fadeColor, decaySeconds, &T::color)
                         .setTransition(Ease::InOutQuad)
                         .setOnStart([](ecs::Entity self, const Tween<Color>&) {
                             self.add(Lifetime{.secondsRemaining = self.get<DieWhenSpeedBelow>().lifetime});
@@ -106,7 +105,7 @@ struct MaterialData {
         }
 
         if (isFlagSet(FadeOutFlag)) {
-            Schedule.tween(entity, fadeColor, lifetime, [](ecs::Entity self) -> Color& { return self.get<T>().color; }).setTransition(Ease::InQuad);
+            Schedule.tween(entity, fadeColor, lifetime, &T::color).setTransition(Ease::InQuad);
         }
 
         if (brightness != 1.0) {
@@ -114,8 +113,7 @@ struct MaterialData {
         }
 
         if (startScale != 1.0) {
-            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, [](ecs::Entity self) -> Vector2f& { return self.get<Transform>().scale; })
-                .from(Vector2f(1.0, 1.0) * startScale);
+            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, &Transform::scale).from(Vector2f(1.0, 1.0) * startScale);
         }
     }
 
