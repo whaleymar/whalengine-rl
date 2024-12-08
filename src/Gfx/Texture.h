@@ -44,6 +44,7 @@ enum class TextureID {
     OcclusionDepth,
     AllDepth,
     Bloom,
+    DistanceField,
     _COUNT_DO_NOT_USE_ME,
 };
 

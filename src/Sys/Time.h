@@ -14,12 +14,13 @@ public:
     f32 dt() const { return mDeltatime; }  // shorthand
     f32 getDeltaTime() const { return mDeltatime; }
     f32 getUnmodified() const { return mDeltatimeUnmodified; }
-    f32 getElapsed() const { return mTimeElapsed; }
+    f32 getElapsed() const { return mTimeElapsed; }  // updated once per frame
     s32 getFrame() const { return mFrame; }
     void update();
     void setMultiplier(f32);
     f32 getMultiplier() const { return mTimeMultiplier; }
     void sleep(int milliseconds);
+    f32 getElapsedPrecise() const;  // precise time within frame
 
 private:
     TimeManager(const TimeManager&) = delete;

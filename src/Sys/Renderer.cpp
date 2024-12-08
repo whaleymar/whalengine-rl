@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Gfx/Shaders/DistanceField.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -271,6 +272,13 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     rl::EndTextureMode();
 }
 
+void Renderer::buildDistanceField() const {
+    static DistanceField dfShader;
+    const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionColor);
+    const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
+    dfShader.process(occlSrc, dfDst);
+}
+
 // this does what the old Mega-GraphicsSystem used to do.
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
@@ -284,6 +292,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::EndTextureMode();
 
     scaleDepthBuffers(renderContext);
+    buildDistanceField();
 }
 
 void Renderer::drawLights(gfx::RenderContext renderContext) {

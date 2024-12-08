@@ -168,6 +168,7 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
     {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
     {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
     {TextureID::Bloom, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::DistanceField, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
 };
 
 TextureManager::TextureManager() {

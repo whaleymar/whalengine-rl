@@ -1,0 +1,53 @@
+#include "DistanceField.h"
+
+#include <cmath>
+#include "Gfx/RaylibUtil.h"
+#include "Sys/System.h"
+#include "raylib.h"
+
+namespace whal {
+
+DistanceField::DistanceField()
+    : mUvMask("", "whalengine/src/Shader/UVMask.glsl"), mJumpFlood("", "whalengine/src/Shader/JumpFloodUV.glsl"),
+      mDistanceField("", "whalengine/src/Shader/DistanceField.glsl") {}
+
+void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
+    assert(mJumpFlood.isValid() && src.texture.width == dst.texture.width && src.texture.height == dst.texture.height);
+
+    auto tmpOutput = Graphics.getTemporaryRT(dst.texture);
+    Graphics.blit(src, tmpOutput, mUvMask.get());
+    rl::RenderTexture currentInput = tmpOutput;
+    rl::RenderTexture currentOutput = dst;
+
+    // number of passed should be log base 2 of our largest dimension
+    const s32 nPasses = std::ceil(std::log2(static_cast<f32>(std::max(src.texture.width, src.texture.height))));
+
+    Vector2f floatResolutionInv(1.0f / static_cast<f32>(src.texture.width), 1.0f / static_cast<f32>(src.texture.height));
+    for (s32 i = 1; i < nPasses; i++) {
+        // draw
+        const f32 offset = std::pow(2, static_cast<f32>(nPasses - i - 1));
+        const Vector2f offsetVec = floatResolutionInv * offset;
+        mJumpFlood.setVector2("_Offset", offsetVec);
+        Graphics.blit(currentInput, currentOutput, mJumpFlood.get());
+
+        // swap
+        // use src as temporary value
+        src = currentInput;
+        currentInput = currentOutput;
+        currentOutput = src;
+    }
+
+    // make sure latest draw is to tmpOutput
+    // (if currentOutput is tmpOutput.id, then we just drew to dst)
+    if (currentOutput.id == tmpOutput.id) {
+        Graphics.blit(currentInput, currentOutput);
+    }
+
+    // convert Jump-Flooded UV field into distance field:
+    Graphics.blit(tmpOutput, dst, mDistanceField.get());
+
+    // release temporary texture
+    Graphics.releaseTemporaryRT(tmpOutput);
+}
+
+}  // namespace whal
