@@ -17,6 +17,9 @@ NEXT GOAL:
 ## Gfx 
 - use sprite masking to control which parts of a sprite are bloomed: https://youtu.be/WiDVoj5VQ4c?si=kd5caB1nMtbDYr7v
     - would apply to sprite color, not necessarily bloom. Can use it as a transparency mask, brightness mask, etc.
+    - challenge: texture altas would need to use HDR colors for it to work w/ bloom the way I want?
+        - aseprite does not support hdr color depth afaict. crunch definitely doesn't support it, but the PNG library call it makes in BitMask::SaveAs could be changed to support 16 bit color depth
+            - seems like I might be better off using an LDR mask that specifically affects bloom
 - need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
 - posterization shader doesn't work right with HDR colors
 - apply texture overlay on tiled and other sprites:

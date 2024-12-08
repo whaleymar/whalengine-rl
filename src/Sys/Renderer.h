@@ -106,6 +106,7 @@ private:
     void drawEntities(gfx::RenderContext ctx);
     void drawLights(gfx::RenderContext ctx);
     void scaleDepthBuffers(gfx::RenderContext ctx) const;
+    void buildDistanceField() const;
     void drawUI(const gfx::RenderContext ctx) const;
 
     rl::Camera2D mRaylibCamera;

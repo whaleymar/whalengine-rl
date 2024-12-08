@@ -8,6 +8,7 @@
 namespace whal {
 
 static constexpr f32 MAX_FRAME_TIME = 0.1;  // cap at half a second
+static auto S_GAME_STARTTIME = std::chrono::system_clock::now();
 
 TimeManager::TimeManager() {}
 
@@ -30,6 +31,10 @@ void TimeManager::setMultiplier(f32 multiplier) {
 
 void TimeManager::sleep(int milliseconds) {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
+
+f32 TimeManager::getElapsedPrecise() const {
+    return std::chrono::duration<f32>((std::chrono::system_clock::now() - S_GAME_STARTTIME)).count();
 }
 
 }  // namespace whal
