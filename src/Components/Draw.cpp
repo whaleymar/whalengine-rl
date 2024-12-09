@@ -37,6 +37,24 @@ void Sprite::setFrame(Frame frame) {
     atlasPosition = frame.atlasPosition;
 }
 
+void Sprite::setMask(Frame frame) {
+    maskPosRelative = frame.atlasPosition - atlasPosition;
+}
+
+void Sprite::setMask(const char* maskAtlasPath) {
+    const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
+    auto frame = spriteTexture.getFrame(maskAtlasPath);
+    if (frame) {
+        setMask(*frame);
+    } else {
+        print("couldn't find in atlas:", maskAtlasPath);
+    }
+}
+
+void Sprite::removeMask() {
+    maskPosRelative = Vector2i::ZERO;
+}
+
 namespace stl {
 template <class ForwardIt, class T = typename std::iterator_traits<ForwardIt>::value_type>
 void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_value) {

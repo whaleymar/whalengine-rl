@@ -24,7 +24,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     // Swaps only happen if the new shader isn't the active one.
     rl::BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color,
-                       eCtx.colorBuf);
+                       eCtx.colorBuf, sprite.maskPosRelative);
 }
 
 void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {

@@ -245,8 +245,14 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::ColorBufInfo cbi)
 }
 
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, Color tint,
-                   gfx::ColorBufInfo colorBufInfo) {
-    DrawSpriteHDR(texture, source, dest, origin, rotation, tint.asRL(), colorBufInfo.asRL());
+                   gfx::ColorBufInfo colorBufInfo, Vector2i maskOffset) {
+    rl::Vector3 cbi = colorBufInfo.asRL();
+    if (!maskOffset.isZero()) {
+        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
+        cbi.y = static_cast<f32>(maskOffset.x) / static_cast<f32>(texture.width);   // x offset
+        cbi.z = static_cast<f32>(maskOffset.y) / static_cast<f32>(texture.height);  // x offset
+    }
+    DrawSpriteHDR(texture, source, dest, origin, rotation, tint.asRL(), cbi);
 }
 
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,

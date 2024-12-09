@@ -4,6 +4,7 @@
 
 #include "Gfx/Color.h"
 #include "Gfx/Depth.h"
+#include "Gfx/Frame.h"
 #include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
@@ -21,10 +22,15 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     static Sprite fromFrame(Frame frame, Color color_ = Colors::White);
 
     void setFrame(Frame frame);
+    void setMask(Frame frame);
+    void setMask(const char* maskAtlasPath);
+    void removeMask();
 
     Vector2i frameSize;
     Vector2i atlasPosition;
     Color color = Colors::White;
+
+    Vector2i maskPosRelative = Vector2i::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
 
     static void loadImpl(ecs::Entity entity, void* data);
 };

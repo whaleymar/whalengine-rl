@@ -10,6 +10,7 @@ in vec4 fragColor;
 in float fragDepth;
 in float isOccluder;
 in float isUI;
+in vec2 maskTexCoord;
 
 // Input uniform values
 uniform sampler2D texture0;
@@ -20,8 +21,13 @@ uniform vec4 colDiffuse;
 void main() {
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 maskColor = vec4(1.);
 
-    FragColor = texelColor * fragColor; 
+    if (maskTexCoord != fragTexCoord) {
+        maskColor = texture(texture0, maskTexCoord);
+    }
+
+    FragColor = texelColor * fragColor * maskColor; 
 
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0
@@ -37,7 +43,6 @@ void main() {
         AllDepth = vec4(0., 0., 0., 0.0);
     }
 
-    // TESTING
     OcclColor = FragColor * vec4(isOccluder);
 
 }

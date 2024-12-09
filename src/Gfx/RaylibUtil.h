@@ -43,7 +43,7 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::ColorBufInfo cbi)
 // I can also co-opt the normals RESEARCH
 // In the Future Future I should just change the raylib batched vertex buffer to support more custom stuff
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, Color tint,
-                   gfx::ColorBufInfo colorBufInfo = gfx::ColorBufInfo::NONE);
+                   gfx::ColorBufInfo colorBufInfo = gfx::ColorBufInfo::NONE, Vector2i maskOffset = Vector2i::ZERO);
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
                    rl::Vector3 packedCBI);
 
