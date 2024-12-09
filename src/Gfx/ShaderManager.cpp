@@ -76,7 +76,7 @@ void ShaderManager::loadShaders() {
         {Shaders::BoxLight, 0, "whalengine/src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
         // {Shaders::Quantize, 0, "whalengine/src/Shader/quantize.glsl"},
         {Shaders::ToneMap, 0, "whalengine/src/Shader/toneMapping.glsl"},
-        {Shaders::ShadowLight, 0, "whalengine/src/Shader/shadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
+        {Shaders::ShadowLight, 0, "whalengine/src/Shader/ShadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
         {Shaders::Blur, 0, "whalengine/src/Shader/blur.glsl", Uniforms::Resolution},
         {Shaders::BlurLowRes, 0, "whalengine/src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::LightPassThru, 0, "whalengine/src/Shader/lightpassthrough.glsl"},

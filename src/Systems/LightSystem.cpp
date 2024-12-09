@@ -140,6 +140,7 @@ void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mLightDepthUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
     mDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "depthBuf");
     mOcclDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
+    mDistanceFieldUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "_DistanceField");
 }
 
 void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
@@ -149,6 +150,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
     const auto depthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
     const auto occlDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
     // must match what's in spritefrag.glsl
@@ -171,6 +173,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
         rl::SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
+        rl::SetShaderValueTexture(shader, mDistanceFieldUniform, distanceFieldTex);
 
         gfx::DrawRenderTextureHDR(colorTex, light.color);
         rl::EndShaderMode();
