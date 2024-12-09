@@ -33,7 +33,7 @@ struct ColorBufInfo {
     bool isOccluder;
     bool isUI;
 
-    rl::Vector3 asRL() const;
+    rl::Vector3 asRL(Vector2i maskOffset = Vector2i::ZERO, Vector2f textureDims = Vector2f::ZERO) const;
     static const ColorBufInfo NONE;
 };
 
