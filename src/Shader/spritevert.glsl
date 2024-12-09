@@ -17,6 +17,7 @@ out vec4 fragColor;
 out float fragDepth;
 out float isOccluder;
 out float isUI;
+out float isMask;
 out vec2 maskTexCoord;
 
 // NOTE: Add here your custom variables
@@ -46,6 +47,13 @@ void main()
         isUI = 1.0;
     } else {
         isUI = 0.0;
+    }
+
+    // 11th bit 
+    if ((intData & 0x400u) != 0u) {
+        isMask = 1.0;
+    } else {
+        isMask = 0.0;
     }
 
     maskTexCoord = vertexNormal.gb + vertexTexCoord;

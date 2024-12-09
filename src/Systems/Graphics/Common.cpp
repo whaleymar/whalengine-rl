@@ -12,7 +12,7 @@ namespace whal::gfx {
 
 const ColorBufInfo ColorBufInfo::NONE = {0, false, false};
 
-rl::Vector3 ColorBufInfo::asRL() const {
+rl::Vector3 ColorBufInfo::asRL(Vector2i maskOffset, Vector2f textureDims) const {
     u32 packed = 0;
     packed |= static_cast<u32>(depth);
 
@@ -24,9 +24,19 @@ rl::Vector3 ColorBufInfo::asRL() const {
         packed |= (1 << 9);
     }
 
-    f32 result;
-    std::memcpy(&result, &packed, sizeof(f32));
-    return rl::Vector3{result, 0.0f, 0.0f};
+    f32 x;
+    f32 y = 0.0f;
+    f32 z = 0.0f;
+    if (!maskOffset.isZero()) {
+        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
+        y = static_cast<f32>(maskOffset.x) / textureDims.x;  // x offset
+        z = static_cast<f32>(maskOffset.y) / textureDims.y;  // y offset
+
+        packed |= (1 << 10);  // set flag so we know there's a mask
+    }
+
+    std::memcpy(&x, &packed, sizeof(f32));
+    return rl::Vector3{x, y, z};
 }
 
 void RenderQueue::push_back(const EntityRenderLoc& renderInfo) {

@@ -10,6 +10,7 @@ in vec4 fragColor;
 in float fragDepth;
 in float isOccluder;
 in float isUI;
+in float isMask;
 in vec2 maskTexCoord;
 
 // Input uniform values
@@ -23,7 +24,7 @@ void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
     vec4 maskColor = vec4(1.);
 
-    if (maskTexCoord != fragTexCoord) {
+    if (isMask > 0.) {
         maskColor = texture(texture0, maskTexCoord);
     }
 
