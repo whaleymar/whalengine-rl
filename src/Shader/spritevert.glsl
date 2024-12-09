@@ -17,6 +17,7 @@ out vec4 fragColor;
 out float fragDepth;
 out float isOccluder;
 out float isUI;
+out vec2 maskTexCoord;
 
 // NOTE: Add here your custom variables
 
@@ -46,7 +47,8 @@ void main()
     } else {
         isUI = 0.0;
     }
-    // fragDepth = vertexNormal.r;
+
+    maskTexCoord = vertexNormal.gb + vertexTexCoord;
 
     // this is from the raylib template, idk what it does, can't just do the commented version
     gl_Position = mvp*vec4(vertexPosition, 1.0);
