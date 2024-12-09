@@ -56,6 +56,7 @@ private:
     int mLightDepthUniform;
     int mDepthBufUniform;
     int mOcclDepthBufUniform;
+    int mDistanceFieldUniform;
 };
 
 }  // namespace whal

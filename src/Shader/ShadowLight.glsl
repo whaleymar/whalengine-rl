@@ -18,16 +18,14 @@ uniform float radiusPixels;
 uniform float lightDepth;
 uniform sampler2D depthBuf;
 uniform sampler2D occlDepthBuf;
+uniform sampler2D _DistanceField;
 
 // Output fragment color
 out vec4 finalColor;
 
-// good balance of speed & visuals
-// can handle 5+ lights
-// set steps to 100 for slightly less chunky shadows
-const float STEPS = 80.;
-// const float STEPS = 200.;
+const int STEPS = 32;
 const int LIGHTPASSES = 10;
+const float hitEpsilon = 0.001;
 
 const vec3 wallColor = vec3(0.0);
 const float pi = 3.1415926;
@@ -42,39 +40,84 @@ bool isBehindSomething(vec2 p) {
     return lightDepth < depth;
 }
 
+bool isOutOfBounds(vec2 p) {
+    return p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0;
+}
+
 vec4 getWallColor(vec2 p) {
     return texture(texture0, p);
 }
 
 // RESEARCH optimization/quality improvement: do more LIGHTPASSES the quicker I hit a wall. Shadows are very low quality when the light is right next to a wall & it probably wouldn't have a huge performance hit
-vec3 getLighting(vec2 p, vec2 lp) {
+vec3 getLightingNEW(vec2 p, vec2 lp) {
     const float minOcclusionAlpha = 0.99;
 
 	vec2 samplePixel = p;
-    float distance = length(p - lp);
-
-    // do fewer steps for smaller distances
-    int nSteps = int(STEPS * distance);
-	vec2 step = (lp-p)/float(nSteps);
-
+    vec2 rayDir = normalize(lp - p);
     vec3 wallVal = vec3(0.);
     vec3 airVal = vec3(1.0);
-    vec3 prevColor = vec3(0.);
 
-    float currentDistance = 0.;
-    float stepDistance = distance / float(nSteps);
+    // tested UV already for this point, so skip step 0
+	for (int i = 1 ; i < STEPS; i++) {
+        float dist = texture(_DistanceField, samplePixel).r;
+		samplePixel += rayDir * dist;
+        if (isOutOfBounds(samplePixel)) {
+            break;
+        }
 
-	for (int i = 0 ; i < nSteps; i++) {
-		if (isWall(samplePixel)) {
+        // isWall checks depth conditions
+        if (dist < hitEpsilon && isWall(samplePixel)) {
+        // if (dist < hitEpsilon) {
+        // if (isWall(samplePixel)) {
+            // hit something 
+
             // check for translucency
             vec4 wallCol = getWallColor(samplePixel);
             if (wallCol.a >= minOcclusionAlpha) {
                 return wallVal;
+                // return wallVal * airVal; // TODO think it should be this
             } else {
                 airVal = mix(airVal, wallCol.rgb, wallCol.a);
             }
         }
+	}
+	
+	return airVal;
+}
+
+vec3 getLighting(vec2 p, vec2 lp) {
+    const float minOcclusionAlpha = 0.99;
+
+	vec2 samplePixel = p;
+	vec2 step = (lp-p)/float(STEPS);
+    vec2 rayDir = normalize(lp - p);
+
+    vec3 wallVal = vec3(0.);
+    vec3 airVal = vec3(1.0);
+
+	for (int i = 0 ; i < STEPS; i++) {
+        // old:
 		samplePixel += step;
+
+        // new:
+        // idk why it's not working right
+  //       float dist = texture(_DistanceField, samplePixel).r;
+  //       vec2 nextStep = rayDir * vec2(dist);
+		// samplePixel += nextStep;
+
+        if (isOutOfBounds(samplePixel)) {
+            return airVal;
+        }
+
+		if (isWall(samplePixel)) {
+            // check for translucency
+            vec4 wallCol = getWallColor(samplePixel);
+            if (wallCol.a >= minOcclusionAlpha) {
+                return wallVal * airVal;
+            } else {
+                airVal = mix(airVal, wallCol.rgb, wallCol.a);
+            }
+        }
 	}
 	
 	return airVal;
