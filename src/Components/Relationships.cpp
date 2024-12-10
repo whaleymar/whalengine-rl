@@ -72,7 +72,6 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
 
     tryRead(ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
-    const Vector2i entityDimensions = ctx.entityData.size;
     const Vector2i entityTrans = entity.get<Transform>().position;
 
     if (!ctx.values.contains("Target")) {

@@ -22,7 +22,7 @@ void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
 }
 
 void BezierRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         const auto line = entity.get<DrawBezierQuad>();
         const PreciseTransform pTrans = gfx::getPreciseTrans(entity);
         const Vector2i position = pTrans.position.round();

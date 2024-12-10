@@ -8,7 +8,7 @@ namespace whal {
 
 void LifetimeSystem::update() {
     f32 dt = Time.dt();
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         auto& lifetime = entity.get<Lifetime>();
         lifetime.secondsRemaining -= dt;
         if (lifetime.secondsRemaining <= 0) {

@@ -5,7 +5,7 @@
 namespace whal {
 
 void MouseCursorSystem::update() {
-    for (auto [id, entity] : getEntitiesMutable()) {
+    for (auto [id, entity] : getEntities()) {
         Vector2i position = Input.getMouseWorld();
 
         // update transform

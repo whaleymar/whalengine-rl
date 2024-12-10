@@ -36,7 +36,7 @@ ColliderSystem::ColliderSystem() {
 void drawColliders() {
     auto cameraPos = getCameraPositionPrecise();
     // auto cameraPos = toFloatVec(getCameraPosition());
-    for (const auto [entityid, entity] : ColliderSystem::getEntitiesMutable()) {
+    for (const auto [entityid, entity] : ColliderSystem::getEntities()) {
         const auto collider = entity.get<Collider>();
         Color color;
         if (collider.isActor()) {
@@ -51,7 +51,7 @@ void drawColliders() {
         collider.getShape().draw(cameraPos, color);
     }
 
-    for (const auto& [entityid, entity] : TriggerSystem::getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : TriggerSystem::getEntities()) {
         entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
     }
 }
@@ -82,7 +82,7 @@ RaycastHit ColliderSystem::circlecast(Vector2f origin, Vector2f direction, f32 m
 
 void ColliderSystem::rebuild(s32 width, s32 height) {
     QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(width / 2, height / 2)));
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         QUAD_TREE.add(entity);
     }
 }

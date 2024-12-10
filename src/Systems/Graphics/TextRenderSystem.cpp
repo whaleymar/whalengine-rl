@@ -73,7 +73,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 }
 
 void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         const auto draw = entity.get<DrawText>();
         const auto trans = entity.get<Transform>();
 

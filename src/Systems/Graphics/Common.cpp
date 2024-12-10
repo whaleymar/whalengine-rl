@@ -11,25 +11,7 @@
 
 namespace whal::gfx {
 
-const DrawMetaData DrawMetaData::NONE = {Vector2f::ZERO, 0, false, false};
-
-void DrawMetaData::setFlags(const Sprite& sprite, Vector2f textureDims) {
-    if (!sprite.maskPosRelative.isZero()) {
-        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
-        f32 x = static_cast<f32>(sprite.maskPosRelative.x) / textureDims.x;  // x offset
-        f32 y = static_cast<f32>(sprite.maskPosRelative.y) / textureDims.y;  // y offset
-
-        maskOffsetUV = {x, y};
-    }
-
-    if (sprite.isFlagSet(Sprite::Silhouette)) {
-        isSilhouette = true;
-    }
-
-    if (sprite.isFlagSet(Sprite::MaskBlendAdditive)) {
-        isMaskBlendAdditive = true;
-    }
-}
+const DrawMetaData DrawMetaData::NONE = {0, false, false};
 
 rl::Vector3 DrawMetaData::asRL() const {
     u32 packed = 0;
@@ -43,15 +25,38 @@ rl::Vector3 DrawMetaData::asRL() const {
         packed |= (1 << 9);
     }
 
-    if (maskOffsetUV != Vector2f::ZERO) {
+    f32 x;
+    std::memcpy(&x, &packed, sizeof(f32));
+    return rl::Vector3{x, 0.0, 0.0};
+}
+
+rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const {
+    u32 packed = 0;
+    packed |= static_cast<u32>(depth);
+
+    if (isOccluder) {
+        packed |= (1 << 8);
+    }
+
+    if (isUI) {
+        packed |= (1 << 9);
+    }
+
+    Vector2f maskOffsetUV;
+    if (!sprite.maskPosRelative.isZero()) {
+        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
+        f32 x = sprite.maskPosRelative.x / textureDims.x;  // x offset
+        f32 y = sprite.maskPosRelative.y / textureDims.y;  // y offset
+
+        maskOffsetUV = {x, y};
         packed |= (1 << 10);  // set flag so we know there's a mask
     }
 
-    if (isSilhouette) {
+    if (sprite.isFlagSet(Sprite::Silhouette)) {
         packed |= (1 << 11);
     }
 
-    if (isMaskBlendAdditive) {
+    if (sprite.isFlagSet(Sprite::MaskBlendAdditive)) {
         packed |= (1 << 12);
     }
 
@@ -64,15 +69,13 @@ void RenderQueue::push_back(const EntityRenderLoc& renderInfo) {
     if (mCameraViewBox.isOverlapping(renderInfo.boundingBox)) {
         if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
             renderInfo.preciseTransform.depth == Depth::UIClose) {
-            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, renderInfo.entity, mpIRender,
-                                  gfx::DrawMetaData{.maskOffsetUV = Vector2f::ZERO,
-                                                    .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+                                  gfx::DrawMetaData{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                                     .isOccluder = renderInfo.entity.has<BlocksLight>(),
                                                     .isUI = true});
         } else {
-            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, renderInfo.entity, mpIRender,
-                                      gfx::DrawMetaData{.maskOffsetUV = Vector2f::ZERO,
-                                                        .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+                                      gfx::DrawMetaData{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                                         .isOccluder = renderInfo.entity.has<BlocksLight>(),
                                                         .isUI = false});
         }

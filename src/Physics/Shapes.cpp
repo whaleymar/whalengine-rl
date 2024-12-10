@@ -61,10 +61,6 @@ void AABB::setPosition(Transform transform, Vector2i relativeOffset) {
     mCenter = transform.apply(relativeOffset);
 }
 
-bool AABB::isOverlapping(const AABB& other) const {
-    return isIntersectAABBvsAABB(*this, other);
-}
-
 bool AABB::contains(const AABB& other) const {
     return left() <= other.left() && other.right() <= right() && other.top() <= top() && bottom() <= other.bottom();
 }

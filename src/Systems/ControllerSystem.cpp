@@ -19,7 +19,7 @@ void ControllerSystem::update() {
         return;
     }
 
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         Velocity& vel = entity.get<Velocity>();
         PlayerControl& control = entity.get<PlayerControl>();
 
@@ -64,7 +64,7 @@ void FreeControlSystem::update() {
         return;
     }
 
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         auto& trans = entity.get<Transform>();
         Vector2f delta;
         if (Input.isOn(InputType::LEFT)) {
@@ -102,7 +102,7 @@ void JumpSystem::update() {
     bool isJumpPressedThisFrame = Input.isJumpAvailable();
     Input.useJump();
 
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         Velocity& vel = entity.get<Velocity>();
         Jumper& jumpControl = entity.get<Jumper>();
         RigidBody& rb = entity.get<RigidBody>();

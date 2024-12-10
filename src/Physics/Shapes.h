@@ -33,8 +33,14 @@ public:
     Vector2i getClosestPointTo(Vector2i point) const;
     HitInfo collide(const AABB& other) const;
 
-    // NOT used by Shape, but is used by Collider
-    bool isOverlapping(const AABB& other) const;
+    // NOT used by Shape, but is used by Collider and Renderer
+    // inlining to speed up renderer
+    inline bool isOverlapping(const AABB& other) const {
+        const auto delta = other.mCenter - mCenter;
+        const auto overlap = mHalf + other.mHalf;
+        return overlap.x > abs(delta.x) && overlap.y > abs(delta.y);
+    }
+
     bool contains(const AABB& other) const;
     bool contains(Vector2i point) const;
 #ifndef NDEBUG
