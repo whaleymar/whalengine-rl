@@ -18,6 +18,14 @@ struct Frame;
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
 struct Sprite : ISerialize<Sprite, ComponentFactory> {
+    // controls settings in the main sprite shader
+    enum flag : u32 {
+        None = 0,
+        Silhouette = 1 << 0,
+        // mask blending (additive, subtract)
+        // outline
+    };
+
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
     static Sprite fromFrame(Frame frame, Color color_ = Colors::White);
 
@@ -26,11 +34,16 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     void setMask(const char* maskAtlasPath);
     void removeMask();
 
+    void setFlag(flag f);
+    void resetFlag(flag f);
+    bool isFlagSet(flag f) const;
+
     Vector2i frameSize;
     Vector2i atlasPosition;
     Color color = Colors::White;
 
     Vector2i maskPosRelative = Vector2i::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
+    u32 flags = flag::None;
 
     static void loadImpl(ecs::Entity entity, void* data);
 };

@@ -11,6 +11,7 @@ namespace whal {
 
 class Renderer;
 class TextureAtlas;
+struct Sprite;
 
 namespace gfx {
 
@@ -28,13 +29,16 @@ struct RenderContext {
 };
 
 // Stores arbitrary per-pixel information into a separate buffer when drawing.
-struct ColorBufInfo {
+struct DrawMetaData {
+    Vector2f maskOffsetUV;
     u8 depth;
     bool isOccluder;
     bool isUI;
+    bool isSilhouette = false;
 
-    rl::Vector3 asRL(Vector2i maskOffset = Vector2i::ZERO, Vector2f textureDims = Vector2f::ZERO) const;
-    static const ColorBufInfo NONE;
+    void setFlags(const Sprite& sprite, Vector2f textureDims);
+    rl::Vector3 asRL() const;
+    static const DrawMetaData NONE;
 };
 
 struct EntityRenderInfo {
@@ -42,7 +46,7 @@ struct EntityRenderInfo {
     PreciseTransform preciseTransform;
     ecs::Entity entity;
     const ecs::IRender* piRender;
-    ColorBufInfo colorBuf = {};
+    DrawMetaData colorBuf = {};
 };
 
 struct EntityRenderLoc {

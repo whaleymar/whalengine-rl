@@ -12,6 +12,7 @@ in float isOccluder;
 in float isUI;
 in float isMask;
 in vec2 maskTexCoord;
+in float isSilhouette;
 
 // Input uniform values
 uniform sampler2D texture0;
@@ -28,7 +29,11 @@ void main() {
         maskColor = texture(texture0, maskTexCoord);
     }
 
-    FragColor = texelColor * fragColor * maskColor; 
+    if (isSilhouette > 0.) {
+        FragColor = fragColor * maskColor * vec4(1., 1., 1., texelColor.a); 
+    } else {
+        FragColor = texelColor * fragColor * maskColor; 
+    }
 
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0

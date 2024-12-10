@@ -16,14 +16,14 @@ static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 posit
 
 // Draw text using font inside rectangle limits
 void DrawTextBoxed(rl::Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                   float angle, Vector2f pivotOffset, gfx::ColorBufInfo cbi) {
+                   float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi) {
     DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, Colors::White, angle, pivotOffset, cbi);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
 void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap,
                              bool center, Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset,
-                             gfx::ColorBufInfo cbi) {
+                             gfx::DrawMetaData cbi) {
     int length = rl::TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
     const auto rec = params.rect;
 
@@ -199,12 +199,12 @@ void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color) {
                   rl::Vector3(0, 0, 0));
 }
 
-void DrawPixel(Vector2i screenCoord, Color color, gfx::ColorBufInfo cbi) {
+void DrawPixel(Vector2i screenCoord, Color color, gfx::DrawMetaData cbi) {
     DrawRectangleHDR(rl::Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, color, cbi);
 }
 
 // Draws pixelated ellipse even for higher resolution target textures.
-void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::ColorBufInfo cbi) {
+void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::DrawMetaData cbi) {
     const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
 
     // offset center by subpixel for better distance calculations
@@ -240,13 +240,13 @@ void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::ColorBufInfo
     }
 }
 
-void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::ColorBufInfo cbi) {
+void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi) {
     DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color, cbi);
 }
 
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, Color tint,
-                   gfx::ColorBufInfo colorBufInfo, Vector2i maskOffset) {
-    rl::Vector3 cbi = colorBufInfo.asRL(maskOffset, Vector2f(texture.width, texture.height));
+                   gfx::DrawMetaData colorBufInfo) {
+    rl::Vector3 cbi = colorBufInfo.asRL();
     DrawSpriteHDR(texture, source, dest, origin, rotation, tint.asRL(), cbi);
 }
 
@@ -339,7 +339,7 @@ void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle de
     }
 }
 
-void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, Color color, gfx::ColorBufInfo colorBufInfo) {
+void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, Color color, gfx::DrawMetaData colorBufInfo) {
     DrawRectangleHDR(rec, origin, rotation, color.asRL(), colorBufInfo.asRL());
 }
 
@@ -443,7 +443,7 @@ static void DrawTriangleStripHDR(const rl::Vector2* points, int pointCount, rl::
     }
 }
 
-void DrawLineHDR(rl::Vector2 startPos, rl::Vector2 endPos, float thick, Color color, gfx::ColorBufInfo cbi) {
+void DrawLineHDR(rl::Vector2 startPos, rl::Vector2 endPos, float thick, Color color, gfx::DrawMetaData cbi) {
     rl::Vector2 delta = {endPos.x - startPos.x, endPos.y - startPos.y};
     float length = sqrtf(delta.x * delta.x + delta.y * delta.y);
 
@@ -461,7 +461,7 @@ void DrawLineHDR(rl::Vector2 startPos, rl::Vector2 endPos, float thick, Color co
 }
 
 // Draw spline segment: Quadratic Bezier, 2 points, 1 control point
-void DrawSplineSegmentBezierQuadraticHDR(rl::Vector2 p1, rl::Vector2 c2, rl::Vector2 p3, float thick, Color color, gfx::ColorBufInfo cbi) {
+void DrawSplineSegmentBezierQuadraticHDR(rl::Vector2 p1, rl::Vector2 c2, rl::Vector2 p3, float thick, Color color, gfx::DrawMetaData cbi) {
     constexpr s32 SPLINE_SEGMENT_DIVISIONS = 24;
     const float step = 1.0f / SPLINE_SEGMENT_DIVISIONS;
 

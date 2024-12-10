@@ -19,6 +19,7 @@ out float isOccluder;
 out float isUI;
 out float isMask;
 out vec2 maskTexCoord;
+out float isSilhouette;
 
 // NOTE: Add here your custom variables
 
@@ -54,6 +55,13 @@ void main()
         isMask = 1.0;
     } else {
         isMask = 0.0;
+    }
+
+    // 12th bit 
+    if ((intData & 0x800u) != 0u) {
+        isSilhouette = 1.0;
+    } else {
+        isSilhouette = 0.0;
     }
 
     maskTexCoord = vertexNormal.gb + vertexTexCoord;
