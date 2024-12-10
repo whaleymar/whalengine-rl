@@ -2,6 +2,7 @@
 
 #include "Components/Tags.h"
 #include "Components/Tile.h"
+#include "GameComponents/Respawn.h"
 #include "Gfx/Frame.h"
 #include "IGame.h"
 #include "Physics/CollisionLayer.h"
@@ -252,6 +253,9 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
 void unloadLevel(ActiveLevel& level) {
     std::set<ecs::Entity> toKill = std::move(level.childEntities);
     for (auto entity : toKill) {
+        if (entity.has<Respawn>()) {
+            entity.remove<Respawn>();
+        }
         entity.kill();
     }
     print("unloaded level:", level.filepath);

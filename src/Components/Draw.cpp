@@ -55,6 +55,18 @@ void Sprite::removeMask() {
     maskPosRelative = Vector2i::ZERO;
 }
 
+void Sprite::setFlag(flag f) {
+    flags |= f;
+}
+
+void Sprite::resetFlag(flag f) {
+    flags = (flags & ~f);
+}
+
+bool Sprite::isFlagSet(flag f) const {
+    return (flags & f) > 0;
+}
+
 namespace stl {
 template <class ForwardIt, class T = typename std::iterator_traits<ForwardIt>::value_type>
 void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_value) {

@@ -21,6 +21,7 @@ NEXT GOAL:
         - aseprite does not support hdr color depth afaict. crunch definitely doesn't support it, but the PNG library call it makes in BitMask::SaveAs could be changed to support 16 bit color depth
             - seems like I might be better off using an LDR mask that specifically affects bloom
 - need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
+    - Float component works for this, but needs to be applied to tiles too for interaction to look correct
 - posterization shader doesn't work right with HDR colors
 - apply texture overlay on tiled and other sprites:
     - https://godotshaders.com/shader/repeated-texture-overlay-for-tilemaps/
@@ -29,8 +30,6 @@ NEXT GOAL:
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
     - consolidate pointlight and shadowlight
-- follow this tutorial to properly generate a Signed Distance Field, which will make shadows much faster
-    - https://jason.today/gi 
 
 ## Web 
 - getting mouse position does not work (may be fixed w/ raylib 5.5)
@@ -79,6 +78,7 @@ NEXT GOAL:
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children
+- Parent component so it's easier to know if a killed entity should be removed from any child lists
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
