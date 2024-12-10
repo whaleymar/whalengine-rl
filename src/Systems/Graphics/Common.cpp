@@ -25,6 +25,10 @@ void DrawMetaData::setFlags(const Sprite& sprite, Vector2f textureDims) {
     if (sprite.isFlagSet(Sprite::Silhouette)) {
         isSilhouette = true;
     }
+
+    if (sprite.isFlagSet(Sprite::MaskBlendAdditive)) {
+        isMaskBlendAdditive = true;
+    }
 }
 
 rl::Vector3 DrawMetaData::asRL() const {
@@ -45,6 +49,10 @@ rl::Vector3 DrawMetaData::asRL() const {
 
     if (isSilhouette) {
         packed |= (1 << 11);
+    }
+
+    if (isMaskBlendAdditive) {
+        packed |= (1 << 12);
     }
 
     f32 x;

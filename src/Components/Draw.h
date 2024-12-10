@@ -22,7 +22,8 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     enum flag : u32 {
         None = 0,
         Silhouette = 1 << 0,
-        // mask blending (additive, subtract)
+        MaskBlendAdditive = 1 << 1,
+        // mask blending (subtract)
         // outline
     };
 

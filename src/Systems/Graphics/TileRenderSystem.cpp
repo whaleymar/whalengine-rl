@@ -31,10 +31,13 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         size.y,
     };
 
+    auto meta = eCtx.colorBuf;
+    meta.setFlags(sprite, ctx.atlas.getSize());
+
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, eCtx.preciseTransform.rotationDegrees, sprite.color, eCtx.colorBuf);
+    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, eCtx.preciseTransform.rotationDegrees, sprite.color, meta);
 }
 
 void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {

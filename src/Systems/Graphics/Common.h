@@ -35,6 +35,7 @@ struct DrawMetaData {
     bool isOccluder;
     bool isUI;
     bool isSilhouette = false;
+    bool isMaskBlendAdditive = false;
 
     void setFlags(const Sprite& sprite, Vector2f textureDims);
     rl::Vector3 asRL() const;

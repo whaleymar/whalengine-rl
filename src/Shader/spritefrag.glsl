@@ -13,6 +13,7 @@ in float isUI;
 in float isMask;
 in vec2 maskTexCoord;
 in float isSilhouette;
+in float isMaskBlendAdditive;
 
 // Input uniform values
 uniform sampler2D texture0;
@@ -23,16 +24,20 @@ uniform vec4 colDiffuse;
 void main() {
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
-    vec4 maskColor = vec4(1.);
 
     if (isMask > 0.) {
-        maskColor = texture(texture0, maskTexCoord);
+        vec4 maskColor = texture(texture0, maskTexCoord);
+        if (isMaskBlendAdditive > 0.) {
+            texelColor = texelColor + texelColor * maskColor;
+        } else {
+            texelColor *= maskColor;
+        }
     }
 
     if (isSilhouette > 0.) {
-        FragColor = fragColor * maskColor * vec4(1., 1., 1., texelColor.a); 
+        FragColor = fragColor * vec4(1., 1., 1., texelColor.a); 
     } else {
-        FragColor = texelColor * fragColor * maskColor; 
+        FragColor = fragColor * texelColor; 
     }
 
     // To make things more visible when debugging, scale the colors
