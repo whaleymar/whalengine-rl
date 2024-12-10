@@ -152,41 +152,20 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     rl::BeginTextureMode(dst);
     rl::ClearBackground(Colors::ClearRL);
     const bool isCustomShader = shader.id != 0;
-    if (isCustomShader) {
+    if (mIsFixedShaderMode) {
+        setUniforms(mFixedShader);
+        rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+
+    } else if (isCustomShader) {
         rl::BeginShaderMode(shader);
         setUniforms(shader);
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
         rl::EndShaderMode();
+
     } else {
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     }
     rl::EndTextureMode();
-}
-
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShaderProcess>& shader) {
-    if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
-        // scale first, then apply shader
-        rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
-        blit(src, tmpSrc);
-
-        shader->process(tmpSrc, dst);
-        releaseTemporaryRT(tmpSrc);
-    } else {
-        shader->process(src, dst);
-    }
-}
-
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, IShaderProcess& shader) {
-    if (src.texture.width != dst.texture.width || src.texture.height != dst.texture.height) {
-        // scale first, then apply shader
-        rl::RenderTexture tmpSrc = getTemporaryRT(src.texture);
-        blit(src, tmpSrc);
-
-        shader.process(tmpSrc, dst);
-        releaseTemporaryRT(tmpSrc);
-    } else {
-        shader.process(src, dst);
-    }
 }
 
 void Renderer::render() {
@@ -368,7 +347,27 @@ void Renderer::setUniforms(rl::Shader shader) {
     for (auto uniform : mUniformQueue) {
         uniform.set(shader);
     }
-    mUniformQueue.clear();
+
+    // if FixedShaderMode is activated and IsPersistUniforms is set, queue should stay the same. Clear otherwise.
+    if (!(mIsFixedShaderMode && mIsPersistUniforms)) {
+        mUniformQueue.clear();
+    }
+}
+
+void Renderer::fixedShaderMode(rl::Shader shader, bool isPersistUniforms) {
+    mIsFixedShaderMode = true;
+    mIsPersistUniforms = isPersistUniforms;
+    mFixedShader = shader;
+    rl::BeginShaderMode(mFixedShader);
+}
+
+void Renderer::endFixedShaderMode() {
+    mIsFixedShaderMode = false;
+    rl::EndShaderMode();
+    if (mIsPersistUniforms) {
+        mUniformQueue.clear();
+        mIsPersistUniforms = false;
+    }
 }
 
 void UniformVariant::set(rl::Shader handle) const {

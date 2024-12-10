@@ -23,12 +23,14 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     const s32 nPasses = std::ceil(std::log2(static_cast<f32>(std::max(src.texture.width, src.texture.height))));
 
     Vector2f floatResolutionInv(1.0f / static_cast<f32>(src.texture.width), 1.0f / static_cast<f32>(src.texture.height));
+
+    Graphics.fixedShaderMode(mJumpFlood.get());
     for (s32 i = 1; i < nPasses; i++) {
         // draw
         const f32 offset = std::pow(2, static_cast<f32>(nPasses - i - 1));
         const Vector2f offsetVec = floatResolutionInv * offset;
         mJumpFlood.setVector2("_Offset", offsetVec);
-        Graphics.blit(currentInput, currentOutput, mJumpFlood.get());
+        Graphics.blit(currentInput, currentOutput);
 
         // swap
         // use src as temporary value
@@ -36,6 +38,7 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
         currentInput = currentOutput;
         currentOutput = src;
     }
+    Graphics.endFixedShaderMode();
 
     // make sure latest draw is to tmpOutput
     // (if currentOutput is tmpOutput.id, then we just drew to dst)

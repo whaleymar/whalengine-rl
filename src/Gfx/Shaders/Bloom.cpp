@@ -33,14 +33,18 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     Graphics.blit(src, bloomTex, mThresh.get());
 
     // downscale
-    Graphics.blit(bloomTex, halfRes, mBlur.get());
-    Graphics.blit(halfRes, quarterRes, mBlur.get());
-    Graphics.blit(quarterRes, eightRes, mBlur.get());
+    Graphics.fixedShaderMode(mBlur.get());
+
+    Graphics.blit(bloomTex, halfRes);
+    Graphics.blit(halfRes, quarterRes);
+    Graphics.blit(quarterRes, eightRes);
 
     // upscale
-    Graphics.blit(eightRes, quarterRes, mBlur.get());
-    Graphics.blit(quarterRes, halfRes, mBlur.get());
-    Graphics.blit(halfRes, bloomTex, mBlur.get());
+    Graphics.blit(eightRes, quarterRes);
+    Graphics.blit(quarterRes, halfRes);
+    Graphics.blit(halfRes, bloomTex);
+
+    Graphics.endFixedShaderMode();
 
     Graphics.releaseTemporaryRT(quarterRes);
     Graphics.releaseTemporaryRT(halfRes);
