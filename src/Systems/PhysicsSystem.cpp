@@ -105,10 +105,10 @@ void PhysicsSystem::update() {
     S_CALLBACK_QUEUE.clear();
 
     // is a little inefficient to call this on all entities (vs splitting up this system)
-    syncColliders(getEntitiesMutable());
+    syncColliders(getEntities());
 
     std::vector<ecs::Entity> allColliderEntities;
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         f32 dt;
         // camera move normally unless pause menu is active
         if (entity.has<IgnoreTimeModifiers>()) {
@@ -222,7 +222,7 @@ void PhysicsSystem::update() {
 
 void RotationPhysicsSystem::update() {
     const f32 dt = Time.dt();
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         const auto angularVelocity = entity.get<AngularVelocity>();
 
         // multiply by -1 so rotations are clockwise by default

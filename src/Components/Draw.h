@@ -39,11 +39,11 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     void resetFlag(flag f);
     bool isFlagSet(flag f) const;
 
-    Vector2i frameSize;
-    Vector2i atlasPosition;
+    Vector2f frameSize;
+    Vector2f atlasPosition;
     Color color = Colors::White;
 
-    Vector2i maskPosRelative = Vector2i::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
+    Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
     u32 flags = flag::None;
 
     static void loadImpl(ecs::Entity entity, void* data);

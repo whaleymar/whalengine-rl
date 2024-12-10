@@ -11,7 +11,7 @@
 namespace whal {
 
 void CursorManager::set(Sprite sprite) const {
-    const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
+    const bool isCustomCursorActive = !MouseCursorSystem::getEntities().empty();
     if (!isCustomCursorActive) {
         auto entity = World.entity();
         entity.add(Name("Cursor"));
@@ -29,7 +29,7 @@ void CursorManager::set(Sprite sprite) const {
 }
 
 void CursorManager::setDefault() const {
-    const bool isCustomCursorActive = !MouseCursorSystem::getEntitiesMutable().empty();
+    const bool isCustomCursorActive = !MouseCursorSystem::getEntities().empty();
     if (isCustomCursorActive) {
         MouseCursorSystem::first().kill();
     }

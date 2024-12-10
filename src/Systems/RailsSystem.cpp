@@ -148,7 +148,7 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
 }
 
 void RailsSystem::update() {
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         auto& rails = entity.get<RailsControl>();
         if (!rails.isValid()) {
             print("skipping invalid RailsControl component for entity", entity.id());

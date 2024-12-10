@@ -30,23 +30,20 @@ struct RenderContext {
 
 // Stores arbitrary per-pixel information into a separate buffer when drawing.
 struct DrawMetaData {
-    Vector2f maskOffsetUV;
     u8 depth;
     bool isOccluder;
     bool isUI;
-    bool isSilhouette = false;
-    bool isMaskBlendAdditive = false;
 
-    void setFlags(const Sprite& sprite, Vector2f textureDims);
     rl::Vector3 asRL() const;
+    rl::Vector3 asRL(const Sprite& sprite, Vector2f textureDims) const;
     static const DrawMetaData NONE;
 };
 
 struct EntityRenderInfo {
     f32 bottom;
     PreciseTransform preciseTransform;
-    ecs::Entity entity;
     const ecs::IRender* piRender;
+    ecs::Entity entity;
     DrawMetaData colorBuf = {};
 };
 

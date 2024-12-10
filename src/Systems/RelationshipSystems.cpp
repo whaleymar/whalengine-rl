@@ -14,7 +14,7 @@ namespace whal {
 
 // removes entity from child list
 void EntityChildSystem::onEvent(evt::Death, ecs::Entity entity) {
-    for (auto [entityid, parent] : getEntitiesMutable()) {
+    for (auto [entityid, parent] : getEntities()) {
         auto& children = parent.get<Children>();
         auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
         if (it != children.entityIDs.end()) {
@@ -39,7 +39,7 @@ void AttachSystem::onAdd(ecs::Entity entity) {
 }
 
 void AttachSystem::update() {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         Transform& trans = entity.get<Transform>();
         Attach& attach = entity.get<Attach>();
         const ecs::Entity targetEntity(attach.targetEntityID);
@@ -66,7 +66,7 @@ void AttachSystem::update() {
 // RESEARCH use collider.move if the entity has a collider? Seems like it would be glitchy if a collision does happen
 void OrbitSystem::update() {
     const f32 dt = Time.dt();
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         auto& trans = entity.get<Transform>();
         Orbit& orbit = entity.get<Orbit>();
         const ecs::Entity targetEntity(orbit.targetID);
@@ -91,7 +91,7 @@ void OrbitSystem::update() {
 }
 
 void FollowSystem::update() {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         Transform trans = entity.get<Transform>();
         auto& follow = entity.get<Follow>();
         if (!follow.isTargetInitialized) {
@@ -211,7 +211,7 @@ void FollowSystem::onRemove(ecs::Entity entity) {
 // if the target of an entity's Follow component dies, remove the follow component.
 void FollowSystem::onEvent(evt::Death, ecs::Entity killedEntity) {
     std::vector<ecs::Entity> toRemove;
-    for (auto& [entityid, entity] : FollowSystem::getEntitiesMutable()) {
+    for (auto& [entityid, entity] : FollowSystem::getEntities()) {
         if (entity.get<Follow>().targetEntityID == killedEntity.id()) {
             toRemove.push_back(entity);
         }

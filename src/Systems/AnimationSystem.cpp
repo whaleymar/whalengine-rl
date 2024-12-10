@@ -6,7 +6,7 @@
 namespace whal {
 
 void AnimationSystem::update() {
-    for (auto& [entityid, entity] : getEntitiesMutable()) {
+    for (auto& [entityid, entity] : getEntities()) {
         auto& anim = entity.get<Animator>();
         if (anim.brain == nullptr) {
             continue;
@@ -16,7 +16,7 @@ void AnimationSystem::update() {
         if ((*anim.brain)(anim, entity)) {
             // frame changed
             const Frame frame = anim.getFrame();
-            sprite.atlasPosition = frame.atlasPosition;
+            sprite.atlasPosition = frame.atlasPosition.as<f32>();
         }
     }
 }

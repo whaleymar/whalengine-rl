@@ -244,12 +244,6 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi)
     DrawEllipse(Vector2f(rect.x, rect.y), Vector2f(rect.width / 2, rect.height / 2), color, cbi);
 }
 
-void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, Color tint,
-                   gfx::DrawMetaData colorBufInfo) {
-    rl::Vector3 cbi = colorBufInfo.asRL();
-    DrawSpriteHDR(texture, source, dest, origin, rotation, tint.asRL(), cbi);
-}
-
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
                    rl::Vector3 packedCBI) {
     // Check if texture is valid

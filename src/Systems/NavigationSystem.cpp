@@ -19,7 +19,7 @@
 //         return;
 //     }
 //     auto pSys = World.getSystem<PlayerSystem>();
-//     if (pSys->getEntitiesMutable().empty()) {
+//     if (pSys->getEntities().empty()) {
 //         return;
 //     }
 //     auto start = pSys->first().get<Transform>().position;
@@ -55,7 +55,7 @@
 //     if (!Input.isOn(InputType::DEBUG)) {
 //         return;
 //     }
-//     for (auto [entityid, entity] : getEntitiesMutable()) {
+//     for (auto [entityid, entity] : getEntities()) {
 //         const auto path = entity.get<Path>();
 //         auto pTrans = gfx::getPreciseTrans(entity);
 //         pTrans.depth = Depth::Debug;

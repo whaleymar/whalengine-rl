@@ -43,7 +43,7 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 }
 
 void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         const auto line = entity.get<DrawStraightLine>();
         const auto trans = entity.get<Transform>();
         const auto pTrans = gfx::getPreciseTrans(entity, trans);

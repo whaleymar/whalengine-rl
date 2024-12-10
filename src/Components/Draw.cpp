@@ -26,19 +26,19 @@ Expected<Sprite> Sprite::fromPath(const char* spritePath, Color color_) {
 
 Sprite Sprite::fromFrame(Frame frame, Color color) {
     return Sprite{
-        .frameSize = frame.size,
-        .atlasPosition = frame.atlasPosition,
+        .frameSize = frame.size.as<f32>(),
+        .atlasPosition = frame.atlasPosition.as<f32>(),
         .color = color,
     };
 }
 
 void Sprite::setFrame(Frame frame) {
-    frameSize = frame.size;
-    atlasPosition = frame.atlasPosition;
+    frameSize = frame.size.as<f32>();
+    atlasPosition = frame.atlasPosition.as<f32>();
 }
 
 void Sprite::setMask(Frame frame) {
-    maskPosRelative = frame.atlasPosition - atlasPosition;
+    maskPosRelative = frame.atlasPosition.as<f32>() - atlasPosition;
 }
 
 void Sprite::setMask(const char* maskAtlasPath) {
@@ -52,7 +52,7 @@ void Sprite::setMask(const char* maskAtlasPath) {
 }
 
 void Sprite::removeMask() {
-    maskPosRelative = Vector2i::ZERO;
+    maskPosRelative = Vector2f::ZERO;
 }
 
 void Sprite::setFlag(flag f) {

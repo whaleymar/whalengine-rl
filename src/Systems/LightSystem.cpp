@@ -40,7 +40,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
 
     // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         if (entity.has<Invisible>()) {
             continue;
         }
@@ -67,7 +67,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
 
         const rl::Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
         const rl::Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
-        gfx::DrawSpriteHDR(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
+        gfx::DrawSpriteHDR(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
     }
 }
 
@@ -85,7 +85,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
     rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
 
     const auto randomTexture = Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         if (entity.has<Invisible>()) {
             continue;
         }
@@ -129,7 +129,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const rl::Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
         const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
-        gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color);
+        gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
     }
     Graphics.releaseTemporaryRT(randomTexture);
 }
@@ -155,7 +155,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
 
     // must match what's in spritefrag.glsl
     const f32 depthScalar = 20.0f;
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         ShaderManager::activate(Shaders::ShadowLight);
 
         const auto light = entity.get<ShadowLight>();

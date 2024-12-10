@@ -18,7 +18,7 @@ void OnFrameEndSystem::update() {
 }
 
 void CustomUpdateSystem::update() {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (auto [entityid, entity] : getEntities()) {
         // not bothering with a null check
 
         const auto onFrameEnd = entity.get<CustomUpdate>();

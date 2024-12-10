@@ -16,10 +16,9 @@ namespace whal {
 
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto& sprite = eCtx.entity.get<Sprite>();
-    const auto frameSize = sprite.frameSize.as<f32>();
 
     const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
-    const auto srcRect = rl::Rectangle(sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * frameSize.x, frameSize.y);
+    const auto srcRect = rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * sprite.frameSize.x, sprite.frameSize.y};
 
     // simplified version of gfx::getDrawParams that assumes no fancy rotation or scaling
     static const Vector2f size = Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO;
@@ -31,17 +30,15 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         size.y,
     };
 
-    auto meta = eCtx.colorBuf;
-    meta.setFlags(sprite, ctx.atlas.getSize());
-
     // If we don't deactivate, we minimize the number of shader swaps.
     // Swaps only happen if the new shader isn't the active one.
     BeginShaderMode(ShaderManager::get(Shaders::Default));
-    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, eCtx.preciseTransform.rotationDegrees, sprite.color, meta);
+    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, eCtx.preciseTransform.rotationDegrees, sprite.color.asRL(),
+                       eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()));
 }
 
 void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         queue.push_back(entity.get<Tile>().renderInfo);
     }
 }

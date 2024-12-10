@@ -42,10 +42,8 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi)
 // Modified version of DrawTexturePro which doesn't clamp HDR colors
 // I can also co-opt the normals RESEARCH
 // In the Future Future I should just change the raylib batched vertex buffer to support more custom stuff
-void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, Color tint,
-                   gfx::DrawMetaData renderMetaData = gfx::DrawMetaData::NONE);
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
-                   rl::Vector3 packedCBI);
+                   rl::Vector3 packedCBI = rl::Vector3{0, 0, 0});
 
 // HDR version of DrawRectanglePro
 void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, Color color, gfx::DrawMetaData colorBufInfo);

@@ -6,7 +6,7 @@
 namespace whal {
 
 Corrade::Containers::Optional<ecs::Entity> getCamera() {
-    if (World.getSystem<CameraSystem>()->getEntitiesMutable().empty()) {
+    if (World.getSystem<CameraSystem>()->getEntities().empty()) {
         return Corrade::Containers::NullOpt;
     }
     return World.getSystem<CameraSystem>()->first();

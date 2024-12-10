@@ -23,7 +23,7 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
 }
 
 void RectangleRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         const auto draw = entity.get<DrawRect>();
         const auto trans = entity.get<Transform>();
         const auto pTrans = gfx::getPreciseTrans(entity, trans);

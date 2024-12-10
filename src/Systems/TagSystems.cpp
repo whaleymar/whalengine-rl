@@ -8,7 +8,7 @@
 namespace whal {
 
 void AudioListenerSystem::update() {
-    if (getEntitiesMutable().empty()) {
+    if (getEntities().empty()) {
         return;
     }
     auto listenerEntity = first();

@@ -9,7 +9,7 @@
 namespace whal {
 
 void TriggerSystem::update() {
-    for (auto [entityid, entity] : getEntitiesMutable()) {
+    for (const auto& [entityid, entity] : getEntities()) {
         std::vector<ecs::Entity> newInsideList;
         auto& trigger = entity.get<Trigger>();
         const auto trans = entity.get<Transform>();
