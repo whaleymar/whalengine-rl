@@ -81,11 +81,8 @@ public:
     // If dimensions aren't the same, scaling happens automatically.
     // src and dest should not be the same RenderTexture.
     // If no shader is specified, then the currently active shader will be used.
+    // If a fixed shader is set (using `fixedShaderMode`), then that shader will be used.
     void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr});
-
-    // these aren't used, might delete
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, std::shared_ptr<IShaderProcess>& shader);
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, IShaderProcess& shader);
 
     // Queue a shader's uniform value to be set the next time `blit` is run with a shader.
     // Alternatively, `setUniforms` can set them manually.
@@ -95,6 +92,11 @@ public:
 
     // Set the queued uniform values.
     void setUniforms(rl::Shader shader);
+
+    // Activates a shader that will not be deactivated until `endFixedShaderMode` is called.
+    // if `isPersistUniforms` is true, then calls to `blit` will not clear the uniforms set for that draw call.
+    void fixedShaderMode(rl::Shader shader, bool isPersistUniforms = false);
+    void endFixedShaderMode();
 
 private:
     Renderer(const Renderer&) = delete;
@@ -119,6 +121,10 @@ private:
     MultiTexture mStagingTexture;
 
     std::vector<UniformVariant> mUniformQueue;
+
+    rl::Shader mFixedShader;
+    bool mIsFixedShaderMode = false;
+    bool mIsPersistUniforms = false;
 };
 
 }  // namespace whal
