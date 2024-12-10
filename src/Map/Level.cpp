@@ -185,15 +185,13 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
 
                 // 0 means the tile is empty
                 if (blockID != 0) {
-                    Expected<Frame> frame = getTileFrame(map, blockID);
-                    if (!frame.isExpected()) {
-                        print(frame.error());
+                    Expected<Sprite> sprite = getTileSprite(map, blockID);
+                    if (!sprite.isExpected()) {
+                        print(sprite.error());
                         continue;
                     } else {
-                        Sprite sprite = Sprite::fromFrame(*frame);
-
                         trans.depth = layer.metadata.depth;
-                        auto e = createDecal(trans, sprite, false);
+                        auto e = createDecal(trans, *sprite, false);
                         if (!e.isValid()) {
                             print("Couldn't allocate entity for tile");
                             continue;

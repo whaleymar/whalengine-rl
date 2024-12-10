@@ -18,18 +18,18 @@ typedef struct Color Color;
 
 namespace whal {
 
-struct Frame;
 struct TileMap;
 struct TileSet;
 struct Scene;
 struct Transform;
 struct ActiveLevel;
+struct Sprite;
 
 namespace ecs {
 class Entity;
 }
 
-Expected<Frame> getTileFrame(const TileMap& map, s32 blockIx);
+Expected<Sprite> getTileSprite(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const ActiveLevel& level, bool isPoint);
@@ -69,7 +69,9 @@ struct TileSet {
     s32 spacing;
     std::string fileName;
     std::string spriteFileName;
+    std::string spriteMaskFileName;
     std::vector<s32> tileIDToIndex;
+    bool isAdditiveSpriteMask = false;
 
     void addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, LayerData layerData, Vector2i mapPosition) const;
 };

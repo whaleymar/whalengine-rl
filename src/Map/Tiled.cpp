@@ -55,7 +55,10 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
     }
 
     for (auto& property : object["properties"]) {
-        std::string componentName = readString(property, "propertytype");
+        std::string componentName;
+        if (!tryRead(property, "propertytype", &componentName)) {
+            continue;
+        }
         auto serializerOpt = ComponentFactory::Get(componentName.c_str());
         if (!serializerOpt) {
             if (componentName == "InheritTemplate") {
@@ -68,6 +71,8 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 if (builderFunc != nullptr) {
                     builderFunc(entity, newPrefab, level);
                 }
+            } else if (componentName == "SpriteMaskBlending") {
+                // skip, handled in tileset logic
             } else {
                 print("Skipping component", componentName, "because ComponentFactory has nothing with that name");
             }
@@ -436,8 +441,36 @@ TileSet parseTileset(const std::string& basename, s32 firstgid) {
         }
     }
 
-    return TileSet(firstgid, tilecount, tileWidth, tileHeight, widthTiles, heightTiles, data["margin"], data["spacing"], basename,
-                   sourceFileBasenameNoExt, std::move(idToIx));
+    std::string maskPath = "";
+    bool isAdditiveSpriteMask = false;
+    if (data.contains("properties")) {
+        for (const auto& prop : data["properties"]) {
+            if (prop["name"] == "SpriteMask") {
+                maskPath = prop["value"];
+            } else if (prop["name"] == "SpriteMaskBlending") {
+                std::string blending = prop["value"];
+                if (blending == "Add") {
+                    isAdditiveSpriteMask = true;
+                }
+            }
+        }
+    }
+
+    return TileSet{
+        .firstgid = firstgid,
+        .tilecount = tilecount,
+        .tileWidth = tileWidth,
+        .tileHeight = tileHeight,
+        .widthTiles = widthTiles,
+        .heightTiles = heightTiles,
+        .margin = data["margin"],
+        .spacing = data["spacing"],
+        .fileName = basename,
+        .spriteFileName = std::move(sourceFileBasenameNoExt),
+        .spriteMaskFileName = std::move(maskPath),
+        .tileIDToIndex = std::move(idToIx),
+        .isAdditiveSpriteMask = isAdditiveSpriteMask,
+    };
 }
 
 const TileSet& getTileSet(const TileMap& map, s32 blockId) {
@@ -451,10 +484,11 @@ const TileSet& getTileSet(const TileMap& map, s32 blockId) {
     return map.tilesets[0];
 }
 
-Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
+Expected<Sprite> getTileSprite(const TileMap& map, s32 blockId) {
     const TileSet& tset = getTileSet(map, blockId);
     std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
-    Corrade::Containers::Optional<rl::Rectangle> tsetFrameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spritePath.c_str());
+    const auto& texAtlas = TextureManager::getAtlas(TEXNAME_SPRITE);
+    Corrade::Containers::Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
         return Error(whal_format("Couldn't find {} in sprite table", spritePath));
@@ -470,7 +504,26 @@ Expected<Frame> getTileFrame(const TileMap& map, s32 blockId) {
     Frame fullFrame = *tsetFrameOpt;
     Frame newFrame = {{fullFrame.atlasPosition.x + colIx * tset.tileWidth, fullFrame.atlasPosition.y + rowIx * tset.tileHeight},
                       {tset.tileWidth, tset.tileHeight}};
-    return newFrame;
+
+    Sprite sprite = Sprite::fromFrame(newFrame);
+
+    // check if there's a sprite mask for this tileset
+    if (tset.spriteMaskFileName != "") {
+        auto maskFrameOpt = texAtlas.getFrame(tset.spriteMaskFileName.c_str());
+        if (!maskFrameOpt) {
+            print("Couldn't find", tset.spriteMaskFileName, "in texture atlas");
+        } else {
+            Frame fullMaskFrame = *maskFrameOpt;
+            Frame maskFrame = {{fullMaskFrame.atlasPosition.x + colIx * tset.tileWidth, fullMaskFrame.atlasPosition.y + rowIx * tset.tileHeight},
+                               {tset.tileWidth, tset.tileHeight}};
+            sprite.setMask(maskFrame);
+            if (tset.isAdditiveSpriteMask) {
+                sprite.setFlag(Sprite::MaskBlendAdditive);
+            }
+        }
+    }
+
+    return sprite;
 }
 
 static TiledDataType getDtype(const std::string& name) {
