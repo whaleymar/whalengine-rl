@@ -220,7 +220,6 @@ void Renderer::render() {
     if (Input.isOn(InputType::DEBUG)) {
         rl::BeginTextureMode(mainTex);
         rl::BeginMode2D(worldCamera);
-        // World.getSystem<DrawDebugSystem>()->drawEntities();
         drawColliders();
         rl::EndMode2D();
         rl::EndTextureMode();

@@ -77,3 +77,35 @@ rl::Color lerp(rl::Color first, rl::Color second, f32 t) {
 }  // namespace Colors
 
 }  // namespace whal
+
+namespace rl {
+
+Color operator+(const Color& left, const Color& right) {
+    return Color(left.r + right.r, left.g + right.g, left.b + right.b, left.a + right.a);
+}
+
+Color operator*(const Color& left, const Color& right) {
+    return Color(left.r * right.r, left.g * right.g, left.b * right.b, left.a * right.a);
+}
+
+Color& operator*=(Color& left, const Color& right) {
+    left.r *= right.r;
+    left.g *= right.g;
+    left.b *= right.b;
+    left.a *= right.a;
+    return left;
+}
+
+Color operator*(const Color& left, const f32 f) {
+    return Color(left.r * f, left.g * f, left.b * f, left.a * f);
+}
+
+Color& operator*=(Color& left, const f32 f) {
+    left.r = left.r * f;
+    left.g = left.g * f;
+    left.b = left.b * f;
+    left.a = left.a * f;
+    return left;
+}
+
+}  // namespace rl

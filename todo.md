@@ -1,6 +1,8 @@
 # To Do 
 
 NEXT GOAL: 
+- tilemaplayer component 
+- consolidate the 3 transform components I have
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -23,6 +25,7 @@ NEXT GOAL:
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
     - consolidate pointlight and shadowlight
+- shadows do NOT play well with a moving camera
 
 ## Web 
 - getting mouse position does not work (may be fixed w/ raylib 5.5)
@@ -33,6 +36,8 @@ NEXT GOAL:
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline
+    - rebuild & reload the texture atlas
+    - recompile the game (hot reload)
 
 ## Triggers 
 - consolidate with colliders like unity. Makes a lot less work :) 
@@ -74,6 +79,7 @@ NEXT GOAL:
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children
 - Parent component so it's easier to know if a killed entity should be removed from any child lists
+- cursor does not have precise position -- looks dumb with moving camera
 
 ## Misc (low priority)
 - ECS parallelization (low priority)

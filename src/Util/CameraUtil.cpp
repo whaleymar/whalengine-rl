@@ -16,7 +16,7 @@ Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        lastPos = eOpt->get<Transform>().position;
+        lastPos = eOpt->get<PrecisePosition>().position.round();
     }
     return lastPos;
 }

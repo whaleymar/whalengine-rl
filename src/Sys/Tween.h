@@ -18,6 +18,11 @@ enum Flags : u8 {
 };
 }
 
+template <typename T>
+concept Multipliable = requires(T a, T b) {
+    a* b;  // Check if the multiplication operator is defined
+};
+
 class TweenManager;
 
 class ITween {
@@ -205,9 +210,13 @@ private:
                 mElapsedTime = mDelay;  // delay only affects first iteration
                 resetFlag(TweenParams::CustomOrigin);
                 if (isSet(TweenParams::Bounce)) {
-                    auto tmp = mTweenValue;
-                    mTweenValue = mStartValue;
-                    mStartValue = tmp;
+                    if (isSet(TweenParams::RelativeTarget)) {
+                        mTweenValue = mTweenValue * -1.0f;
+                    } else {
+                        auto tmp = mTweenValue;
+                        mTweenValue = mStartValue;
+                        mStartValue = tmp;
+                    }
                 }
                 init();
             } else {
