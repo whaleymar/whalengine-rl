@@ -5,7 +5,6 @@
 #include "Components/Transform.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
-#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
 namespace whal {
@@ -36,9 +35,6 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const rl::Vector2 p1 = worldToScreenCoords(points.p1, ctx.cameraPosition).asRL();
     const rl::Vector2 p2 = worldToScreenCoords(points.p2, ctx.cameraPosition).asRL();
 
-    // If we don't deactivate, we minimize the number of shader swaps.
-    // Swaps only happen if the new shader isn't the active one.
-    BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
 }
 
@@ -49,7 +45,7 @@ void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const auto pTrans = gfx::getPreciseTrans(entity, trans);
         const LinePoints points = getRotatedPoints(pTrans.position, trans, line);
 
-        queue.push_back(gfx::EntityRenderLoc{
+        queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>()),
             .preciseTransform = pTrans,
             .entity = entity,

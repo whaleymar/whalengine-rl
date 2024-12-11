@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
@@ -173,10 +174,12 @@ void Renderer::render() {
     rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotationDegrees;
-    const gfx::RenderContext renderContext{.cameraPosition = cameraEntity.get<PrecisePosition>().position,
-                                           .camera = worldCamera,
-                                           .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
-                                           .cameraEntity = cameraEntity};
+    const gfx::RenderContext renderContext{
+        .cameraPosition = cameraEntity.get<PrecisePosition>().position,
+        .camera = worldCamera,
+        .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
+        .cameraEntity = cameraEntity,
+    };
     buildRenderQueue(renderContext.cameraPosition.round());
 
     // 1. IRender and IRenderLight systems are drawn
@@ -264,7 +267,12 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::BeginTextureMode(mStagingTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
+    const rl::Shader defaultShader = ShaderManager::get(Shaders::Default);
     for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
+        // Make sure we're using the default shader before each entity is drawn.
+        // Shader swaps only happen if the new shader isn't the active one.
+        // So this should be free on average.
+        BeginShaderMode(defaultShader);
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
     rl::EndMode2D();

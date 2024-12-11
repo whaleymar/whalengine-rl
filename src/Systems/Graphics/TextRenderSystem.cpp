@@ -4,7 +4,6 @@
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
-#include "Gfx/ShaderManager.h"
 #include "Physics/Box.h"
 #include "Settings.h"
 #include "Util/Vector.h"
@@ -65,9 +64,6 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         .position = dstPosition.asRL(),
     };
 
-    // If we don't deactivate, we minimize the number of shader swaps.
-    // Swaps only happen if the new shader isn't the active one.
-    BeginShaderMode(ShaderManager::get(Shaders::Default));
     gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotationDegrees,
                        pivotOffsetScreen, eCtx.colorBuf);
 }
@@ -80,7 +76,7 @@ void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
                                                         Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
 
-        queue.push_back(gfx::EntityRenderLoc{
+        queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
             .preciseTransform = gfx::getPreciseTrans(entity, trans),
             .entity = entity,

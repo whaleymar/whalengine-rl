@@ -65,20 +65,51 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
     return rl::Vector3{x, maskOffsetUV.x, maskOffsetUV.y};
 }
 
-void RenderQueue::push_back(const EntityRenderLoc& renderInfo) {
+bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
     if (mCameraViewBox.isOverlapping(renderInfo.boundingBox)) {
+        const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
+                                    renderInfo.entity.has<BlocksLight>() :
+                                    (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
         if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
             renderInfo.preciseTransform.depth == Depth::UIClose) {
             mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
-                                  gfx::DrawMetaData{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
-                                                    .isOccluder = renderInfo.entity.has<BlocksLight>(),
-                                                    .isUI = true});
+                                  gfx::DrawMetaData{
+                                      .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                      .isOccluder = isOccluder,
+                                      .isUI = true,
+                                  });
         } else {
             mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
-                                      gfx::DrawMetaData{.depth = static_cast<u8>(renderInfo.preciseTransform.depth),
-                                                        .isOccluder = renderInfo.entity.has<BlocksLight>(),
-                                                        .isUI = false});
+                                      gfx::DrawMetaData{
+                                          .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                          .isOccluder = isOccluder,
+                                          .isUI = false,
+                                      });
         }
+        return true;
+    }
+    return false;
+}
+
+void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
+    const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
+                                renderInfo.entity.has<BlocksLight>() :
+                                (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
+    if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
+        renderInfo.preciseTransform.depth == Depth::UIClose) {
+        mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+                              gfx::DrawMetaData{
+                                  .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                  .isOccluder = isOccluder,
+                                  .isUI = true,
+                              });
+    } else {
+        mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+                                  gfx::DrawMetaData{
+                                      .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                      .isOccluder = isOccluder,
+                                      .isUI = false,
+                                  });
     }
 }
 

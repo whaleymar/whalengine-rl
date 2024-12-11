@@ -61,7 +61,9 @@ NEXT GOAL:
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
 
 ## Rendering Performance (if needed)
-- tile performance: can put tile Sprite components in a shared LUT and store index in tile component?
+- tile performance: abandon depth sorting individual tiles. Draw 1 layer at a time.
+    - ACTUALLY make it a configurable flag per-layer. This way layers that need player interaction can still be sorted right
+    - this opens the door for cool stuff like tileset-specific texture overlay uniforms
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - one of these:

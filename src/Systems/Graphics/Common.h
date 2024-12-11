@@ -47,17 +47,29 @@ struct EntityRenderInfo {
     DrawMetaData colorBuf = {};
 };
 
-struct EntityRenderLoc {
+struct EntityPreRenderInfo {
+    enum class IsOccluder {
+        Yes,
+        No,
+        Unchecked,
+    };
+
     AABB boundingBox;
     PreciseTransform preciseTransform;
     ecs::Entity entity;
+    IsOccluder isOccluder = IsOccluder::Unchecked;
 };
 
 class RenderQueue {
     friend Renderer;
 
 public:
-    void push_back(const EntityRenderLoc& thing);
+    // returns true if entity was added, false if culled
+    bool add(const EntityPreRenderInfo& thing);
+
+    // called by systems that don't want to check if the entity should be culled
+    void addPrecalculated(const EntityPreRenderInfo& thing);
+
     void setViewBox(const AABB& viewBox) { mCameraViewBox = viewBox; }
     void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
     void clear() {
