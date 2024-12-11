@@ -8,18 +8,6 @@ namespace rl {
 typedef struct Vector4 Vector4;
 typedef struct Color Color;
 
-// inline rl::Color operator+(const rl::Color& left, const rl::Color& right) {
-//     return rl::Color(left.r + right.r, left.g + right.g, left.b + right.b, left.a + right.a);
-// }
-//
-// inline rl::Color operator*=(rl::Color& left, const f32 f) {
-//     left.r = left.r * f;
-//     left.g = left.g * f;
-//     left.b = left.b * f;
-//     left.a = left.a * f;
-//     return left;
-// }
-
 }  // namespace rl
 
 namespace whal {
@@ -48,6 +36,8 @@ struct Color {
     inline Color operator-=(const Color& other) { return Color{r - other.r, g - other.g, b - other.b, a - other.a}; }
     inline Color operator*(const Color& other) const { return Color{r * other.r, g * other.g, b * other.b, a * other.a}; }
     inline Color operator*=(const Color& other) { return Color{r * other.r, g * other.g, b * other.b, a * other.a}; }
+    inline Color operator*(f32 scalar) const { return Color{r * scalar, g * scalar, b * scalar, a * scalar}; }
+    inline Color operator*=(f32 scalar) { return Color{r * scalar, g * scalar, b * scalar, a * scalar}; }
     inline Color operator/(const Color& other) const { return Color{r / other.r, g / other.g, b / other.b, a / other.a}; }
     inline Color operator/=(const Color& other) { return Color{r / other.r, g / other.g, b / other.b, a / other.a}; }
 
@@ -88,3 +78,13 @@ rl::Color lerp(rl::Color first, rl::Color second, f32 t);
 }  // namespace Colors
 
 }  // namespace whal
+
+namespace rl {
+
+Color operator+(const Color& left, const Color& right);
+Color operator*(const Color& left, const Color& right);
+Color& operator*=(Color& left, const Color& right);
+Color operator*(const Color& left, const f32 f);
+Color& operator*=(Color& left, const f32 f);
+
+}  // namespace rl
