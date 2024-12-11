@@ -8,13 +8,17 @@ in vec4 fragColor;
 // default:
 uniform sampler2D texture0;
 
-// mine:
-// uniform vec2 _MainTex_TexelSize;
-
 // Output fragment color
 out vec4 finalColor;
 
+bool isOutOfBounds(vec2 p) {
+    return p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0;
+}
+
 vec3 Sample(vec2 uv) {
+    if (isOutOfBounds(uv)) {
+        return vec3(0.);
+    }
     return texture(texture0, uv).rgb;
 }
 

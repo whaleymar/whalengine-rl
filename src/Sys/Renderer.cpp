@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
+#include "Gfx/Shaders/Posterize.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -187,10 +188,12 @@ void Renderer::render() {
     drawLights(renderContext);    // drawn to TextureID::Lighting
 
     // posterize before applying lighting
-    // static Posterize sPosterize;
-    // auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
-    // blit(mStagingTexture.tex, tmpTex);
-    // sPosterize.process(tmpTex, mStagingTexture.tex);
+    // TODO should belong to a pre-lighting postprocess pass in camera
+    static Posterize sPosterize;
+    auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
+    blit(mStagingTexture.tex, tmpTex);
+    sPosterize.process(tmpTex, mStagingTexture.tex);
+    releaseTemporaryRT(tmpTex);
 
     // 2. Renders everything to TextureID::Main
     rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
