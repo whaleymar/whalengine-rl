@@ -58,11 +58,21 @@ vec4 applyPalette(vec4 px) {
 void main() {
     vec4 texelColor = texture(texture0, fragTexCoord.xy);
 
-    // debugging which texture is bound
-    // vec4 texelColorTEST = texture(_Palette, fragTexCoord.xy);
+    // get brightest channel
+    float r = texelColor.r;
+    float g = texelColor.g;
+    float b = texelColor.b;
+    float maxChan = r > g ? (r > b ? r : b) : (g > b ? g : b);
 
-    // texelColor = clamp(texelColor, vec4(0.), vec4(1.));
-    finalColor = applyPalette(texelColor);
+    if (maxChan > 1.) {
+        // convert to LDR, posterize, then go back to HDR
+        texelColor = vec4(texelColor.r / maxChan, texelColor.g / maxChan, texelColor.b / maxChan, texelColor.a);
+        texelColor = applyPalette(texelColor);
+        finalColor = vec4(texelColor.r * maxChan, texelColor.g * maxChan, texelColor.b * maxChan, texelColor.a);
+    } else {
+        // normal LDR posterization
+        finalColor = applyPalette(texelColor);
+    }
 
     // quantization on pixel art seems unecessary
     // finalColor = quantize(texelColor);
