@@ -175,8 +175,16 @@ void Renderer::render() {
     rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotationDegrees;
+
+    // dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
+    auto cameraPosition = cameraEntity.get<PrecisePosition>().position;
+    f32 decimal = math::abs(math::remainder(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
+    if (math::isNearZero(decimal - 0.5f, 0.005)) {
+        cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
+    }
+
     const gfx::RenderContext renderContext{
-        .cameraPosition = cameraEntity.get<PrecisePosition>().position,
+        .cameraPosition = cameraPosition,
         .camera = worldCamera,
         .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
         .cameraEntity = cameraEntity,
@@ -268,7 +276,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
     rl::BeginTextureMode(mStagingTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
-    rl::BeginMode2D(renderContext.camera);
+    // rl::BeginMode2D(renderContext.camera);
     const rl::Shader defaultShader = ShaderManager::get(Shaders::Default);
     for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
         // Make sure we're using the default shader before each entity is drawn.
@@ -277,7 +285,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
         BeginShaderMode(defaultShader);
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
-    rl::EndMode2D();
+    // rl::EndMode2D();
     rl::EndTextureMode();
 
     scaleDepthBuffers(renderContext);

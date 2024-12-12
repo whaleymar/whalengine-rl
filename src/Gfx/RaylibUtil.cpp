@@ -199,13 +199,14 @@ void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color) {
                   rl::Vector3(0, 0, 0));
 }
 
-void DrawPixel(Vector2i screenCoord, Color color, gfx::DrawMetaData cbi) {
-    DrawRectangleHDR(rl::Rectangle{(f32)screenCoord.x, (f32)screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, color, cbi);
+void DrawPixel(Vector2f screenCoord, Color color, gfx::DrawMetaData cbi) {
+    DrawRectangleHDR(rl::Rectangle{screenCoord.x, screenCoord.y, VIRTUAL_SCREEN_RATIO, VIRTUAL_SCREEN_RATIO}, {0, 0}, 0, color, cbi);
 }
 
 // Draws pixelated ellipse even for higher resolution target textures.
 void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::DrawMetaData cbi) {
-    const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
+    // const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
+    const f32 step = VIRTUAL_SCREEN_RATIO;
 
     // offset center by subpixel for better distance calculations
     center -= (Vector2f::ONE * VIRTUAL_SCREEN_RATIO / 2.0f);
@@ -213,15 +214,13 @@ void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::DrawMetaData
     radii = radii * VIRTUAL_SCREEN_RATIO;
     Vector2f offset = Vector2f(-1, 0) * VIRTUAL_SCREEN_RATIO;
     const Vector2f lowF = center - radii + offset;
-    const Vector2i low = lowF.round();
     const Vector2f highF = center + radii;
-    const Vector2i high = highF.round();
     const Vector2f denoms = Vector2f(1.0f / (radii.x * radii.x), 1.0f / (radii.y * radii.y));
 
     Vector2f current = lowF;
     const f32 maxAlpha = color.a;
-    for (s32 x = low.x; x < high.x; x += step) {
-        for (s32 y = low.y; y < high.y; y += step) {
+    for (f32 x = lowF.x; x < highF.x; x += step) {
+        for (f32 y = lowF.y; y < highF.y; y += step) {
             f32 xtest = (current.x - center.x);
             xtest = (xtest * xtest) * denoms.x;
 

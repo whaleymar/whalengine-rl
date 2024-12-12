@@ -47,6 +47,11 @@ inline SignedNumber auto sign(SignedNumber auto const number) {
     return number < 0 ? -1 : 1;
 }
 
+inline f32 remainder(f32 num) {
+    f32 unused;
+    return std::modf(num, &unused);
+}
+
 // inline Number auto lerp(Number auto n1, Number auto n2, f32 t) {
 // return (1-t) * n1 + t * n2;
 inline f32 lerp(const f32 n1, const f32 n2, const f32 t) {

@@ -35,7 +35,7 @@ void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color = Colors:
 ////////////////////////////
 // CUSTOM SHAPE FUNCTIONS //
 ////////////////////////////
-void DrawPixel(Vector2i screenCoord, Color color, gfx::DrawMetaData cbi = gfx::DrawMetaData::NONE);
+void DrawPixel(Vector2f screenCoord, Color color, gfx::DrawMetaData cbi = gfx::DrawMetaData::NONE);
 void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::DrawMetaData cbi);
 void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi);
 
