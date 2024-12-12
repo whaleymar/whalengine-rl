@@ -25,7 +25,7 @@ out vec4 finalColor;
 
 const int STEPS = 32;
 const int LIGHTPASSES = 10;
-const float hitEpsilon = 0.001;
+const float hitEpsilon = 0.005;
 
 const vec3 wallColor = vec3(0.0);
 const float pi = 3.1415926;
