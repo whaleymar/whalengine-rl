@@ -1,6 +1,5 @@
 #include "Level.h"
 
-#include "Components/Tile.h"
 #include "GameComponents/Respawn.h"
 #include "IGame.h"
 #include "Physics/CollisionLayer.h"
@@ -138,6 +137,8 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
 
 void unloadLevel(ActiveLevel& level) {
     std::set<ecs::Entity> toKill = std::move(level.childEntities);
+    // TODO using game components in engine code is BAD
+    // ECS lib needs distinction between "kill" and "deallocate", where the latter does not emit any events or trigger any onRemove callbacks
     for (auto entity : toKill) {
         if (entity.has<Respawn>()) {
             entity.remove<Respawn>();

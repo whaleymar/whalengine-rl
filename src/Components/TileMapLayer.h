@@ -1,20 +1,13 @@
 #pragma once
 
 #include <memory>
-#include "Systems/Graphics/Common.h"
+#include <vector>
+#include "Util/Vector.h"
 
 namespace whal {
 
 struct TileMap;
 
-// TODO delete
-// Tiles can cache their render info since they don't move
-struct Tile {
-    gfx::EntityPreRenderInfo renderInfo;
-    bool wasDrawnLastFrame = false;
-};
-
-// TODO rename file to TileMapLayer
 struct TileMapLayer {
     Vector2i sizeTiles;
     std::vector<s32> ids;
