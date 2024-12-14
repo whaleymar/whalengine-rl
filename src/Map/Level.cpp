@@ -1,14 +1,10 @@
 #include "Level.h"
 
-#include "Components/Tags.h"
 #include "Components/Tile.h"
 #include "GameComponents/Respawn.h"
-#include "Gfx/Frame.h"
 #include "IGame.h"
 #include "Physics/CollisionLayer.h"
-#include "Settings.h"
 
-#include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Entities/Block.h"
@@ -113,119 +109,11 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     return result;
 }
 
-struct TileInfo {
-    s32 gid;
-    bool isFlipH;
-    bool isFlipY;
-    bool isRotate;
-};
-
-static TileInfo getTile(u32 tileMask) {
-    TileInfo tile;
-    tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
-    tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
-    tile.isRotate = tileMask & 0x20000000;  // Check if the 30th bit is on
-    tile.gid = tileMask & 0x0FFFFFFF;       // Mask out the upper 4 bits to get the ID
-    return tile;
-}
-
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffsetPixels = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
     ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}};
-    TileMap map = TileMap::parse(level.filepath.c_str(), lvl);
+    TileMap::load(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
-
-    // CREATE TILE ENTITIES
-    // std::vector<std::vector<s32>> collisionGrid;
-    for (s32 x = 0; x < map.widthTiles; x++) {
-        // std::vector<s32> collisionColumn;
-
-        // initialize nav grid with no obstacles
-        lvl.navGrid.push_back(std::vector<bool>(map.heightTiles, true));
-
-        for (s32 y = 0; y < map.heightTiles; y++) {
-            Transform trans = Transform(Transform::tiles(x, map.heightTiles - y).position + worldOffsetPixels);
-            Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);  // no idea if this is correct
-            trans.facing = Facing::Right;
-            s32 ix = map.widthTiles * y + x;
-
-            for (auto& layer : map.layers) {
-                u32 tileMask = layer.data[ix];
-                TileInfo tile = getTile(tileMask);
-                TileInfo originalTile = tile;
-                s32 blockID = tile.gid;
-
-                // the rotate flag technically means diagonal flipping or something idk it's some jank
-                if (tile.isRotate) {
-                    if (tile.isFlipY) {
-                        tile.isFlipH = !tile.isFlipH;
-                    }
-                    if (!tile.isFlipH) {
-                        tile.isFlipY = !tile.isFlipY;
-                    } else if (!tile.isFlipY) {
-                        tile.isFlipH = false;
-                    }
-                }
-
-                if (originalTile.isRotate && originalTile.isFlipY && originalTile.isFlipH) {
-                    trans.facing = Facing::Left;
-                    // trans.rotationDegrees = 180;
-                } else if (tile.isFlipH && !tile.isFlipY) {
-                    trans.facing = Facing::Left;
-                } else if (tile.isFlipY && !tile.isFlipH) {
-                    trans.rotationDegrees = 180;
-                    trans.facing = Facing::Left;
-                } else if (tile.isFlipH && tile.isFlipY) {
-                    trans.rotationDegrees = 180;
-                }
-
-                if (tile.isRotate) {
-                    trans.rotationDegrees += 90;
-                }
-
-                // 0 means the tile is empty
-                if (blockID != 0) {
-                    Expected<Sprite> sprite = getTileSprite(map, blockID);
-                    if (!sprite.isExpected()) {
-                        print(sprite.error());
-                        continue;
-                    } else {
-                        trans.depth = layer.metadata.depth;
-                        auto e = createDecal(trans, *sprite, false);
-                        if (!e.isValid()) {
-                            print("Couldn't allocate entity for tile");
-                            continue;
-                        }
-                        const TileSet& tset = getTileSet(map, blockID);
-                        s32 tileID = blockID - tset.firstgid;
-                        tset.addTileComponents(e, tileID, lvl, layer.metadata, mapPosition);
-
-                        // For simplicity, tiles with collision also block light, vision, and pathing
-                        if (e.has<Collider>()) {
-                            e.add<BlocksLight>();
-                            e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
-                            lvl.navGrid[x][y] = false;
-                        }
-
-                        e.add<Tile>();  // this tells the renderer that this entity won't move
-
-                        e.activate();
-                        // if ((*eEntity).has<Collider>()) {
-                        //     collisionColumn.push_back(1);
-                        // }
-                        lvl.childEntities.insert(e);
-                    }
-                } else {
-                    // collisionColumn.push_back(0);
-                }
-            }
-        }
-        // collisionGrid.push_back(collisionColumn);
-    }
-
-    // std::vector<SolidCollider> mesh;
-    // makeCollisionMesh(collisionGrid, lvl);
-
     System::getGame().getScene().loadedLevels.push_back(lvl);
 
     return NULLOPT;
@@ -257,95 +145,6 @@ void unloadLevel(ActiveLevel& level) {
         entity.kill();
     }
     print("unloaded level:", level.filepath);
-}
-
-void addCollider(ActiveLevel& lvl, std::pair<s32, s32> startPoint, std::pair<s32, s32> endPoint) {
-    s32 meshWidthTiles = endPoint.first - startPoint.first + 1;
-    s32 meshHeightTiles = endPoint.second - startPoint.second + 1;
-
-    s32 centerX = lvl.worldPosOrigin.x + startPoint.first + (meshWidthTiles - 1) / 2;
-    s32 centerY = lvl.worldPosOrigin.y - startPoint.second - (meshHeightTiles - 2) / 2;
-
-    Vector2i halflen = {meshWidthTiles / 2, meshHeightTiles / 2};
-    auto collider = Collider(Transform({centerX, centerY}), halflen, CollisionLayer::Solid);
-
-    auto entity = World.entity();
-    if (!entity.isValid()) {
-        print("Error creating entity for mesh");
-    } else {
-        entity.add(collider);
-        entity.add(Transform(collider.getShape().getPositionEdge(Vector2i::DOWN)));
-        lvl.childEntities.insert(entity);
-    }
-}
-
-void makeCollisionMesh(const std::vector<std::vector<s32>>& collisionGrid, ActiveLevel& lvl) {
-    // could be a LOT faster with std::vector<bool> + bitwise ops
-    // timed @ 0.004 seconds for 1 level (quarter frame; can be asynch?)
-
-    using Point = std::pair<s32, s32>;
-    std::set<Point> visited;
-
-    bool isStarted = false;
-    Point startPoint;
-    Point endPoint;
-
-    for (size_t x = 0; x < collisionGrid.size(); x++) {
-        for (size_t y = 0; y < collisionGrid[0].size(); y++) {
-            Point point = {x, y};
-            if (visited.find(point) != visited.end()) {
-                continue;
-            }
-            visited.insert(point);
-
-            bool isCollisionTile = collisionGrid[x][y] > 0;
-            if (isCollisionTile) {
-                if (!isStarted) {
-                    isStarted = true;
-                    startPoint = point;
-                }
-                endPoint = point;
-            }
-            if (!isCollisionTile || y == (collisionGrid[0].size() - 1) || (x == (collisionGrid.size() - 1))) {
-                if (!isStarted) {
-                    continue;
-                }
-                // fix endpoint's x coord, try expanding vertically
-                bool isDone = false;
-                bool endedEarly = false;
-                Point newPoint;
-
-                for (size_t xNew = endPoint.first + 1; xNew < collisionGrid.size(); xNew++) {
-                    std::vector<Point> toInsert;
-                    for (size_t yNew = startPoint.second; yNew <= static_cast<size_t>(endPoint.second); yNew++) {
-                        newPoint = {xNew, yNew};  // pretty sure visit check is unecessary
-                        toInsert.push_back(newPoint);
-                        if (!collisionGrid[xNew][yNew]) {
-                            endedEarly = true;
-                            break;
-                        }
-                        isDone = (xNew == collisionGrid.size() - 1);
-                    }
-                    if (isDone || endedEarly) {
-                        if (isDone) {
-                            endPoint = newPoint;
-                            for (Point p : toInsert) {
-                                visited.insert(p);
-                            }
-                        }
-                        break;
-                    } else {
-                        endPoint = newPoint;
-                        for (Point p : toInsert) {
-                            visited.insert(p);
-                        }
-                    }
-                }
-                addCollider(lvl, startPoint, endPoint);
-                isStarted = false;
-            }
-        }
-    }
 }
 
 }  // namespace whal

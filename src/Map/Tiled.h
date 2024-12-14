@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 
 #include "CorradeOptional.h"
@@ -50,13 +51,21 @@ struct EntityMapData {
     bool isParsingTemplate = false;
 };
 
-struct TileLayer {
-    std::string name;
-    s32 width;
-    s32 height;
-    LayerData metadata;
-    std::vector<s32> data;
+struct TileInfo {
+    s32 gid;
+    bool isFlipH;
+    bool isFlipY;
+    bool isRotate;
 };
+
+inline TileInfo getTile(u32 tileMask) {
+    TileInfo tile;
+    tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
+    tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
+    tile.isRotate = tileMask & 0x20000000;  // Check if the 30th bit is on
+    tile.gid = tileMask & 0x0FFFFFFF;       // Mask out the upper 4 bits to get the ID
+    return tile;
+}
 
 struct TileSet {
     s32 firstgid;
@@ -72,19 +81,18 @@ struct TileSet {
     std::string spriteMaskFileName;
     std::vector<s32> tileIDToIndex;
     bool isAdditiveSpriteMask = false;
-
-    void addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, LayerData layerData, Vector2i mapPosition) const;
 };
 
 struct TileMap {
-    static TileMap parse(const char* file, ActiveLevel& level);
+    // loads tile layers and objects as entities & adds them as children of the level
+    static void load(const char* file, ActiveLevel& level);
 
     s32 widthTiles;
     s32 heightTiles;
     s32 tileSize;
 
-    std::vector<TileLayer> layers;
     std::vector<TileSet> tilesets;
+    std::unordered_map<u32, Sprite> spriteCache;  // key is GID
 };
 
 // Supported data types in Tiled

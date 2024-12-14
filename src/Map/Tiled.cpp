@@ -1,24 +1,29 @@
 #include "Tiled.h"
+#include <memory>
 
-#include "Gfx/Texture.h"
-#include "Map/EntityFactory.h"
-#include "Util/DebugUtil.h"
+#include "ECS.h"
 #include "json.hpp"
 
 #include "Settings.h"
 
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Name.h"
+#include "Components/Relationships.h"
+#include "Components/Tile.h"
 #include "Components/Transform.h"
 
 #include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
+#include "Gfx/Texture.h"
 
 #include "Map/ComponentFactory.h"
+#include "Map/EntityFactory.h"
 #include "Map/Level.h"
 #include "TiledParse.h"
 
 #include "Sys/System.h"
+
+#include "Util/DebugUtil.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
 
@@ -33,15 +38,15 @@ static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
 std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = {};
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
-static TileSet parseTileset(const std::string& basename, s32 firstgid);
-static void parseTileLayer(const nlohmann::json& layer, TileMap& map);
-static void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
+static TileSet loadTileset(const std::string& basename, s32 firstgid);
+static void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
 // static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
 static const nlohmann::json& getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
+static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth);
 
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
@@ -93,39 +98,77 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
     }
 }
 
-void TileSet::addTileComponents(ecs::Entity entity, s32 tileID, const ActiveLevel& level, const LayerData layerData, Vector2i mapPosition) const {
-    const auto& object = getMapFile(fileName);
-    bool isMissingTsetProps = false;
+static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& level) {
+    const Transform& layerTrans = layerEntity.get<Transform>();
+    const Vector2i origin = layerTrans.position;
+    TileMapLayer& layer = layerEntity.get<TileMapLayer>();
+    LayerData layerMetaData = {layerTrans.depth};
 
-    if (!object.contains("properties")) {
-        isMissingTsetProps = true;
-    }
-
-    const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
-
-    // don't need values for allObjects or idToIndex since tiles (should be) standalone entities
+    // dummy objects that tiles don't need because they are standalone entities
     const nlohmann::json emptyJson;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
-    // add tileset components
-    if (!isMissingTsetProps) {
-        addComponents(entity, mapData, object, emptyJson, emptyIdToIndex, level, layerData);
-    }
+    // TODO navgrid should be owned by layerEntity
+    for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
+        level.navGrid.push_back(std::vector<bool>(layer.tilemap->heightTiles, true));
 
-    // tile-specific component overrides
-    s32 propsIx = tileIDToIndex[tileID];
-    if (propsIx != -1) {
-        addComponents(entity, mapData, object["tiles"][propsIx], emptyJson, emptyIdToIndex, level, layerData);
+        for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
+            const s32 ix = layer.tilemap->widthTiles * y + x;
+            u32 tileMask = layer.ids[ix];
+            TileInfo tile = getTile(tileMask);
+
+            if (tile.gid == 0) {
+                continue;  // empty tile
+            }
+
+            const TileSet& tset = getTileSet(*layer.tilemap.get(), tile.gid);
+            const s32 localId = tile.gid - tset.firstgid;
+            const s32 propsIx = tset.tileIDToIndex[localId];
+            if (propsIx == -1) {
+                // this tile doesn't have any extra properties
+                continue;
+            }
+
+            // Tile has extra properties (e.g. a collider)
+            // so we'll create a child entity to encapsulate this behavior
+            ecs::Entity e = World.entity(false);
+            e.add(Transform(Vector2i(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + origin));
+            const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
+            const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
+
+            // TODO this function doesn't need layerMetaData, should take the tile layer entity i suppose
+            addComponents(e, mapData, getMapFile(tset.fileName)["tiles"][propsIx], emptyJson, emptyIdToIndex, level, layerMetaData);
+
+            // For simplicity, tiles with collision also block light, vision, and pathing
+            if (e.has<Collider>()) {
+                layer.collisionMask[ix] = true;
+                e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
+                level.navGrid[x][y] = false;
+            }
+
+            e.activate();
+            layerEntity.get<Children>().add(e);
+        }
     }
 }
 
-TileMap TileMap::parse(const char* path, ActiveLevel& level) {
-    const auto data = getMapFile(path);
+void TileMap::load(const char* path, ActiveLevel& level) {
+    const auto& data = getMapFile(path);
 
-    TileMap map;
-    map.widthTiles = readInt(data, "width");
-    map.heightTiles = readInt(data, "height");
-    map.tileSize = readInt(data, "tilewidth");
+    std::shared_ptr<TileMap> map = std::make_shared<TileMap>();
+    map->widthTiles = readInt(data, "width");
+    map->heightTiles = readInt(data, "height");
+    map->tileSize = readInt(data, "tilewidth");
+
+    for (const auto& tileset : data["tilesets"]) {
+        s32 firstgid = readInt(tileset, "firstgid");
+        std::string fileName = readString(tileset, "source");
+
+        TileSet tset = loadTileset(fileName, firstgid);
+        map->tilesets.push_back(tset);
+    }
+
+    const Vector2i origin = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
 
     for (const auto& layer : data["layers"]) {
         bool isVisible = readBool(layer, "visible");
@@ -135,28 +178,39 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
         std::string type = readString(layer, "type");
 
         if (type == "tilelayer") {
-            parseTileLayer(layer, map);
+            // create an entity with a TileMapLayer component
+            ecs::Entity layerEntity = World.entity(false);
+            auto _ = ecs::DeferActivate(layerEntity);
+            const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
+            layerEntity.add(TileMapLayer{
+                .sizeTiles = sizeTiles,
+                .ids = layer["data"].get<std::vector<s32>>(),
+                .tilemap = map,
+                .collisionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
+            });
+            layerEntity.add(Name(readString(layer, "name")));
+            // TODO transform should be the center of the layer, not the top left (?) corner
+            Transform trans = Transform(Transform::tiles(0, map->heightTiles).position + origin);
+            // TODO parse chunkSize, ySorted, and depth from layer data property struct
+            trans.depth = getLayerDepth(layer, Depth::Level);
+            layerEntity.add(trans);
+            layerEntity.add<Children>();
+            level.childEntities.insert(layerEntity);
+            createTileMapLayerEntities(layerEntity, level);
+
+            // proof of concept for a fun little stage transition:
+            // this would look even cooler if the effect went right to left but that would be extra work
+            // Schedule.tween(layerEntity, 0, 1, &Transform::rotationDegrees).from(-360).setTransition(Ease::InOutQuad);
+            // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
+
         } else if (type == "objectgroup") {
-            parseObjectLayer(layer, level);
+            loadObjectLayer(layer, level);
         } else if (type == "imagelayer") {
             // parseImageLayer(layer, level);
             print("parseImageLayer disabled!");
         } else {
             print("unrecognized layer: ", type, "\nSkipping for now");
         }
-    }
-
-    for (const auto& tileset : data["tilesets"]) {
-        s32 firstgid = readInt(tileset, "firstgid");
-        std::string fileName = readString(tileset, "source");
-
-        TileSet tset = parseTileset(fileName, firstgid);
-        map.tilesets.push_back(tset);
-    }
-
-    for (const auto& property : data["properties"]) {
-        std::string propName = readString(property, "name");
-        // std::string propType = readString(property, "type");
     }
 
     // add ambient lighting for the level
@@ -175,11 +229,9 @@ TileMap TileMap::parse(const char* path, ActiveLevel& level) {
     } else {
         print("Couldn't allocate entity for level lighting");
     }
-
-    return map;
 }
 
-static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
+Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     Depth layerDepth = defaultDepth;
     if (layer.contains("properties")) {
         for (auto& property : layer["properties"]) {
@@ -193,18 +245,8 @@ static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     return layerDepth;
 }
 
-void parseTileLayer(const nlohmann::json& layer, TileMap& map) {
-    s32 width = readInt(layer, "width");
-    s32 height = readInt(layer, "height");
-    const std::string name = readString(layer, "name");
-    Depth layerDepth = getLayerDepth(layer, Depth::Level);
-
-    TileLayer tLayer = {name, width, height, {layerDepth}, layer["data"].get<std::vector<s32>>()};
-    map.layers.push_back(std::move(tLayer));
-}
-
 // this will create entities and immediately add them to the level
-void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
+void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     using json = nlohmann::json;
 
     Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -414,8 +456,8 @@ void parseObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 //     entity.add(Sprite(layerData.depth, frame));
 // }
 
-TileSet parseTileset(const std::string& basename, s32 firstgid) {
-    const auto data = getMapFile(basename);
+TileSet loadTileset(const std::string& basename, s32 firstgid) {
+    const auto& data = getMapFile(basename);
 
     auto sourceFilePath = readString(data, "image");
 
@@ -598,7 +640,7 @@ void parseMapProject(const char* mapfile) {
 
 // parses a level's parameters and returns its LevelInfo struct
 static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
-    const auto data = getMapFile(lvlFileName);
+    const auto& data = getMapFile(lvlFileName);
     for (auto& property : data["properties"]) {
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {

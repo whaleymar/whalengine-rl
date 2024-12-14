@@ -63,6 +63,5 @@ struct Scene {
 Corrade::Containers::Optional<Error> loadLevel(const Level level);
 void unloadAndRemoveLevel(ActiveLevel& level);
 void unloadLevel(ActiveLevel& level);
-void makeCollisionMesh(std::vector<std::vector<s32>>& collisionGrid, ActiveLevel& lvl);
 
 }  // namespace whal
