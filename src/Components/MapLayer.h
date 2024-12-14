@@ -17,4 +17,9 @@ struct TileMapLayer {
     bool isYSorted = false;
 };
 
+// RESEARCH
+// struct ObjectMapLayer {
+//
+// };
+
 }  // namespace whal

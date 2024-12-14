@@ -10,7 +10,6 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
-#include "Gfx/Depth.h"
 #include "Util/Types.h"
 
 namespace rl {
@@ -37,11 +36,6 @@ Transform getTransformFromMapPosition(Vector2i mapCenter, Vector2i size, const A
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
-
-struct LayerData {
-    Depth depth;
-    f32 parallax = 1.0;
-};
 
 struct EntityMapData {
     Vector2i position;  // top left of tile

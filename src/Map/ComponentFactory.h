@@ -15,7 +15,6 @@ namespace ecs {
 class Entity;
 }
 
-struct LayerData;
 struct ActiveLevel;
 struct EntityMapData;
 struct Follow;
@@ -29,7 +28,6 @@ struct LoadContext {
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex;
     const EntityMapData& entityData;
     const ActiveLevel& level;
-    const LayerData& layerData;
     bool isTiledData = false;
 };
 
