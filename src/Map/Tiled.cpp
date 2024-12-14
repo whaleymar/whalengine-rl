@@ -9,7 +9,7 @@
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Name.h"
 #include "Components/Relationships.h"
-#include "Components/Tile.h"
+#include "Components/TileMapLayer.h"
 #include "Components/Transform.h"
 
 #include "Gfx/Depth.h"
