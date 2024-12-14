@@ -2,7 +2,7 @@
 
 #include "Common.h"
 #include "Components/Draw.h"
-#include "Components/TileMapLayer.h"
+#include "Components/MapLayer.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/Texture.h"

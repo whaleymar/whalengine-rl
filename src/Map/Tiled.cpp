@@ -7,9 +7,9 @@
 #include "Settings.h"
 
 #include "Components/Light.h"  // for level ambient lighting
+#include "Components/MapLayer.h"
 #include "Components/Name.h"
 #include "Components/Relationships.h"
-#include "Components/TileMapLayer.h"
 #include "Components/Transform.h"
 
 #include "Gfx/Depth.h"
@@ -40,13 +40,13 @@ std::unordered_map<std::string, std::pair<TiledDataType, std::string>> Component
 
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
 static void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
-// static void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
 static const nlohmann::json& getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
-static Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth);
+static Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth);
+static Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer);
 
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
@@ -54,7 +54,7 @@ void clearMapCache() {
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
-                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level, LayerData layerData) {
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level) {
     if (!object.contains("properties")) {
         return;
     }
@@ -70,7 +70,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
                 std::string path = whal_format("templates/{}.tj", newTemplateFile);
                 const auto& newPrefab = getTemplate(path);
-                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level, layerData);
+                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level);
                 EntityBuilder builderFunc = nullptr;
                 Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
@@ -90,7 +90,6 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             .idToIndex = idToIndex,
             .entityData = entityData,
             .level = level,
-            .layerData = layerData,
             .isTiledData = true,
         };
 
@@ -102,7 +101,6 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     const Transform& layerTrans = layerEntity.get<Transform>();
     const Vector2i origin = layerTrans.position;
     TileMapLayer& layer = layerEntity.get<TileMapLayer>();
-    LayerData layerMetaData = {layerTrans.depth};
 
     // dummy objects that tiles don't need because they are standalone entities
     const nlohmann::json emptyJson;
@@ -136,8 +134,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
             const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
 
-            // TODO this function doesn't need layerMetaData, should take the tile layer entity i suppose
-            addComponents(e, mapData, getMapFile(tset.fileName)["tiles"][propsIx], emptyJson, emptyIdToIndex, level, layerMetaData);
+            addComponents(e, mapData, getMapFile(tset.fileName)["tiles"][propsIx], emptyJson, emptyIdToIndex, level);
 
             // For simplicity, tiles with collision also block light, vision, and pathing
             if (e.has<Collider>()) {
@@ -191,8 +188,10 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             layerEntity.add(Name(readString(layer, "name")));
             // TODO transform should be the center of the layer, not the top left (?) corner
             Transform trans = Transform(Transform::tiles(0, map->heightTiles).position + origin);
-            // TODO parse chunkSize, ySorted, and depth from layer data property struct
-            trans.depth = getLayerDepth(layer, Depth::Level);
+
+            // this loads chunk size and other metadata:
+            trans.depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
+
             layerEntity.add(trans);
             layerEntity.add<Children>();
             level.childEntities.insert(layerEntity);
@@ -231,7 +230,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 }
 
-Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
+Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth) {
     Depth layerDepth = defaultDepth;
     if (layer.contains("properties")) {
         for (auto& property : layer["properties"]) {
@@ -245,12 +244,31 @@ Depth getLayerDepth(nlohmann::json layer, Depth defaultDepth) {
     return layerDepth;
 }
 
+Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
+    Depth layerDepth = Depth::Level;
+    if (!data.contains("properties")) {
+        return layerDepth;
+    }
+
+    for (const auto& property : data["properties"]) {
+        std::string propertytype = readString(property, "propertytype");
+        if (propertytype == "whal::TileMapLayer") {
+            const auto& value = property["value"];
+            tryRead(value, "Depth", &layerDepth);
+            tryRead(value, "chunkSize", &layer.chunkSize);
+            tryRead(value, "isYSorted", &layer.isYSorted);
+
+            break;
+        }
+    }
+    return layerDepth;
+}
+
 // this will create entities and immediately add them to the level
 void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     using json = nlohmann::json;
 
-    Depth layerDepth = getLayerDepth(layer, Depth::Level);
-    LayerData layerData = {layerDepth};
+    const Depth layerDepth = getLayerDepth(layer, Depth::Level);
 
     bool failedToAllocateEntities = false;
     const json& objects = layer["objects"];
@@ -342,7 +360,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // add transform
         Transform trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
-        trans.depth = layerData.depth;
+        trans.depth = layerDepth;
         entity.add(trans);
 
         // add name
@@ -355,7 +373,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         if (pPrefab) {
             // add template components
             entityData.isParsingTemplate = true;
-            addComponents(entity, entityData, *pPrefab, objects, idToIndex, level, layerData);
+            addComponents(entity, entityData, *pPrefab, objects, idToIndex, level);
             entityData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
@@ -374,87 +392,9 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
 
         // add object components with factory
-        addComponents(entity, entityData, object, objects, idToIndex, level, layerData);
+        addComponents(entity, entityData, object, objects, idToIndex, level);
     }
 }
-
-// void parseImageLayer(const nlohmann::json& layer, ActiveLevel& level) {
-//     Depth layerDepth = getLayerDepth(layer, Depth::Level);
-//     LayerData layerData = {layerDepth};
-//
-//     Vector2i position = readVector2i(layer);
-//
-//     Vector2i offset;
-//     tryReadVector2i(layer, "offsetx", "offsety", &offset);
-//
-//     position += offset + level.worldPosOrigin.as<s32>();
-//
-//     bool isRepeatX = false;
-//     tryReadBool(layer, "repeatx", &isRepeatX);
-//
-//     bool isRepeatY = false;
-//     tryReadBool(layer, "repeaty", &isRepeatY);
-//
-//     Vector2f parallax = {1.0, 1.0};
-//     tryReadVector2f(layer, "parallaxx", "parallaxy", &parallax);
-//
-//     // std::string name = readString(layer, "name");
-//     std::string imgPath = readString(layer, "image");
-//     std::string spriteKey = getSpriteKeyFromPath(imgPath);
-//
-//     if (depthToFloat(layerDepth) < depthToFloat(Depth::Level)) {
-//         // use background textures instead of an entity
-//         BGTexture bgEnum;
-//         switch (layerDepth) {
-//         case Depth::BackgroundStatic:
-//             bgEnum = BGTexture::STATIC;
-//             break;
-//
-//         case Depth::BackgroundFar:
-//             bgEnum = BGTexture::FAR;
-//             break;
-//
-//         case Depth::BackgroundMid:
-//             bgEnum = BGTexture::MID;
-//             break;
-//
-//         case Depth::BackgroundNear:
-//             bgEnum = BGTexture::NEAR;
-//             break;
-//
-//         default:
-//             print("Found Depth enum value which doesn't match one of {Static, Far, Mid, Near}. Defeaulting to Mid");
-//             bgEnum = BGTexture::MID;
-//         }
-//
-//         auto errOpt = TextureManager::instance().setBackgroundTextureToSprite(TEXNAME_SPRITE, spriteKey.c_str(), bgEnum, parallax, position,
-//                                                                               isRepeatX, isRepeatY);
-//         if (errOpt) {
-//             print("Got error: ", *errOpt);
-//         }
-//
-//         return;
-//     }
-//
-//     Corrade::Containers::Optional<Rectangle> frameOpt = TextureManager::getAtlas(TEXNAME_SPRITE).getFrame(spriteKey.c_str());
-//     if (!frameOpt) {
-//         return;
-//     }
-//
-//     auto eEntity = World.entity();
-//     if (!eEntity.isExpected()) {
-//         return;
-//     }
-//
-//     Frame frame(*frameOpt);
-//     ecs::Entity entity = eEntity.value();
-//     level.childEntities.insert(entity);
-//
-//     Transform trans = getTransformFromMapPosition(position + offset, frame.size, level, false);
-//     entity.add(trans);
-//
-//     entity.add(Sprite(layerData.depth, frame));
-// }
 
 TileSet loadTileset(const std::string& basename, s32 firstgid) {
     const auto& data = getMapFile(basename);
