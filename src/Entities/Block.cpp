@@ -69,7 +69,6 @@ ecs::Entity createDecal(Transform transform, Sprite sprite, bool activate) {
     if (!decal.isValid()) {
         return decal;
     }
-    auto _ = ecs::DeferActivate(decal);
 
     decal.add(transform);
     decal.add(sprite);

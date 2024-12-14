@@ -21,6 +21,7 @@ NEXT GOAL:
 - apply texture overlay on tiled and other sprites:
     - https://godotshaders.com/shader/repeated-texture-overlay-for-tilemaps/
     - animating it would be sick
+- experiment with adding a custom Z value (my depth) instead of letting raylib handle it
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -51,6 +52,8 @@ NEXT GOAL:
 - background/foreground layers should be written to a texture?
 - if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
 - Should use the Tiled collision editor for tile collision
+- refactory the Scene/Level hierarchy to use entities
+    - (maybe) keep scenes as is, but levels could be entities
 
 ## Sprite Editing workflow
 - .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
