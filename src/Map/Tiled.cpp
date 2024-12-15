@@ -129,7 +129,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
 
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
-            ecs::Entity e = World.entity(false);
+            ecs::Entity e = layerEntity.createChild(false);
             e.add(Transform(Vector2i(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + origin));
             const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
             const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
@@ -142,9 +142,6 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
                 level.navGrid[x][y] = false;
             }
-
-            e.activate();
-            layerEntity.get<Children>().add(e);
         }
     }
 }
@@ -193,7 +190,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             trans.depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
 
             layerEntity.add(trans);
-            layerEntity.add<Children>();
             level.childEntities.insert(layerEntity);
             createTileMapLayerEntities(layerEntity, level);
 
@@ -247,6 +243,7 @@ Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth) {
 Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
     Depth layerDepth = Depth::Level;
     if (!data.contains("properties")) {
+        print("layer is missing TileMapInfo property");
         return layerDepth;
     }
 
@@ -258,9 +255,11 @@ Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
             tryRead(value, "chunkSize", &layer.chunkSize);
             tryRead(value, "isYSorted", &layer.isYSorted);
 
-            break;
+            return layerDepth;
         }
     }
+
+    print("layer is missing TileMapInfo property");
     return layerDepth;
 }
 
