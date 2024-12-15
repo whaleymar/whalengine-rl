@@ -77,14 +77,16 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
                                       .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                       .isOccluder = isOccluder,
                                       .isUI = true,
-                                  });
+                                  },
+                                  renderInfo.internal);
         } else {
             mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
                                       gfx::DrawMetaData{
                                           .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                           .isOccluder = isOccluder,
                                           .isUI = false,
-                                      });
+                                      },
+                                      renderInfo.internal);
         }
         return true;
     }
@@ -102,14 +104,16 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
                                   .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                   .isOccluder = isOccluder,
                                   .isUI = true,
-                              });
+                              },
+                              renderInfo.internal);
     } else {
         mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
                                   gfx::DrawMetaData{
                                       .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
                                       .isOccluder = isOccluder,
                                       .isUI = false,
-                                  });
+                                  },
+                                  renderInfo.internal);
     }
 }
 
