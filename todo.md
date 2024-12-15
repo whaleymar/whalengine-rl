@@ -3,6 +3,7 @@
 NEXT GOAL: 
 - tilemaplayer component 
 - consolidate the 3 transform components I have
+- control child Transform using parent Transform like in Unity
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -78,6 +79,7 @@ NEXT GOAL:
     - cache entity positions from previous frame, remove and re-insert entities whose positions changed
 
 ## Misc
+- remove Children component and replace with ECS parent child scheme
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children

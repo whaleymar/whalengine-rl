@@ -45,6 +45,7 @@ struct EntityRenderInfo {
     const ecs::IRender* piRender;
     ecs::Entity entity;
     DrawMetaData colorBuf = {};
+    s32 internal;
 };
 
 struct EntityPreRenderInfo {
@@ -58,6 +59,7 @@ struct EntityPreRenderInfo {
     PreciseTransform preciseTransform;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
+    s32 internal = 0;
 };
 
 class RenderQueue {
