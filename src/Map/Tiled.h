@@ -1,16 +1,18 @@
 #pragma once
 
-#include <unordered_map>
 #include <vector>
 
+#include "Components/Draw.h"
+#include "Components/Transform.h"
 #include "CorradeOptional.h"
 #include "CorradePointer.h"
 #include "json_fwd.hpp"
 
-#include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
+#include "Util/STL_reduce.h"
 #include "Util/Types.h"
+#include "Util/Vector.h"
 
 namespace rl {
 typedef struct Color Color;
@@ -21,9 +23,13 @@ namespace whal {
 struct TileMap;
 struct TileSet;
 struct Scene;
-struct Transform;
 struct ActiveLevel;
-struct Sprite;
+
+struct TileRenderInfo {
+    Sprite sprite;
+    std::pair<f32, Facing> orient;
+    bool isOccluder;
+};
 
 namespace ecs {
 class Entity;
@@ -86,7 +92,7 @@ struct TileMap {
     s32 tileSize;
 
     std::vector<TileSet> tilesets;
-    std::unordered_map<u32, Sprite> spriteCache;  // key is GID
+    stl::Map<s32, TileRenderInfo> spriteCache;  // key is GID
 };
 
 // Supported data types in Tiled
