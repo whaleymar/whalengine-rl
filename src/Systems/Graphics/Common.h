@@ -41,7 +41,7 @@ struct DrawMetaData {
 
 struct EntityRenderInfo {
     f32 bottom;
-    PreciseTransform preciseTransform;
+    Transform preciseTransform;
     const ecs::IRender* piRender;
     ecs::Entity entity;
     DrawMetaData colorBuf = {};
@@ -56,7 +56,7 @@ struct EntityPreRenderInfo {
     };
 
     AABB boundingBox;
-    PreciseTransform preciseTransform;
+    Transform preciseTransform;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;
@@ -88,13 +88,9 @@ private:
     AABB mCameraViewBox;
 };
 
-PreciseTransform getPreciseTrans(ecs::Entity entity);
-
-// slightly more efficient if caller already has the transform
-PreciseTransform getPreciseTrans(ecs::Entity entity, const Transform& transform);
 void clampToPixelGrid(RaylibDrawParams& params);
 
-RaylibDrawParams getDrawParams(PreciseTransform transform, Vector2f frameSize, Vector2f cameraPosition);
+RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize, Vector2f cameraPosition);
 
 }  // namespace gfx
 }  // namespace whal

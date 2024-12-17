@@ -18,73 +18,81 @@ static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f 
     return pivotRoot + delta * scale;
 }
 
-UltimateTransformFinal UltimateTransformFinal::pixels(s32 x, s32 y) {
-    return UltimateTransformFinal{.position = Vector2f(x, y), .positionPx = {x, y}};
+Transform Transform::world(s32 x, s32 y) {
+    return Transform{.position = Vector2f(x, y), .positionPx = {x, y}};
 }
 
-UltimateTransformFinal UltimateTransformFinal::tiles(s32 x, s32 y) {
-    return UltimateTransformFinal{.position = Vector2f(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE),
-                                  .positionPx = {x * PIXELS_PER_TILE, y * PIXELS_PER_TILE}};
+Transform Transform::world(Vector2i pos) {
+    return Transform{.position = pos.as<f32>(), .positionPx = pos};
 }
 
-void UltimateTransformFinal::translate(Vector2f moveAmount, ecs::Entity self) {
+Transform Transform::tiles(s32 x, s32 y) {
+    return Transform{.position = Vector2f(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE), .positionPx = {x * PIXELS_PER_TILE, y * PIXELS_PER_TILE}};
+}
+
+Transform Transform::tiles(Vector2i pos) {
+    return Transform{.position = Vector2f(pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE),
+                     .positionPx = {pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE}};
+}
+
+void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
     position += moveAmount;
     positionPx = position.round();
     localPosition += moveAmount;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(position, child);
     }
 }
 
-void UltimateTransformFinal::rotate(f32 degrees, ecs::Entity self) {
+void Transform::rotate(f32 degrees, ecs::Entity self) {
     rotation += degrees;
     localRotation += degrees;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentRotation(rotation, child);
+        child.get<Transform>().setParentRotation(rotation, child);
     }
 }
 
-void UltimateTransformFinal::scaleBy(Vector2f amount, ecs::Entity self) {
+void Transform::scaleBy(Vector2f amount, ecs::Entity self) {
     scale *= amount;
     localScale *= amount;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentScale(scale, child);
+        child.get<Transform>().setParentScale(scale, child);
     }
 }
 
-void UltimateTransformFinal::setParent(const UltimateTransformFinal& parentTrans, ecs::Entity self) {
+void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     position = parentTrans.position + localPosition;
     positionPx = position.round();
     scale = parentTrans.scale * localScale;
     rotation = parentTrans.rotation + localRotation;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParent(*this, child);
+        child.get<Transform>().setParent(*this, child);
     }
 }
 
-void UltimateTransformFinal::setParentPosition(Vector2f parentPosition, ecs::Entity self) {
+void Transform::setParentPosition(Vector2f parentPosition, ecs::Entity self) {
     position = parentPosition + localPosition;
     positionPx = position.round();
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(position, child);
     }
 }
 
-void UltimateTransformFinal::setParentScale(Vector2f parentScale, ecs::Entity self) {
+void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
     scale = parentScale * localScale;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentScale(scale, child);
+        child.get<Transform>().setParentScale(scale, child);
     }
 }
 
-void UltimateTransformFinal::setParentRotation(f32 parentDegrees, ecs::Entity self) {
+void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
     rotation = parentDegrees + localRotation;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentRotation(rotation, child);
+        child.get<Transform>().setParentRotation(rotation, child);
     }
 }
 
-void UltimateTransformFinal::set(const UltimateTransformFinal& trans, ecs::Entity self) {
+void Transform::set(const Transform& trans, ecs::Entity self) {
     const Vector2f parentPosition = position - localPosition;
     position = trans.position;
     positionPx = trans.positionPx;
@@ -105,11 +113,11 @@ void UltimateTransformFinal::set(const UltimateTransformFinal& trans, ecs::Entit
     pivotOffset = trans.pivotOffset;
 
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParent(*this, child);
+        child.get<Transform>().setParent(*this, child);
     }
 }
 
-void UltimateTransformFinal::setPosition(Vector2f globalPosition, ecs::Entity self) {
+void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
     const Vector2f parentPosition = position - localPosition;
     position = globalPosition;
     positionPx = position.round();
@@ -117,37 +125,37 @@ void UltimateTransformFinal::setPosition(Vector2f globalPosition, ecs::Entity se
 
     isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(position, child);
     }
 }
 
-void UltimateTransformFinal::setScale(Vector2f globalScale, ecs::Entity self) {
+void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
     const Vector2f parentScale = scale / localScale;
     scale = globalScale;
     localScale = scale / parentScale;
 
     isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentScale(scale, child);
+        child.get<Transform>().setParentScale(scale, child);
     }
 }
 
-void UltimateTransformFinal::setRotation(f32 globalRotation, ecs::Entity self) {
+void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     const f32 parentRotation = rotation - localRotation;
     rotation = globalRotation;
     localRotation = rotation - parentRotation;
 
     isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
-        child.get<UltimateTransformFinal>().setParentRotation(rotation, child);
+        child.get<Transform>().setParentRotation(rotation, child);
     }
 }
 
-Vector2f UltimateTransformFinal::getRotatedPosition() const {
+Vector2f Transform::getRotatedPosition() const {
     return _getRotatedPosition(position, scale, pivotOffset.as<f32>(), rotation, floatHeight);
 }
 
-Vector2f UltimateTransformFinal::apply(Vector2f relOffset) const {
+Vector2f Transform::apply(Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
@@ -159,7 +167,7 @@ Vector2f UltimateTransformFinal::apply(Vector2f relOffset) const {
     return getRotatedPosition() + rotatedOffset;
 }
 
-Vector2f UltimateTransformFinal::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
+Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
@@ -169,53 +177,6 @@ Vector2f UltimateTransformFinal::applyInverse(Vector2f transformedPosition, Vect
     // RESEARCH might want to use fast variants of these functions
     const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO);
     const Vector2f transformation = getRotatedPosition() + rotatedOffset;
-    return transformedPosition - (transformation - this->position);
-}
-
-Transform Transform::pixels(s32 x, s32 y) {
-    return Transform({x, y});
-}
-
-Transform Transform::tiles(s32 x, s32 y) {
-    return Transform({x * PIXELS_PER_TILE, y * PIXELS_PER_TILE});
-}
-
-#ifndef NDEBUG
-// Draws the root position + transformed root, according to the rotation + scale + pivot
-void UltimateTransformFinal::draw() const {
-    const Vector2f cameraPos = getCameraPositionPrecise();
-    gfx::DrawPixel(worldToScreenCoords(position, cameraPos).as<f32>(), Colors::Red);
-    auto unrounded = _getRotatedPosition(position, scale, pivotOffset, rotation, 0.0f);
-    gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos).as<f32>(), Colors::Green);
-}
-#endif
-
-Vector2i Transform::getRotatedPosition() const {
-    return _getRotatedPosition(position.as<f32>(), scale, pivotOffset.as<f32>(), rotationDegrees, 0.0f).round();
-}
-
-Vector2i Transform::apply(Vector2i relOffset) const {
-    // optimize for most common case
-    if (rotationDegrees == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
-        return position + relOffset + scaleAdjustment;
-    }
-
-    // RESEARCH might want to use fast variants of these functions
-    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO).round();
-    return getRotatedPosition() + rotatedOffset;
-}
-
-Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
-    // optimize for most common case
-    if (rotationDegrees == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
-        return transformedPosition - relOffset - scaleAdjustment;
-    }
-
-    // RESEARCH might want to use fast variants of these functions
-    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO).round();
-    const Vector2i transformation = getRotatedPosition() + rotatedOffset;
     return transformedPosition - (transformation - this->position);
 }
 
@@ -223,47 +184,10 @@ Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffse
 // Draws the root position + transformed root, according to the rotation + scale + pivot
 void Transform::draw() const {
     const Vector2f cameraPos = getCameraPositionPrecise();
-    gfx::DrawPixel(worldToScreenCoords(position.as<f32>(), cameraPos).as<f32>(), Colors::Red);
-    auto unrounded = _getRotatedPosition(position.as<f32>(), scale, pivotOffset.as<f32>(), rotationDegrees, 0.0f);
+    gfx::DrawPixel(worldToScreenCoords(position, cameraPos).as<f32>(), Colors::Red);
+    auto unrounded = _getRotatedPosition(position, scale, pivotOffset, rotation, 0.0f);
     gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos).as<f32>(), Colors::Green);
 }
 #endif
-
-PreciseTransform PreciseTransform::pixels(s32 x, s32 y) {
-    return PreciseTransform({static_cast<f32>(x), static_cast<f32>(y)});
-}
-
-PreciseTransform PreciseTransform::tiles(s32 x, s32 y) {
-    return PreciseTransform({x * FPIXELS_PER_TILE, y * FPIXELS_PER_TILE});
-}
-
-Vector2f PreciseTransform::getRotatedPosition() const {
-    return _getRotatedPosition(position, scale, pivotOffset.as<f32>(), rotationDegrees, floatHeight);
-}
-
-Vector2f PreciseTransform::apply(Vector2f relOffset) const {
-    // optimize for most common case
-    if (rotationDegrees == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
-        return position + relOffset + scaleAdjustment;
-    }
-
-    // RESEARCH might want to use fast variants of these functions
-    const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO);
-    return getRotatedPosition() + rotatedOffset;
-}
-
-Vector2f PreciseTransform::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
-    // optimize for most common case
-    if (rotationDegrees == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
-        return transformedPosition - relOffset - scaleAdjustment;
-    }
-
-    // RESEARCH might want to use fast variants of these functions
-    const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotationDegrees, Vector2f::ZERO);
-    const Vector2f transformation = getRotatedPosition() + rotatedOffset;
-    return transformedPosition - (transformation - this->position);
-}
 
 }  // namespace whal

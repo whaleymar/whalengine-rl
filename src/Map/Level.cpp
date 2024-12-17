@@ -2,7 +2,6 @@
 
 #include "GameComponents/Respawn.h"
 #include "IGame.h"
-#include "Physics/CollisionLayer.h"
 
 #include "Components/Draw.h"
 #include "Components/Transform.h"
@@ -109,8 +108,8 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffsetPixels = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
-    ActiveLevel lvl = {level, {}, {}, worldOffsetPixels, {}, {}, {}};
+    Vector2i worldOffset(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y);
+    ActiveLevel lvl = {level, {}, {}, worldOffset, {}, {}, {}};
     TileMap::load(level.filepath.c_str(), lvl);
     print("loaded map: ", level.filepath);
     System::getGame().getScene().loadedLevels.push_back(lvl);

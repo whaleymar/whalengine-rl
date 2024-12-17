@@ -174,10 +174,10 @@ void Renderer::render() {
     // 0. Create render context and build the render queue.
     rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
-    worldCamera.rotation = cameraEntity.get<Transform>().rotationDegrees;
+    worldCamera.rotation = cameraEntity.get<Transform>().rotation;
 
     // dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
-    auto cameraPosition = cameraEntity.get<PrecisePosition>().position;
+    auto cameraPosition = cameraEntity.get<Transform>().position;
     f32 decimal = math::abs(math::remainder(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
         cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;

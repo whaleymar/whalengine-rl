@@ -22,7 +22,6 @@ ecs::Entity createCamera(Transform trans) {
     auto _ = ecs::DeferActivate(camera);
 
     camera.add(trans);
-    camera.add(PrecisePosition::fromTrans(trans));
     camera.add(Name("Camera"));
     camera.add<Camera>();
     camera.add<AudioListener>();

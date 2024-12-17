@@ -75,7 +75,7 @@ enum class Facing : u8 {
     Right = 1,
 };
 
-struct UltimateTransformFinal {
+struct Transform {
     // global transform (read only):
     Vector2f position;
     Vector2i positionPx;  // rounded replica of position, for convenience
@@ -92,8 +92,10 @@ struct UltimateTransformFinal {
     Depth depth = Depth::Level;
     Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation
 
-    static UltimateTransformFinal pixels(s32 x, s32 y);
-    static UltimateTransformFinal tiles(s32 x, s32 y);
+    static Transform world(s32 x, s32 y);
+    static Transform world(Vector2i pos);
+    static Transform tiles(s32 x, s32 y);
+    static Transform tiles(Vector2i pos);
 
     // updates the local/global position:
     void translate(Vector2f moveAmount, ecs::Entity self);
@@ -101,13 +103,13 @@ struct UltimateTransformFinal {
     void scaleBy(Vector2f amount, ecs::Entity self);
 
     // called when parent transforms are updated
-    void setParent(const UltimateTransformFinal& parentTrans, ecs::Entity self);
+    void setParent(const Transform& parentTrans, ecs::Entity self);
     void setParentPosition(Vector2f parentPosition, ecs::Entity self);
     void setParentScale(Vector2f parentScale, ecs::Entity self);
     void setParentRotation(f32 parentDegrees, ecs::Entity self);
 
     // these work in reverse, computing the local transform needed to get the desired global state
-    void set(const UltimateTransformFinal& trans, ecs::Entity self);
+    void set(const Transform& trans, ecs::Entity self);
     void setPosition(Vector2f globalPosition, ecs::Entity self);
     void setScale(Vector2f globalScale, ecs::Entity self);
     void setRotation(f32 globalRotation, ecs::Entity self);
@@ -123,71 +125,6 @@ struct UltimateTransformFinal {
 #ifndef NDEBUG
     void draw() const;
 #endif
-};
-
-// entity position in pixels
-struct Transform {
-    Vector2i position;
-    f32 rotationDegrees = 0.0;      // counterclockwise
-    Facing facing = Facing::Right;  // draw calls flipped if facing left
-    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
-    Depth depth = Depth::Level;
-    Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
-    Vector2f scale = Vector2f::ONE;
-
-    static Transform pixels(s32 x, s32 y);
-    static Transform tiles(s32 x, s32 y);
-    Vector2i getRotatedPosition() const;
-
-    // Get an offset's transformed position
-    Vector2i apply(Vector2i relOffset) const;
-
-    // Calculate this Transform's root position using an offset's transformed position
-    Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
-
-#ifndef NDEBUG
-    void draw() const;
-#endif
-};
-
-// TODO thinking of making this an OPTIONAL REPLACEMENT for Transform (an entity would have one or the other), but using floats for position
-// and hopefully using CRTP to give this and Transform a common interface which works with the ECS
-// and then defining some ecs::Any<Transform, PreciseTransform> thingy which systems can use
-struct PrecisePosition {
-    Vector2f position;
-
-    static PrecisePosition fromTrans(Transform trans) { return PrecisePosition{trans.position.as<f32>()}; }
-};
-
-struct PreciseTransform {
-    Vector2f position;
-
-    f32 rotationDegrees = 0.0;      // counterclockwise
-    Facing facing = Facing::Right;  // draw calls flipped if facing left
-    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
-    Depth depth = Depth::Level;
-    Vector2i pivotOffset = Vector2i::ZERO;  // used for rotation
-    Vector2f scale = Vector2f::ONE;
-    f32 floatHeight = 0.0f;
-
-    static PreciseTransform pixels(s32 x, s32 y);
-    static PreciseTransform tiles(s32 x, s32 y);
-    static PreciseTransform fromTrans(Transform trans) {
-        return PreciseTransform{.position = trans.position.as<f32>(),
-                                .rotationDegrees = trans.rotationDegrees,
-                                .facing = trans.facing,
-                                .isManuallyMoved = trans.isManuallyMoved,
-                                .depth = trans.depth,
-                                .pivotOffset = trans.pivotOffset,
-                                .scale = trans.scale};
-    }
-    Vector2f getRotatedPosition() const;
-
-    // Get an offset's transformed position
-    Vector2f apply(Vector2f relOffset) const;
-
-    // Calculate this Transform's root position using an offset's transformed position
-    Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
 };
 
 }  // namespace whal

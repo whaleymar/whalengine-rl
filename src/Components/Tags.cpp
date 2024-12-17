@@ -1,7 +1,6 @@
 #include "Tags.h"
 
 #include "Components/Collision.h"
-#include "Components/Transform.h"
 #include "Map/TiledParse.h"
 
 namespace whal {
@@ -12,11 +11,6 @@ void TagLoader::loadImpl(ecs::Entity entity, void* data) {
     bool hasTag = false;
     if (tryRead(ctx.values, "Player", &hasTag) && hasTag) {
         entity.add<Player>();
-        hasTag = false;
-    }
-
-    if (tryRead(ctx.values, "PrecisePosition", &hasTag) && hasTag) {
-        entity.add(PrecisePosition::fromTrans(entity.get<Transform>()));
         hasTag = false;
     }
 

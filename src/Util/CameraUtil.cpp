@@ -16,7 +16,7 @@ Vector2i getCameraPosition() {
     static Vector2i lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        lastPos = eOpt->get<PrecisePosition>().position.round();
+        lastPos = eOpt->get<Transform>().positionPx;
     }
     return lastPos;
 }
@@ -25,7 +25,7 @@ Vector2f getCameraPositionPrecise() {
     static Vector2f lastPos;
     auto eOpt = getCamera();
     if (eOpt) {
-        lastPos = eOpt->get<PrecisePosition>().position;
+        lastPos = eOpt->get<Transform>().position;
     }
 
     return lastPos;
@@ -46,7 +46,7 @@ void setCameraTarget(ecs::Entity target) {
 void setCameraPosition(Vector2i pos) {
     auto eOpt = getCamera();
     if (eOpt) {
-        eOpt->set(Transform(pos));
+        eOpt->set(Transform::world(pos.x, pos.y));
     }
 }
 

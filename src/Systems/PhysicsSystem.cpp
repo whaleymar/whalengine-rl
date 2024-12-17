@@ -73,9 +73,6 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
         Transform& trans = entity.get<Transform>();
         const bool isManuallyMoved = trans.isManuallyMoved;
         trans.isManuallyMoved = false;
-        if (isManuallyMoved && entity.has<PrecisePosition>()) {
-            entity.set<PrecisePosition>({trans.position.as<f32>()});
-        }
 
         if (!entity.has<Collider>()) {
             continue;
@@ -84,13 +81,13 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
         auto& collider = entity.get<Collider>();
         if (isManuallyMoved) {
             // Sync collider position without checking collision
-            if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
+            if (collider.getShape().getPosition().as<f32>() != trans.apply(collider.getOffset().as<f32>())) {
                 ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
             }
 
         } else {
             // Move collider within physics engine
-            const auto targetColliderPosition = trans.apply(collider.getOffset());
+            const Vector2i targetColliderPosition = trans.apply(collider.getOffset().as<f32>()).round();
             if (collider.getShape().getPosition() != targetColliderPosition) {
                 const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
 
@@ -153,21 +150,7 @@ void PhysicsSystem::update() {
             entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
             allColliderEntities.push_back(entity);
         } else {
-            if (entity.has<PrecisePosition>()) {
-                auto& precisePosition = entity.get<PrecisePosition>();
-                precisePosition.position += move;
-                trans.position = precisePosition.position.round();
-                // if (move.len() < 0.1) {
-                // clamp precise position to integer coordinates if we're not moving
-                // (*precisePositionOpt)->position = toFloatVec(trans.position);
-                // }
-            } else {
-                // store remainder for stuff that moves less than 1px per frame. This is done in collider.move for colliders.
-                Vector2i moveRounded = Vector2i(std::round(move.x), std::round(move.y));
-                auto remainder = move - moveRounded.as<f32>();
-                vel.residualImpulse += remainder;
-                trans.position += moveRounded;
-            }
+            trans.translate(move, entity);
         }
         // ----------------------------------------------------------------
 
@@ -227,8 +210,7 @@ void RotationPhysicsSystem::update() {
 
         // multiply by -1 so rotations are clockwise by default
         const f32 toAdd = -1.0f * 360.0f * angularVelocity.rotationsPerSecond * dt;
-        auto& trans = entity.get<Transform>();
-        trans.rotationDegrees += toAdd;
+        entity.get<Transform>().rotate(toAdd, entity);
     }
 }
 
