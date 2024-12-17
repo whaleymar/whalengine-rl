@@ -6,24 +6,14 @@
 
 namespace whal {
 
-struct Children;
 struct Attach;
 struct Orbit;
 struct Follow;
 struct Velocity;
 struct Transform;
 
-class EntityChildSystem : public ecs::ISystem<Children>, public ecs::IMonitorSystem, public IListen<evt::Death, true, ecs::Entity> {
+class AttachSystem : public ecs::ISystem<Attach, Transform>, public ecs::IUpdate {
 public:
-    void onAdd(ecs::Entity entity) override {}
-    void onRemove(ecs::Entity entity) override;
-    void onEvent(evt::Death, ecs::Entity entity) override;
-};
-
-class AttachSystem : public ecs::ISystem<Attach, Transform>, public ecs::IUpdate, public ecs::IMonitorSystem {
-public:
-    void onAdd(ecs::Entity entity) override;
-    void onRemove(ecs::Entity entity) override {}
     void update() override;
 };
 

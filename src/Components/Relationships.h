@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
@@ -19,7 +18,6 @@ struct Attach : ISerialize<Attach, ComponentFactory> {
     Attach() = default;
     Attach(ecs::Entity target, Vector2i offset = {0, 0}, DirectionParam directionParam_ = DirectionParam::IgnoreFacing);
 
-    void initTarget(ecs::Entity self);
     ecs::Entity getTarget() const;
 
     ecs::EntityID targetEntityID;
@@ -77,14 +75,6 @@ struct Follow {
     ecs::EntityID debugTargetTrackerID;
     ecs::EntityID debugPositionTrackerID;
 #endif  // !NDEBUG
-};
-
-// give system which deletes children in ondelete
-struct Children {
-    // std::vector<ecs::Entity> entities;
-    std::vector<ecs::EntityID> entityIDs;
-
-    void add(ecs::Entity entity);
 };
 
 }  // namespace whal

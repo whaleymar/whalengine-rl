@@ -12,16 +12,6 @@ namespace whal {
 Attach::Attach(ecs::Entity target_, Vector2i offset_, DirectionParam directionParam_)
     : targetEntityID(target_.id()), offset(offset_), directionParam(directionParam_) {}
 
-void Attach::initTarget(ecs::Entity self) {
-    // adds self as child of target
-    ecs::Entity targetEntity(targetEntityID);
-    if (targetEntity.has<Children>()) {
-        targetEntity.get<Children>().add(self);
-    } else {
-        targetEntity.add(Children({self.id()}));
-    }
-}
-
 void Attach::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
     Attach attach = entity.has<Attach>() ? entity.get<Attach>() : Attach{};
@@ -55,11 +45,6 @@ Orbit::Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i 
 void Orbit::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
     ecs::Entity targetEntity(targetID);
-    if (targetEntity.has<Children>()) {
-        targetEntity.get<Children>().add(self);
-    } else {
-        targetEntity.add(Children({self.id()}));
-    }
 
     // initialize current angle
     const Vector2i delta = self.get<Transform>().position - targetEntity.get<Transform>().position;
@@ -100,13 +85,6 @@ void Follow::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
     ecs::Entity targetEntity(targetEntityID);
     currentTarget = targetEntity.get<Transform>().position;
-}
-
-void Children::add(ecs::Entity entity) {
-    if (whal_find(entityIDs.begin(), entityIDs.end(), entity) != entityIDs.end()) {
-        return;
-    }
-    entityIDs.push_back(entity.id());
 }
 
 }  // namespace whal
