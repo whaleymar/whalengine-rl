@@ -35,7 +35,6 @@ ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth de
     transform.depth = depth;
     particle.add(transform);
     particle.add(Name("particle"));
-    particle.add(PrecisePosition::fromTrans(transform));
     particle.add<Particle>();
     particle.add<Velocity>();
 
@@ -74,7 +73,7 @@ void particleBurst(Transform transform, Direction direction, WorldMaterial mater
         const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((Rng.uniform() - 0.5) * 2);
         const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, Rng.uniform()) * speedMultiplier;
 
-        ecs::Entity particle = createParticle(Transform(spawnLocation), material, depth, lifetimeMultiplier);
+        ecs::Entity particle = createParticle(Transform::world(spawnLocation), material, depth, lifetimeMultiplier);
         if (!particle.isValid()) {
             continue;
         }

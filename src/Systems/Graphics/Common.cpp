@@ -2,9 +2,7 @@
 #include <cstring>
 #include <raylib.h>
 
-#include "Components/Collision.h"
 #include "Components/Draw.h"
-#include "Components/Floating.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Settings.h"
@@ -117,35 +115,19 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
     }
 }
 
-PreciseTransform getPreciseTrans(ecs::Entity entity) {
-    assert(entity.has<Transform>());
-
-    PreciseTransform pTrans = PreciseTransform::fromTrans(entity.get<Transform>());
-    if (entity.has<PreciseTransform>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    } else if (entity.has<Collider>()) {
-        // Make physics movement look smooth even though it's pixel perfect
-        pTrans.position += entity.get<Collider>().getRemainder();
-    }
-    if (entity.has<Floating>()) {
-        pTrans.floatHeight = entity.get<Floating>().height;
-    }
-    return pTrans;
-}
-
-PreciseTransform getPreciseTrans(ecs::Entity entity, const Transform& transform) {
-    PreciseTransform pTrans = PreciseTransform::fromTrans(transform);
-    if (entity.has<PreciseTransform>()) {
-        pTrans.position = entity.get<PrecisePosition>().position;
-    } else if (entity.has<Collider>()) {
-        // Make physics movement look smooth even though it's pixel perfect
-        pTrans.position += entity.get<Collider>().getRemainder();
-    }
-    if (entity.has<Floating>()) {
-        pTrans.floatHeight = entity.get<Floating>().height;
-    }
-    return pTrans;
-}
+// PreciseTransform getPreciseTrans(ecs::Entity entity) {
+//     assert(entity.has<Transform>());
+//
+//     PreciseTransform pTrans = PreciseTransform::fromTrans(entity.get<Transform>());
+//     } else if (entity.has<Collider>()) {
+//         // Make physics movement look smooth even though it's pixel perfect
+//         pTrans.position += entity.get<Collider>().getRemainder();
+//     }
+//     if (entity.has<Floating>()) {
+//         pTrans.floatHeight = entity.get<Floating>().height;
+//     }
+//     return pTrans;
+// }
 
 void clampToPixelGrid(RaylibDrawParams& params) {
     Vector2f positionF = Vector2f(params.position);
@@ -156,10 +138,10 @@ void clampToPixelGrid(RaylibDrawParams& params) {
     params.rect.y = params.position.y;
 }
 
-RaylibDrawParams getDrawParams(PreciseTransform transform, Vector2f frameSize, Vector2f cameraPosition) {
+RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize, Vector2f cameraPosition) {
     const Vector2f size = frameSize * transform.scale * VIRTUAL_SCREEN_RATIO;
-    const Vector2f positionF = transform.getRotatedPosition();
-    const Vector2f screenPosition = Vector2f(positionF.x - cameraPosition.x, cameraPosition.y - positionF.y) * VIRTUAL_SCREEN_RATIO +
+    const Vector2f position = transform.getRotatedPosition();
+    const Vector2f screenPosition = Vector2f(position.x - cameraPosition.x, cameraPosition.y - position.y) * VIRTUAL_SCREEN_RATIO +
                                     Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
     const Vector2f origin = size * Vector2f(0.5, 0.5);
 

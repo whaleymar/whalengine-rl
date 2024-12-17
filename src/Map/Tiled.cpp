@@ -99,7 +99,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
 
 static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& level) {
     const Transform& layerTrans = layerEntity.get<Transform>();
-    const Vector2i origin = layerTrans.position;
+    const Vector2f origin = layerTrans.position;
     TileMapLayer& layer = layerEntity.get<TileMapLayer>();
 
     // dummy objects that tiles don't need because they are standalone entities
@@ -130,7 +130,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
             ecs::Entity e = layerEntity.createChild(false);
-            e.add(Transform(Vector2i(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + origin));
+            e.get<Transform>().setPosition(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + origin, e);
             const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
             const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
 
@@ -162,7 +162,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         map->tilesets.push_back(tset);
     }
 
-    const Vector2i origin = Transform::pixels(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y).position;
+    const Vector2f origin(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y);
 
     for (const auto& layer : data["layers"]) {
         bool isVisible = readBool(layer, "visible");
@@ -189,7 +189,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // this loads chunk size and other metadata:
             trans.depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
 
-            layerEntity.add(trans);
+            layerEntity.set(trans);
             level.childEntities.insert(layerEntity);
             createTileMapLayerEntities(layerEntity, level);
 
@@ -212,9 +212,9 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     auto lightEntity = World.entity();
     if (lightEntity.isValid()) {
         // idk why but i need 1 tile of extra height
-        auto trans = Transform(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
+        auto trans = Transform::world(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
         trans.depth = Depth::Foreground2;
-        lightEntity.add(trans);
+        lightEntity.set(trans);
 
         BoxLight boxLight = {
             .radius = 3 * PIXELS_PER_TILE, .heightOffset = 0, .color = level.lvlInfo.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
@@ -321,7 +321,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
-                level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).position;
+                level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).positionPx;
             }
             continue;
         }
@@ -639,9 +639,8 @@ Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const Ac
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
     // heights to match tiles
 
-    Transform trans =
-        Transform::pixels(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2);
-    trans.position += level.worldOffset;
+    Transform trans = Transform::world(
+        Vector2i(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2) + level.worldOffset);
     return trans;
 }
 

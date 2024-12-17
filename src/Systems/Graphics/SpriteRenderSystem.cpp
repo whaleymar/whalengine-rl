@@ -19,7 +19,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
         rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * sprite.frameSize.x, sprite.frameSize.y};
     const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, sprite.frameSize, ctx.cameraPosition);
 
-    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotationDegrees, sprite.color.asRL(),
+    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotation, sprite.color.asRL(),
                        eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()));
 }
 
@@ -27,13 +27,13 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto sprite = entity.get<Sprite>();
         const auto& trans = entity.get<Transform>();
-        const auto bb = trans.rotationDegrees == 0.0f ?
+        const auto bb = trans.rotation == 0.0f ?
                             AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
-                            Box(trans.getRotatedPosition(), sprite.frameSize.as<s32>() / 2, trans.rotationDegrees).getBoundingAABB();
+                            Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
-            .preciseTransform = gfx::getPreciseTrans(entity, trans),
+            .preciseTransform = trans,
             .entity = entity,
         });
     }

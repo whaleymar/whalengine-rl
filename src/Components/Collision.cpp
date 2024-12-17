@@ -73,29 +73,26 @@ void Collider::setEntity(ecs::Entity entity) {
     mSelf = entity;
 }
 
-// syncs other engine components (Transform, PrecisePosition, and Trigger) with collider position
+// syncs other engine components (Transform, and Trigger) with collider position
 void Collider::updateEntityPosition() {
     Transform& trans = mSelf.get<Transform>();
     auto const shape = getShape();
-    auto const newPosition = trans.applyInverse(shape.getPosition(), getOffset());
+    const Vector2f newPosition = trans.applyInverse(shape.getPosition().as<f32>(), getOffset().as<f32>());
+    const Vector2i newPositionInt = newPosition.round();
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {
-        if (System::getGame().getScene().getLevelAt(newPosition)) {
-            trans.position = newPosition;
+        if (System::getGame().getScene().getLevelAt(newPositionInt)) {
+            trans.setPosition(newPosition, mSelf);
         } else {
             // tried to go out of bounds. simulate fake collision with world boundary
-            auto closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
-            trans.position = closestPointInBounds;
+            const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPositionInt);
+            trans.setPosition(closestPointInBounds.as<f32>(), mSelf);
             ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
         }
 
     } else {
         trans.position = newPosition;
-    }
-
-    if (auto precisePositionOpt = mSelf.tryGet<PrecisePosition>(); precisePositionOpt) {
-        mSelf.set<PrecisePosition>({trans.position.as<f32>()});
     }
 
     if (mSelf.has<Trigger>()) {
@@ -537,7 +534,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const auto prevColliderState = Collider(Transform{.position = mShape.getPosition() - moveVec}, mShape.getHalf(), mCollisionLayer,
+    const auto prevColliderState = Collider(Transform::world(mShape.getPosition() - moveVec), mShape.getHalf(), mCollisionLayer,
                                             ColliderParams{
                                                 .material = mMaterial,
                                                 .collisionDir = mCollisionDir,

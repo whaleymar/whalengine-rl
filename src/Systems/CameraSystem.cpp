@@ -18,7 +18,7 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
         }
         return;
     } else {
-        Vector2i focalPoint = activeLevel.cameraFocalPoint;
+        Vector2f focalPoint = activeLevel.cameraFocalPoint.as<f32>();
         if (camera.has<Follow>()) {
             camera.remove<Follow>();
         }
@@ -27,14 +27,16 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &PrecisePosition::position)
-            .setTransition(Ease::InOutQuad)
-            .asIgnoreSlowdown()
-            .setOnUpdate(
-                [](ecs::Entity self, const Tween<Vector2f>&) { self.get<Transform>().position = self.get<PrecisePosition>().position.round(); })
-
-            .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
-        Time.setMultiplier(0.0);
+        // TODO TRANSTWEEN
+        // Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position)
+        //     .setTransition(Ease::InOutQuad)
+        //     .asIgnoreSlowdown()
+        //     .setOnUpdate([](ecs::Entity self, const Tween<Vector2f>&) {
+        //         auto& trans = self.get<Transform>();
+        //         trans.positionPx = self.get<Transform>().position.round();
+        //     })
+        //     .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
+        // Time.setMultiplier(0.0);
         return;
     }
 }
