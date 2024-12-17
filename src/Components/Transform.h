@@ -5,6 +5,10 @@
 
 namespace whal {
 
+namespace ecs {
+class Entity;
+}
+
 enum class Direction : u8 { Neutral, N, S, E, W, NE, SE, NW, SW };
 
 inline bool isCardinal(Direction d) {
@@ -69,6 +73,56 @@ inline f32 directionToAngle(Direction direction) {
 enum class Facing : u8 {
     Left = 0,
     Right = 1,
+};
+
+struct UltimateTransformFinal {
+    // global transform (read only):
+    Vector2f position;
+    Vector2i positionPx;  // rounded replica of position, for convenience
+    Vector2f scale = Vector2f::ONE;
+    f32 rotation = 0.0f;     // degrees
+    f32 floatHeight = 0.0f;  // RESEARCH make position Vector3f?
+
+    // local transform (read/write):
+    Vector2f localPosition = Vector2f::ZERO;
+    Vector2f localScale = Vector2f::ONE;
+    f32 localRotation = 0.0;
+    Facing facing = Facing::Right;  // draw calls flipped if facing left
+    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
+    Depth depth = Depth::Level;
+    Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation
+
+    static UltimateTransformFinal pixels(s32 x, s32 y);
+    static UltimateTransformFinal tiles(s32 x, s32 y);
+
+    // updates the local/global position:
+    void translate(Vector2f moveAmount, ecs::Entity self);
+    void rotate(f32 degrees, ecs::Entity self);
+    void scaleBy(Vector2f amount, ecs::Entity self);
+
+    // called when parent transforms are updated
+    void setParent(const UltimateTransformFinal& parentTrans, ecs::Entity self);
+    void setParentPosition(Vector2f parentPosition, ecs::Entity self);
+    void setParentScale(Vector2f parentScale, ecs::Entity self);
+    void setParentRotation(f32 parentDegrees, ecs::Entity self);
+
+    // these work in reverse, computing the local transform needed to get the desired global state
+    void set(const UltimateTransformFinal& trans, ecs::Entity self);
+    void setPosition(Vector2f globalPosition, ecs::Entity self);
+    void setScale(Vector2f globalScale, ecs::Entity self);
+    void setRotation(f32 globalRotation, ecs::Entity self);
+
+    Vector2f getRotatedPosition() const;
+
+    // Get an offset's transformed position
+    Vector2f apply(Vector2f relOffset) const;
+
+    // Calculate this Transform's root position using an offset's transformed position
+    Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
+
+#ifndef NDEBUG
+    void draw() const;
+#endif
 };
 
 // entity position in pixels

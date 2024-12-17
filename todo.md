@@ -4,7 +4,8 @@ NEXT GOAL:
 - Transform changes:
     - consolidate the 3 transform components I have
     - control child Transform using parent Transform like in Unity
-    - removing facing, use negative x scale?
+    - make global transform read only
+    - enable transform tweening by adding option for getter and setter in tween library
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

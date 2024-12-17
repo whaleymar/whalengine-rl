@@ -61,6 +61,16 @@ struct Vector2 {
         return *this;
     }
 
+    inline Vector2<T> operator/(const Vector2<T> other) const {
+        assert(other.x != 0 && other.y != 0 && "Divide By Zero Error");
+        return Vector2<T>(x / other.x, y / other.y);
+    }
+    inline Vector2<T>& operator/=(const Vector2<T> other) {
+        assert(other.x != 0 && other.y != 0 && "Divide By Zero Error");
+        x /= other.x;
+        y /= other.y;
+        return *this;
+    }
     inline Vector2<T> operator/(const f32 scalar) const {
         assert(scalar != 0 && "Divide By Zero Error");
         return Vector2<T>(x / scalar, y / scalar);
