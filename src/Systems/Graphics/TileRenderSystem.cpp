@@ -27,24 +27,17 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
 
     const auto drawTile = [&](s32 x, s32 y, s32 ix, TileInfo tile) {
-        Sprite sprite;
-        auto it = layer.tilemap->spriteCache.find(tile.gid);
-        if (it == layer.tilemap->spriteCache.end()) {
-            sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
-            layer.tilemap->spriteCache.insert({tile.gid, sprite});
-        } else {
-            sprite = it->second;
-        }
-
-        const auto orient = getOrientation(tile);
+        // RESEARCH this lookup is SLOW and makes me want to ditch the STL
+        // const Sprite& sprite = layer.tilemap->spriteCache[tile.gid];
+        const TileRenderInfo& renderInfo = layer.tilemap->spriteCache.get(tile.gid);
         const auto srcRect = rl::Rectangle{
-            sprite.atlasPosition.x,
-            sprite.atlasPosition.y,
-            (orient.second == Facing::Left ? -1 : 1) * sprite.frameSize.x,
-            sprite.frameSize.y,
+            renderInfo.sprite.atlasPosition.x,
+            renderInfo.sprite.atlasPosition.y,
+            (renderInfo.orient.second == Facing::Left ? -1 : 1) * renderInfo.sprite.frameSize.x,
+            renderInfo.sprite.frameSize.y,
         };
 
-        Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.preciseTransform.position;
+        const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.preciseTransform.position;
 
         const rl::Rectangle rect = rl::Rectangle{
             (worldPosition.x - ctx.cameraPosition.x) * VIRTUAL_SCREEN_RATIO + FWINDOW_WIDTH_RENDER / 2,
@@ -54,9 +47,9 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         };
 
         auto meta = eCtx.colorBuf;
-        meta.isOccluder = layer.collisionMask[ix];
-        gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, orient.first + eCtx.preciseTransform.rotationDegrees, sprite.color.asRL(),
-                           meta.asRL(sprite, ctx.atlas.getSize()));
+        meta.isOccluder = renderInfo.isOccluder;
+        gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, renderInfo.orient.first + eCtx.preciseTransform.rotationDegrees,
+                           renderInfo.sprite.color.asRL(), meta.asRL(renderInfo.sprite, ctx.atlas.getSize()));
     };
 
     if (layer.isYSorted) {
@@ -107,6 +100,34 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     }
 }
 
+void TileRenderSystem::onAdd(ecs::Entity e) {
+    // make sure all the tile sprites for this layer are in the cache
+    const TileMapLayer& layer = e.get<TileMapLayer>();
+    for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
+        for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
+            const s32 ix = layer.tilemap->widthTiles * y + x;
+            const TileInfo tile = getTile(layer.ids[ix]);
+
+            if (tile.gid == 0) {
+                continue;  // empty tile
+            }
+
+            // auto it = layer.tilemap->spriteCache.find(tile.gid);
+            // if (it == layer.tilemap->spriteCache.end()) {
+            if (!layer.tilemap->spriteCache.contains(tile.gid)) {
+                const auto sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
+                const auto orient = getOrientation(tile);
+                layer.tilemap->spriteCache.insert({tile.gid, TileRenderInfo{
+                                                                 .sprite = sprite,
+                                                                 .orient = orient,
+                                                                 .isOccluder = layer.collisionMask[ix],
+
+                                                             }});
+            }
+        }
+    }
+}
+
 void TileRenderSystem::onRemove(ecs::Entity e) {
     // erase from cache
     S_YSORT_RENDERINFO_LUT.erase(e);
@@ -150,6 +171,7 @@ std::pair<f32, Facing> getOrientation(TileInfo tile) {
 }
 
 void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
+    // by assuming tiles don't move in world space, we can cache the result from the first frame this entity was drawn.
     if (S_YSORT_COORD_LUT.contains(e)) {
         return;
     }
@@ -172,11 +194,14 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
             S_YSORT_COORD_LUT[e].push_back(Vector2i(x, y));
             Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position;
 
+            // Value of IsOccluder can be Yes or No; doesn't matter because it's calculated at draw time.
+            // The important part is that it's not Unchecked because the RenderQueue will waste time checking.
             const auto ri = gfx::EntityPreRenderInfo{
                 .boundingBox = AABB(worldPosition.round(), halflen),
                 // .preciseTransform = PreciseTransform{.position = worldPosition, .rotationDegrees = 0.0f, .depth = parentTrans.depth},
                 .preciseTransform = parentTrans,
                 .entity = e,
+                .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
             };
             S_YSORT_RENDERINFO_LUT[e].push_back(ri);

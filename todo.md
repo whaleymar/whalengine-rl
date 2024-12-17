@@ -2,8 +2,10 @@
 
 NEXT GOAL: 
 - tilemaplayer component 
-- consolidate the 3 transform components I have
-- control child Transform using parent Transform like in Unity
+- Transform changes:
+    - consolidate the 3 transform components I have
+    - control child Transform using parent Transform like in Unity
+    - removing facing, use negative x scale?
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

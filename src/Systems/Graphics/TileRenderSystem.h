@@ -12,7 +12,7 @@ class TileRenderSystem : public ecs::ISystem<Transform, TileMapLayer, ecs::Exclu
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(gfx::RenderQueue&) const override;
-    void onAdd(ecs::Entity) override {}
+    void onAdd(ecs::Entity) override;
     void onRemove(ecs::Entity e) override;
 };
 
