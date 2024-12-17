@@ -96,6 +96,9 @@ bool System::start() {
     ShaderManager::instance().loadShaders();
     Input.loadMappings();
     World.setEntityDeathCallback(&emitEntityDeathEvent);
+    World.setEntityCreateCallback(&onTopLevelEntityCreated);
+    World.setEntityChildCreateCallback(&onChildEntityCreated);
+    World.setEntityAdoptCallback(&onEntityAdopted);
     Schedule.start();
     if (auto err = Audio.init(); err) {
         print(*err);
