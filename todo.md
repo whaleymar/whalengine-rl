@@ -1,7 +1,6 @@
 # To Do 
 
 NEXT GOAL: 
-- tilemaplayer component 
 - Transform changes:
     - consolidate the 3 transform components I have
     - control child Transform using parent Transform like in Unity
