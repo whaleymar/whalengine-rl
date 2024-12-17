@@ -7,36 +7,9 @@
 #include "Components/Velocity.h"
 #include "Events/Events.h"
 #include "Util/MathUtil.h"
-#include "Util/Print.h"
 #include "Util/Vector.h"
 
 namespace whal {
-
-// removes entity from child list
-void EntityChildSystem::onEvent(evt::Death, ecs::Entity entity) {
-    for (auto [entityid, parent] : getEntities()) {
-        auto& children = parent.get<Children>();
-        auto it = ecs::whal_find(children.entityIDs.begin(), children.entityIDs.end(), entity.id());
-        if (it != children.entityIDs.end()) {
-            children.entityIDs.erase(it);
-        }
-    }
-}
-
-void EntityChildSystem::onRemove(ecs::Entity entity) {
-    std::vector<ecs::EntityID> childrencopy = std::move(entity.get<Children>().entityIDs);
-    for (auto childEntityID : childrencopy) {
-        ecs::Entity childEntity(childEntityID);
-        if (childEntity.has<Name>()) {
-            print("Killing child entity: ", childEntity.get<Name>(), " -- ID == ", childEntity.id());
-        }
-        childEntity.kill();
-    }
-}
-
-void AttachSystem::onAdd(ecs::Entity entity) {
-    entity.get<Attach>().initTarget(entity);
-}
 
 void AttachSystem::update() {
     for (auto [entityid, entity] : getEntities()) {
