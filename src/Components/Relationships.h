@@ -14,21 +14,9 @@ class Entity;
 
 struct Attach : ISerialize<Attach, ComponentFactory> {
     enum class DirectionParam { IgnoreFacing, UseFacingForOffset, UseFacingForAll };
-
-    Attach() = default;
-    Attach(ecs::Entity target, Vector2i offset = {0, 0}, DirectionParam directionParam_ = DirectionParam::IgnoreFacing);
-
-    ecs::Entity getTarget() const;
-
-    ecs::EntityID targetEntityID;
-    Vector2i offset;
-    DirectionParam directionParam = DirectionParam::IgnoreFacing;
-
-    // managed:
-    bool isTargetInitialized = false;
-
     static void loadImpl(ecs::Entity entity, void* data);
 };
+REGISTER_SERIALIZE(Attach);
 
 struct Orbit : ISerialize<Orbit, ComponentFactory> {
     Orbit() = default;

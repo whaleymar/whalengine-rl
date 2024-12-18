@@ -1,7 +1,5 @@
 #include "RelationshipSystems.h"
 
-#include "Components/Name.h"
-
 #include "Components/Relationships.h"
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
@@ -10,31 +8,6 @@
 #include "Util/Vector.h"
 
 namespace whal {
-
-void AttachSystem::update() {
-    for (auto [entityid, entity] : getEntities()) {
-        Transform& trans = entity.get<Transform>();
-        Attach& attach = entity.get<Attach>();
-        const ecs::Entity targetEntity(attach.targetEntityID);
-        const auto targetTrans = targetEntity.get<Transform>();
-        const Vector2i offsetModifier = (attach.directionParam == Attach::DirectionParam::UseFacingForAll ||
-                                         attach.directionParam == Attach::DirectionParam::UseFacingForOffset) &&
-                                                targetTrans.facing == Facing::Left ?
-                                            Vector2i(-1, 1) :
-                                            Vector2i(1, 1);
-        const Vector2i targetPosition = targetTrans.apply(attach.offset * offsetModifier);
-        if (targetPosition == trans.position) {
-            continue;
-        }
-
-        if (attach.directionParam == Attach::DirectionParam::UseFacingForAll) {
-            trans.position = targetPosition;
-            trans.facing = targetTrans.facing;
-        } else {
-            trans.position = targetPosition;
-        }
-    }
-}
 
 // RESEARCH use collider.move if the entity has a collider? Seems like it would be glitchy if a collision does happen
 void OrbitSystem::update() {
@@ -46,7 +19,7 @@ void OrbitSystem::update() {
         if (!orbit.isTargetInitialized) {
             orbit.initTarget(entity);
         }
-        const Vector2i orbitTarget = targetEntity.get<Transform>().position + orbit.targetOffset;
+        const Vector2f orbitTarget = targetEntity.get<Transform>().position + orbit.targetOffset.as<f32>();
 
         // if we get the current angle and add to that, it has this cool "follow if target moving, orbit if target is still" effect, but not sure if
         // that's useful for anything
@@ -59,7 +32,7 @@ void OrbitSystem::update() {
 
         // RESEARCH bool param so that entity rotates in sync with orbit? (tidal lock)
         const Vector2f unit = Vector2f::fromAngle(orbit.currentAngle);
-        trans.position = (unit * static_cast<f32>(orbit.radius)).round() + orbitTarget + (orbit.selfOffset.as<f32>() * unit).round();
+        trans.setPosition((unit * static_cast<f32>(orbit.radius)) + orbitTarget + (orbit.selfOffset.as<f32>() * unit), entity);
     }
 }
 
@@ -168,7 +141,7 @@ void FollowSystem::update() {
         ecs::Entity debugTargetTracker(follow.debugTargetTrackerID);
         ecs::Entity debugPositionTracker(follow.debugPositionTrackerID);
 
-        debugTargetTracker.set(Transform(follow.currentTarget));
+        debugTargetTracker.set(Transform::world(follow.currentTarget));
         debugPositionTracker.set(trans);
 #endif  // !NDEBUG
     }

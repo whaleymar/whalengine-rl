@@ -61,9 +61,10 @@ Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key
     const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
     const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
     const Vector2i halflen = otherDims / 2;
-    const Vector2i thisTrans = getTransformFromMapPosition(ctx.entityData.position, ctx.entityData.size, ctx.level, ctx.entityData.isPoint).position;
+    const Vector2i thisTrans =
+        getTransformFromMapPosition(ctx.entityData.position, ctx.entityData.size, ctx.level, ctx.entityData.isPoint).positionPx;
 
-    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, ctx.level, false).position;
+    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDims, ctx.level, false).positionPx;
     const auto offset = otherTrans - thisTrans;
 
     if (dstOffset != nullptr) {

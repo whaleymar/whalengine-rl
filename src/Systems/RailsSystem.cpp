@@ -18,7 +18,7 @@ constexpr f32 SPEED_DIVISOR = 1.0f / 40.0f;
 void RailsSystem::onAdd(const ecs::Entity entity) {
     auto& trans = entity.get<Transform>();
     auto& rails = entity.get<RailsControl>();
-    rails.prepareForFirstStep(trans);
+    rails.prepareForFirstStep(trans, entity);
     if (entity.has<Velocity>()) {
         rails.isPhysicsEntity = true;
     } else {
@@ -35,7 +35,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
     }
     auto& transform = entity.get<Transform>();
 
-    const Vector2f delta = (rails.getTarget().position - transform.position).as<f32>();
+    const Vector2f delta = (rails.getTarget().position - transform.positionPx).as<f32>();
     f32 distance = delta.len();
 
     // scale checkpoint threshold with speed
@@ -58,7 +58,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
 
                 rails.isVelocityUpdateNeeded = true;
 
-                Vector2i newDelta = rails.getTarget().position - transform.position;
+                Vector2i newDelta = rails.getTarget().position - transform.positionPx;
 
                 // prevent divide by zero
                 if (newDelta.isZero()) {
@@ -66,7 +66,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
                     entity.add<Velocity>();
                     rails.curActionTime = rails.waitTime;
                 } else {
-                    Velocity velToAdd = Velocity(newDelta.as<f32>().norm() * rails.getSpeed(transform.position));
+                    Velocity velToAdd = Velocity(newDelta.as<f32>().norm() * rails.getSpeed(transform.positionPx));
                     entity.add<Velocity>(velToAdd);
                 }
 
@@ -81,7 +81,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
         if (entity.has<Collider>()) {
             entity.get<Collider>().move(delta, nullptr, false, true, false, false, true);
         } else {
-            entity.set(Transform(rails.getTarget().position));
+            entity.set(Transform::world(rails.getTarget().position));
         }
 
         entity.remove<Velocity>();
@@ -95,7 +95,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
     } else {
         // moving to next checkpoint
         if (rails.isVelocityUpdateNeeded && !delta.isZero()) {
-            f32 speed = rails.getSpeed(transform.position);
+            f32 speed = rails.getSpeed(transform.positionPx);
             entity.set(Velocity(delta.norm() * speed));
         }
         rails.curActionTime += dt;
@@ -124,17 +124,18 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
                 const f32 segmentDistance = (targetPosF - rails.startPosition).len();
                 const f32 time = segmentDistance / rails.speed;
 
-                Schedule.tween(entity, rails.getTarget().position, time, &Transform::position)
-                    .setTransition(rails.getTarget().movement)
-                    .setOnEnd([](ecs::Entity entity, const Tween<Vector2i>&) {
-                        auto& rails = entity.get<RailsControl>();
-                        rails.isWaiting = true;
-                        rails.curActionTime = 0;
-                        rails.isVelocityUpdateNeeded = false;
-                        if (rails.arrivalCallback != nullptr) {
-                            rails.arrivalCallback(entity, rails);
-                        }
-                    });
+                // TODO TRANSTWEEN
+                // Schedule.tween(entity, rails.getTarget().position, time, &Transform::position)
+                //     .setTransition(rails.getTarget().movement)
+                //     .setOnEnd([](ecs::Entity entity, const Tween<Vector2i>&) {
+                //         auto& rails = entity.get<RailsControl>();
+                //         rails.isWaiting = true;
+                //         rails.curActionTime = 0;
+                //         rails.isVelocityUpdateNeeded = false;
+                //         if (rails.arrivalCallback != nullptr) {
+                //             rails.arrivalCallback(entity, rails);
+                //         }
+                //     });
 
             } else {
                 rails.curActionTime += dt;

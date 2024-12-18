@@ -44,7 +44,7 @@
 //
 //     const Vector2f frameSize(8, 8);
 //     for (auto step : path.tiles) {
-//         PreciseTransform tileCoord = PreciseTransform(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
+//         Transform tileCoord = Transform::world(tileCoordStart + Vector2f(8, 8) * step.as<f32>());
 //         tileCoordStart = tileCoord.position;
 //         const gfx::RaylibDrawParams params = gfx::getDrawParams(tileCoord, frameSize, ctx.cameraPosition);
 //         rl::DrawRectanglePro(params.rect, params.origin, 0.0f, Color::fromRGB(100, 100, 255, 100).asLDR());
@@ -57,12 +57,11 @@
 //     }
 //     for (auto [entityid, entity] : getEntities()) {
 //         const auto path = entity.get<Path>();
-//         auto pTrans = gfx::getPreciseTrans(entity);
 //         pTrans.depth = Depth::Debug;
 //
 //         queue.emplace_back(gfx::EntityRenderInfo{
 //             .boundingBox = AABB::fromPoints(path.start, path.target),
-//             .preciseTransform = pTrans,
+//             .transform = entity.get<Transform>(),
 //             .entity = entity,
 //             .piRender = this,
 //         });

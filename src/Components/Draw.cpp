@@ -80,9 +80,9 @@ void Sprite::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
 
-    s32 rotationDegrees;
-    if (tryRead(ctx.values, "rotationDegrees", &rotationDegrees)) {
-        entity.get<Transform>().rotationDegrees = rotationDegrees;
+    s32 rotation;
+    if (tryRead(ctx.values, "rotationDegrees", &rotation)) {
+        entity.get<Transform>().rotation = rotation;
     }
 
     tryRead(ctx.values, "Color", &sprite.color);

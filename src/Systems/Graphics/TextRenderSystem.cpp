@@ -29,7 +29,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const Color tint = Colors::White;  // PARAM
 
     const DrawText draw = eCtx.entity.get<DrawText>();
-    const auto& trans = eCtx.preciseTransform;
+    const auto& trans = eCtx.transform;
 
     // rotation pivot correction
     Vector2f pivotOffsetScreen = trans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
@@ -64,7 +64,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         .position = dstPosition.asRL(),
     };
 
-    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotationDegrees,
+    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotation,
                        pivotOffsetScreen, eCtx.colorBuf);
 }
 
@@ -73,12 +73,12 @@ void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const auto draw = entity.get<DrawText>();
         const auto trans = entity.get<Transform>();
 
-        const auto bb = trans.rotationDegrees == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
-                                                        Box(trans.getRotatedPosition(), draw.frameSize / 2, trans.rotationDegrees).getBoundingAABB();
+        const auto bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
+                                                 Box(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
-            .preciseTransform = gfx::getPreciseTrans(entity, trans),
+            .transform = trans,
             .entity = entity,
         });
     }

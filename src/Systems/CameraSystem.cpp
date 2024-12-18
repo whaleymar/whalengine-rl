@@ -28,15 +28,17 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
         }
 
         // TODO TRANSTWEEN
-        // Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position)
-        //     .setTransition(Ease::InOutQuad)
-        //     .asIgnoreSlowdown()
-        //     .setOnUpdate([](ecs::Entity self, const Tween<Vector2f>&) {
-        //         auto& trans = self.get<Transform>();
-        //         trans.positionPx = self.get<Transform>().position.round();
-        //     })
-        //     .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
-        // Time.setMultiplier(0.0);
+        // this is a hack
+        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position)
+            .setTransition(Ease::InOutQuad)
+            .asIgnoreSlowdown()
+            .setOnUpdate([](ecs::Entity self, const Tween<Vector2f>&) {
+                auto& trans = self.get<Transform>();
+                trans.positionPx = self.get<Transform>().position.round();
+                trans.localPosition = trans.position;
+            })
+            .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
+        Time.setMultiplier(0.0);
         return;
     }
 }

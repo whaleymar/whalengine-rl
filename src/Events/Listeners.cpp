@@ -14,15 +14,14 @@ void onTopLevelEntityCreated(ecs::Entity entity) {
     entity.add<Transform>();
 }
 
-// TODO change component names for these 2 functions
 void onChildEntityCreated(ecs::Entity child, ecs::Entity parent) {
-    UltimateTransformFinal trans;
-    trans.setParent(parent.get<UltimateTransformFinal>(), child);
+    Transform trans;
+    trans.setParent(parent.get<Transform>(), child);
     child.add(trans);
 }
 
-void onOrphanEntityAdopted(ecs::Entity child, ecs::Entity parent) {
-    child.get<UltimateTransformFinal>().setParent(parent.get<UltimateTransformFinal>(), child);
+void onEntityAdopted(ecs::Entity child, ecs::Entity parent) {
+    child.get<Transform>().setParent(parent.get<Transform>(), child);
 }
 
 }  // namespace whal

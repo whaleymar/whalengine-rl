@@ -22,7 +22,7 @@ constexpr f32 MIN_SPEED_BURST = 5.0f;
 constexpr f32 MAX_SPEED_BURST = 20.0f;
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
-ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
+ecs::Entity createParticle(Vector2i worldPosition, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
     const MaterialData materialData = MaterialData::get(material);
     const Color color = materialData.getColor();
 
@@ -32,8 +32,9 @@ ecs::Entity createParticle(Transform transform, WorldMaterial material, Depth de
     }
     auto _ = ecs::DeferActivate(particle);
 
-    transform.depth = depth;
-    particle.add(transform);
+    Transform trans = Transform::world(worldPosition);
+    trans.depth = depth;
+    particle.set(trans);
     particle.add(Name("particle"));
     particle.add<Particle>();
     particle.add<Velocity>();
@@ -73,7 +74,7 @@ void particleBurst(Transform transform, Direction direction, WorldMaterial mater
         const f32 finalAngle = angle + BURST_SPREAD_ANGLE * ((Rng.uniform() - 0.5) * 2);
         const f32 finalSpeed = std::lerp(MIN_SPEED_BURST, MAX_SPEED_BURST, Rng.uniform()) * speedMultiplier;
 
-        ecs::Entity particle = createParticle(Transform::world(spawnLocation), material, depth, lifetimeMultiplier);
+        ecs::Entity particle = createParticle(spawnLocation, material, depth, lifetimeMultiplier);
         if (!particle.isValid()) {
             continue;
         }

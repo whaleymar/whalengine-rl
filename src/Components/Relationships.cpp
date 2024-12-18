@@ -2,19 +2,14 @@
 
 #include "Components/Transform.h"
 #include "Map/Tiled.h"
-#include "Map/TiledParse.h"
-#include "Util/JsonUtil.h"
 #include "Util/Print.h"
+#include "json.hpp"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
 
-Attach::Attach(ecs::Entity target_, Vector2i offset_, DirectionParam directionParam_)
-    : targetEntityID(target_.id()), offset(offset_), directionParam(directionParam_) {}
-
 void Attach::loadImpl(ecs::Entity entity, void* data) {
     const LoadContext& ctx = *static_cast<LoadContext*>(data);
-    Attach attach = entity.has<Attach>() ? entity.get<Attach>() : Attach{};
 
     s32 targetId;
     if (!tryRead(ctx.values, "target", &targetId)) {
@@ -22,20 +17,19 @@ void Attach::loadImpl(ecs::Entity entity, void* data) {
         return;
     }
 
-    tryReadVal(ctx.values, "DirectionParam", &attach.directionParam);
+    // tryReadVal(ctx.values, "DirectionParam", &attach.directionParam);
 
     ecs::Entity target = ctx.idToIndex.at(targetId).second;
-    attach.targetEntityID = target.id();
+    target.addChild(entity);
 
-    auto thisPosition = entity.get<Transform>().position;
+    const Vector2i thisPosition = entity.get<Transform>().positionPx;
 
     // other isn't guaranteed to have been parsed. Calculate its transform manually
     const auto& targetObj = ctx.allObjects[ctx.idToIndex.at(targetId).first];
     Vector2i otherDims = getObjectSize(targetObj);
-    const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDims, ctx.level, false).position;
+    const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDims, ctx.level, false).positionPx;
 
-    attach.offset = (thisPosition - otherPosition);
-    entity.add(attach);
+    entity.get<Transform>().translate((thisPosition - otherPosition).as<f32>(), entity);
 }
 
 Orbit::Orbit(ecs::Entity target, s32 radius_, f32 rotationsPerSecond_, Vector2i targetOffset_)
@@ -47,7 +41,7 @@ void Orbit::initTarget(ecs::Entity self) {
     ecs::Entity targetEntity(targetID);
 
     // initialize current angle
-    const Vector2i delta = self.get<Transform>().position - targetEntity.get<Transform>().position;
+    const Vector2i delta = self.get<Transform>().positionPx - targetEntity.get<Transform>().positionPx;
     currentAngle = delta.isZero() ? 0.0f : delta.as<f32>().angle();
 }
 
@@ -57,7 +51,7 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
 
     tryRead(ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
-    const Vector2i entityTrans = entity.get<Transform>().position;
+    const Vector2i entityTrans = entity.get<Transform>().positionPx;
 
     if (!ctx.values.contains("Target")) {
         print("Error: Orbit component requires a Target");
@@ -71,7 +65,7 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
     if (tryRead(shapeObj, "width", "height", &otherDimensions)) {
         isPoint = false;
     }
-    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimensions, ctx.level, isPoint).position;
+    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimensions, ctx.level, isPoint).positionPx;
 
     orbit.radius = std::round((entityTrans - otherTrans).as<f32>().len());
     orbit.targetID = ctx.idToIndex.at(shapeId).second.id();
@@ -84,7 +78,7 @@ Follow::Follow(ecs::Entity target_) : targetEntityID(target_.id()) {}
 void Follow::initTarget(ecs::Entity self) {
     isTargetInitialized = true;
     ecs::Entity targetEntity(targetEntityID);
-    currentTarget = targetEntity.get<Transform>().position;
+    currentTarget = targetEntity.get<Transform>().positionPx;
 }
 
 }  // namespace whal
