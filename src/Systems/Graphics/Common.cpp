@@ -68,19 +68,19 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
                                     renderInfo.entity.has<BlocksLight>() :
                                     (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
-        if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
-            renderInfo.preciseTransform.depth == Depth::UIClose) {
-            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+        if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar ||
+            renderInfo.transform.depth == Depth::UIClose) {
+            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
                                   gfx::DrawMetaData{
-                                      .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                      .depth = static_cast<u8>(renderInfo.transform.depth),
                                       .isOccluder = isOccluder,
                                       .isUI = true,
                                   },
                                   renderInfo.internal);
         } else {
-            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
                                       gfx::DrawMetaData{
-                                          .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                          .depth = static_cast<u8>(renderInfo.transform.depth),
                                           .isOccluder = isOccluder,
                                           .isUI = false,
                                       },
@@ -95,39 +95,24 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
     const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
                                 renderInfo.entity.has<BlocksLight>() :
                                 (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
-    if (renderInfo.preciseTransform.depth == Depth::Debug || renderInfo.preciseTransform.depth == Depth::UIFar ||
-        renderInfo.preciseTransform.depth == Depth::UIClose) {
-        mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+    if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar || renderInfo.transform.depth == Depth::UIClose) {
+        mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
                               gfx::DrawMetaData{
-                                  .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                  .depth = static_cast<u8>(renderInfo.transform.depth),
                                   .isOccluder = isOccluder,
                                   .isUI = true,
                               },
                               renderInfo.internal);
     } else {
-        mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.preciseTransform, mpIRender, renderInfo.entity,
+        mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
                                   gfx::DrawMetaData{
-                                      .depth = static_cast<u8>(renderInfo.preciseTransform.depth),
+                                      .depth = static_cast<u8>(renderInfo.transform.depth),
                                       .isOccluder = isOccluder,
                                       .isUI = false,
                                   },
                                   renderInfo.internal);
     }
 }
-
-// PreciseTransform getPreciseTrans(ecs::Entity entity) {
-//     assert(entity.has<Transform>());
-//
-//     PreciseTransform pTrans = PreciseTransform::fromTrans(entity.get<Transform>());
-//     } else if (entity.has<Collider>()) {
-//         // Make physics movement look smooth even though it's pixel perfect
-//         pTrans.position += entity.get<Collider>().getRemainder();
-//     }
-//     if (entity.has<Floating>()) {
-//         pTrans.floatHeight = entity.get<Floating>().height;
-//     }
-//     return pTrans;
-// }
 
 void clampToPixelGrid(RaylibDrawParams& params) {
     Vector2f positionF = Vector2f(params.position);

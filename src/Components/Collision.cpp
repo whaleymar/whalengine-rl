@@ -77,7 +77,7 @@ void Collider::setEntity(ecs::Entity entity) {
 void Collider::updateEntityPosition() {
     Transform& trans = mSelf.get<Transform>();
     auto const shape = getShape();
-    const Vector2f newPosition = trans.applyInverse(shape.getPosition().as<f32>(), getOffset().as<f32>());
+    Vector2f newPosition = trans.applyInverse(shape.getPosition().as<f32>(), getOffset().as<f32>());
     const Vector2i newPositionInt = newPosition.round();
 
     // make sure player(s) can't go out of bounds
@@ -92,7 +92,7 @@ void Collider::updateEntityPosition() {
         }
 
     } else {
-        trans.position = newPosition;
+        trans.setPosition(newPosition, mSelf);
     }
 
     if (mSelf.has<Trigger>()) {

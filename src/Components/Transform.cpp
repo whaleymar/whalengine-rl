@@ -118,6 +118,10 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
 }
 
 void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
+    if (globalPosition == position) {
+        return;
+    }
+
     const Vector2f parentPosition = position - localPosition;
     position = globalPosition;
     positionPx = position.round();
@@ -130,6 +134,10 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
 }
 
 void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
+    if (globalScale == scale) {
+        return;
+    }
+
     const Vector2f parentScale = scale / localScale;
     scale = globalScale;
     localScale = scale / parentScale;
@@ -141,6 +149,10 @@ void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
 }
 
 void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
+    if (globalRotation == rotation) {
+        return;
+    }
+
     const f32 parentRotation = rotation - localRotation;
     rotation = globalRotation;
     localRotation = rotation - parentRotation;
@@ -167,6 +179,18 @@ Vector2f Transform::apply(Vector2f relOffset) const {
     return getRotatedPosition() + rotatedOffset;
 }
 
+Vector2i Transform::apply(Vector2i relOffset) const {
+    // optimize for most common case
+    if (rotation == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        return positionPx + relOffset + scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO).round();
+    return getRotatedPosition().round() + rotatedOffset;
+}
+
 Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
@@ -178,6 +202,19 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
     const Vector2f rotatedOffset = relOffset.isZero() ? Vector2f::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO);
     const Vector2f transformation = getRotatedPosition() + rotatedOffset;
     return transformedPosition - (transformation - this->position);
+}
+
+Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
+    // optimize for most common case
+    if (rotation == 0.0) {
+        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        return transformedPosition - relOffset - scaleAdjustment;
+    }
+
+    // RESEARCH might want to use fast variants of these functions
+    const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO).round();
+    const Vector2i transformation = getRotatedPosition().round() + rotatedOffset;
+    return transformedPosition - (transformation - this->positionPx);
 }
 
 #ifndef NDEBUG

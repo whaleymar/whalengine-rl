@@ -118,9 +118,11 @@ struct Transform {
 
     // Get an offset's transformed position
     Vector2f apply(Vector2f relOffset) const;
+    Vector2i apply(Vector2i relOffset) const;
 
     // Calculate this Transform's root position using an offset's transformed position
     Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
+    Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
 
 #ifndef NDEBUG
     void draw() const;

@@ -23,7 +23,7 @@ static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ec
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     ecs::Entity layerEntity = eCtx.entity;
     const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
-    const Vector2f tileSize = Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.preciseTransform.scale;
+    const Vector2f tileSize = Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale;
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
 
     const auto drawTile = [&](s32 x, s32 y, s32 ix, TileInfo tile) {
@@ -37,7 +37,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             renderInfo.sprite.frameSize.y,
         };
 
-        const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.preciseTransform.position;
+        const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.transform.position;
 
         const rl::Rectangle rect = rl::Rectangle{
             (worldPosition.x - ctx.cameraPosition.x) * VIRTUAL_SCREEN_RATIO + FWINDOW_WIDTH_RENDER / 2,
@@ -48,7 +48,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
         auto meta = eCtx.colorBuf;
         meta.isOccluder = renderInfo.isOccluder;
-        gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, renderInfo.orient.first + eCtx.preciseTransform.rotationDegrees,
+        gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, renderInfo.orient.first + eCtx.transform.rotation,
                            renderInfo.sprite.color.asRL(), meta.asRL(renderInfo.sprite, ctx.atlas.getSize()));
     };
 
@@ -80,7 +80,7 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const auto& tml = entity.get<TileMapLayer>();
 
         const Vector2i half = tml.sizeTiles * Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
-        const Vector2i center = trans.position + half * Vector2i(1, -1);
+        const Vector2i center = trans.positionPx + half * Vector2i(1, -1);
         const auto bb = AABB(center, half);
 
         if (tml.isYSorted) {
@@ -92,7 +92,7 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         } else {
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
-                .preciseTransform = gfx::getPreciseTrans(entity, trans),
+                .transform = trans,
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
             });
@@ -153,7 +153,6 @@ std::pair<f32, Facing> getOrientation(TileInfo tile) {
 
     if (originalTile.isRotate && originalTile.isFlipY && originalTile.isFlipH) {
         facing = Facing::Left;
-        // trans.rotationDegrees = 180;
     } else if (tile.isFlipH && !tile.isFlipY) {
         facing = Facing::Left;
     } else if (tile.isFlipY && !tile.isFlipH) {
@@ -178,7 +177,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
 
     S_YSORT_COORD_LUT[e] = {};
     S_YSORT_RENDERINFO_LUT[e] = {};
-    const PreciseTransform parentTrans = gfx::getPreciseTrans(e);
+    const Transform parentTrans = e.get<Transform>();
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
 
@@ -198,8 +197,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
             // The important part is that it's not Unchecked because the RenderQueue will waste time checking.
             const auto ri = gfx::EntityPreRenderInfo{
                 .boundingBox = AABB(worldPosition.round(), halflen),
-                // .preciseTransform = PreciseTransform{.position = worldPosition, .rotationDegrees = 0.0f, .depth = parentTrans.depth},
-                .preciseTransform = parentTrans,
+                .transform = parentTrans,
                 .entity = e,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,

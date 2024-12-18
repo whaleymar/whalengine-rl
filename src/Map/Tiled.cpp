@@ -195,7 +195,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 
             // proof of concept for a fun little stage transition:
             // this would look even cooler if the effect went right to left but that would be extra work
-            // Schedule.tween(layerEntity, 0, 1, &Transform::rotationDegrees).from(-360).setTransition(Ease::InOutQuad);
+            // Schedule.tween(layerEntity, 0, 1, &Transform::rotation).from(-360).setTransition(Ease::InOutQuad);
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
@@ -360,7 +360,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         // add transform
         Transform trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
         trans.depth = layerDepth;
-        entity.add(trans);
+        entity.set(trans);
 
         // add name
         std::string name = "";

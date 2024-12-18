@@ -6,16 +6,10 @@
 
 namespace whal {
 
-struct Attach;
 struct Orbit;
 struct Follow;
 struct Velocity;
 struct Transform;
-
-class AttachSystem : public ecs::ISystem<Attach, Transform>, public ecs::IUpdate {
-public:
-    void update() override;
-};
 
 class OrbitSystem : public ecs::ISystem<Orbit, Transform>, public ecs::IUpdate {
 public:

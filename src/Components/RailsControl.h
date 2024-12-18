@@ -55,7 +55,7 @@ public:
     bool isPhysicsEntity;
     u32 curTarget = 0;
 
-    void setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans);
+    void setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans, ecs::Entity e);
     CheckPoint getTarget() const;
     void startManually();
     void step();
@@ -66,7 +66,7 @@ public:
     bool isNextStepAutomatic() const;
     bool isAtFirstCheckpoint() const { return curTarget == 0; }
     bool isAtLastCheckpoint() const { return curTarget == (mCheckpoints.size() - 1); }
-    void prepareForFirstStep(Transform& trans);
+    void prepareForFirstStep(Transform& trans, ecs::Entity e);
 
     static void loadImpl(ecs::Entity entity, void* data);
 };

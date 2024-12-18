@@ -41,7 +41,7 @@ struct DrawMetaData {
 
 struct EntityRenderInfo {
     f32 bottom;
-    Transform preciseTransform;
+    Transform transform;
     const ecs::IRender* piRender;
     ecs::Entity entity;
     DrawMetaData colorBuf = {};
@@ -56,7 +56,7 @@ struct EntityPreRenderInfo {
     };
 
     AABB boundingBox;
-    Transform preciseTransform;
+    Transform transform;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;

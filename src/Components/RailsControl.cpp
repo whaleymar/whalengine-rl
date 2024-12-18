@@ -17,9 +17,9 @@ RailsControl::RailsControl(f32 moveSpeed_, std::vector<CheckPoint> checkPoints_,
     : mCheckpoints(checkPoints_), speed(moveSpeed_), waitTime(waitTime_), arrivalCallback(callback), curActionTime(waitTime_),
       endBehavior(cycleBehavior_) {}
 
-void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans) {
+void RailsControl::setCheckpoints(std::vector<CheckPoint>& checkpoints, Transform& trans, ecs::Entity e) {
     mCheckpoints = std::move(checkpoints);
-    prepareForFirstStep(trans);
+    prepareForFirstStep(trans, e);
 }
 
 RailsControl::CheckPoint RailsControl::getTarget() const {
@@ -92,15 +92,15 @@ bool RailsControl::isNextStepAutomatic() const {
            (curTarget != 0 && (endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_LOOP || endBehavior == CycleBehavior::MANUAL_FIRSTSTEP_BACKTRACK));
 }
 
-void RailsControl::prepareForFirstStep(Transform& trans) {
+void RailsControl::prepareForFirstStep(Transform& trans, ecs::Entity e) {
     if (isValid()) {
         // set transform to match starting checkpoint
         Vector2i target = getTarget().position;
         startPosition = target.as<f32>();
-        trans.position = target;
+        trans.setPosition(target.as<f32>(), e);
     } else {
         // o.w., make sure start position matches transform
-        startPosition = trans.position.as<f32>();
+        startPosition = trans.position;
     }
 }
 
@@ -131,7 +131,7 @@ static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<Ra
         const s32 x = readInt(point, "x");
         const s32 y = readInt(point, "y");
         const Vector2i mapPos = {x + parentX, parentY + y};
-        const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).position;
+        const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).positionPx;
 
         Ease moveType;
         if (ix >= moveProps.size()) {
@@ -162,7 +162,7 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
     }
 
     RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : RailsControl{};
-    rails.setCheckpoints(checkpoints, entity.get<Transform>());
+    rails.setCheckpoints(checkpoints, entity.get<Transform>(), entity);
 
     std::string cycleBehavior = "ManualStart";
     tryRead(ctx.values, "CycleBehavior", &cycleBehavior);

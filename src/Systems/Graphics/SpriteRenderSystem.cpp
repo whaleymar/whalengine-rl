@@ -1,6 +1,7 @@
 #include "SpriteRenderSystem.h"
 
 #include "Common.h"
+#include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
@@ -14,26 +15,31 @@ namespace whal {
 void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto& sprite = eCtx.entity.get<Sprite>();
 
-    const s32 flipModifier = eCtx.preciseTransform.facing == Facing::Left ? -1 : 1;
+    const s32 flipModifier = eCtx.transform.facing == Facing::Left ? -1 : 1;
     const rl::Rectangle srcRect =
         rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * sprite.frameSize.x, sprite.frameSize.y};
-    const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.preciseTransform, sprite.frameSize, ctx.cameraPosition);
+    const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.transform, sprite.frameSize, ctx.cameraPosition);
 
-    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.preciseTransform.rotation, sprite.color.asRL(),
+    gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.transform.rotation, sprite.color.asRL(),
                        eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()));
 }
 
 void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto sprite = entity.get<Sprite>();
-        const auto& trans = entity.get<Transform>();
+        auto trans = entity.get<Transform>();
         const auto bb = trans.rotation == 0.0f ?
                             AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
                             Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
+        // make physics objects appear to move smoothly
+        if (entity.has<Collider>()) {
+            trans.position += entity.get<Collider>().getRemainder();
+        }
+
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
-            .preciseTransform = trans,
+            .transform = trans,
             .entity = entity,
         });
     }

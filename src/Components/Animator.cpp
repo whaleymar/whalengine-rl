@@ -132,9 +132,9 @@ void Animator::loadImpl(ecs::Entity entity, void* data) {
     entity.add(animator);
     sprite.setFrame(animator.getFrame());
 
-    s32 rotationDegrees;
-    if (tryRead(ctx.values, "rotationDegrees", &rotationDegrees)) {
-        entity.get<Transform>().rotationDegrees = rotationDegrees;
+    s32 rotation;
+    if (tryRead(ctx.values, "rotationDegrees", &rotation)) {
+        entity.get<Transform>().rotation = rotation;
     }
 
     tryRead(ctx.values, "Color", &sprite.color);

@@ -133,7 +133,7 @@ public:
         return Tweener(tween);
     }
 
-    // example usage: `Schedule.tween(entity, 360.0f, 2, &Transform::rotationDegrees)`
+    // example usage: `Schedule.tween(entity, 360.0f, 2, &Transform::rotation)`
     template <typename Component, typename T>
         requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member) {

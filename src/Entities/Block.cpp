@@ -17,7 +17,7 @@ ecs::Entity createBlock(Transform transform) {
     }
     auto _ = ecs::DeferActivate(block);
 
-    block.add(transform);
+    block.set(transform);
     block.add<DrawRect>();
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
@@ -34,7 +34,7 @@ ecs::Entity createBlock(Transform transform, DrawRect rect) {
     }
     auto _ = ecs::DeferActivate(block);
 
-    block.add(transform);
+    block.set(transform);
     block.add(rect);
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
@@ -51,7 +51,7 @@ ecs::Entity createBlock(Transform transform, Sprite sprite, WorldMaterial materi
     }
     auto _ = ecs::DeferActivate(block);
 
-    block.add(transform);
+    block.set(transform);
     block.add(sprite);
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
@@ -70,7 +70,7 @@ ecs::Entity createDecal(Transform transform, Sprite sprite, bool activate) {
         return decal;
     }
 
-    decal.add(transform);
+    decal.set(transform);
     decal.add(sprite);
     if (activate) {
         decal.activate();
