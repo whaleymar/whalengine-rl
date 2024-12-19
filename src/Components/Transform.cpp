@@ -19,20 +19,26 @@ static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f 
 }
 
 Transform Transform::world(s32 x, s32 y) {
-    return Transform{.position = Vector2f(x, y), .positionPx = {x, y}};
+    Vector2f pos(x, y);
+    return Transform{.position = pos, .positionPx = pos.as<s32>(), .localPosition = pos};
 }
 
 Transform Transform::world(Vector2i pos) {
-    return Transform{.position = pos.as<f32>(), .positionPx = pos};
+    return Transform{.position = pos.as<f32>(), .positionPx = pos, .localPosition = pos.as<f32>()};
+}
+
+Transform Transform::world(Vector2f pos) {
+    return Transform{.position = pos, .positionPx = pos.round(), .localPosition = pos};
 }
 
 Transform Transform::tiles(s32 x, s32 y) {
-    return Transform{.position = Vector2f(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE), .positionPx = {x * PIXELS_PER_TILE, y * PIXELS_PER_TILE}};
+    Vector2f pos(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
+    return Transform{.position = pos, .positionPx = pos.as<s32>(), .localPosition = pos};
 }
 
 Transform Transform::tiles(Vector2i pos) {
-    return Transform{.position = Vector2f(pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE),
-                     .positionPx = {pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE}};
+    Vector2f posF = Vector2f(pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE);
+    return Transform{.position = posF, .positionPx = posF.as<s32>(), .localPosition = posF};
 }
 
 void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
@@ -108,7 +114,7 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
 
     floatHeight = trans.floatHeight;
     facing = trans.facing;
-    isManuallyMoved = true;
+    // isManuallyMoved = true;
     depth = trans.depth;
     pivotOffset = trans.pivotOffset;
 
@@ -127,7 +133,7 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
     positionPx = position.round();
     localPosition = position - parentPosition;
 
-    isManuallyMoved = true;
+    // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentPosition(position, child);
     }
@@ -142,7 +148,7 @@ void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
     scale = globalScale;
     localScale = scale / parentScale;
 
-    isManuallyMoved = true;
+    // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentScale(scale, child);
     }
@@ -230,5 +236,66 @@ void Transform::draw() const {
     gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos).as<f32>(), Colors::Green);
 }
 #endif
+
+TransformBuilder::TransformBuilder(const Transform& trans) : mTrans(trans) {}
+
+TransformBuilder& TransformBuilder::translate(Vector2f moveAmount) {
+    mTrans.position += moveAmount;
+    mTrans.localPosition += moveAmount;
+    mTrans.positionPx = mTrans.position.round();
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::scaleBy(Vector2f mult) {
+    mTrans.scale *= mult;
+    mTrans.localScale *= mult;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::rotate(f32 degrees) {
+    mTrans.rotation += degrees;
+    mTrans.localRotation += degrees;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::position(Vector2f globalPosition) {
+    const Vector2f parentPosition = mTrans.position - mTrans.localPosition;
+    mTrans.position = globalPosition;
+    mTrans.positionPx = mTrans.position.round();
+    mTrans.localPosition = mTrans.position - parentPosition;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::scale(Vector2f globalScale) {
+    const Vector2f parentScale = mTrans.scale / mTrans.localScale;
+    mTrans.scale = globalScale;
+    mTrans.localScale = mTrans.scale / parentScale;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::rotation(f32 globalRotation) {
+    const f32 parentRotation = mTrans.rotation - mTrans.localRotation;
+    mTrans.rotation = globalRotation;
+    mTrans.localRotation = mTrans.rotation - parentRotation;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::height(f32 height) {
+    mTrans.floatHeight = height;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::depth(Depth depth) {
+    mTrans.depth = depth;
+    return *this;
+}
+TransformBuilder& TransformBuilder::facing(Facing facing) {
+    mTrans.facing = facing;
+    return *this;
+}
+
+Transform TransformBuilder::build() const {
+    return mTrans;
+}
 
 }  // namespace whal

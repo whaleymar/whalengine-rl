@@ -75,7 +75,10 @@ enum class Facing : u8 {
     Right = 1,
 };
 
+// Any method that takes an entity will update the transforms of that entity's children
 struct Transform {
+    friend class TransformBuilder;
+
     // global transform (read only):
     Vector2f position;
     Vector2i positionPx;  // rounded replica of position, for convenience
@@ -94,6 +97,7 @@ struct Transform {
 
     static Transform world(s32 x, s32 y);
     static Transform world(Vector2i pos);
+    static Transform world(Vector2f pos);
     static Transform tiles(s32 x, s32 y);
     static Transform tiles(Vector2i pos);
 
@@ -128,6 +132,26 @@ struct Transform {
 #ifndef NDEBUG
     void draw() const;
 #endif
+};
+
+// This is for building Transforms that aren't attached to any entity
+class TransformBuilder {
+public:
+    TransformBuilder() = default;
+    TransformBuilder(const Transform&);
+    TransformBuilder& translate(Vector2f moveAmount);
+    TransformBuilder& scaleBy(Vector2f mult);
+    TransformBuilder& rotate(f32 degrees);
+    TransformBuilder& position(Vector2f globalPosition);
+    TransformBuilder& scale(Vector2f globalScale);
+    TransformBuilder& rotation(f32 globalRotation);
+    TransformBuilder& height(f32 globalHeight);
+    TransformBuilder& depth(Depth depth);
+    TransformBuilder& facing(Facing facing);
+    Transform build() const;
+
+private:
+    Transform mTrans;
 };
 
 }  // namespace whal

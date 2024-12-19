@@ -27,21 +27,25 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
 void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto sprite = entity.get<Sprite>();
-        auto trans = entity.get<Transform>();
+        const auto& trans = entity.get<Transform>();
         const auto bb = trans.rotation == 0.0f ?
                             AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
                             Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
         // make physics objects appear to move smoothly
         if (entity.has<Collider>()) {
-            trans.position += entity.get<Collider>().getRemainder();
+            queue.add(gfx::EntityPreRenderInfo{
+                .boundingBox = bb,
+                .transform = TransformBuilder(trans).translate(entity.get<Collider>().getRemainder()).build(),
+                .entity = entity,
+            });
+        } else {
+            queue.add(gfx::EntityPreRenderInfo{
+                .boundingBox = bb,
+                .transform = trans,
+                .entity = entity,
+            });
         }
-
-        queue.add(gfx::EntityPreRenderInfo{
-            .boundingBox = bb,
-            .transform = trans,
-            .entity = entity,
-        });
     }
 }
 

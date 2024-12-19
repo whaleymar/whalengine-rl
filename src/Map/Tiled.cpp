@@ -184,7 +184,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             });
             layerEntity.add(Name(readString(layer, "name")));
             // TODO transform should be the center of the layer, not the top left (?) corner
-            Transform trans = Transform(Transform::tiles(0, map->heightTiles).position + origin);
+            Transform trans = Transform::world(Transform::tiles(0, map->heightTiles).position + origin);
 
             // this loads chunk size and other metadata:
             trans.depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
