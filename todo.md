@@ -1,14 +1,6 @@
 # To Do 
 
 NEXT GOAL: 
-- Transform changes:
-    - (DONE) consolidate the 3 transform components I have
-    - (DONE, UNTESTED) control child Transform using parent Transform like in Unity
-    - make global transform read only
-    - (DONE) enable transform tweening by adding option for getter and setter in tween library
-    - (DONE) consolidate Floating component into floatHeight variable
-    - (DONE) remove attach system (blaster still using it)
-
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 
@@ -26,7 +18,6 @@ NEXT GOAL:
 - apply texture overlay on tiled and other sprites:
     - https://godotshaders.com/shader/repeated-texture-overlay-for-tilemaps/
     - animating it would be sick
-- experiment with adding a custom Z value (my depth) instead of letting raylib handle it
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -83,7 +74,6 @@ NEXT GOAL:
     - cache entity positions from previous frame, remove and re-insert entities whose positions changed
 
 ## Misc
-- remove Children component and replace with ECS parent child scheme
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children
