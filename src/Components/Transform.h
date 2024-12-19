@@ -115,6 +115,7 @@ struct Transform {
     void setRotation(f32 globalRotation, ecs::Entity self);
 
     Vector2f getRotatedPosition() const;
+    Vector2i getRotatedPositionInt() const;
 
     // Get an offset's transformed position
     Vector2f apply(Vector2f relOffset) const;

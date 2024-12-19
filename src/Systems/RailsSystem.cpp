@@ -124,18 +124,17 @@ static void updateTweenRails(ecs::Entity entity, RailsControl& rails) {
                 const f32 segmentDistance = (targetPosF - rails.startPosition).len();
                 const f32 time = segmentDistance / rails.speed;
 
-                // TODO TRANSTWEEN
-                // Schedule.tween(entity, rails.getTarget().position, time, &Transform::position)
-                //     .setTransition(rails.getTarget().movement)
-                //     .setOnEnd([](ecs::Entity entity, const Tween<Vector2i>&) {
-                //         auto& rails = entity.get<RailsControl>();
-                //         rails.isWaiting = true;
-                //         rails.curActionTime = 0;
-                //         rails.isVelocityUpdateNeeded = false;
-                //         if (rails.arrivalCallback != nullptr) {
-                //             rails.arrivalCallback(entity, rails);
-                //         }
-                //     });
+                Schedule.tween(entity, rails.getTarget().position.as<f32>(), time, &Transform::position, &Transform::setPosition)
+                    .setTransition(rails.getTarget().movement)
+                    .setOnEnd([](ecs::Entity entity, const Tween<Vector2f>&) {
+                        auto& rails = entity.get<RailsControl>();
+                        rails.isWaiting = true;
+                        rails.curActionTime = 0;
+                        rails.isVelocityUpdateNeeded = false;
+                        if (rails.arrivalCallback != nullptr) {
+                            rails.arrivalCallback(entity, rails);
+                        }
+                    });
 
             } else {
                 rails.curActionTime += dt;

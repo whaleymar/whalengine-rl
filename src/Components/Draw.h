@@ -63,7 +63,6 @@ struct DrawBezierQuad {
     Vector2i endPointOffset;
     Color color = Colors::White;
     f32 thickness = 1.0;
-    f32 brightness = 1.0f;
     Depth depth = Depth::Level;
 };
 
@@ -71,7 +70,6 @@ struct DrawStraightLine {
     s32 length;
     Color color = Colors::White;
     f32 thickness = 1.0;
-    f32 brightness = 1.0f;
     bool isRotateAboutCenter = false;
 };
 
@@ -79,7 +77,6 @@ struct DrawText : ISerialize<DrawText, ComponentFactory> {
     std::string text;
     Vector2i frameSize;
     Color color = Colors::White;
-    f32 brightness = 1.0f;
     bool isCentered = false;
 
     static void loadImpl(ecs::Entity entity, void* data);

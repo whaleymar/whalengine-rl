@@ -77,22 +77,21 @@ void Collider::setEntity(ecs::Entity entity) {
 void Collider::updateEntityPosition() {
     Transform& trans = mSelf.get<Transform>();
     auto const shape = getShape();
-    Vector2f newPosition = trans.applyInverse(shape.getPosition().as<f32>(), getOffset().as<f32>());
-    const Vector2i newPositionInt = newPosition.round();
+    Vector2i newPosition = trans.applyInverse(shape.getPosition(), getOffset());
 
     // make sure player(s) can't go out of bounds
     if (mSelf.has<Player>()) {
-        if (System::getGame().getScene().getLevelAt(newPositionInt)) {
-            trans.setPosition(newPosition, mSelf);
+        if (System::getGame().getScene().getLevelAt(newPosition)) {
+            trans.setPosition(newPosition.as<f32>(), mSelf);
         } else {
             // tried to go out of bounds. simulate fake collision with world boundary
-            const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPositionInt);
+            const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
             trans.setPosition(closestPointInBounds.as<f32>(), mSelf);
             ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
         }
 
     } else {
-        trans.setPosition(newPosition, mSelf);
+        trans.setPosition(newPosition.as<f32>(), mSelf);
     }
 
     if (mSelf.has<Trigger>()) {
