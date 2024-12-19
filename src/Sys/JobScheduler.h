@@ -127,18 +127,51 @@ public:
     // have to use `auto` for the getter, otherwise the compiler can't infer T for some reason.
     // static_cast still enforces compile-time type safety.
     template <typename T>
+        requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, T target, f32 duration, auto getter) {
         std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<TweenManager::ValueGetter<T>>(getter), entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }
 
-    // example usage: `Schedule.tween(entity, 360.0f, 2, &Transform::rotation)`
+    template <typename T>
+        requires Multipliable<T>
+    Tweener<T> tween(ecs::Entity entity, T target, f32 duration, auto getter, auto setter) {
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<TweenManager::ValueGetter<T>>(getter),
+                                                                     static_cast<TweenManager::ValueSetter<T>>(setter), entity);
+        mTweenMgr.mTweens.push_back(tween);
+        return Tweener(tween);
+    }
+
+    // example usage: `Schedule.tween(entity, 15, 2, &PointLight::radius)`
     template <typename Component, typename T>
         requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member) {
         const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
         std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, entity);
+        mTweenMgr.mTweens.push_back(tween);
+        return Tweener(tween);
+    }
+
+    // example usage: `Schedule.tween(entity, 360, 2, &Transform::rotation, &Transform::setRotation)`
+    template <typename Component, typename T>
+        requires Multipliable<T>
+    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member, void (Component::*const setterMethod)(T, ecs::Entity)) {
+        const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
+        const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
+        mTweenMgr.mTweens.push_back(tween);
+        return Tweener(tween);
+    }
+
+    // example usage: `Schedule.tween(entity, 360, 2, &Transform::rotation, &Transform::setRotation)`
+    template <typename Component, typename T>
+        requires Multipliable<T>
+    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member,
+                     void (Component::*const setterMethod)(const T&, ecs::Entity)) {
+        const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
+        const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }

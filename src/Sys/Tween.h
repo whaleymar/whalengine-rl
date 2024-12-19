@@ -53,7 +53,6 @@ class Tween;
 template <typename T>
 class Tweener {
 public:
-    using ValueGetter = T& (*)(ecs::Entity);
     using TweenCallback = void (*)(ecs::Entity, const Tween<T>&);
     using BoolTweenCallback = bool (*)(ecs::Entity, const Tween<T>&);
 
@@ -138,6 +137,9 @@ public:
     template <typename T>
     using ValueGetter = T& (*)(ecs::Entity);
 
+    template <typename T>
+    using ValueSetter = void (*)(const T&, ecs::Entity);
+
     // called automatically
     void onEntityKilled(ecs::Entity e);
 
@@ -168,8 +170,15 @@ public:
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
 
+    Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
+        : mDuration(duration), mTweenValue(target), mGetter(getter), mSetter(setter), mEntity(entity) {}
+
     Tween(T target, f32 duration, std::type_identity_t<std::function<T&(ecs::Entity)>> const& getter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
+
+    Tween(T target, f32 duration, std::type_identity_t<std::function<T&(ecs::Entity)>> const& getter,
+          std::type_identity_t<std::function<void(const T&, ecs::Entity)>> const& setter, ecs::Entity entity)
+        : mDuration(duration), mTweenValue(target), mGetter(getter), mSetter(setter), mEntity(entity) {}
 
     ~Tween() = default;
 
@@ -199,7 +208,9 @@ private:
         }
         mIsStarted = true;
 
-        if (mGetter) {
+        if (mSetter) {
+            mSetter(getValue(), mEntity);
+        } else {
             mGetter(mEntity) = getValue();
         }
 
@@ -280,8 +291,8 @@ private:
     T mStartValue;
     T mEndValue;
     T mTweenValue;
-    // TweenManager::ValueGetter<T> mGetter;
     std::function<T&(ecs::Entity)> mGetter;
+    std::function<void(const T&, ecs::Entity)> mSetter = nullptr;
     ecs::Entity mEntity;
     TweenCallback mOnStart = nullptr;
     TweenCallback mOnEnd = nullptr;

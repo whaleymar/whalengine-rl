@@ -10,11 +10,11 @@ namespace whal {
 
 static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f pivotOffset, f32 rotationDegrees, f32 floatHeight) {
     if (rotationDegrees == 0.0f) {
-        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + pivotOffset.as<f32>() * (Vector2f::ONE - scale);
+        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + pivotOffset * (Vector2f::ONE - scale);
     }
-    const auto pivotRoot = position + pivotOffset.as<f32>();
-    const auto unscaled = position.rotate(rotationDegrees, pivotRoot) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
-    const auto delta = unscaled - pivotRoot;
+    const Vector2f pivotRoot = position + pivotOffset;
+    const Vector2f unscaled = position.rotate(rotationDegrees, pivotRoot) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT);
+    const Vector2f delta = unscaled - pivotRoot;
     return pivotRoot + delta * scale;
 }
 
@@ -157,20 +157,24 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     rotation = globalRotation;
     localRotation = rotation - parentRotation;
 
-    isManuallyMoved = true;
+    // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
     }
 }
 
 Vector2f Transform::getRotatedPosition() const {
-    return _getRotatedPosition(position, scale, pivotOffset.as<f32>(), rotation, floatHeight);
+    return _getRotatedPosition(position, scale, pivotOffset, rotation, floatHeight);
+}
+
+Vector2i Transform::getRotatedPositionInt() const {
+    return _getRotatedPosition(positionPx.as<f32>(), scale, pivotOffset, rotation, floatHeight).round();
 }
 
 Vector2f Transform::apply(Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale));
         return position + relOffset + scaleAdjustment;
     }
 
@@ -182,19 +186,19 @@ Vector2f Transform::apply(Vector2f relOffset) const {
 Vector2i Transform::apply(Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale)).round();
         return positionPx + relOffset + scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
     const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO).round();
-    return getRotatedPosition().round() + rotatedOffset;
+    return getRotatedPositionInt() + rotatedOffset;
 }
 
 Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale));
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale));
         return transformedPosition - relOffset - scaleAdjustment;
     }
 
@@ -207,13 +211,13 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
 Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset.as<f32>() * (Vector2f::ONE - scale)).round();
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale)).round();
         return transformedPosition - relOffset - scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
     const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO).round();
-    const Vector2i transformation = getRotatedPosition().round() + rotatedOffset;
+    const Vector2i transformation = getRotatedPositionInt() + rotatedOffset;
     return transformedPosition - (transformation - this->positionPx);
 }
 

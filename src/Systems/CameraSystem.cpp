@@ -27,16 +27,9 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& a
             return;
         }
 
-        // TODO TRANSTWEEN
-        // this is a hack
-        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position)
+        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position, &Transform::setPosition)
             .setTransition(Ease::InOutQuad)
             .asIgnoreSlowdown()
-            .setOnUpdate([](ecs::Entity self, const Tween<Vector2f>&) {
-                auto& trans = self.get<Transform>();
-                trans.positionPx = self.get<Transform>().position.round();
-                trans.localPosition = trans.position;
-            })
             .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });
         Time.setMultiplier(0.0);
         return;

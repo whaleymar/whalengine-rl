@@ -5,7 +5,7 @@ NEXT GOAL:
     - (DONE) consolidate the 3 transform components I have
     - (DONE, UNTESTED) control child Transform using parent Transform like in Unity
     - make global transform read only
-    - enable transform tweening by adding option for getter and setter in tween library
+    - (DONE) enable transform tweening by adding option for getter and setter in tween library
     - (DONE) consolidate Floating component into floatHeight variable
     - (DONE) remove attach system (blaster still using it)
 
