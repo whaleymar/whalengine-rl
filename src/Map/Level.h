@@ -17,14 +17,14 @@ namespace whal {
 struct TileMap;
 
 struct Level {
-    struct LevelInfo {
+    struct MetaData {
         bool isWorldEntryPoint = false;
         Color ambientLight = Colors::White;
     };
     std::string filepath;     // used for level comparisons
     Vector2f worldPosOrigin;  // top left
     Vector2f size;
-    LevelInfo lvlInfo;
+    MetaData meta;
 
     bool operator==(const Level& other) const { return filepath == other.filepath; }
 };

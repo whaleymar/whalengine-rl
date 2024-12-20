@@ -37,9 +37,16 @@ struct System {
     // Confirms that a game is loaded
     static bool IsValid();
 
+    // Pauses the game and sends pause signals to ECS Systems and Pause Event Observers
     static void setPaused(bool pause);
     static void togglePause();
     static bool isPaused();
+
+    // Only sets the internal pause flag. Doesn't emit events or affect any modules.
+    // The main purpose is to disable Observers with RunOnPause==false
+    static void setQuietPaused(bool pause);
+    static bool isQuietPaused();
+
     static void quit();
     static bool isQuit();
 
