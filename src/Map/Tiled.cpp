@@ -246,7 +246,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         lightEntity.set(trans);
 
         BoxLight boxLight = {
-            .radius = 3 * PIXELS_PER_TILE, .heightOffset = 0, .color = level.lvlInfo.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
+            .radius = 3 * PIXELS_PER_TILE, .heightOffset = 0, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
 
         level.childEntities.insert(lightEntity);
@@ -607,13 +607,13 @@ void parseMapProject(const char* mapfile) {
 }
 
 // parses a level's parameters and returns its LevelInfo struct
-static Expected<Level::LevelInfo> parseLevelInfo(const char* lvlFileName) {
+static Expected<Level::MetaData> parseLevelInfo(const char* lvlFileName) {
     const auto& data = getMapFile(lvlFileName);
     for (auto& property : data["properties"]) {
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
-            Level::LevelInfo lvlInfo;
+            Level::MetaData lvlInfo;
             tryRead(mapInfo, "AmbientLight", &lvlInfo.ambientLight);
             tryRead(mapInfo, "isWorldEntryPoint", &lvlInfo.isWorldEntryPoint);
             return lvlInfo;
@@ -640,10 +640,10 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
         s32 y = readInt(map, "y");
         s32 width = readInt(map, "width");
         s32 height = readInt(map, "height");
-        Expected<Level::LevelInfo> eLvlInfo = parseLevelInfo(filename.c_str());
+        Expected<Level::MetaData> eLvlInfo = parseLevelInfo(filename.c_str());
         if (eLvlInfo.isExpected()) {
             Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo.value()};
-            if (lvl.lvlInfo.isWorldEntryPoint) {
+            if (lvl.meta.isWorldEntryPoint) {
                 auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());
                 if (errOpt) {
                     return *errOpt;
@@ -672,20 +672,6 @@ Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const Ac
         Vector2i(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2) + level.worldOffset);
     return trans;
 }
-
-// converts a relative sprite path to a valid GLResourceManager key
-// example: "../sprite/actor/player-run1.png" -> "actor/player-run1"
-// commented because i also commented out image-layer parsing
-// std::string getSpriteKeyFromPath(const std::string& spritePath) {
-//     const char* spriteDir = "sprite/";
-//     constexpr s32 substrLen = 7;
-//     const auto ix = spritePath.find(spriteDir);
-//     if (ix == std::string::npos) {
-//         return "";
-//     }
-//     const auto extensionIx = spritePath.find(".", ix + substrLen);
-//     return spritePath.substr(ix + substrLen, extensionIx - ix - substrLen);
-// }
 
 // MAP LOADING STUFF
 

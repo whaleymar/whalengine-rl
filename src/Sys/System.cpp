@@ -43,6 +43,14 @@ void System::setPaused(bool pause) {
     }
 }
 
+void System::setQuietPaused(bool pause) {
+    S_IS_PAUSED = pause;
+}
+
+bool System::isQuietPaused() {
+    return S_IS_PAUSED;
+}
+
 void System::togglePause() {
     setPaused(!S_IS_PAUSED);
 }

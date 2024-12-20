@@ -112,8 +112,6 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
                 continue;  // empty tile
             }
 
-            // auto it = layer.tilemap->spriteCache.find(tile.gid);
-            // if (it == layer.tilemap->spriteCache.end()) {
             if (!layer.tilemap->spriteCache.contains(tile.gid)) {
                 const auto sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
                 const auto orient = getOrientation(tile);
@@ -121,7 +119,6 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
                                                                  .sprite = sprite,
                                                                  .orient = orient,
                                                                  .isOccluder = layer.collisionMask[ix],
-
                                                              }});
             }
         }
