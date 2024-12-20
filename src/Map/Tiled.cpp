@@ -59,12 +59,12 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         return;
     }
 
-    for (auto& property : object["properties"]) {
+    for (const auto& property : object["properties"]) {
         std::string componentName;
         if (!tryRead(property, "propertytype", &componentName)) {
             continue;
         }
-        auto serializerOpt = ComponentFactory::Get(componentName.c_str());
+        const auto serializerOpt = ComponentFactory::Get(componentName.c_str());
         if (!serializerOpt) {
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
@@ -98,8 +98,6 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
 }
 
 static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& level) {
-    const Transform& layerTrans = layerEntity.get<Transform>();
-    const Vector2f origin = layerTrans.position;
     TileMapLayer& layer = layerEntity.get<TileMapLayer>();
 
     // dummy objects that tiles don't need because they are standalone entities
@@ -121,20 +119,51 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
 
             const TileSet& tset = getTileSet(*layer.tilemap.get(), tile.gid);
             const s32 localId = tile.gid - tset.firstgid;
-            const s32 propsIx = tset.tileIDToIndex[localId];
+            const s32 propsIx = tset.localIDToPropsIndex[localId];
+
             if (propsIx == -1) {
                 // this tile doesn't have any extra properties
                 continue;
             }
 
+            const auto& tiledata = getMapFile(tset.fileName)["tiles"][propsIx];
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
             ecs::Entity e = layerEntity.createChild(false);
-            e.get<Transform>().setPosition(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + origin, e);
-            const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
-            const EntityMapData mapData = {mapPosition, {PIXELS_PER_TILE, PIXELS_PER_TILE}, 0, false, true};
 
-            addComponents(e, mapData, getMapFile(tset.fileName)["tiles"][propsIx], emptyJson, emptyIdToIndex, level);
+            // level transform inherited from parent
+            e.get<Transform>().translate(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE), e);
+            const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
+            const EntityMapData mapData = {
+                .position = mapPosition,
+                .size = {PIXELS_PER_TILE, PIXELS_PER_TILE},
+                .id = 0,
+                .isPoint = false,
+                .isParsingTemplate = false,
+            };
+
+            // this call is safe even if the tile doesn't have any top-level components
+            addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level);
+
+            // if (tiledata.contains("objectgroup")) {
+            // tiles can have child objects (created with the collision editor)
+            // for each of these, we'll create a child entity and add its components
+
+            // for (const auto& object : tiledata["objectgroup"]["objects"]) {
+            // TODO I really should run `loadObjectLayer` here, as it's designed to parse a list of objects just like this. And it handles
+            // complex stuff like points, prefabs, etc. The only change I need is for it to take a parent entity & use that parent entity's
+            // transform as the root position. This will work well since I wanted to make levels Entities anyway... but now this change is
+            // becoming a lot of work...
+
+            // ecs::Entity child = e.createChild(false);
+            // const Vector2i offset = readVector2i(object);
+            // RESEARCH boolean flag on transform methods "updateChildren", default to true, can set it to false in situations
+            // like these where I know there are no children. Saves an expensive (ish) dict lookup
+
+            // child.get<Transform>().translate(offset.as<f32>(), child);
+            // addComponents(child, mapData, object, emptyJson, emptyIdToIndex, level);
+            // }
+            // }
 
             // For simplicity, tiles with collision also block light, vision, and pathing
             if (e.has<Collider>()) {
@@ -336,29 +365,29 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // now get transform
         // check position/size in prefab first, then object
-        EntityMapData entityData;
-        entityData.id = readInt(object, "id");
-        ecs::Entity entity = idToIndex.at(entityData.id).second;
+        EntityMapData entityMapData;
+        entityMapData.id = readInt(object, "id");
+        ecs::Entity entity = idToIndex.at(entityMapData.id).second;
         bool hasPosition = false;
-        entityData.isPoint = true;
+        entityMapData.isPoint = true;
         if (pPrefab) {
-            hasPosition = tryRead(*pPrefab, "x", "y", &entityData.position);
+            hasPosition = tryRead(*pPrefab, "x", "y", &entityMapData.position);
         }
-        hasPosition = tryRead(object, "x", "y", &entityData.position) || hasPosition;
+        hasPosition = tryRead(object, "x", "y", &entityMapData.position) || hasPosition;
         if (!hasPosition) {
-            print("Entity with ID", entityData.id, "has no coordinates");
+            print("Entity with ID", entityMapData.id, "has no coordinates");
             entity.kill();
             continue;
         }
         if (pPrefab) {
-            if (tryRead(*pPrefab, "width", "height", &entityData.size))
-                entityData.isPoint = false;
+            if (tryRead(*pPrefab, "width", "height", &entityMapData.size))
+                entityMapData.isPoint = false;
         }
-        if (tryRead(object, "width", "height", &entityData.size))
-            entityData.isPoint = false;
+        if (tryRead(object, "width", "height", &entityMapData.size))
+            entityMapData.isPoint = false;
 
         // add transform
-        Transform trans = getTransformFromMapPosition(entityData.position, entityData.size, level, entityData.isPoint);
+        Transform trans = getTransformFromMapPosition(entityMapData.position, entityMapData.size, level, entityMapData.isPoint);
         trans.depth = layerDepth;
         entity.set(trans);
 
@@ -371,9 +400,9 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         if (pPrefab) {
             // add template components
-            entityData.isParsingTemplate = true;
-            addComponents(entity, entityData, *pPrefab, objects, idToIndex, level);
-            entityData.isParsingTemplate = false;
+            entityMapData.isParsingTemplate = true;
+            addComponents(entity, entityMapData, *pPrefab, objects, idToIndex, level);
+            entityMapData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
             const auto prefabName = readString(*pPrefab, "name");
@@ -391,7 +420,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         }
 
         // add object components with factory
-        addComponents(entity, entityData, object, objects, idToIndex, level);
+        addComponents(entity, entityMapData, object, objects, idToIndex, level);
     }
 }
 
@@ -400,18 +429,18 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
 
     auto sourceFilePath = readString(data, "image");
 
-    s32 firstIx = std::max<s32>(sourceFilePath.find_last_of('/'), sourceFilePath.find_last_of('\\')) + 1;
-    s32 lastIx = sourceFilePath.find(".", firstIx);
-    std::string sourceFileBasenameNoExt = sourceFilePath.substr(firstIx, lastIx - firstIx);
+    const s32 firstIx = std::max<s32>(sourceFilePath.find_last_of('/'), sourceFilePath.find_last_of('\\')) + 1;
+    const s32 lastIx = sourceFilePath.find(".", firstIx);
+    const std::string sourceFileBasenameNoExt = sourceFilePath.substr(firstIx, lastIx - firstIx);
 
-    s32 tileWidth = readInt(data, "tilewidth");
-    s32 tileHeight = readInt(data, "tileheight");
-    s32 width = readInt(data, "imagewidth");
-    s32 height = readInt(data, "imageheight");
+    const s32 tileWidth = readInt(data, "tilewidth");
+    const s32 tileHeight = readInt(data, "tileheight");
+    const s32 width = readInt(data, "imagewidth");
+    const s32 height = readInt(data, "imageheight");
 
-    s32 widthTiles = width / tileWidth;
-    s32 heightTiles = height / tileHeight;
-    s32 tilecount = readInt(data, "tilecount");
+    const s32 widthTiles = width / tileWidth;
+    const s32 heightTiles = height / tileHeight;
+    const s32 tilecount = readInt(data, "tilecount");
 
     std::vector<s32> idToIx(tilecount, -1);
     if (data.contains("tiles")) {
@@ -449,7 +478,7 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
         .fileName = basename,
         .spriteFileName = std::move(sourceFileBasenameNoExt),
         .spriteMaskFileName = std::move(maskPath),
-        .tileIDToIndex = std::move(idToIx),
+        .localIDToPropsIndex = std::move(idToIx),
         .isAdditiveSpriteMask = isAdditiveSpriteMask,
     };
 }

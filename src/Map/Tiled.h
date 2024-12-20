@@ -79,7 +79,7 @@ struct TileSet {
     std::string fileName;
     std::string spriteFileName;
     std::string spriteMaskFileName;
-    std::vector<s32> tileIDToIndex;
+    std::vector<s32> localIDToPropsIndex;
     bool isAdditiveSpriteMask = false;
 };
 
