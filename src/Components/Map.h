@@ -17,9 +17,9 @@ struct TileMapLayer {
     bool isYSorted = false;
 };
 
-// RESEARCH
-// struct ObjectMapLayer {
-//
-// };
+// Corresponds to a Tiled level
+struct TileMapLevel {
+    std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
+};
 
 }  // namespace whal

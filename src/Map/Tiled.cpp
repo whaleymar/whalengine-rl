@@ -7,7 +7,7 @@
 #include "Settings.h"
 
 #include "Components/Light.h"  // for level ambient lighting
-#include "Components/MapLayer.h"
+#include "Components/Map.h"
 #include "Components/Name.h"
 #include "Components/Relationships.h"
 #include "Components/Transform.h"
