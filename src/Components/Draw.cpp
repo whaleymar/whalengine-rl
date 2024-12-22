@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <raylib.h>
+#include <rfl/json.hpp>
 #include "Map/Tiled.h"
 #include "Map/TiledParse.h"
 
@@ -104,6 +105,9 @@ void Sprite::loadImpl(ecs::Entity entity, void* data) {
     } else {
         print("Error: Coudn't find frame for sprite:", spritePath);
     }
+
+    // how to rfl::json :
+    // print(rfl::json::write(sprite));
 }
 
 DrawRect DrawRect::create(Color color, Vector2i frameSize) {

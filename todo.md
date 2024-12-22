@@ -1,6 +1,12 @@
 # To Do 
 
 NEXT GOAL: 
+- tile collision editor usage 
+    - navgrid -> tilemaplayer component 
+    - loadObjectLayer -> takes parent entity, not level object 
+    - current method for checking if a tile is occluder (seeing if direct child has a collider) won't work. Should start using tags
+        - could also go Godot route and draw custom occluder shape, but that might be overcomplicated + annoying
+
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 

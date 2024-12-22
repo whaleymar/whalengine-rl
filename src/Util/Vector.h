@@ -164,6 +164,10 @@ struct Vector2 {
             return as<f32>().lerp(other.as<f32>(), t).round();
         }
     }
+
+    // reflect-cpp compatibility:
+    using ReflectionType = rl::Vector2;
+    const ReflectionType reflection() const { return asRL(); }
 };
 
 template <typename T>
