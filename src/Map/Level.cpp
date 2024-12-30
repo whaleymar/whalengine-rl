@@ -16,16 +16,11 @@
 
 namespace whal {
 
-void ActiveLevel::activateObjects() {
-    for (auto entity : objects) {
-        entity.activate();
-    }
-}
-
-void ActiveLevel::deactivateObjects() {
-    for (auto entity : objects) {
-        entity.deactivate();
-    }
+ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset_, Scene& parent) : Level(base), worldOffset(worldOffset_) {
+    self = World.entity();
+    self.set(Transform::world(worldOffset_.as<f32>()));
+    TileMap::load(base.filepath.c_str(), *this);
+    parent.loadedLevels.push_back(*this);
 }
 
 bool Scene::isValid() const {
@@ -107,11 +102,10 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
+    // TODO remove worldOffset, Level base class already has a world position which is slightly different and this one is barely used:
     Vector2i worldOffset(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y);
-    ActiveLevel lvl = {level, {}, {}, worldOffset, {}, {}, {}};
-    TileMap::load(level.filepath.c_str(), lvl);
+    auto lvl = ActiveLevel(level, worldOffset, System::getGame().getScene());
     print("loaded map: ", level.filepath);
-    System::getGame().getScene().loadedLevels.push_back(lvl);
 
     return NULLOPT;
 }
@@ -136,10 +130,7 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
 void unloadLevel(ActiveLevel& level) {
     const bool wasPaused = System::isQuietPaused();
     System::setQuietPaused(true);
-    std::set<ecs::Entity> toKill = std::move(level.childEntities);
-    for (auto entity : toKill) {
-        entity.kill();
-    }
+    level.self.kill();
     print("unloaded level:", level.filepath);
     System::setQuietPaused(wasPaused);
 }

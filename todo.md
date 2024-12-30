@@ -7,6 +7,12 @@ NEXT GOAL:
     - current method for checking if a tile is occluder (seeing if direct child has a collider) won't work. Should start using tags
         - could also go Godot route and draw custom occluder shape, but that might be overcomplicated + annoying
 
+ECS stuff:
+- want to independently toggle when an entity is inactive, regardless of its parent 
+    - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
+    - e.g. parent is active, child is "inactive", so child is inactive 
+    - e.g. parent is active, child is "active", so child is active
+
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - want to edit Input mappings and add custom Input Enum values from Game 

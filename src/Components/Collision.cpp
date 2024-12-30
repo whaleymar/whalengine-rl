@@ -80,19 +80,19 @@ void Collider::updateEntityPosition() {
     Vector2i newPosition = trans.applyInverse(shape.getPosition(), getOffset());
 
     // make sure player(s) can't go out of bounds
-    if (mSelf.has<Player>()) {
-        if (System::getGame().getScene().getLevelAt(newPosition)) {
-            trans.setPosition(newPosition.as<f32>(), mSelf);
-        } else {
-            // tried to go out of bounds. simulate fake collision with world boundary
-            const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
-            trans.setPosition(closestPointInBounds.as<f32>(), mSelf);
-            ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
-        }
-
-    } else {
-        trans.setPosition(newPosition.as<f32>(), mSelf);
-    }
+    // if (mSelf.has<Player>()) {
+    //     if (System::getGame().getScene().getLevelAt(newPosition)) {
+    //         trans.setPosition(newPosition.as<f32>(), mSelf);
+    //     } else {
+    //         // tried to go out of bounds. simulate fake collision with world boundary
+    //         const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
+    //         trans.setPosition(closestPointInBounds.as<f32>(), mSelf);
+    //         ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
+    //     }
+    //
+    // } else {
+    trans.setPosition(newPosition.as<f32>(), mSelf);
+    // }
 
     if (mSelf.has<Trigger>()) {
         auto trigger = mSelf.get<Trigger>();

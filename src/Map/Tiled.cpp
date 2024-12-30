@@ -191,8 +191,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         map->tilesets.push_back(tset);
     }
 
-    const Vector2f origin(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y);
-
     for (const auto& layer : data["layers"]) {
         bool isVisible = readBool(layer, "visible");
         if (!isVisible) {
@@ -202,7 +200,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 
         if (type == "tilelayer") {
             // create an entity with a TileMapLayer component
-            ecs::Entity layerEntity = World.entity(false);
+            ecs::Entity layerEntity = level.self.createChild(false);
             auto _ = ecs::DeferActivate(layerEntity);
             const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
             layerEntity.add(TileMapLayer{
@@ -212,14 +210,10 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                 .collisionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
             layerEntity.add(Name(readString(layer, "name")));
-            // TODO transform should be the center of the layer, not the top left (?) corner
-            Transform trans = Transform::world(Transform::tiles(0, map->heightTiles).position + origin);
+            layerEntity.get<Transform>().translate(Vector2f(0, map->heightTiles) * FPIXELS_PER_TILE, layerEntity);
 
             // this loads chunk size and other metadata:
-            trans.depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
-
-            layerEntity.set(trans);
-            level.childEntities.insert(layerEntity);
+            layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
             createTileMapLayerEntities(layerEntity, level);
 
             // proof of concept for a fun little stage transition:
@@ -238,18 +232,16 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    auto lightEntity = World.entity();
+    auto lightEntity = level.self.createChild();
     if (lightEntity.isValid()) {
-        // idk why but i need 1 tile of extra height
-        auto trans = Transform::world(level.worldOffset + (level.size * 0.5 + Vector2f(-FPIXELS_PER_TILE / 2, FPIXELS_PER_TILE)).as<s32>());
-        trans.depth = Depth::Foreground2;
-        lightEntity.set(trans);
+        lightEntity.set(TransformBuilder(lightEntity.get<Transform>())
+                            .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>(), level.size.y))
+                            .depth(Depth::Foreground2)
+                            .build());
 
         BoxLight boxLight = {
             .radius = 3 * PIXELS_PER_TILE, .heightOffset = 0, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
-
-        level.childEntities.insert(lightEntity);
     } else {
         print("Couldn't allocate entity for level lighting");
     }
@@ -304,13 +296,11 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
 
-        auto entity = World.entity(false);
+        ecs::Entity entity = level.self.createChild(false);
         if (!entity.isValid()) {
             failedToAllocateEntities = true;
             break;
         }
-        level.childEntities.insert(entity);
-        level.objects.push_back(entity);
         idToIndex.insert({id, {ix, entity}});
     }
 
@@ -350,7 +340,8 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
-                level.cameraFocalPoint = getTransformFromMapPosition(cameraPoint, {0, 0}, level, true).positionPx;
+                level.cameraFocalPoint =
+                    (level.self.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO, level.size.y)).as<s32>();
             }
             continue;
         }
@@ -387,9 +378,10 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             entityMapData.isPoint = false;
 
         // add transform
-        Transform trans = getTransformFromMapPosition(entityMapData.position, entityMapData.size, level, entityMapData.isPoint);
-        trans.depth = layerDepth;
-        entity.set(trans);
+        entity.set(TransformBuilder(entity)
+                       .translate(getMapTranslation(entityMapData.position, entityMapData.size, level.size.y))
+                       .depth(layerDepth)
+                       .build());
 
         // add name
         std::string name = "";
@@ -662,7 +654,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
     return NULLOPT;
 }
 
-// convert top-left coordinate to bottom-middle
+// convert top-left coordinate to middle
 Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
     // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
     // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
@@ -671,6 +663,11 @@ Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const Ac
     Transform trans = Transform::world(
         Vector2i(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2) + level.worldOffset);
     return trans;
+}
+
+// converts relative map position (where origin is top-left) to relative world position (origin is the middle)
+Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize, s32 parentHeight) {
+    return Vector2f(mapPosition.x + entitySize.x * 0.5 - PIXELS_PER_TILE / 2, parentHeight - mapPosition.y - entitySize.y / 2 + PIXELS_PER_TILE / 2);
 }
 
 // MAP LOADING STUFF
