@@ -1,7 +1,6 @@
 #include "RailsControl.h"
 
 #include "Components/Transform.h"
-#include "Map/Level.h"
 #include "Map/Tiled.h"
 #include "Map/TiledParse.h"
 #include "Settings.h"
@@ -105,7 +104,7 @@ void RailsControl::prepareForFirstStep(Transform& trans, ecs::Entity e) {
 }
 
 // returns true if checkpoints form a cycle
-static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const ActiveLevel& level) {
+static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const LoadContext& ctx) {
     static const char* KEY_VALUE = "value";
 
     // generic rewrite:
@@ -131,12 +130,11 @@ static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<Ra
         const s32 x = readInt(point, "x");
         const s32 y = readInt(point, "y");
         const Vector2i mapPos = {x + parentX, parentY + y};
-        const Vector2i trans = getTransformFromMapPosition(mapPos, {0, 0}, level, true).positionPx;
+        const Vector2i trans = getMapTransform(mapPos, Vector2i::ZERO, ctx.parent, ctx.parentSize).positionPx;
 
         Ease moveType;
         if (ix >= moveProps.size()) {
-            print("Checkpoints object with ID", readInt(checkpointData, "id"), "in level", level.filepath, "has", moveProps.size(),
-                  "move type params but it has more points");
+            print("Checkpoints object with ID", readInt(checkpointData, "id"), "has", moveProps.size(), "move type params but it has more points");
             moveType = Ease::Linear;
         } else {
             moveType = moveProps[ix];
@@ -158,7 +156,7 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
     if (ctx.values.contains("Checkpoints")) {
         s32 id = ctx.values["Checkpoints"];
         const nlohmann::json checkPointObj = ctx.allObjects.at(ctx.idToIndex.at(id).first);
-        isCycle = loadCheckpoints(checkPointObj, checkpoints, ctx.level);
+        isCycle = loadCheckpoints(checkPointObj, checkpoints, ctx);
     }
 
     RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : RailsControl{};

@@ -7,13 +7,10 @@
 #include "Map/TiledParse.h"
 #include "Util/ISerialize.h"
 #include "Util/Types.h"
+#include "Util/Vector.h"
 #include "rfl/to_view.hpp"
 
 namespace whal {
-
-namespace ecs {
-class Entity;
-}
 
 struct ActiveLevel;
 struct EntityMapData;
@@ -27,7 +24,8 @@ struct LoadContext {
     const nlohmann::json& allObjects;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex;
     const EntityMapData& entityData;
-    const ActiveLevel& level;
+    ecs::Entity parent;
+    Vector2f parentSize;
     bool isTiledData = false;
 };
 

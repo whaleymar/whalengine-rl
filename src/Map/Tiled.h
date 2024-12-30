@@ -38,7 +38,7 @@ class Entity;
 Expected<Sprite> getTileSprite(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
-Transform getTransformFromMapPosition(Vector2i mapPosition, Vector2i entitySize, const ActiveLevel& level, bool isPoint);
+Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent, Vector2f parentSize);
 Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize, s32 parentHeight);
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
 Vector2i getObjectSize(const nlohmann::json& objectData);

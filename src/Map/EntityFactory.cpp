@@ -8,8 +8,8 @@
 
 namespace whal {
 
-static void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
-void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel);
+static void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, ecs::Entity parent, Vector2f parentSize);
+void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, ecs::Entity parent, Vector2f parentSize);
 
 static const NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
     {"DeathTriggerBase", addDeathTriggerCallback},
@@ -18,14 +18,14 @@ static const NameToCreator<EntityBuilder> S_ENTITY_ENTRIES[] = {
 
 EntityFactory::EntityFactory() : DynamicFactory<EntityBuilder>("EntityFactory", S_ENTITY_ENTRIES) {}
 
-void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+void addDeathTriggerCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, ecs::Entity parent, Vector2f parentSize) {
     if (!entity.has<Trigger>()) {
         entity.add<Trigger>();
     }
     entity.get<Trigger>().onTriggerEnter = [](ecs::Entity self, ecs::Entity other) { other.kill(); };
 }
 
-void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, const ActiveLevel& activeLevel) {
+void addDeathCollisionCallback(ecs::Entity entity, const nlohmann::json& tiledTemplate, ecs::Entity parent, Vector2f parentSize) {
     if (!entity.has<Collider>()) {
         entity.add<Collider>();
     }

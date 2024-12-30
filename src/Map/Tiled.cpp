@@ -39,7 +39,7 @@ std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = 
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
-static void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level);
+static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f parentSize, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
@@ -54,7 +54,7 @@ void clearMapCache() {
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
-                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, const ActiveLevel& level) {
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, ecs::Entity parent, Vector2f parentSize) {
     if (!object.contains("properties")) {
         return;
     }
@@ -70,11 +70,11 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
                 std::string path = whal_format("templates/{}.tj", newTemplateFile);
                 const auto& newPrefab = getTemplate(path);
-                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, level);
+                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, parent, parentSize);
                 EntityBuilder builderFunc = nullptr;
                 Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
-                    builderFunc(entity, newPrefab, level);
+                    builderFunc(entity, newPrefab, parent, parentSize);
                 }
             } else if (componentName == "SpriteMaskBlending") {
                 // skip, handled in tileset logic
@@ -89,7 +89,8 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             .allObjects = allObjects,
             .idToIndex = idToIndex,
             .entityData = entityData,
-            .level = level,
+            .parent = parent,
+            .parentSize = parentSize,
             .isTiledData = true,
         };
 
@@ -143,29 +144,16 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             };
 
             // this call is safe even if the tile doesn't have any top-level components
-            addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level);
+            addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level.self, level.size);
 
-            // if (tiledata.contains("objectgroup")) {
-            // tiles can have child objects (created with the collision editor)
-            // for each of these, we'll create a child entity and add its components
-
-            // for (const auto& object : tiledata["objectgroup"]["objects"]) {
-            // TODO I really should run `loadObjectLayer` here, as it's designed to parse a list of objects just like this. And it handles
-            // complex stuff like points, prefabs, etc. The only change I need is for it to take a parent entity & use that parent entity's
-            // transform as the root position. This will work well since I wanted to make levels Entities anyway... but now this change is
-            // becoming a lot of work...
-
-            // ecs::Entity child = e.createChild(false);
-            // const Vector2i offset = readVector2i(object);
-            // RESEARCH boolean flag on transform methods "updateChildren", default to true, can set it to false in situations
-            // like these where I know there are no children. Saves an expensive (ish) dict lookup
-
-            // child.get<Transform>().translate(offset.as<f32>(), child);
-            // addComponents(child, mapData, object, emptyJson, emptyIdToIndex, level);
-            // }
-            // }
+            if (tiledata.contains("objectgroup")) {
+                // tiles can have child objects (created with the collision editor)
+                // for each of these, we'll create a child entity and add its components
+                loadObjectLayer(tiledata["objectgroup"], e, Vector2f::ZERO, nullptr);
+            }
 
             // For simplicity, tiles with collision also block light, vision, and pathing
+            // This doesn't work if the collision is added with the collision editor.
             if (e.has<Collider>()) {
                 layer.collisionMask[ix] = true;
                 e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
@@ -222,7 +210,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
-            loadObjectLayer(layer, level);
+            loadObjectLayer(layer, level.self, level.size, &level);
         } else if (type == "imagelayer") {
             // parseImageLayer(layer, level);
             print("parseImageLayer disabled!");
@@ -284,8 +272,10 @@ Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
     return layerDepth;
 }
 
-// this will create entities and immediately add them to the level
-void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
+// parses Tiled object info to create entities as children of the given parent.
+// If levelOpt is not null*, then metadata will be parsed for the level as well.
+// *should not be null when parsing a true object layer. Can be null when parsing a nested objectgroup (like tile collision data).
+void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f parentSize, ActiveLevel* levelOpt) {
     using json = nlohmann::json;
 
     const Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -296,7 +286,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
 
-        ecs::Entity entity = level.self.createChild(false);
+        ecs::Entity entity = parent.createChild(false);
         if (!entity.isValid()) {
             failedToAllocateEntities = true;
             break;
@@ -305,7 +295,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
     }
 
     if (failedToAllocateEntities) {
-        print("Failed to allocate entities for level ", level.filepath);
+        print("Failed to allocate entities for level ");
 
         // kill entities that we already made:
         for (auto [id, pair] : idToIndex) {
@@ -335,13 +325,13 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             print("skipping object ID", readInt(object, "id"), "because it didn't have a type");
             continue;
         }
-        if (objType != "Entity") {
+        if (levelOpt != nullptr && objType != "Entity") {
             // check for metadata
 
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
-                level.cameraFocalPoint =
-                    (level.self.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO, level.size.y)).as<s32>();
+                levelOpt->cameraFocalPoint =
+                    (parent.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO, parentSize.y)).as<s32>();
             }
             continue;
         }
@@ -379,7 +369,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
 
         // add transform
         entity.set(TransformBuilder(entity)
-                       .translate(getMapTranslation(entityMapData.position, entityMapData.size, level.size.y))
+                       .translate(getMapTranslation(entityMapData.position, entityMapData.size, parentSize.y))
                        .depth(layerDepth)
                        .build());
 
@@ -393,7 +383,7 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
         if (pPrefab) {
             // add template components
             entityMapData.isParsingTemplate = true;
-            addComponents(entity, entityMapData, *pPrefab, objects, idToIndex, level);
+            addComponents(entity, entityMapData, *pPrefab, objects, idToIndex, parent, parentSize);
             entityMapData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
@@ -401,18 +391,12 @@ void loadObjectLayer(const nlohmann::json& layer, ActiveLevel& level) {
             EntityBuilder builderFunc = nullptr;
             Prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
-                // print("got template entry for", name);
-                builderFunc(entity, *pPrefab, level);
-                // } else {
-                //     print("did NOT got template entry for", name);
-                //     print("prefab name is ", prefabName.c_str());
+                builderFunc(entity, *pPrefab, parent, parentSize);
             }
-            // } else {
-            //     print(name, "does not have prefab");
         }
 
         // add object components with factory
-        addComponents(entity, entityMapData, object, objects, idToIndex, level);
+        addComponents(entity, entityMapData, object, objects, idToIndex, parent, parentSize);
     }
 }
 
@@ -654,15 +638,8 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
     return NULLOPT;
 }
 
-// convert top-left coordinate to middle
-Transform getTransformFromMapPosition(Vector2i position, Vector2i size, const ActiveLevel& level, bool isPoint) {
-    // subtract (remember y=0 is top of map, so using +) half a tile of height to each point, since they describe the top of an object, but
-    // Transform describes the bottom. Also Tiled is STUPID and uses different coordinate systems for tiles -- I turned on the setting for object
-    // heights to match tiles
-
-    Transform trans = Transform::world(
-        Vector2i(position.x + size.x * 0.5 - PIXELS_PER_TILE / 2, level.size.y - position.y - size.y / 2 + PIXELS_PER_TILE / 2) + level.worldOffset);
-    return trans;
+Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent, Vector2f parentSize) {
+    return TransformBuilder(parent).translate(getMapTranslation(mapPosition, entitySize, parentSize.y)).build();
 }
 
 // converts relative map position (where origin is top-left) to relative world position (origin is the middle)
