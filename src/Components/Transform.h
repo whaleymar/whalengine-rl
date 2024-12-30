@@ -139,6 +139,7 @@ class TransformBuilder {
 public:
     TransformBuilder() = default;
     TransformBuilder(const Transform&);
+    TransformBuilder(ecs::Entity);
     TransformBuilder& translate(Vector2f moveAmount);
     TransformBuilder& scaleBy(Vector2f mult);
     TransformBuilder& rotate(f32 degrees);

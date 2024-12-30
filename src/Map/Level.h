@@ -15,6 +15,7 @@
 namespace whal {
 
 struct TileMap;
+struct Scene;
 
 struct Level {
     struct MetaData {
@@ -30,16 +31,14 @@ struct Level {
 };
 
 struct ActiveLevel : public Level {
-    std::set<ecs::Entity> childEntities;
-    std::vector<ecs::Entity> objects;
+    ActiveLevel(const Level& base, Vector2i worldOffset_, Scene& parent);
+
+    ecs::Entity self;
     Vector2i worldOffset;
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
-
-    void activateObjects();
-    void deactivateObjects();
 };
 
 struct Scene {

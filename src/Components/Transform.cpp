@@ -239,6 +239,8 @@ void Transform::draw() const {
 
 TransformBuilder::TransformBuilder(const Transform& trans) : mTrans(trans) {}
 
+TransformBuilder::TransformBuilder(ecs::Entity entity) : mTrans(entity.get<Transform>()) {}
+
 TransformBuilder& TransformBuilder::translate(Vector2f moveAmount) {
     mTrans.position += moveAmount;
     mTrans.localPosition += moveAmount;
