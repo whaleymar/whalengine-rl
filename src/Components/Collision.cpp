@@ -79,6 +79,7 @@ void Collider::updateEntityPosition() {
     auto const shape = getShape();
     Vector2i newPosition = trans.applyInverse(shape.getPosition(), getOffset());
 
+    // TODO this broke
     // make sure player(s) can't go out of bounds
     // if (mSelf.has<Player>()) {
     //     if (System::getGame().getScene().getLevelAt(newPosition)) {

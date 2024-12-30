@@ -1,13 +1,6 @@
 # To Do 
 
 NEXT GOAL: 
-- tile collision editor usage 
-    - navgrid -> tilemaplayer component 
-    - loadObjectLayer -> takes parent entity, not level object 
-    - current method for checking if a tile is occluder (seeing if direct child has a collider) won't work. Should start using tags
-        - could also go Godot route and draw custom occluder shape, but that might be overcomplicated + annoying
-
-ECS stuff:
 - want to independently toggle when an entity is inactive, regardless of its parent 
     - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
     - e.g. parent is active, child is "inactive", so child is inactive 
@@ -57,10 +50,7 @@ ECS stuff:
 - put tiled project in game's root directory so paths are easier to work with
     - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?
 - respawn map objects
-- background/foreground layers should be written to a texture?
-- if a tile overlaps one in a different layer, should only keep the one nearest to the camera? Would be nice for optimizations, but breaks down for something like foreground tiles?
-- Should use the Tiled collision editor for tile collision
-- refactory the Scene/Level hierarchy to use entities
+- refactor the Scene/Level hierarchy to use entities
     - (maybe) keep scenes as is, but levels could be entities
 
 ## Sprite Editing workflow

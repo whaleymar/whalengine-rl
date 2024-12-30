@@ -34,7 +34,6 @@ struct ActiveLevel : public Level {
     ActiveLevel(const Level& base, Vector2i worldOffset_, Scene& parent);
 
     ecs::Entity self;
-    Vector2i worldOffset;
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;

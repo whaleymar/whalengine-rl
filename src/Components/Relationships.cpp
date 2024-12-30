@@ -27,7 +27,7 @@ void Attach::loadImpl(ecs::Entity entity, void* data) {
     // other isn't guaranteed to have been parsed. Calculate its transform manually
     const auto& targetObj = ctx.allObjects[ctx.idToIndex.at(targetId).first];
     Vector2i otherDims = getObjectSize(targetObj);
-    const Vector2i otherPosition = getTransformFromMapPosition(readVector2i(targetObj), otherDims, ctx.level, false).positionPx;
+    const Vector2i otherPosition = getMapTransform(readVector2i(targetObj), otherDims, ctx.parent, ctx.parentSize).positionPx;
 
     entity.get<Transform>().translate((thisPosition - otherPosition).as<f32>(), entity);
 }
@@ -61,11 +61,8 @@ void Orbit::loadImpl(ecs::Entity entity, void* data) {
     s32 shapeId = readInt(ctx.values, "Target");
     const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
     Vector2i otherDimensions = Vector2i::ZERO;
-    bool isPoint = true;
-    if (tryRead(shapeObj, "width", "height", &otherDimensions)) {
-        isPoint = false;
-    }
-    const Vector2i otherTrans = getTransformFromMapPosition(readVector2i(shapeObj), otherDimensions, ctx.level, isPoint).positionPx;
+    tryRead(shapeObj, "width", "height", &otherDimensions);
+    const Vector2i otherTrans = getMapTransform(readVector2i(shapeObj), otherDimensions, ctx.parent, ctx.parentSize).positionPx;
 
     orbit.radius = std::round((entityTrans - otherTrans).as<f32>().len());
     orbit.targetID = ctx.idToIndex.at(shapeId).second.id();
