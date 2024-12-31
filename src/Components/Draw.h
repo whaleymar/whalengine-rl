@@ -48,6 +48,7 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
 
     static void loadImpl(ecs::Entity entity, void* data);
 };
+// constexpr bool asdf = is_base_of_template<ISerialize, Sprite>::value;
 
 struct DrawRect : ISerialize<DrawRect, ComponentFactory> {
     static DrawRect create(Color color = Colors::White, Vector2i frameSize = {8, 8});
