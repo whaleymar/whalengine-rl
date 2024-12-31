@@ -130,7 +130,7 @@ static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<Ra
         const s32 x = readInt(point, "x");
         const s32 y = readInt(point, "y");
         const Vector2i mapPos = {x + parentX, parentY + y};
-        const Vector2i trans = getMapTransform(mapPos, Vector2i::ZERO, ctx.parent, ctx.parentSize).positionPx;
+        const Vector2i trans = getMapTransform(mapPos, Vector2i::ZERO, ctx.parent).positionPx;
 
         Ease moveType;
         if (ix >= moveProps.size()) {

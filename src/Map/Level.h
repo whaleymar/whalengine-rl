@@ -31,7 +31,7 @@ struct Level {
 };
 
 struct ActiveLevel : public Level {
-    ActiveLevel(const Level& base, Vector2i worldOffset_, Scene& parent);
+    ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent);
 
     ecs::Entity self;
 

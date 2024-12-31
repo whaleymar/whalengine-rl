@@ -16,9 +16,9 @@
 
 namespace whal {
 
-ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset_, Scene& parent) : Level(base) {
+ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent) : Level(base) {
     self = World.entity();
-    self.set(Transform::world(worldOffset_.as<f32>()));
+    self.set(Transform::world(worldOffset.as<f32>()));
     TileMap::load(base.filepath.c_str(), *this);
     parent.loadedLevels.push_back(*this);
 }
@@ -102,7 +102,7 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffset(level.worldPosOrigin.x, level.worldPosOrigin.y - level.size.y);
+    Vector2i worldOffset(level.worldPosOrigin.x, level.worldPosOrigin.y);
     auto lvl = ActiveLevel(level, worldOffset, System::getGame().getScene());
     print("loaded map: ", level.filepath);
 
