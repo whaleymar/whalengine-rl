@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "json_fwd.hpp"
 
+#include <rfl/json.hpp>
 #include "Map/TiledParse.h"
 #include "Util/ISerialize.h"
 #include "Util/Types.h"
@@ -28,6 +29,12 @@ struct LoadContext {
     Vector2f parentSize;
     bool isTiledData = false;
 };
+
+// not working...
+// template <typename T, typename = void>
+// struct IsSerializable : std::false_type {};
+// template <typename T>
+// struct IsSerializable<T, std::void_t<decltype(rfl::json::write(std::declval<T>()))>> : std::true_type {};
 
 // loadImpl stub:
 // void ::loadImpl(ecs::Entity entity, void* data) {
@@ -58,10 +65,19 @@ struct ComponentFactory : SerializeFactory<ComponentFactory> {
     }
 
     template <typename T>
+    // requires(IsSerializable<T>())
     static void* DefaultSaveImpl(ecs::Entity entity) {
         // print("Running ComponentFactoryNew::DefaultSaveImpl");
+        // std::string data = rfl::json::write(entity.get<T>());
+        // print(data);
         return nullptr;
     }
+
+    // template <typename T>
+    // requires(!IsSerializable<T>())
+    // static void* DefaultSaveImpl(ecs::Entity entity) {
+    //     return nullptr;
+    // }
 
     // TODO these are currently UNUSED. They probably have more information than I need for parsing enums
 
