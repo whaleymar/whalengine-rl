@@ -39,7 +39,7 @@ std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = 
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
-static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f parentSize, ActiveLevel* levelOpt = nullptr);
+static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const nlohmann::json& getTemplate(std::string_view templateFile);
 static const nlohmann::json& getMapFile(std::string_view mapFile);
@@ -54,7 +54,7 @@ void clearMapCache() {
 }
 
 static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
-                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, ecs::Entity parent, Vector2f parentSize) {
+                          const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, ecs::Entity parent) {
     if (!object.contains("properties")) {
         return;
     }
@@ -70,11 +70,11 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
                 std::string path = whal_format("templates/{}.tj", newTemplateFile);
                 const auto& newPrefab = getTemplate(path);
-                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, parent, parentSize);
+                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, parent);
                 EntityBuilder builderFunc = nullptr;
                 Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
-                    builderFunc(entity, newPrefab, parent, parentSize);
+                    builderFunc(entity, newPrefab, parent);
                 }
             } else if (componentName == "SpriteMaskBlending") {
                 // skip, handled in tileset logic
@@ -90,7 +90,6 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             .idToIndex = idToIndex,
             .entityData = entityData,
             .parent = parent,
-            .parentSize = parentSize,
             .isTiledData = true,
         };
 
@@ -144,12 +143,12 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             };
 
             // this call is safe even if the tile doesn't have any top-level components
-            addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level.self, level.size);
+            addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level.self);
 
             if (tiledata.contains("objectgroup")) {
                 // tiles can have child objects (created with the collision editor)
                 // for each of these, we'll create a child entity and add its components
-                loadObjectLayer(tiledata["objectgroup"], e, Vector2f::ZERO, nullptr);
+                loadObjectLayer(tiledata["objectgroup"], e, nullptr);
             }
 
             // For simplicity, tiles with collision also block light, vision, and pathing
@@ -198,7 +197,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                 .collisionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
             layerEntity.add(Name(readString(layer, "name")));
-            layerEntity.get<Transform>().translate(Vector2f(0, map->heightTiles) * FPIXELS_PER_TILE, layerEntity);
 
             // this loads chunk size and other metadata:
             layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
@@ -210,7 +208,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
-            loadObjectLayer(layer, level.self, level.size, &level);
+            loadObjectLayer(layer, level.self, &level);
         } else if (type == "imagelayer") {
             // parseImageLayer(layer, level);
             print("parseImageLayer disabled!");
@@ -223,7 +221,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     auto lightEntity = level.self.createChild();
     if (lightEntity.isValid()) {
         lightEntity.set(TransformBuilder(lightEntity.get<Transform>())
-                            .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>(), level.size.y))
+                            .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>()))
                             .depth(Depth::Foreground2)
                             .build());
 
@@ -275,7 +273,7 @@ Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
 // parses Tiled object info to create entities as children of the given parent.
 // If levelOpt is not null*, then metadata will be parsed for the level as well.
 // *should not be null when parsing a true object layer. Can be null when parsing a nested objectgroup (like tile collision data).
-void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f parentSize, ActiveLevel* levelOpt) {
+void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt) {
     using json = nlohmann::json;
 
     const Depth layerDepth = getLayerDepth(layer, Depth::Level);
@@ -330,8 +328,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f p
 
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
-                levelOpt->cameraFocalPoint =
-                    (parent.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO, parentSize.y)).as<s32>();
+                levelOpt->cameraFocalPoint = (parent.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO)).as<s32>();
             }
             continue;
         }
@@ -368,10 +365,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f p
             entityMapData.isPoint = false;
 
         // add transform
-        entity.set(TransformBuilder(entity)
-                       .translate(getMapTranslation(entityMapData.position, entityMapData.size, parentSize.y))
-                       .depth(layerDepth)
-                       .build());
+        entity.set(TransformBuilder(entity).translate(getMapTranslation(entityMapData.position, entityMapData.size)).depth(layerDepth).build());
 
         // add name
         std::string name = "";
@@ -383,7 +377,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f p
         if (pPrefab) {
             // add template components
             entityMapData.isParsingTemplate = true;
-            addComponents(entity, entityMapData, *pPrefab, objects, idToIndex, parent, parentSize);
+            addComponents(entity, entityMapData, *pPrefab, objects, idToIndex, parent);
             entityMapData.isParsingTemplate = false;
 
             // now run prefab factory function to do complicated stuff to components, like adding callbacks
@@ -391,12 +385,12 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, Vector2f p
             EntityBuilder builderFunc = nullptr;
             Prefab.entity.getEntry(prefabName.c_str(), &builderFunc);
             if (builderFunc != nullptr) {
-                builderFunc(entity, *pPrefab, parent, parentSize);
+                builderFunc(entity, *pPrefab, parent);
             }
         }
 
         // add object components with factory
-        addComponents(entity, entityMapData, object, objects, idToIndex, parent, parentSize);
+        addComponents(entity, entityMapData, object, objects, idToIndex, parent);
     }
 }
 
@@ -638,13 +632,13 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
     return NULLOPT;
 }
 
-Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent, Vector2f parentSize) {
-    return TransformBuilder(parent).translate(getMapTranslation(mapPosition, entitySize, parentSize.y)).build();
+Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent) {
+    return TransformBuilder(parent).translate(getMapTranslation(mapPosition, entitySize)).build();
 }
 
 // converts relative map position (where origin is top-left) to relative world position (origin is the middle)
-Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize, s32 parentHeight) {
-    return Vector2f(mapPosition.x + entitySize.x * 0.5 - PIXELS_PER_TILE / 2, parentHeight - mapPosition.y - entitySize.y / 2 + PIXELS_PER_TILE / 2);
+Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize) {
+    return Vector2f(mapPosition.x + entitySize.x * 0.5 - PIXELS_PER_TILE / 2, -mapPosition.y - entitySize.y / 2 + PIXELS_PER_TILE / 2);
 }
 
 // MAP LOADING STUFF
