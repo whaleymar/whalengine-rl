@@ -22,8 +22,8 @@ struct Level {
         bool isWorldEntryPoint = false;
         Color ambientLight = Colors::White;
     };
-    std::string filepath;     // used for level comparisons
-    Vector2f worldPosOrigin;  // top left
+    std::string filepath;  // used for level comparisons
+    Vector2f position;     // top left
     Vector2f size;
     MetaData meta;
 
@@ -45,7 +45,6 @@ struct Scene {
     std::vector<Level> allLevels;
     std::vector<ActiveLevel> loadedLevels;
     Vector2f startPos;
-    std::set<ecs::Entity> childEntities;
     s32 startLevelIx = -1;
 
     bool isValid() const;
