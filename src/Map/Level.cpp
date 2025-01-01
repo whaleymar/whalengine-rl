@@ -48,8 +48,8 @@ Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
 Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
     Vector2f worldPosF = worldPos.as<f32>();
     for (Level lvl : allLevels) {
-        if (worldPosF.x >= lvl.worldPosOrigin.x && worldPosF.x < (lvl.worldPosOrigin.x + lvl.size.x) && worldPosF.y < lvl.worldPosOrigin.y &&
-            worldPosF.y >= (lvl.worldPosOrigin.y - lvl.size.y)) {
+        if (worldPosF.x >= lvl.position.x && worldPosF.x < (lvl.position.x + lvl.size.x) && worldPosF.y < lvl.position.y &&
+            worldPosF.y >= (lvl.position.y - lvl.size.y)) {
             return lvl;
         }
     }
@@ -69,7 +69,7 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     s32 minDistance = 999999;
     Vector2i closestPosition;
     for (Level lvl : allLevels) {
-        const AABB lvlBox((lvl.worldPosOrigin + lvl.size * Vector2f(0.5, -0.5)).as<s32>(), (lvl.size * 0.5).as<s32>());
+        const AABB lvlBox((lvl.position + lvl.size * Vector2f(0.5, -0.5)).as<s32>(), (lvl.size * 0.5).as<s32>());
 
         const auto delta = worldPos - lvlBox.getPosition();
         const auto half = lvlBox.getHalf();
@@ -102,7 +102,7 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffset(level.worldPosOrigin.x, level.worldPosOrigin.y);
+    Vector2i worldOffset(level.position.x, level.position.y);
     auto lvl = ActiveLevel(level, worldOffset, System::getGame().getScene());
     print("loaded map: ", level.filepath);
 

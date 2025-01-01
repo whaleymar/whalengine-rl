@@ -30,8 +30,8 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
 
     // convert world positions into level tile positions
     // level origin is top left, so negate Y values
-    const Vector2i start = (worldToTileCoords(startWorldPosition) - worldToTileCoords(level.worldPosOrigin.as<s32>())) * Vector2i(1, -1);
-    const Vector2i target = (worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.worldPosOrigin.as<s32>())) * Vector2i(1, -1);
+    const Vector2i start = (worldToTileCoords(startWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
+    const Vector2i target = (worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
     // print("converted start & target from ", startWorldPosition, targetWorldPosition, "to", start, target);
 
     const auto comp = [](const pair<f32, Vector2i>& elem1, const pair<f32, Vector2i>& elem2) { return elem1.first > elem2.first; };
