@@ -108,7 +108,7 @@ void Sprite::loadImpl(ecs::Entity entity, void* data) {
 
     // how to rfl::json :
     // print(rfl::json::write(sprite));
-    print(rfl::json::write(entity.get<Transform>()));
+    // print(rfl::json::write(entity.get<Transform>()));
 }
 
 DrawRect DrawRect::create(Color color, Vector2i frameSize) {
