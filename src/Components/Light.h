@@ -2,6 +2,7 @@
 
 #include "Gfx/Color.h"
 #include "Map/ComponentFactory.h"
+#include "Physics/Shapes.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
@@ -15,11 +16,21 @@ struct PointLight : ISerialize<PointLight, ComponentFactory> {
 };
 
 // slower than pointlight, but more control over shape
-struct BoxLight {
+struct BoxLight : ISerialize<BoxLight, ComponentFactory> {
     s32 radius = 1;
-    s32 heightOffset = 0;
+    Vector2i offset;
     Color color = Colors::White;
     Vector2i halfLen;
+
+    static void loadImpl(ecs::Entity entity, void* data) {
+        const LoadContext& ctx = *static_cast<LoadContext*>(data);
+        BoxLight light = entity.has<BoxLight>() ? entity.get<BoxLight>() : BoxLight{};
+
+        tryRead(ctx.values, "color", &light.color);
+        tryRead(ctx.values, "radius", &light.radius);
+        light.halfLen = readShapeOrDefault(ctx, entity, "Shape", &light.offset).getAABB().getHalf();
+        entity.add(light);
+    }
 };
 
 struct ShadowLight {

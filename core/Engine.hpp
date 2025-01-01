@@ -120,6 +120,7 @@ public:
         EngineIsQuit = getSymbol<BoolCB>("_EngineIsQuit");
         EngineUpdate = getSymbol<Callback>("_EngineUpdate");
         EngineEnd = getSymbol<Callback>("_EngineEnd");
+        EngineIsHotReload = getSymbol<BoolCB>("_EngineIsHotReloadRequested");
         GetWindowWidth = getSymbol<IntGetter>("WhalGetRenderWidth");
         GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
         GetTargetFPS = getSymbol<IntGetter>("WhalGetTargetFPS");
@@ -147,6 +148,7 @@ public:
         EngineIsQuit = _EngineIsQuit;
         EngineUpdate = _EngineUpdate;
         EngineEnd = _EngineEnd;
+        EngineIsHotReload = _EngineIsHotReloadRequested;
         GetWindowWidth = WhalGetRenderWidth;
         GetWindowHeight = WhalGetRenderHeight;
         GetTargetFPS = WhalGetTargetFPS;
@@ -186,6 +188,7 @@ public:
     GameDestructor DestroyGameCB;
     BoolCB GetEditorMode;
     BoolSetter SetEditorMode;
+    BoolCB EngineIsHotReload;
 
 private:
     void* mLibHandle = nullptr;
@@ -264,7 +267,7 @@ public:
             mGameHandler.EngineUpdate();
             // hot reloading
 #if defined(DYNLIB)
-            if (IsKeyPressed(rl::KEY_R)) {
+            if (mGameHandler.EngineIsHotReload()) {
                 // maintain previous editor state
                 const bool isEditorMode = mGameHandler.GetEditorMode();
 

@@ -59,6 +59,8 @@ struct System {
     // Sets the main game update method, which will run once every frame
     static void setGameUpdate(UpdateFunction updateFunc);
 
+    static void hotReload();
+
     // PRIVATE
     // Initializes the modules.
     // Assumes raylib context is initialized.
@@ -79,4 +81,5 @@ void _EngineSleep(float seconds);
 bool _EngineIsQuit();
 void _EngineUpdate();
 void _EngineEnd();
+bool _EngineIsHotReloadRequested();
 }

@@ -27,6 +27,7 @@ static bool S_IS_PAUSED = false;
 static bool S_IS_QUIT = false;
 static bool S_IS_STARTED = false;
 static System::UpdateFunction S_UPDATE_FUNCTION = nullptr;
+static bool S_DO_HOTRELOAD = false;
 
 void System::setPaused(bool pause) {
     S_IS_PAUSED = pause;
@@ -146,6 +147,10 @@ void System::setGameUpdate(UpdateFunction updateFunc) {
     S_UPDATE_FUNCTION = updateFunc;
 }
 
+void System::hotReload() {
+    S_DO_HOTRELOAD = true;
+}
+
 }  // namespace whal
 
 bool _EngineStart() {
@@ -178,4 +183,12 @@ void _EngineUpdate() {
 
 void _EngineEnd() {
     whal::System::end();
+}
+
+bool _EngineIsHotReloadRequested() {
+    if (whal::S_DO_HOTRELOAD) {
+        whal::S_DO_HOTRELOAD = false;
+        return true;
+    }
+    return false;
 }

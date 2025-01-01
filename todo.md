@@ -13,7 +13,6 @@ NEXT GOAL:
 - editing globals like physics gravity/friction values from game -> put in Settings.cpp
 
 ## Components (some of these are duplicates of other tasks)
-- BoxLight in map 
 - BlocksAiPathing?
 - dashed line
 - parallax factor
@@ -39,8 +38,6 @@ NEXT GOAL:
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline
-    - rebuild & reload the texture atlas
-    - recompile the game (hot reload)
 
 ## Triggers 
 - consolidate with colliders like unity. Makes a lot less work :) 
@@ -67,9 +64,6 @@ NEXT GOAL:
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
 
 ## Rendering Performance (if needed)
-- tile performance: abandon depth sorting individual tiles. Draw 1 layer at a time.
-    - ACTUALLY make it a configurable flag per-layer. This way layers that need player interaction can still be sorted right
-    - this opens the door for cool stuff like tileset-specific texture overlay uniforms
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - one of these:
@@ -80,8 +74,6 @@ NEXT GOAL:
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children
-- Parent component so it's easier to know if a killed entity should be removed from any child lists
-- cursor does not have precise position -- looks dumb with moving camera
 
 ## Misc (low priority)
 - ECS parallelization (low priority)

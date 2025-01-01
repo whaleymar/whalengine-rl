@@ -226,7 +226,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                             .build());
 
         BoxLight boxLight = {
-            .radius = 3 * PIXELS_PER_TILE, .heightOffset = 0, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
+            .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
     } else {
         print("Couldn't allocate entity for level lighting");
