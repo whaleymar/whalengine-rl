@@ -21,7 +21,7 @@ Shader::Shader(const char* vsPath, const char* fsPath) : mVertPath(vsPath), mFra
 }
 
 Shader::~Shader() {
-    if (mIsReady) {
+    if (mIsReady && rl::IsWindowReady()) {
         rl::UnloadShader(mHandle);
     }
 }

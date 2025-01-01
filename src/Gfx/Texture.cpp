@@ -8,19 +8,19 @@
 #include <string>
 
 #include "Gfx/RaylibUtil.h"
-#include "Gfx/ShaderManager.h"
 #include "Settings.h"
 
-#include "Sys/System.h"
 #include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
-#include "imgui.h"
 
 #define RAPIDXML_NO_EXCEPTIONS
 #include "RapidXML/rapidxml.hpp"
 
 #ifndef NDEBUG
+#include "Gfx/ShaderManager.h"
+#include "Sys/System.h"
+#include "imgui.h"
 #include "rfl/enums.hpp"
 #endif
 
@@ -183,6 +183,9 @@ TextureManager::TextureManager() {
 }
 
 TextureManager::~TextureManager() {
+    if (!rl::IsWindowReady()) {
+        return;
+    }
     unloadAll();
     constexpr s32 rtLen = static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME);
     for (size_t i = 0; i < rtLen; i++) {

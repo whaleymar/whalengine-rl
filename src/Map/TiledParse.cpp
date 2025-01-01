@@ -1,6 +1,7 @@
 #include "TiledParse.h"
 
 #include "Map/Tiled.h"
+#include "Physics/Shapes.h"
 #include "Util/DebugUtil.h"
 #include "Util/Vector.h"
 #include "json.hpp"

@@ -1,6 +1,7 @@
 #include "ParticleEmitter.h"
 
 #include "Map/TiledParse.h"
+#include "Physics/Shapes.h"
 #include "Util/JsonUtil.h"
 
 namespace whal {
