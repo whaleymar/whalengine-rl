@@ -125,6 +125,8 @@ void System::end() {
     Schedule.await();
     Audio.end();
     ShaderManager::instance().unloadAll();
+    World.clear();
+    S_IS_STARTED = false;
 }
 
 void System::restart(bool resetPlayers) {

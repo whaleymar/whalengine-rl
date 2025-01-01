@@ -122,6 +122,7 @@ void ShaderManager::unloadAll() {
             rl::UnloadShader(S_SHADERS[i]);
         }
     }
+    mUsageMask = 0;
 }
 
 void ShaderManager::reloadShaders() {
