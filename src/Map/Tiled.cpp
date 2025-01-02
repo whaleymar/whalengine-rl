@@ -190,6 +190,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // create an entity with a TileMapLayer component
             ecs::Entity layerEntity = level.self.createChild(false);
             auto _ = ecs::DeferActivate(layerEntity);
+            layerEntity.add(Name(readString(layer, "name")));
             const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
             layerEntity.add(TileMapLayer{
                 .sizeTiles = sizeTiles,
@@ -197,7 +198,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                 .tilemap = map,
                 .collisionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
-            layerEntity.add(Name(readString(layer, "name")));
 
             // this loads chunk size and other metadata:
             layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
@@ -262,6 +262,13 @@ Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
             tryRead(value, "Depth", &layerDepth);
             tryRead(value, "chunkSize", &layer.chunkSize);
             tryRead(value, "isYSorted", &layer.isYSorted);
+
+            std::string overlayPath;
+            if (tryRead(value, "overlayPath", &overlayPath)) {
+                if (isExist(overlayPath.c_str())) {
+                    layer.overlay = rl::LoadTexture(overlayPath.c_str());
+                }
+            }
 
             return layerDepth;
         }

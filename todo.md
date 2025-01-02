@@ -20,9 +20,7 @@ NEXT GOAL:
 ## Gfx 
 - need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
     - Float component works for this, but needs to be applied to tiles too for interaction to look correct
-- apply texture overlay on tiled and other sprites:
-    - https://godotshaders.com/shader/repeated-texture-overlay-for-tilemaps/
-    - animating it would be sick
+- animate the TileMapLayer overlay texture
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include "Util/Vector.h"
 
@@ -13,6 +14,7 @@ struct TileMapLayer {
     std::vector<s32> ids;
     std::shared_ptr<TileMap> tilemap;
     std::vector<bool> collisionMask;
+    std::optional<rl::Texture> overlay = std::nullopt;
     s32 chunkSize = 16;
     bool isYSorted = false;
 };
