@@ -80,6 +80,7 @@ void ShaderManager::loadShaders() {
         {Shaders::Blur, 0, "whalengine/src/Shader/blur.glsl", Uniforms::Resolution},
         {Shaders::BlurLowRes, 0, "whalengine/src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::LightPassThru, 0, "whalengine/src/Shader/lightpassthrough.glsl"},
+        {Shaders::Overlay, "whalengine/src/Shader/TileOverlayVert.glsl", "whalengine/src/Shader/TileOverlay.glsl"},
         {Shaders::Test, 0, "whalengine/src/Shader/test.glsl"},
     };
 

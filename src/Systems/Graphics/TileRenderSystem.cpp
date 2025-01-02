@@ -5,6 +5,7 @@
 #include "Components/Map.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Map/Tiled.h"
 #include "Physics/Box.h"
@@ -25,6 +26,19 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
     const Vector2f tileSize = Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale;
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
+
+    // this shader could be slightly faster & more ergonomic if I make it a Shader class
+    if (layer.overlay) {
+        // note: overlays will be slow for Y sorted layers
+        auto shader = ShaderManager::get(Shaders::Overlay);
+        rl::BeginShaderMode(shader);
+        auto overlayLoc = rl::GetShaderLocation(shader, "_Overlay");
+        rl::SetShaderValueTexture(shader, overlayLoc, *layer.overlay);
+        auto scaleLoc = rl::GetShaderLocation(shader, "_Scale");
+        rl::Vector2 scale =
+            (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(layer.overlay->width, layer.overlay->height)).asRL();
+        rl::SetShaderValue(shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
+    }
 
     const auto drawTile = [&](s32 x, s32 y, s32 ix, TileInfo tile) {
         // RESEARCH this lookup is SLOW and makes me want to ditch the STL
@@ -129,6 +143,11 @@ void TileRenderSystem::onRemove(ecs::Entity e) {
     // erase from cache
     S_YSORT_RENDERINFO_LUT.erase(e);
     S_YSORT_COORD_LUT.erase(e);
+    TileMapLayer& layer = e.get<TileMapLayer>();
+    if (layer.overlay) {
+        rl::UnloadTexture(*layer.overlay);
+        layer.overlay = std::nullopt;
+    }
 }
 
 std::pair<f32, Facing> getOrientation(TileInfo tile) {
