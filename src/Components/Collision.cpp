@@ -92,7 +92,11 @@ void Collider::updateEntityPosition() {
     //     }
     //
     // } else {
-    trans.setPosition(newPosition.as<f32>(), mSelf);
+
+    // include remainder so movement looks smooth
+    trans.setPosition(newPosition.as<f32>() + getRemainder(), mSelf);
+    // for stability though, the integer position (which the physics system uses) should not include the remainder
+    trans.positionPx = newPosition;
     // }
 
     if (mSelf.has<Trigger>()) {

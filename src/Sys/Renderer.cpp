@@ -56,6 +56,7 @@ Renderer::Renderer() {
     mRaylibCamera.target = rl::Vector2(0.0f, 0.0f);
     mRaylibCamera.zoom = 1.0f;
     mRaylibCamera.rotation = 0.0f;
+    mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 }
 
 void Renderer::init() {
@@ -177,11 +178,13 @@ void Renderer::render() {
     worldCamera.rotation = cameraEntity.get<Transform>().rotation;
 
     // dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
-    auto cameraPosition = cameraEntity.get<Transform>().position;
+    Vector2f cameraPosition = cameraEntity.get<Transform>().position;
     f32 decimal = math::abs(math::remainder(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
         cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
     }
+
+    worldCamera.target = (cameraPosition * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO)).asRL();
 
     const gfx::RenderContext renderContext{
         .cameraPosition = cameraPosition,
@@ -193,7 +196,13 @@ void Renderer::render() {
 
     // 1. IRender and IRenderLight systems are drawn
     drawEntities(renderContext);  // drawn to TextureID::Staging
-    drawLights(renderContext);    // drawn to TextureID::Lighting
+
+    // camera drawn at different resolution, so gotta change camera stuff
+    gfx::RenderContext lightRenderContext = renderContext;
+    lightRenderContext.camera.target = (cameraPosition * Vector2f(1, -1)).asRL();
+    lightRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
+    lightRenderContext.cameraPosition = lightRenderContext.camera.target;
+    drawLights(lightRenderContext);  // drawn to TextureID::Lighting
 
     // posterize before applying lighting
     // TODO should belong to a pre-lighting postprocess pass in camera
@@ -276,7 +285,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
     rl::BeginTextureMode(mStagingTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
-    // rl::BeginMode2D(renderContext.camera);
+    rl::BeginMode2D(renderContext.camera);
     const rl::Shader defaultShader = ShaderManager::get(Shaders::Default);
     for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
         // Make sure we're using the default shader before each entity is drawn.
@@ -285,7 +294,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
         BeginShaderMode(defaultShader);
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
-    // rl::EndMode2D();
+    rl::EndMode2D();
     rl::EndTextureMode();
 
     scaleDepthBuffers(renderContext);

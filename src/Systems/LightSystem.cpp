@@ -33,8 +33,6 @@ void PointLightSystem::onEvent(evt::ShaderReload) {
 }
 
 void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
-    auto cameraPos = getCameraPositionPrecise();
-
     rl::Shader shader = ShaderManager::get(Shaders::PointLight);
     ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::PointLight);
 
@@ -47,8 +45,7 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
         PointLight light = entity.get<PointLight>();
         const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(Vector2i(0, light.heightOffset));
-        const Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
+        const Vector2i screenPosition = Vector2i(worldPosition.x, -worldPosition.y);
         Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component
@@ -81,7 +78,6 @@ void BoxLightSystem::onEvent(evt::ShaderReload) {
 }
 
 void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
-    auto cameraPos = getCameraPositionPrecise();
     rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
 
     const auto randomTexture = Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
@@ -97,8 +93,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         BoxLight light = entity.get<BoxLight>();
         const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(light.offset);
-        Vector2i screenPosition =
-            Vector2i(worldPosition.x - cameraPos.x, -1 * worldPosition.y + cameraPos.y) + Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
+        Vector2i screenPosition = Vector2i(worldPosition.x, -worldPosition.y);
         Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component
@@ -153,6 +148,9 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
+    // whatever convoluted shit I'm doing, I can't make it work with the camera transform...
+    rl::EndMode2D();
+
     // must match what's in spritefrag.glsl
     const f32 depthScalar = 20.0f;
     for (auto [entityid, entity] : getEntities()) {
@@ -161,8 +159,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         const auto light = entity.get<ShadowLight>();
         const auto trans = entity.get<Transform>();
 
-        const Vector2i entityPos = trans.positionPx;
-        const Vector2f screenPos = worldToUVcoords(entityPos.as<f32>() + Vector2f(0, light.heightOffset));
+        const Vector2f screenPos = worldToUVcoords(trans.position + Vector2f(0, light.heightOffset));
         const rl::Vector2 screenPosRL = rl::Vector2(screenPos.x, screenPos.y);
         const f32 lightRadiusPixels = light.radius;
         const f32 lightDepth = static_cast<f32>(trans.depth) / 255.0f * depthScalar;
@@ -178,6 +175,8 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         gfx::DrawRenderTextureHDR(colorTex, light.color);
         rl::EndShaderMode();
     }
+
+    rl::BeginMode2D(ctx.camera);
 }
 
 }  // namespace whal

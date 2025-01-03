@@ -18,7 +18,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     const s32 flipModifier = eCtx.transform.facing == Facing::Left ? -1 : 1;
     const rl::Rectangle srcRect =
         rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * sprite.frameSize.x, sprite.frameSize.y};
-    const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.transform, sprite.frameSize, ctx.cameraPosition);
+    const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.transform, sprite.frameSize);
 
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.transform.rotation, sprite.color.asRL(),
                        eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()));
@@ -36,7 +36,8 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         if (entity.has<Collider>()) {
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
-                .transform = TransformBuilder(trans).translate(entity.get<Collider>().getRemainder()).build(),
+                // .transform = TransformBuilder(trans).translate(entity.get<Collider>().getRemainder()).build(),
+                .transform = trans,
                 .entity = entity,
             });
         } else {

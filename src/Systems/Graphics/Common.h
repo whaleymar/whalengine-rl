@@ -18,7 +18,6 @@ namespace gfx {
 struct RaylibDrawParams {
     rl::Rectangle rect;  // includes position
     rl::Vector2 origin;
-    rl::Vector2 position;  // for convenience
 };
 
 struct RenderContext {
@@ -90,7 +89,7 @@ private:
 
 void clampToPixelGrid(RaylibDrawParams& params);
 
-RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize, Vector2f cameraPosition);
+RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize);
 
 }  // namespace gfx
 }  // namespace whal

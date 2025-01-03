@@ -54,8 +54,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.transform.position;
 
         const rl::Rectangle rect = rl::Rectangle{
-            (worldPosition.x - ctx.cameraPosition.x) * VIRTUAL_SCREEN_RATIO + FWINDOW_WIDTH_RENDER / 2,
-            (ctx.cameraPosition.y - worldPosition.y) * VIRTUAL_SCREEN_RATIO + FWINDOW_HEIGHT_RENDER / 2,
+            worldPosition.x * VIRTUAL_SCREEN_RATIO,
+            -worldPosition.y * VIRTUAL_SCREEN_RATIO,
             tileSize.x,
             tileSize.y,
         };

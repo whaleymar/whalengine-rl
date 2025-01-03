@@ -57,7 +57,7 @@ public:
     bool isJumpAvailable() const { return mIsJumpPressed; }
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
-    Vector2i getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
+    Vector2f getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
 
 private:
     InputHandler(const InputHandler&) = delete;
