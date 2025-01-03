@@ -42,12 +42,12 @@ std::unordered_map<std::string, std::pair<TiledDataType, std::string>> Component
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
 static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
-static const nlohmann::json& getTemplate(std::string_view templateFile);
-static const nlohmann::json& getMapFile(std::string_view mapFile);
-static const nlohmann::json& getWorldFile(std::string_view mapFile);
+static const std::shared_ptr<nlohmann::json> getTemplate(std::string_view templateFile);
+static const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile);
+static const std::shared_ptr<nlohmann::json> getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 static Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth);
-static Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer);
+static Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer);
 
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
@@ -70,12 +70,12 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
                 std::string path = whal_format("templates/{}.tj", newTemplateFile);
-                const auto& newPrefab = getTemplate(path);
-                addComponents(entity, entityData, newPrefab, allObjects, idToIndex, parent);
+                const auto newPrefab = getTemplate(path);
+                addComponents(entity, entityData, *newPrefab, allObjects, idToIndex, parent);
                 EntityBuilder builderFunc = nullptr;
                 Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
                 if (builderFunc != nullptr) {
-                    builderFunc(entity, newPrefab, parent);
+                    builderFunc(entity, *newPrefab, parent);
                 }
             } else if (componentName == "SpriteMaskBlending") {
                 // skip, handled in tileset logic
@@ -127,7 +127,8 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 continue;
             }
 
-            const auto& tiledata = getMapFile(tset.fileName)["tiles"][propsIx];
+            const auto mapFile = getMapFile(tset.fileName);
+            const auto& tiledata = (*mapFile)["tiles"][propsIx];
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
             ecs::Entity e = layerEntity.createChild(false);
@@ -164,22 +165,27 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
 }
 
 void TileMap::load(const char* path, ActiveLevel& level) {
-    const auto& data = getMapFile(path);
+    const auto data = getMapFile(path);
 
     std::shared_ptr<TileMap> map = std::make_shared<TileMap>();
-    map->widthTiles = readInt(data, "width");
-    map->heightTiles = readInt(data, "height");
-    map->tileSize = readInt(data, "tilewidth");
+    map->widthTiles = readInt(*data, "width");
+    map->heightTiles = readInt(*data, "height");
+    map->tileSize = readInt(*data, "tilewidth");
 
-    for (const auto& tileset : data["tilesets"]) {
+    // std::string sdata = data->dump();
+    // print(sdata);
+
+    for (const auto& tileset : (*data)["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
 
         TileSet tset = loadTileset(fileName, firstgid);
         map->tilesets.push_back(tset);
     }
+    // print("AGAIN:");
+    // print(sdata);
 
-    for (const auto& layer : data["layers"]) {
+    for (const auto& layer : (*data)["layers"]) {
         bool isVisible = readBool(layer, "visible");
         if (!isVisible) {
             continue;
@@ -200,7 +206,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             });
 
             // this loads chunk size and other metadata:
-            layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity.get<TileMapLayer>());
+            layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity, layerEntity.get<TileMapLayer>());
             createTileMapLayerEntities(layerEntity, level);
 
             // proof of concept for a fun little stage transition:
@@ -248,10 +254,10 @@ Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth) {
     return layerDepth;
 }
 
-Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
+Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer) {
     Depth layerDepth = Depth::Level;
     if (!data.contains("properties")) {
-        print("layer is missing TileMapInfo property");
+        print(entity.get<Name>(), "layer is missing TileMapInfo property (has no properties field)");
         return layerDepth;
     }
 
@@ -274,7 +280,7 @@ Depth loadTileLayerInfo(const nlohmann::json& data, TileMapLayer& layer) {
         }
     }
 
-    print("layer is missing TileMapInfo property");
+    print(entity.get<Name>(), "layer is missing TileMapInfo property");
     return layerDepth;
 }
 
@@ -342,11 +348,10 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         }
 
         // check for prefab:
-        const nlohmann::json* pPrefab = nullptr;
+        std::shared_ptr<nlohmann::json> pPrefab = nullptr;
         if (object.contains("template")) {
             auto templateFile = readString(object, "template");
-            const auto& prefab = getTemplate(templateFile);
-            pPrefab = &prefab;
+            pPrefab = getTemplate(templateFile);
         }
 
         // now get transform
@@ -403,27 +408,27 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 }
 
 TileSet loadTileset(const std::string& basename, s32 firstgid) {
-    const auto& data = getMapFile(basename);
+    const auto data = getMapFile(basename);
 
-    auto sourceFilePath = readString(data, "image");
+    auto sourceFilePath = readString(*data, "image");
 
     const s32 firstIx = std::max<s32>(sourceFilePath.find_last_of('/'), sourceFilePath.find_last_of('\\')) + 1;
     const s32 lastIx = sourceFilePath.find(".", firstIx);
     const std::string sourceFileBasenameNoExt = sourceFilePath.substr(firstIx, lastIx - firstIx);
 
-    const s32 tileWidth = readInt(data, "tilewidth");
-    const s32 tileHeight = readInt(data, "tileheight");
-    const s32 width = readInt(data, "imagewidth");
-    const s32 height = readInt(data, "imageheight");
+    const s32 tileWidth = readInt(*data, "tilewidth");
+    const s32 tileHeight = readInt(*data, "tileheight");
+    const s32 width = readInt(*data, "imagewidth");
+    const s32 height = readInt(*data, "imageheight");
 
     const s32 widthTiles = width / tileWidth;
     const s32 heightTiles = height / tileHeight;
-    const s32 tilecount = readInt(data, "tilecount");
+    const s32 tilecount = readInt(*data, "tilecount");
 
     std::vector<s32> idToIx(tilecount, -1);
-    if (data.contains("tiles")) {
+    if (data->contains("tiles")) {
         s32 ix = 0;
-        for (const auto& tiledata : data["tiles"]) {
+        for (const auto& tiledata : (*data)["tiles"]) {
             s32 id = readInt(tiledata, "id");
             idToIx[id] = ix++;
         }
@@ -431,8 +436,8 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
 
     std::string maskPath = "";
     bool isAdditiveSpriteMask = false;
-    if (data.contains("properties")) {
-        for (const auto& prop : data["properties"]) {
+    if (data->contains("properties")) {
+        for (const auto& prop : (*data)["properties"]) {
             if (prop["name"] == "SpriteMask") {
                 maskPath = prop["value"];
             } else if (prop["name"] == "SpriteMaskBlending") {
@@ -451,8 +456,8 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
         .tileHeight = tileHeight,
         .widthTiles = widthTiles,
         .heightTiles = heightTiles,
-        .margin = data["margin"],
-        .spacing = data["spacing"],
+        .margin = (*data)["margin"],
+        .spacing = (*data)["spacing"],
         .fileName = basename,
         .spriteFileName = std::move(sourceFileBasenameNoExt),
         .spriteMaskFileName = std::move(maskPath),
@@ -538,7 +543,7 @@ static TiledDataType getDtype(const std::string& name) {
 // parses all the data types in a project
 void parseMapProject(const char* mapfile) {
     const auto data = getWorldFile(mapfile);
-    for (const auto& propType : data["propertyTypes"]) {
+    for (const auto& propType : (*data)["propertyTypes"]) {
         const std::string name = readString(propType, "name");
         const TiledDataType dtype = getDtype(propType["type"]);
         if (dtype == TiledDataType::Enum) {
@@ -586,8 +591,8 @@ void parseMapProject(const char* mapfile) {
 
 // parses a level's parameters and returns its LevelInfo struct
 static Expected<Level::MetaData> parseLevelInfo(const char* lvlFileName) {
-    const auto& data = getMapFile(lvlFileName);
-    for (auto& property : data["properties"]) {
+    const auto data = getMapFile(lvlFileName);
+    for (auto& property : (*data)["properties"]) {
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
@@ -605,14 +610,14 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
     const auto data = getWorldFile(mapfile);
 
 #ifndef NDEBUG
-    std::string type = readString(data, "type");
+    std::string type = readString(*data, "type");
     if (type != "world") {
         return Error("Not a world file");
     }
 #endif
 
     dstScene.name = mapfile;
-    for (auto& map : data["maps"]) {
+    for (auto& map : (*data)["maps"]) {
         std::string filename = map["fileName"];
         s32 x = readInt(map, "x");
         s32 y = readInt(map, "y");
@@ -651,12 +656,12 @@ Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize) {
 
 // MAP LOADING STUFF
 
-const nlohmann::json& getWorldFile(std::string_view mapFile) {
+const std::shared_ptr<nlohmann::json> getWorldFile(std::string_view mapFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
 }
 
-const nlohmann::json& getMapFile(std::string_view mapFile) {
+const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile) {
     // const auto fullPath = whal_format("{}/exports/{}", MAP_DIR, mapFile);
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
@@ -664,15 +669,15 @@ const nlohmann::json& getMapFile(std::string_view mapFile) {
 
 // TEMPLATE STUFF
 
-const nlohmann::json& getTemplate(std::string_view templateFile) {
+const std::shared_ptr<nlohmann::json> getTemplate(std::string_view templateFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
-    return S_TEMPLATE_MANAGER.readData(fullPath.c_str())["object"];
+    return std::make_shared<nlohmann::json>((*S_TEMPLATE_MANAGER.readData(fullPath.c_str()))["object"]);
 }
 
 std::string getTypeFromTemplate(const std::string& templateFile) {
-    const auto& prefabData = getTemplate(templateFile);
+    const auto prefabData = getTemplate(templateFile);
     std::string objType = "";
-    tryRead(prefabData, "type", &objType);
+    tryRead(*prefabData, "type", &objType);
     return objType;
 }
 
@@ -681,8 +686,8 @@ Vector2i getObjectSize(const nlohmann::json& objectData) {
     Vector2i size;
     if (objectData.contains("template")) {
         auto templateFile = readString(objectData, "template");
-        const auto& prefab = getTemplate(templateFile);
-        tryRead(prefab, "width", "height", &size);
+        const auto prefab = getTemplate(templateFile);
+        tryRead(*prefab, "width", "height", &size);
     }
 
     tryRead(objectData, "width", "height", &size);

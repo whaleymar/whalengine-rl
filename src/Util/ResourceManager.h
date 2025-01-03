@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <memory>
 #include <vector>
 #include "Util/FileUtils.h"
 #include "Util/String.h"
@@ -18,12 +19,13 @@ public:
 
     void clearCache() { mCache.clear(); }
 
-    const T& readData(const char* filePath) {
+    std::shared_ptr<T> readData(const char* filePath) {
         for (auto it = mCache.begin(); it != mCache.end(); it++) {
             if (isEqualString(it->path, filePath)) {
                 // found item in cache, move to back
+                auto resource = it->data;
                 std::rotate(it, it + 1, mCache.end());
-                return mCache.back().data;
+                return resource;
             }
         }
 
@@ -35,18 +37,18 @@ public:
         assert(isExist(filePath) && "file path doesn't exist");
 
         std::ifstream file(filePath);
-        T newData;
-        file >> newData;
+        auto newData = std::make_shared<T>();
+        file >> *newData;
 
-        mCache.push_back({filePath, std::move(newData)});
+        mCache.push_back({filePath, newData});
 
-        return mCache.back().data;
+        return newData;
     }
 
 private:
     struct CacheItem {
         std::string path;
-        T data;
+        std::shared_ptr<T> data;
     };
 
     std::vector<CacheItem> mCache;
