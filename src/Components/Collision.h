@@ -110,7 +110,7 @@ public:
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSign, Vector2i moveNormal, Vector2i correctionBuffer);
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 
 protected:
     void updateEntityPosition();

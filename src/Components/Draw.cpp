@@ -77,24 +77,23 @@ void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_v
 }
 }  // namespace stl
 
-void Sprite::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+void Sprite::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
 
     s32 rotation;
-    if (tryRead(ctx.values, "rotationDegrees", &rotation)) {
+    if (tryRead(*ctx.values, "rotationDegrees", &rotation)) {
         entity.get<Transform>().rotation = rotation;
     }
 
-    tryRead(ctx.values, "Color", &sprite.color);
+    tryRead(*ctx.values, "Color", &sprite.color);
 
     f32 brightness;
-    if (tryRead(ctx.values, "Brightness", &brightness)) {
+    if (tryRead(*ctx.values, "Brightness", &brightness)) {
         sprite.color.scale(brightness);
     }
 
     std::string spritePath = "";
-    if (tryRead(ctx.values, "Sprite", &spritePath)) {
+    if (tryRead(*ctx.values, "Sprite", &spritePath)) {
         stl::replace(spritePath.begin(), spritePath.end(), '\\', '/');
     }
     auto eSprite = Sprite::fromPath(spritePath.c_str());
@@ -118,27 +117,25 @@ DrawRect DrawRect::create(Color color, Vector2i frameSize) {
     };
 }
 
-void DrawRect::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+void DrawRect::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DrawRect{};
     draw.frameSize = ctx.entityData.size;
 
-    tryRead(ctx.values, "Color", &draw.color);
+    tryRead(*ctx.values, "Color", &draw.color);
 
     f32 brightness;
-    if (tryRead(ctx.values, "Brightness", &brightness)) {
+    if (tryRead(*ctx.values, "Brightness", &brightness)) {
         draw.color.scale(brightness);
     }
     entity.add(draw);
 }
 
-void DrawText::loadImpl(ecs::Entity entity, void* data) {
+void DrawText::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     DrawText text = entity.has<DrawText>() ? entity.get<DrawText>() : DrawText{};
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
 
-    tryRead(ctx.values, "color", &text.color);
-    tryRead(ctx.values, "text", &text.text);
-    tryRead(ctx.values, "center", &text.isCentered);
+    tryRead(*ctx.values, "color", &text.color);
+    tryRead(*ctx.values, "text", &text.text);
+    tryRead(*ctx.values, "center", &text.isCentered);
     text.frameSize = ctx.entityData.size;
     entity.add(text);
 }

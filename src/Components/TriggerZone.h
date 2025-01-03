@@ -29,7 +29,7 @@ struct Trigger : ISerialize<Trigger, ComponentFactory> {
     TriggerCallback onTriggerStay = nullptr;
     std::vector<ecs::Entity> insideEntities;
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 }  // namespace whal

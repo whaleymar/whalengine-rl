@@ -124,23 +124,22 @@ s32 Animation::getFrameCount() const {
     return frames.size();
 }
 
-void Animator::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+void Animator::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
-    std::string animatorName = readString(ctx.values, "Animator");
+    std::string animatorName = readString(*ctx.values, "Animator");
     Animator animator = AnimationFactory::get(animatorName.c_str());
     entity.add(animator);
     sprite.setFrame(animator.getFrame());
 
     s32 rotation;
-    if (tryRead(ctx.values, "rotationDegrees", &rotation)) {
+    if (tryRead(*ctx.values, "rotationDegrees", &rotation)) {
         entity.get<Transform>().rotation = rotation;
     }
 
-    tryRead(ctx.values, "Color", &sprite.color);
+    tryRead(*ctx.values, "Color", &sprite.color);
 
     f32 brightness;
-    if (tryRead(ctx.values, "Brightness", &brightness)) {
+    if (tryRead(*ctx.values, "Brightness", &brightness)) {
         sprite.color.scale(brightness);
     }
     entity.add(sprite);

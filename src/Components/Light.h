@@ -22,13 +22,12 @@ struct BoxLight : ISerialize<BoxLight, ComponentFactory> {
     Color color = Colors::White;
     Vector2i halfLen;
 
-    static void loadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx) {
         BoxLight light = entity.has<BoxLight>() ? entity.get<BoxLight>() : BoxLight{};
 
-        tryRead(ctx.values, "color", &light.color);
-        tryRead(ctx.values, "radius", &light.radius);
-        light.halfLen = readShapeOrDefault(ctx, entity, "Shape", &light.offset).getAABB().getHalf();
+        tryRead(*ctx.values, "color", &light.color);
+        tryRead(*ctx.values, "radius", &light.radius);
+        light.halfLen = readShapeOrDefault(ctx, "Shape", &light.offset).getAABB().getHalf();
         entity.add(light);
     }
 };

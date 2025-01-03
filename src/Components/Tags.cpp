@@ -5,26 +5,24 @@
 
 namespace whal {
 
-void TagLoader::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
-
+void TagLoader::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     bool hasTag = false;
-    if (tryRead(ctx.values, "Player", &hasTag) && hasTag) {
+    if (tryRead(*ctx.values, "Player", &hasTag) && hasTag) {
         entity.add<Player>();
         hasTag = false;
     }
 
-    if (tryRead(ctx.values, "Wiggle", &hasTag) && hasTag) {
+    if (tryRead(*ctx.values, "Wiggle", &hasTag) && hasTag) {
         entity.add<Wiggle>();
         hasTag = false;
     }
 
-    if (tryRead(ctx.values, "Invisible", &hasTag) && hasTag) {
+    if (tryRead(*ctx.values, "Invisible", &hasTag) && hasTag) {
         entity.add<Invisible>();
         hasTag = false;
     }
 
-    if (tryRead(ctx.values, "BlocksLight", &hasTag) && hasTag) {
+    if (tryRead(*ctx.values, "BlocksLight", &hasTag) && hasTag) {
         entity.add<BlocksLight>();
         hasTag = false;
     }

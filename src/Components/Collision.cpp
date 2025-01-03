@@ -806,26 +806,24 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSign, Vector2i
     return false;
 }
 
-void Collider::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
-
+void Collider::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Collider collider = entity.has<Collider>() ? entity.get<Collider>() : Collider{};
     CollisionDir collisionDir = collider.getCollisionDir();
     WorldMaterial material = collider.getMaterial();
 
-    if (tryReadVal(ctx.values, "CollisionDir", &collisionDir)) {
+    if (tryReadVal(*ctx.values, "CollisionDir", &collisionDir)) {
         collider.setCollisionDir(collisionDir);
     }
-    if (tryReadVal(ctx.values, "Material", &material)) {
+    if (tryReadVal(*ctx.values, "Material", &material)) {
         collider.setMaterial(material);
     }
 
     std::string layerName;
-    if (tryReadVal(ctx.values, "Layer", &layerName)) {
+    if (tryReadVal(*ctx.values, "Layer", &layerName)) {
         collider.setCollisionLayer(CollisionLayer::fromString(layerName.c_str()));
     }
 
-    collider.setShape(readShapeOrDefault(ctx, entity, "Shape", &collider.mOffset).getAABB());
+    collider.setShape(readShapeOrDefault(ctx, "Shape", &collider.mOffset).getAABB());
     entity.add(collider);
 }
 

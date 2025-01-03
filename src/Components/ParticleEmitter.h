@@ -20,7 +20,7 @@ struct ParticleEmitter : ISerialize<ParticleEmitter, ComponentFactory> {
 
     void setDirection(CollisionDir dir) { direction = dir; }
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 }  // namespace whal

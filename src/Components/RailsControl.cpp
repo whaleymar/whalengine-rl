@@ -148,13 +148,11 @@ static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<Ra
     return isCycle;
 }
 
-void RailsControl::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
-
+void RailsControl::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     std::vector<RailsControl::CheckPoint> checkpoints;
     bool isCycle = false;
-    if (ctx.values.contains("Checkpoints")) {
-        s32 id = ctx.values["Checkpoints"];
+    if (ctx.values->contains("Checkpoints")) {
+        s32 id = (*ctx.values)["Checkpoints"];
         const nlohmann::json checkPointObj = ctx.allObjects.at(ctx.idToIndex.at(id).first);
         isCycle = loadCheckpoints(checkPointObj, checkpoints, ctx);
     }
@@ -163,7 +161,7 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
     rails.setCheckpoints(checkpoints, entity.get<Transform>(), entity);
 
     std::string cycleBehavior = "ManualStart";
-    tryRead(ctx.values, "CycleBehavior", &cycleBehavior);
+    tryRead(*ctx.values, "CycleBehavior", &cycleBehavior);
     if (isCycle) {
         if (cycleBehavior == "Automatic") {
             rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_LOOP;
@@ -182,8 +180,8 @@ void RailsControl::loadImpl(ecs::Entity entity, void* data) {
         }
     }
 
-    tryRead(ctx.values, "speed", &rails.speed);
-    tryRead(ctx.values, "waitTime", &rails.waitTime);
+    tryRead(*ctx.values, "speed", &rails.speed);
+    tryRead(*ctx.values, "waitTime", &rails.waitTime);
 
     entity.add(rails);
 }

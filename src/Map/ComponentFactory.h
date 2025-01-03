@@ -20,10 +20,11 @@ enum class TiledDataType;
 
 // passed as const reference when loading components
 struct LoadContext {
-    const nlohmann::json& values;  // should rename this to `componentData` or something
+    const nlohmann::json* values;  // should rename this to `componentData` or something
     const nlohmann::json& allObjects;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex;
     const EntityMapData& entityData;
+    ecs::Entity self;
     ecs::Entity parent;
     bool isTiledData = false;
 };
@@ -34,20 +35,16 @@ struct LoadContext {
 // template <typename T>
 // struct IsSerializable<T, std::void_t<decltype(rfl::json::write(std::declval<T>()))>> : std::true_type {};
 
-// loadImpl stub:
-// void ::loadImpl(ecs::Entity entity, void* data) {
-//     const LoadContext& ctx = *static_cast<LoadContext*>(data);
-// }
-struct ComponentFactory : SerializeFactory<ComponentFactory> {
+// loadImpl signature:
+// void ::loadImpl(ecs::Entity entity, const LoadContext& ctx);
+struct ComponentFactory : SerializeFactory<ComponentFactory, LoadContext> {
     // Requirements for the Default Loader:
     // 1. The component does not have a custom constructor
     // 2. (tiled specific) the tiled property types and members are named exactly the same as in code
     template <typename T>
-        requires(CustomLoad<T> ||
+        requires(CustomLoad<T, LoadType> ||
                  std::is_aggregate<T>::value)  //  ComponentFactory::DefaultLoadImpl doesn't work for components with custom constructors
-    static void DefaultLoadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
-
+    static void DefaultLoadImpl(ecs::Entity entity, const LoadContext& ctx) {
         T cpnt = entity.has<T>() ? entity.get<T>() : T{};
         if (ctx.isTiledData) {
             // TODO this doesn't handle a couple of things:
@@ -56,7 +53,7 @@ struct ComponentFactory : SerializeFactory<ComponentFactory> {
             // 3. parsing target entity ID
 
             const auto view = rfl::to_view(cpnt);
-            view.apply([&](const auto& f) { tryRead(ctx.values, f.name(), f.value()); });
+            view.apply([&](const auto& f) { tryRead(*ctx.values, f.name(), f.value()); });
         }
 
         entity.add(cpnt);
@@ -64,7 +61,7 @@ struct ComponentFactory : SerializeFactory<ComponentFactory> {
 
     template <typename T>
     // requires(IsSerializable<T>())
-    static void* DefaultSaveImpl(ecs::Entity entity) {
+    static std::string DefaultSaveImpl(ecs::Entity entity) {
         // print("Running ComponentFactoryNew::DefaultSaveImpl");
         // std::string data = rfl::json::write(entity.get<T>());
         // print(data);
