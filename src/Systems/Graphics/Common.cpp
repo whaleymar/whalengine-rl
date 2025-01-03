@@ -115,25 +115,21 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
 }
 
 void clampToPixelGrid(RaylibDrawParams& params) {
-    Vector2f positionF = Vector2f(params.position);
+    Vector2f positionF = Vector2f(params.rect.x, params.rect.y);
     Vector2i position = (positionF / VIRTUAL_SCREEN_RATIO).round() * static_cast<s32>(VIRTUAL_SCREEN_RATIO);
 
-    params.position = position.asRL();
-    params.rect.x = params.position.x;
-    params.rect.y = params.position.y;
+    params.rect.x = position.x;
+    params.rect.y = position.y;
 }
 
-RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize, Vector2f cameraPosition) {
+RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize) {
     const Vector2f size = frameSize * transform.scale * VIRTUAL_SCREEN_RATIO;
-    const Vector2f position = transform.getRotatedPosition();
-    const Vector2f screenPosition = Vector2f(position.x - cameraPosition.x, cameraPosition.y - position.y) * VIRTUAL_SCREEN_RATIO +
-                                    Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2);
+    const Vector2f screenPosition = transform.getRotatedPosition() * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO);
     const Vector2f origin = size * Vector2f(0.5, 0.5);
 
     return RaylibDrawParams{
         .rect = rl::Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},
         .origin = rl::Vector2{origin.x, origin.y},
-        .position = rl::Vector2{screenPosition.x, screenPosition.y},
     };
 }
 

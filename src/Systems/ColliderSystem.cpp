@@ -34,8 +34,6 @@ ColliderSystem::ColliderSystem() {
 
 #ifndef NDEBUG
 void drawColliders() {
-    auto cameraPos = getCameraPositionPrecise();
-    // auto cameraPos = toFloatVec(getCameraPosition());
     for (const auto [entityid, entity] : ColliderSystem::getEntities()) {
         const auto collider = entity.get<Collider>();
         Color color;
@@ -48,11 +46,11 @@ void drawColliders() {
         } else {
             color = Colors::Blue;
         }
-        collider.getShape().draw(cameraPos, color);
+        collider.getShape().draw(color);
     }
 
     for (const auto& [entityid, entity] : TriggerSystem::getEntities()) {
-        entity.get<Trigger>().shape.draw(cameraPos, Colors::Emerald);
+        entity.get<Trigger>().shape.draw(Colors::Emerald);
     }
 }
 #endif

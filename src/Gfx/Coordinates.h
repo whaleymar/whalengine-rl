@@ -3,7 +3,7 @@
 #include "Util/Vector.h"
 namespace whal {
 
-Vector2i screenToWorldCoords(Vector2i screenCoords);
+Vector2f screenToWorldCoords(Vector2i screenCoords);
 Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition);
 Vector2i worldToTileCoords(Vector2i worldCoords);
 Vector2i tileToWorldCoords(Vector2i tileCoords);

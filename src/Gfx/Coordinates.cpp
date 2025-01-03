@@ -6,20 +6,20 @@
 
 namespace whal {
 
-Vector2i screenToWorldCoords(Vector2i screenCoords) {
-    const auto cameraPos = getCameraPosition();
+Vector2f screenToWorldCoords(Vector2i screenCoords) {
+    const auto cameraPos = getCameraPositionPrecise();
 
     const f32 invVirtualScreenRatio = 1.0f / VIRTUAL_SCREEN_RATIO;
-    const auto middleOffset = Vector2i(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
+    const auto middleOffset = Vector2f(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
 
-    const Vector2i yAtTop = Vector2i(screenCoords.x, (static_cast<s32>(WINDOW_HEIGHT_RENDER) - screenCoords.y)) * invVirtualScreenRatio;
+    const Vector2f yAtTop = Vector2f(screenCoords.x, (WINDOW_HEIGHT_RENDER - screenCoords.y)) * invVirtualScreenRatio;
     return yAtTop + cameraPos - middleOffset;
 }
 
 Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition) {
     Vector2f worldF = worldCoords.as<f32>();
-    Vector2f screenPositionUnscaled(worldF.x - cameraPosition.x, cameraPosition.y - worldF.y);
-    return (screenPositionUnscaled * VIRTUAL_SCREEN_RATIO + Vector2f(FWINDOW_WIDTH_RENDER / 2, FWINDOW_HEIGHT_RENDER / 2)).round();
+    Vector2f screenPositionUnscaled(worldF.x, -worldF.y);
+    return (screenPositionUnscaled * VIRTUAL_SCREEN_RATIO).round();
 }
 
 Vector2i worldToTileCoords(Vector2i worldCoords) {
@@ -40,6 +40,7 @@ Vector2f worldToUVcoords(Vector2f worldCoords) {
     const Vector2f screenHalf = Vector2f(FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME) * 0.5;
     const Vector2f cameraPos = getCameraPositionPrecise();
     return (Vector2f(worldCoords.x - cameraPos.x, worldCoords.y - cameraPos.y) + screenHalf) * resolutonRecip;
+    // return (Vector2f(worldCoords.x, -worldCoords.y)) * resolutonRecip;
 }
 
 }  // namespace whal

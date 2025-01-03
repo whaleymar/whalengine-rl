@@ -5,7 +5,7 @@ NEXT GOAL:
     - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
     - e.g. parent is active, child is "inactive", so child is inactive 
     - e.g. parent is active, child is "active", so child is active
-- fix hot reloading when loading reflect-cpp as a shared library 
+- multiple levels in a world seems to be broken
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

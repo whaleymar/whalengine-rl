@@ -37,9 +37,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
     // scale to full resolution
     frameSize = frameSize * VIRTUAL_SCREEN_RATIO * trans.scale;
-    Vector2f dstPosition = {trans.position.x - ctx.cameraPosition.x, -1 * trans.position.y + ctx.cameraPosition.y};
-    dstPosition *= VIRTUAL_SCREEN_RATIO;
-    dstPosition += Vector2f(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
+    Vector2f screenPosition = trans.position * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO);
 
     // UNUSED
     // {
@@ -52,16 +50,15 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // TODO needs adjustment based on rotation? Currently not working for multi-line text
     // drawing wrapped:
     // dstPosition -= frameSize * Vector2f(0.5, 0.5);  // original
-    dstPosition -= frameSize * Vector2f(0.5, 0.0);  // trying something new
+    screenPosition -= frameSize * Vector2f(0.5, 0.0);  // trying something new
     // needs half tile offset for some reason; might be an issue with map data:
     // dstPosition += Vector2f(0, FPIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
 
-    rl::Rectangle dstRect = rl::Rectangle(dstPosition.x, dstPosition.y, frameSize.x, frameSize.y);
+    rl::Rectangle dstRect = rl::Rectangle(screenPosition.x, screenPosition.y, frameSize.x, frameSize.y);
 
     gfx::RaylibDrawParams params = gfx::RaylibDrawParams{
         .rect = dstRect,
         .origin = rl::Vector2{0, 0},
-        .position = dstPosition.asRL(),
     };
 
     gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotation,
