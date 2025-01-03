@@ -60,12 +60,22 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         return;
     }
 
+    LoadContext ctx = {
+        .values = nullptr,
+        .allObjects = allObjects,
+        .idToIndex = idToIndex,
+        .entityData = entityData,
+        .self = entity,
+        .parent = parent,
+        .isTiledData = true,
+    };
+
     for (const auto& property : object["properties"]) {
         std::string componentName;
         if (!tryRead(property, "propertytype", &componentName)) {
             continue;
         }
-        const auto serializerOpt = ComponentFactory::Get(componentName.c_str());
+        const std::optional<ComponentFactory::SerializeFuncs> serializerOpt = ComponentFactory::Get(componentName.c_str());
         if (!serializerOpt) {
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
@@ -85,16 +95,8 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             continue;
         }
 
-        const LoadContext ctx = {
-            .values = property["value"],
-            .allObjects = allObjects,
-            .idToIndex = idToIndex,
-            .entityData = entityData,
-            .parent = parent,
-            .isTiledData = true,
-        };
-
-        serializerOpt->load(entity, (void*)&ctx);  // >:)
+        ctx.values = &property["value"];
+        serializerOpt->load(entity, ctx);
     }
 }
 

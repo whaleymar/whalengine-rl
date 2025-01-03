@@ -13,7 +13,7 @@ struct BlocksLight {};
 struct MouseCursor {};
 
 struct TagLoader : ISerialize<TagLoader, ComponentFactory> {
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 REGISTER_SERIALIZE(TagLoader)
 

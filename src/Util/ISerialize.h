@@ -27,28 +27,32 @@ struct Map {
     }
 };
 
-using LoadMethod = void (*)(ecs::Entity, void*);
-using SaveMethod = void* (*)(ecs::Entity);
-struct SerializeFuncs {
-    LoadMethod load;
-    SaveMethod save;
-};
-
 // Pass Self as a template parameter so each implementation gets its own lookup table
-template <typename Self>
+template <typename Self, typename LoadContextType, typename SaveContextType = std::string>
 struct SerializeFactory {
+    using LoadType = LoadContextType;
+    using SaveType = SaveContextType;
+    using LoadMethod = void (*)(ecs::Entity, const LoadContextType&);
+    using SaveMethod = SaveType (*)(ecs::Entity);
+    struct SerializeFuncs {
+        LoadMethod load;
+        SaveMethod save;
+    };
+
     SerializeFactory() = delete;
 
-    static bool Register(std::string_view name, SerializeFuncs creatorFuncs) { return mFactoryTable.insert(name, creatorFuncs); }
+    static bool Register(std::string_view name, LoadMethod loader, SaveMethod saver) {
+        return mFactoryTable.insert(name, SerializeFuncs{loader, saver});
+    }
     static std::optional<SerializeFuncs> Get(std::string_view name) { return mFactoryTable.at(name); }
 
     template <typename T>
-    static void DefaultLoad(ecs::Entity entity, void* data) {
+    static void DefaultLoad(ecs::Entity entity, const LoadContextType& data) {
         return Self::template DefaultLoadImpl<T>(entity, data);
     }
 
     template <typename T>
-    static void* DefaultSave(ecs::Entity entity) {
+    static SaveType DefaultSave(ecs::Entity entity) {
         return Self::template DefaultSaveImpl<T>(entity);
     }
 
@@ -61,33 +65,35 @@ private:
 //////////////////////////   TRAITS  //////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-// checks that T::LoadImpl(ecs::Entity, void*) exists and returns nothing
-template <typename T>
+// checks that T::LoadImpl(ecs::Entity, const LoadContextType&) exists and returns nothing
+template <typename T, typename LoadContextType>
 concept CustomLoad = requires {
-    { T::loadImpl(ecs::Entity{}, (void*)nullptr) } -> std::same_as<void>;
+    { T::loadImpl(ecs::Entity{}, std::declval<const LoadContextType&>()) } -> std::same_as<void>;
 };
 
 // checks that T::SaveImpl(ecs::Entity) exists and returns an opaque pointer
-template <typename T>
+template <typename T, typename SaveType>
 concept CustomSave = requires {
-    { T::saveImpl(ecs::Entity{}) } -> std::same_as<void*>;
+    { T::saveImpl(ecs::Entity{}) } -> std::same_as<SaveType>;
 };
 
-template <typename T>
+// These concepts ensure a factory has a "DefaultLoadImpl" method and a "DefaultSaveImpl" method (static functions)
+template <typename T, typename LoadContextType>
 concept DefaultLoad = requires {
-    { T::DefaultLoadImpl(ecs::Entity{}, (void*)nullptr) } -> std::same_as<void>;
+    { T::DefaultLoadImpl(ecs::Entity{}, LoadContextType{}) } -> std::same_as<void>;
 };
 
-template <typename T>
+template <typename T, typename SaveType>
 concept DefaultSave = requires {
-    { T::DefaultSaveImpl(ecs::Entity{}) } -> std::same_as<void*>;
+    { T::DefaultSaveImpl(ecs::Entity{}) } -> std::same_as<SaveType>;
 };
 
 // 1. Factory Inherits from SerializeFactory
 // 2. Factory Implements static DefaultLoadImpl method
 // 3. Factory Implements static DefaultSaveImpl method
 template <typename T>
-concept IsValidFactory = requires { is_base_of_template<SerializeFactory, T>::value&& DefaultLoad<T>&& DefaultSave<T>; };
+concept IsValidFactory =
+    requires { is_base_of_template<SerializeFactory, T>::value&& DefaultLoad<T, typename T::LoadType>&& DefaultSave<T, typename T::SaveType>; };
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////////// INTERFACE //////////////////////////////////////
@@ -103,16 +109,16 @@ struct ISerialize {
     // By calling forceInit here, it's guaranteed that T is registered in the factory before the program starts.
     ISerialize() { forceInit(); }
 
-    static void load(ecs::Entity entity, void* data) {
-        if constexpr (CustomLoad<T>) {
+    static void load(ecs::Entity entity, const Factory::LoadType& data) {
+        if constexpr (CustomLoad<T, typename Factory::LoadType>) {
             T::loadImpl(entity, data);
         } else {
             Factory::template DefaultLoad<T>(entity, data);
         }
     }
 
-    static void* save(ecs::Entity entity) {
-        if constexpr (CustomSave<T>) {
+    static Factory::SaveType save(ecs::Entity entity) {
+        if constexpr (CustomSave<T, typename Factory::SaveType>) {
             return T::saveImpl(entity);
         } else {
             return Factory::template DefaultSave<T>(entity);
@@ -120,7 +126,7 @@ struct ISerialize {
     }
 
     // type_of<T>() gets the name of the type (with namespacing)
-    static inline const bool S_IS_REGISTERED = Factory::Register(type_of<T>(), SerializeFuncs{load, save});
+    static inline const bool S_IS_REGISTERED = Factory::Register(type_of<T>(), load, save);
 };
 
 }  // namespace whal

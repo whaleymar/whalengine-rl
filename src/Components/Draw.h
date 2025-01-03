@@ -46,7 +46,7 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
     u32 flags = flag::None;
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 // constexpr bool asdf = is_base_of_template<ISerialize, Sprite>::value;
 
@@ -56,7 +56,7 @@ struct DrawRect : ISerialize<DrawRect, ComponentFactory> {
     Vector2i frameSize;
     Color color = Colors::White;
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 struct DrawBezierQuad {
@@ -80,7 +80,7 @@ struct DrawText : ISerialize<DrawText, ComponentFactory> {
     Color color = Colors::White;
     bool isCentered = false;
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 }  // namespace whal

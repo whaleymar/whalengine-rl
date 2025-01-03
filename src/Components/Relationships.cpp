@@ -8,11 +8,9 @@
 
 namespace whal {
 
-void Attach::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
-
+void Attach::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     s32 targetId;
-    if (!tryRead(ctx.values, "target", &targetId)) {
+    if (!tryRead(*ctx.values, "target", &targetId)) {
         print("Entity with Map id ", ctx.entityData.id, "has attach component with no target");
         return;
     }
@@ -45,20 +43,19 @@ void Orbit::initTarget(ecs::Entity self) {
     currentAngle = delta.isZero() ? 0.0f : delta.as<f32>().angle();
 }
 
-void Orbit::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+void Orbit::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Orbit orbit = entity.has<Orbit>() ? entity.get<Orbit>() : Orbit{};
 
-    tryRead(ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
+    tryRead(*ctx.values, "RotationsPerSecond", &orbit.rotationsPerSecond);
 
     const Vector2i entityTrans = entity.get<Transform>().positionPx;
 
-    if (!ctx.values.contains("Target")) {
+    if (!ctx.values->contains("Target")) {
         print("Error: Orbit component requires a Target");
         return;
     }
 
-    s32 shapeId = readInt(ctx.values, "Target");
+    s32 shapeId = readInt(*ctx.values, "Target");
     const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
     Vector2i otherDimensions = Vector2i::ZERO;
     tryRead(shapeObj, "width", "height", &otherDimensions);

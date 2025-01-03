@@ -33,10 +33,10 @@ Color readColor(const std::string& hexString);
 Depth readDepth(const std::string& depthString);
 
 // TODO need to unify API
-Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset = nullptr);
-Shape getDefaultShape(const LoadContext& ctx, ecs::Entity entity);  // uses shape of Tiled object instead of a Property
-bool tryReadShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Shape* dst, Vector2i* dstOffset = nullptr);
-Shape readShapeOrDefault(const LoadContext& ctx, ecs::Entity entity, std::string_view key,
+Shape readShape(const LoadContext& ctx, std::string_view key, Vector2i* dstOffset = nullptr);
+Shape getDefaultShape(const LoadContext& ctx);  // uses shape of Tiled object instead of a Property
+bool tryReadShape(const LoadContext& ctx, std::string_view key, Shape* dst, Vector2i* dstOffset = nullptr);
+Shape readShapeOrDefault(const LoadContext& ctx, std::string_view key,
                          Vector2i* dstOffset = nullptr);  // tries to get a custom shape, returns default shape if none present
 
 template <typename T>

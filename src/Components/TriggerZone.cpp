@@ -9,16 +9,15 @@ Trigger::Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback cal
                  TriggerCallback callbackStay)
     : shape(shape_), offset(offset_), layer(layer_), onTriggerEnter(callbackEnter), onTriggerExit(callbackExit), onTriggerStay(callbackStay) {}
 
-void Trigger::loadImpl(ecs::Entity entity, void* data) {
-    const LoadContext& ctx = *static_cast<LoadContext*>(data);
+void Trigger::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Trigger trigger = entity.has<Trigger>() ? entity.get<Trigger>() : Trigger{};
 
     std::string layerName;
-    if (tryReadVal(ctx.values, "Layer", &layerName)) {
+    if (tryReadVal(*ctx.values, "Layer", &layerName)) {
         trigger.layer = CollisionLayer::fromString(layerName.c_str());
     }
 
-    trigger.shape = readShapeOrDefault(ctx, entity, "Shape", &trigger.offset);
+    trigger.shape = readShapeOrDefault(ctx, "Shape", &trigger.offset);
     entity.add(trigger);
 }
 

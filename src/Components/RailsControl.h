@@ -68,7 +68,7 @@ public:
     bool isAtLastCheckpoint() const { return curTarget == (mCheckpoints.size() - 1); }
     void prepareForFirstStep(Transform& trans, ecs::Entity e);
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 }  // namespace whal

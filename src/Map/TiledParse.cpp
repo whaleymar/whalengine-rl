@@ -54,10 +54,10 @@ Depth readDepth(const std::string& depthString) {
     return rfl::string_to_enum<Depth>(depthString).value();
 }
 
-Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset) {
-    DBG_ASSERT(ctx.values.contains(key), whal_format("Missing key: {}", key).c_str());
+Shape readShape(const LoadContext& ctx, std::string_view key, Vector2i* dstOffset) {
+    DBG_ASSERT(ctx.values->contains(key), whal_format("Missing key: {}", key).c_str());
 
-    s32 shapeId = readInt(ctx.values, key);
+    s32 shapeId = readInt(*ctx.values, key);
     // calc distance between this object and Shape for the offset
     const auto& shapeObj = ctx.allObjects[ctx.idToIndex.at(shapeId).first];
     const Vector2i otherDims = readVector2i(shapeObj, "width", "height");
@@ -75,27 +75,27 @@ Shape readShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key
 
     if (shapeObj.contains("ellipse")) {
         const s32 radius = std::max(halflen.x, halflen.y);
-        shape = Circle(entity.get<Transform>(), radius, offset);
+        shape = Circle(ctx.self.get<Transform>(), radius, offset);
     } else {
         // no field for rectangle, it's the default
-        shape = AABB(entity.get<Transform>(), halflen, offset);
+        shape = AABB(ctx.self.get<Transform>(), halflen, offset);
     }
 
     return shape;
 }
 
-Shape getDefaultShape(const LoadContext& ctx, ecs::Entity entity) {
+Shape getDefaultShape(const LoadContext& ctx) {
     // would be used for a default ellipse getter (if I need one):
     // const s32 radius = std::max(ctx.entityData.size.x, ctx.entityData.size.y) / 2;
-    return AABB(entity.get<Transform>(), ctx.entityData.size / 2, Vector2i());
+    return AABB(ctx.self.get<Transform>(), ctx.entityData.size / 2, Vector2i());
 }
 
-Shape readShapeOrDefault(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Vector2i* dstOffset) {
+Shape readShapeOrDefault(const LoadContext& ctx, std::string_view key, Vector2i* dstOffset) {
     Shape shape;
-    if (tryReadShape(ctx, entity, key, &shape, dstOffset)) {
+    if (tryReadShape(ctx, key, &shape, dstOffset)) {
         return shape;
     }
-    return getDefaultShape(ctx, entity);
+    return getDefaultShape(ctx);
 }
 
 template <>
@@ -200,9 +200,9 @@ bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view
     return foundOne;
 }
 
-bool tryReadShape(const LoadContext& ctx, ecs::Entity entity, std::string_view key, Shape* dst, Vector2i* dstOffset) {
-    if (ctx.values.contains(key)) {
-        *dst = readShape(ctx, entity, key, dstOffset);
+bool tryReadShape(const LoadContext& ctx, std::string_view key, Shape* dst, Vector2i* dstOffset) {
+    if (ctx.values->contains(key)) {
+        *dst = readShape(ctx, key, dstOffset);
         return true;
     }
     return false;

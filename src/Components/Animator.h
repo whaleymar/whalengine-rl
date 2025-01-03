@@ -50,7 +50,7 @@ struct Animator : ISerialize<Animator, ComponentFactory> {
     void resetAnimation();
     void setLooping(bool loop);
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 // an animation is a sequence of same-sized frames

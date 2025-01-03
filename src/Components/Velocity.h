@@ -18,10 +18,9 @@ struct Velocity : ISerialize<Velocity, ComponentFactory> {
     // immediately going from impulse -> nothing feels very jarring. this is used to have a smoother transition
     Vector2f residualImpulse;
 
-    static void loadImpl(ecs::Entity entity, void* data) {
-        const LoadContext& ctx = *static_cast<LoadContext*>(data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx) {
         Velocity velocity = entity.has<Velocity>() ? entity.get<Velocity>() : Velocity{};
-        tryRead(ctx.values, "stable", &velocity.stable);
+        tryRead(*ctx.values, "stable", &velocity.stable);
 
         entity.add(velocity);
     }

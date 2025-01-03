@@ -14,7 +14,7 @@ class Entity;
 
 struct Attach : ISerialize<Attach, ComponentFactory> {
     enum class DirectionParam { IgnoreFacing, UseFacingForOffset, UseFacingForAll };
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 REGISTER_SERIALIZE(Attach);
 
@@ -35,7 +35,7 @@ struct Orbit : ISerialize<Orbit, ComponentFactory> {
     f32 currentAngle;
     bool isTargetInitialized = false;
 
-    static void loadImpl(ecs::Entity entity, void* data);
+    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 // in general, dead zone should be bigger than lookahead
