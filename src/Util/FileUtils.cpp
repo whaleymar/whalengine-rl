@@ -13,6 +13,18 @@ Expected<std::string> readFile(const char* filePath) {
     return buffer.str();
 }
 
+Expected<void> saveFile(const std::string& filePath, const std::string& data) {
+    std::ofstream outFile(filePath, std::ios::out | std::ios::trunc);
+    if (!outFile) {
+        return Error(whal_format("Failed to open file: {}", filePath));
+    }
+    outFile << data;
+    if (!outFile) {
+        return Error(whal_format("Failed to write to file: {}", filePath));
+    }
+    return {};
+}
+
 bool isExist(const char* filePath) {
     std::ifstream file(filePath);
     return file.is_open();

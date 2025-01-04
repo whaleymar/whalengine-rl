@@ -95,6 +95,9 @@ public:
     void setMusicVolume(f32 volume);
     void setSfxVolume(f32 volume);
     void setMasterVolume(f32 volume);
+    f32 getMusicVolume() const { return mMusicVolume; }
+    f32 getSfxVolume() const { return mSfxVolume; }
+    f32 getMasterVolume() const { return mMasterVolume; }
 
     void update();
 
