@@ -28,15 +28,15 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
 
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
-    if (layer.overlay) {
+    if (layer.overlayTex.size() > 0) {
         // note: overlays will be slow for Y sorted layers
         auto shader = ShaderManager::get(Shaders::Overlay);
         rl::BeginShaderMode(shader);
         auto overlayLoc = rl::GetShaderLocation(shader, "_Overlay");
-        rl::SetShaderValueTexture(shader, overlayLoc, *layer.overlay);
+        const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
+        rl::SetShaderValueTexture(shader, overlayLoc, overlay);
         auto scaleLoc = rl::GetShaderLocation(shader, "_Scale");
-        rl::Vector2 scale =
-            (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(layer.overlay->width, layer.overlay->height)).asRL();
+        rl::Vector2 scale = (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL();
         rl::SetShaderValue(shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
     }
 
@@ -143,11 +143,6 @@ void TileRenderSystem::onRemove(ecs::Entity e) {
     // erase from cache
     S_YSORT_RENDERINFO_LUT.erase(e);
     S_YSORT_COORD_LUT.erase(e);
-    TileMapLayer& layer = e.get<TileMapLayer>();
-    if (layer.overlay) {
-        rl::UnloadTexture(*layer.overlay);
-        layer.overlay = std::nullopt;
-    }
 }
 
 std::pair<f32, Facing> getOrientation(TileInfo tile) {

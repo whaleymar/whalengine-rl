@@ -74,6 +74,7 @@ public:
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
     void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
+
     void stopMusic();
     void stopClips();
     void stopAll();
@@ -82,15 +83,27 @@ public:
     void pauseMusic(bool pause);
     void pauseClips(bool pause);
     void pauseAll(bool pause);
-    void setMusicVolume(f32 volume);
-    void setListenerPosition(Vector2i worldPosition);
+
     bool isValid() const { return mIsValid; }
+    bool isMuted() const { return mIsMusicMuted && mIsSfxMuted; }
+    bool isSfxMuted() const { return mIsSfxMuted; }
+    bool isMusicMuted() const { return mIsMusicMuted; }
+    void setIsMuted(bool isMuted);  // mutes music and sfx
+    void setIsMusicMuted(bool isMuted);
+    void setIsSfxMuted(bool isMuted);
+
+    void setMusicVolume(f32 volume);
+    void setSfxVolume(f32 volume);
+    void setMasterVolume(f32 volume);
+
     void update();
 
     void setFilterMusic(Filter filter);
     void setFilterClips(Filter filter);
     Filter getFilterMusic() const { return mMusicFilter; }
     Filter getFilterClips() const { return mClipsFilter; }
+
+    void setListenerPosition(Vector2i worldPosition);
 
 private:
     AudioPlayer(const AudioPlayer&) = delete;
@@ -119,11 +132,16 @@ private:
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;
+    f32 mMusicVolume = 1.0f;
+    f32 mSfxVolume = 1.0f;
+    f32 mMasterVolume = 1.0f;
     Filter mMusicFilter = Filter::None;
     Filter mClipsFilter = Filter::None;
     bool mIsValid = false;
     bool mIsPlayingMusic = false;
     bool mIsPlayingChannels = false;
+    bool mIsMusicMuted = false;
+    bool mIsSfxMuted = false;
 };
 
 }  // namespace whal
