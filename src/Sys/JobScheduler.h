@@ -89,7 +89,7 @@ EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const&
     if (!func) {
         return *this;
     }
-    BoundFunction bf = std::bind(func, args...);  // boyfriend :3
+    BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
     auto pNode = std::make_unique<Node>(0, bf, nullptr);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
@@ -146,7 +146,7 @@ public:
     // example usage: `Schedule.tween(entity, 15, 2, &PointLight::radius)`
     template <typename Component, typename T>
         requires Multipliable<T>
-    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member) {
+    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::* member) {
         const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
         std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, entity);
         mTweenMgr.mTweens.push_back(tween);
@@ -156,7 +156,7 @@ public:
     // example usage: `Schedule.tween(entity, 360, 2, &Transform::rotation, &Transform::setRotation)`
     template <typename Component, typename T>
         requires Multipliable<T>
-    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member, void (Component::*const setterMethod)(T, ecs::Entity)) {
+    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::* member, void (Component::* const setterMethod)(T, ecs::Entity)) {
         const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
         const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
         std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
@@ -167,8 +167,8 @@ public:
     // example usage: `Schedule.tween(entity, 360, 2, &Transform::rotation, &Transform::setRotation)`
     template <typename Component, typename T>
         requires Multipliable<T>
-    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::*member,
-                     void (Component::*const setterMethod)(const T&, ecs::Entity)) {
+    Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::* member,
+                     void (Component::* const setterMethod)(const T&, ecs::Entity)) {
         const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
         const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
         std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
@@ -210,7 +210,7 @@ void JobScheduler::after(std::type_identity_t<std::function<void(T...)>> const& 
     while (it != mQueue.end() && it->second < delaySeconds) {
         ++it;
     }
-    BoundFunction bf = std::bind(func, args...);  // boyfriend :3
+    BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
     mQueue.insert(it, {bf, delaySeconds});
 }
 }  // namespace whal

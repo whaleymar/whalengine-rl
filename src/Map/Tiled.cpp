@@ -274,7 +274,8 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
             std::string overlayPath;
             if (tryRead(value, "overlayPath", &overlayPath)) {
                 if (isExist(overlayPath.c_str())) {
-                    layer.overlay = rl::LoadTexture(overlayPath.c_str());
+                    TextureManager::instance().loadAndRegister(overlayPath, overlayPath);
+                    layer.overlayTex = std::move(overlayPath);
                 }
             }
 

@@ -20,12 +20,12 @@ enum class BGTexture { STATIC, FAR, MID, NEAR };
 
 class TextureAtlas {
 public:
-    Corrade::Containers::Optional<Error> init(const rl::Texture2D& texture, const char* atlasDataPath);
+    Corrade::Containers::Optional<Error> init(const rl::Texture2D& texture, const std::string& atlasDataPath);
     Vector2f getSize() const;
-    Corrade::Containers::Optional<rl::Rectangle> getFrame(const char* name) const;
+    Corrade::Containers::Optional<rl::Rectangle> getFrame(const std::string& name) const;
     bool isValid() const { return mIsValid; }
     const rl::Texture2D& getTexture() const { return mTexture; }
-    Corrade::Containers::Optional<rl::RenderTexture2D> frameToBackgroundTexture(const char* frameName) const;
+    Corrade::Containers::Optional<rl::RenderTexture2D> frameToBackgroundTexture(const std::string& frameName) const;
 
 private:
     rl::Texture2D mTexture;
@@ -75,14 +75,15 @@ public:
     s32 selection = 0;
 #endif
 
-    Corrade::Containers::Optional<Error> registerTexture(const rl::Texture2D texture, const char* name);
-    Corrade::Containers::Optional<Error> registerTextureAtlas(const rl::Texture2D texture, const char* altasDataPath, const char* name);
-    Corrade::Containers::Optional<Error> loadAndRegister(const char* imagePath, const char* name);
-    Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const char* imagePath, const char* atlasDataPath, const char* name);
-    Corrade::Containers::Optional<Error> removeAtlas(const char* name);
+    Corrade::Containers::Optional<Error> registerTexture(const rl::Texture2D texture, const std::string& name);
+    Corrade::Containers::Optional<Error> registerTextureAtlas(const rl::Texture2D texture, const std::string& altasDataPath, const std::string& name);
+    Corrade::Containers::Optional<Error> loadAndRegister(const std::string& imagePath, const std::string& name);
+    Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const std::string& imagePath, const std::string& atlasDataPath,
+                                                              const std::string& name);
+    Corrade::Containers::Optional<Error> removeAtlas(const std::string& name);
 
-    static const TextureAtlas& getAtlas(const char* name) { return instance()._getAtlas(name); }
-    static const rl::Texture& getTexture(const char* name) { return instance()._getTexture(name); }
+    static const TextureAtlas& getAtlas(const std::string& name) { return instance()._getAtlas(name); }
+    static const rl::Texture& getTexture(const std::string& name) { return instance()._getTexture(name); }
     static rl::RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
 
     void unloadAll();
@@ -94,12 +95,12 @@ private:
     TextureManager(const TextureManager&) = delete;
     void operator=(const TextureManager&) = delete;
 
-    s32 getTextureIndex(std::string name) const;
-    s32 getTextureAtlasIndex(std::string name) const;
+    s32 getTextureIndex(const std::string& name) const;
+    s32 getTextureAtlasIndex(const std::string& name) const;
     std::vector<rl::Texture2D>& getAllTextures() { return mTextures; };
     std::vector<TextureAtlas>& getAllAtlases() { return mTextureAtlases; };
-    const TextureAtlas& _getAtlas(const char* name);
-    const rl::Texture2D& _getTexture(const char* name);
+    const TextureAtlas& _getAtlas(const std::string& name);
+    const rl::Texture2D& _getTexture(const std::string& name);
     rl::RenderTexture2D& _getRenderTexture(TextureID id);
     bool isRenderTextureUsed(s32 ix) const;
     void setIsRenderTextureUsed(s32 ix);

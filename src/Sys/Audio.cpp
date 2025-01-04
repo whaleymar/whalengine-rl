@@ -179,9 +179,13 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         mMusic->setMode(FMOD_LOOP_OFF);
         mMusicChannel->setMode(FMOD_LOOP_OFF);
     }
-    mSystem->playSound(mMusic, nullptr, false, &mMusicChannel);
-    mMusicChannel->setVolume(volume);
+
+    // initialize paused, set effects, then unpause
+    mSystem->playSound(mMusic, nullptr, true, &mMusicChannel);
+    mMusicChannel->setVolume(mMasterVolume * mMusicVolume * volume);
+    mMusicChannel->setMute(mIsMusicMuted);
     setFilterMusic(filter);
+    mMusicChannel->setPaused(false);
 
     if (position != nullptr) {
         // 1 = 100% 3D, 0 = 100% 2D
@@ -206,7 +210,7 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
 
     // looping? prob have to use seek() in update() TODO
 
-    rl::SetMusicVolume(mMusic, volume);
+    rl::SetMusicVolume(mMusic, mMasterVolume * mMusicVolume * volume * mIsMusicMuted ? 0.0 : 1.0);
     rl::PlayMusicStream(mMusic);
 
 #endif
@@ -295,7 +299,7 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
     playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
 #else
-    rl::SetSoundVolume(clip.get(), volume);
+    rl::SetSoundVolume(clip.get(), mSfxVolume * mMasterVolume * volume * isSfxMuted() ? 0.0 : 1.0);
     rl::PlaySound(clip.get());
     mClipSounds.push_back(clip.get());
 #endif
@@ -307,7 +311,7 @@ void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter,
 #ifndef __EMSCRIPTEN__
     playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
 #else
-    rl::SetSoundVolume(clip.get(), volume);
+    rl::SetSoundVolume(clip.get(), mSfxVolume * mMasterVolume * volume * isSfxMuted() ? 0.0 : 1.0);
     rl::PlaySound(clip.get());
     mMenuSounds.push_back(clip.get());
 #endif
@@ -335,9 +339,13 @@ void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* chan
     if (isInGroup) {
         group = mClipChannelGroup;
     }
-    mSystem->playSound(clip.get(), group, false, &channel);
-    channel->setVolume(volume);
+
+    // initialize paused, apply affects, then unpause
+    mSystem->playSound(clip.get(), group, true, &channel);
+    channel->setVolume(mMasterVolume * mSfxVolume * volume);
+    channel->setMute(isSfxMuted());
     setChannelFilter(filter, channel);
+    channel->setPaused(false);
 
     if (position != nullptr) {
         // 1 = 100% 3D, 0 = 100% 2D
@@ -404,6 +412,19 @@ void AudioPlayer::stopAll() {
 }
 
 void AudioPlayer::setMusicVolume(f32 volume) {
+    // currently only 1 concurrent music track is supported, so I can directly set the volume
+    // if I want to do multiple music tracks at the same time in the future, then I'll need to do what setSfxVolume does to preserve relative volumes
+
+    if (volume == 0.0f) {
+        setIsMusicMuted(true);
+        return;
+    } else if (mIsMusicMuted) {
+        setIsMusicMuted(false);
+    }
+
+    mMusicVolume = volume;
+    volume *= mMasterVolume;
+
 #ifndef __EMSCRIPTEN__
     if (mMusicChannel != nullptr && mIsPlayingMusic) {
         mMusicChannel->setVolume(volume);
@@ -412,7 +433,114 @@ void AudioPlayer::setMusicVolume(f32 volume) {
     if (mIsPlayingMusic && IsMusicStreamPlaying(mMusic)) {
         rl::SetMusicVolume(mMusic, volume);
     }
+#endif
+}
 
+void AudioPlayer::setSfxVolume(f32 volume) {
+    // should prevent divide by zero
+    if (volume == 0.0f) {
+        // just mute
+        setIsSfxMuted(true);
+        return;
+    } else if (mIsSfxMuted && mMasterVolume > 0.0f) {
+        setIsSfxMuted(false);
+    }
+
+    const f32 multiplier = volume / mSfxVolume;
+    mSfxVolume = volume;
+
+#ifndef __EMSCRIPTEN__
+    // update volume of all channels
+    // use the ratio of the old volume to the new one to make sure relative clip volumes are preserved
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        if (mClipChannelPool[i] != nullptr) {
+            f32 currentVolume;
+            auto result = mClipChannelPool[i]->getVolume(&currentVolume);
+            if (result == FMOD_OK) {
+                mClipChannelPool[i]->setVolume(currentVolume * multiplier);
+            }
+        }
+    }
+#else
+    // TODO
+#endif
+}
+
+void AudioPlayer::setMasterVolume(f32 volume) {
+    // should prevent divide by zero
+    if (volume == 0.0f) {
+        // just mute
+        setIsMuted(true);
+        return;
+    } else if (isMuted()) {
+        setIsMuted(false);
+    }
+
+    const f32 multiplier = volume / mMasterVolume;
+    mMasterVolume = volume;
+
+    // update music volume
+    setMusicVolume(mMusicVolume);
+
+    // update sfx volume. Same method as setSfxVolume, adjusting by a multiplier
+
+#ifndef __EMSCRIPTEN__
+    // update volume of all channels
+    // use the ratio of the old volume to the new one to make sure relative clip volumes are preserved
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        if (mClipChannelPool[i] != nullptr) {
+            f32 currentVolume;
+            auto result = mClipChannelPool[i]->getVolume(&currentVolume);
+            if (result == FMOD_OK) {
+                mClipChannelPool[i]->setVolume(currentVolume * multiplier);
+            }
+        }
+    }
+#else
+    // TODO
+#endif
+}
+
+void AudioPlayer::setIsMuted(bool isMuted) {
+    setIsMusicMuted(isMuted);
+    setIsSfxMuted(isMuted);
+}
+
+void AudioPlayer::setIsMusicMuted(bool isMuted) {
+    if (mIsMusicMuted == isMuted) {
+        return;
+    }
+
+    mIsMusicMuted = isMuted;
+#ifndef __EMSCRIPTEN__
+    if (mMusicChannel != nullptr) {
+        mMusicChannel->setMute(isMuted);
+    }
+#else
+    if (mIsPlayingMusic) {
+        if (isMuted) {
+            rl::SetMusicVolume(mMusic, 0.0f);
+        } else {
+            rl::SetMusicVolume(mMusic, mVolume);
+        }
+    }
+#endif
+}
+
+void AudioPlayer::setIsSfxMuted(bool isMuted) {
+    if (mIsSfxMuted == isMuted) {
+        return;
+    }
+    mIsSfxMuted = isMuted;
+
+#ifndef __EMSCRIPTEN__
+    for (s32 i = 0; i < mNumClipChannels; i++) {
+        if (mClipChannelPool[i] != nullptr) {
+            mClipChannelPool[i]->setMute(isMuted);
+        }
+    }
+#else
+    // TODO
 #endif
 }
 
