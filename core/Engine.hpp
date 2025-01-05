@@ -125,8 +125,10 @@ public:
         GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
         GetTargetFPS = getSymbol<IntGetter>("WhalGetTargetFPS");
         GetWindowTitle = getSymbol<StrGetter>("WhalGetWindowTitle");
+#ifndef NDEBUG
         GetEditorMode = getSymbol<BoolCB>("WhalIsEditorMode");
         SetEditorMode = getSymbol<BoolSetter>("WhalSetEditorMode");
+#endif
 
         if (mAllLoadsSuccessful) {
             print("Loaded library successfully");
@@ -153,8 +155,10 @@ public:
         GetWindowHeight = WhalGetRenderHeight;
         GetTargetFPS = WhalGetTargetFPS;
         GetWindowTitle = WhalGetWindowTitle;
+#ifndef NDEBUG
         GetEditorMode = WhalIsEditorMode;
         SetEditorMode = WhalSetEditorMode;
+#endif
         return false;
 
 #endif
@@ -186,8 +190,10 @@ public:
     StrGetter GetWindowTitle;
     GameCreator CreateGameCB;
     GameDestructor DestroyGameCB;
+#ifndef NDEBUG
     BoolCB GetEditorMode;
     BoolSetter SetEditorMode;
+#endif
     BoolCB EngineIsHotReload;
 
 private:
@@ -268,8 +274,10 @@ public:
             // hot reloading
 #if defined(DYNLIB)
             if (mGameHandler.EngineIsHotReload()) {
-                // maintain previous editor state
+// maintain previous editor state
+#ifndef NDEBUG
                 const bool isEditorMode = mGameHandler.GetEditorMode();
+#endif
 
                 unloadGame();
                 mGameHandler.EngineEnd();
@@ -297,7 +305,9 @@ public:
                 }
                 print("Loaded Game");
 
+#ifndef NDEBUG
                 mGameHandler.SetEditorMode(isEditorMode);
+#endif
             }
 #endif
         }

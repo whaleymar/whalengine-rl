@@ -234,7 +234,7 @@ void Renderer::render() {
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
-    if (Input.isHeld("view colliders")) {
+    if (VIEW_COLLIDERS_MODE) {
         rl::BeginTextureMode(mainTex);
         rl::BeginMode2D(worldCamera);
         drawColliders();
