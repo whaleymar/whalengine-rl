@@ -103,7 +103,6 @@ bool System::start() {
 
     Graphics.init();
     ShaderManager::instance().loadShaders();
-    Input.loadMappings();
     World.setEntityDeathCallback(&emitEntityDeathEvent);
     World.setEntityCreateCallback(&onTopLevelEntityCreated);
     World.setEntityChildCreateCallback(&onChildEntityCreated);

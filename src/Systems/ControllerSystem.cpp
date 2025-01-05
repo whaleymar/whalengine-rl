@@ -15,19 +15,15 @@ namespace whal {
 constexpr f32 APPROACH_SPEED_X = 7.5;  // 5 frames to max speed
 
 void ControllerSystem::update() {
-    if (!Input.isMovementEnabled()) {
-        return;
-    }
-
     for (auto& [entityid, entity] : getEntities()) {
         Velocity& vel = entity.get<Velocity>();
         PlayerControl& control = entity.get<PlayerControl>();
 
         f32 impulseX = 0;
-        if (Input.isOn(InputType::LEFT)) {
+        if (Input.isOn("left")) {
             impulseX -= 1;
         }
-        if (Input.isOn(InputType::RIGHT)) {
+        if (Input.isOn("right")) {
             impulseX += 1;
         }
 
@@ -60,25 +56,21 @@ void ControllerSystem::update() {
 }
 
 void FreeControlSystem::update() {
-    if (!Input.isMovementEnabled()) {
-        return;
-    }
-
     for (auto& [entityid, entity] : getEntities()) {
         auto& trans = entity.get<Transform>();
         Vector2f delta;
-        if (Input.isOn(InputType::LEFT)) {
+        if (Input.isOn("left")) {
             delta += Vector2f::LEFT;
             trans.facing = Facing::Left;
         }
-        if (Input.isOn(InputType::RIGHT)) {
+        if (Input.isOn("right")) {
             delta += Vector2f::RIGHT;
             trans.facing = Facing::Right;
         }
-        if (Input.isOn(InputType::UP)) {
+        if (Input.isOn("up")) {
             delta += Vector2f::UP;
         }
-        if (Input.isOn(InputType::DOWN)) {
+        if (Input.isOn("down")) {
             delta += Vector2f::DOWN;
         }
 
@@ -95,12 +87,7 @@ void FreeControlSystem::update() {
 }
 
 void JumpSystem::update() {
-    if (!Input.isJumpingEnabled()) {
-        return;
-    }
-
-    bool isJumpPressedThisFrame = Input.isJumpAvailable();
-    Input.useJump();
+    const bool isJumpPressedThisFrame = Input.isPressed("jump");
 
     for (auto& [entityid, entity] : getEntities()) {
         Velocity& vel = entity.get<Velocity>();
@@ -113,7 +100,7 @@ void JumpSystem::update() {
         }
 
         // || entity.has<AIControl>() && AIControl.isJumping()
-        if (entity.has<PlayerControl>() && Input.isOn(InputType::JUMP)) {
+        if (entity.has<PlayerControl>() && Input.isHeld("jump")) {
             if ((rb.isGrounded || jumpControl.coyoteSecondsRemaining > 0) && jumpControl.canJump()) {
                 // jump happens
                 jumpControl.buffer.consume();
