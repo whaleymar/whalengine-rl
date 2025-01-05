@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/Transform.h"
+#include <string>
 #include "Gfx/Coordinates.h"
 #include "Util/Vector.h"
 
@@ -8,67 +8,85 @@ namespace whal {
 
 struct System;
 
-enum class InputType : u64 {
-    LEFT = 1,
-    RIGHT = 1 << 1,
-    UP = 1 << 2,
-    DOWN = 1 << 3,
-    JUMP = 1 << 4,
-    PAUSE = 1 << 5,
-    QUIT = 1 << 6,
-    M1 = 1 << 7,
-    OK = 1 << 8,
-    DEBUG = 1 << 9,
-    GROWX = 1 << 10,
-    GROWY = 1 << 11,
-    SHRINKX = 1 << 12,
-    SHRINKY = 1 << 13,
-    MUSICTEST = 1 << 14,
-    RELOADSCENE = 1 << 15,
-    TIMETEST = 1 << 16,
-    KILLPLAYER = 1 << 17,
-    AIM = 1 << 18
+using InputCode = u32;
+
+// Get a unique normalized value for any input type
+InputCode GetInputCode(rl::KeyboardKey key);
+InputCode GetInputCode(rl::MouseButton button);
+InputCode GetInputCode(rl::GamepadButton button);
+
+struct InputEvent {
+    std::string_view name;
+    bool isPressed;
+    bool isHeld;
+    bool isReleased;
 };
 
 class InputHandler {
 public:
     friend System;
 
+    struct InputPair {
+        const char* name;
+        InputCode code;
+    };
+
     InputHandler() = default;
     void update();
-    void set(InputType input);
-    void reset(InputType input);
-    void loadMappings() const;
-    void useJump();
-    bool isOn(InputType input) const;
-    Vector2i getMoveNormal() const;
-    Direction getDirection() const;
-
-    void disableInputs(u64 mask);
-    void enableInputs(u64 mask);
-    bool isInputEnabled(InputType input) const;
-
-    void disableMovement() { mIsMovementEnabled = false; }
-    void enableMovement() { mIsMovementEnabled = true; }
-    bool isMovementEnabled() const { return mIsMovementEnabled; }
-    void disableJumping() { mIsJumpingEnabled = false; }
-    void enableJumping() { mIsJumpingEnabled = true; }
-    bool isJumpingEnabled() const { return mIsJumpingEnabled; }
-    bool isJumpAvailable() const { return mIsJumpPressed; }
+    void loadMappings(const InputPair mappings[], s32 count) const;
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
     Vector2f getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
+
+    // NEW STUFF
+    // input pressed this frame
+    bool isPressed(const std::string& name) const;
+    bool isPressed(InputCode code) const;
+    bool isPressed(rl::KeyboardKey key) const;
+    bool isPressed(rl::MouseButton button) const;
+    // bool isPressed(rl::GamepadButton button) const;
+
+    // input released this frame
+    bool isReleased(const std::string& name) const;
+    bool isReleased(InputCode code) const;
+    bool isReleased(rl::KeyboardKey key) const;
+    bool isReleased(rl::MouseButton button) const;
+    // bool isReleased(rl::GamepadButton button) const;
+
+    // Input is active, but not pressed this frame
+    bool isHeld(const std::string& name) const;
+    bool isHeld(InputCode code) const;
+    bool isHeld(rl::KeyboardKey key) const;
+    bool isHeld(rl::MouseButton button) const;
+    // bool isHeld(rl::GamepadButton button) const;
+
+    // Input is pressed or held
+    bool isOn(const std::string& name) const;
+    bool isOn(InputCode code) const;
+    bool isOn(rl::KeyboardKey key) const;
+    bool isOn(rl::MouseButton button) const;
+    // bool isOn(rl::GamepadButton button) const;
+
+    void add(const std::string& name, InputCode code) const;
+    void add(const std::string& name, rl::KeyboardKey key) const;
+    void add(const std::string& name, rl::MouseButton button) const;
+    // void add(const std::string& name, rl::GamepadButton button);
+
+    void remove(const std::string& name) const;
+
+    void disable(InputCode code) const;
+    void disable(rl::KeyboardKey key) const;
+    void disable(rl::MouseButton button) const;
+
+    void enable(InputCode code) const;
+    void enable(rl::KeyboardKey key) const;
+    void enable(rl::MouseButton button) const;
 
 private:
     InputHandler(const InputHandler&) = delete;
     void operator=(const InputHandler&) = delete;
 
-    u64 mFlags = 0;
-    u64 mDeactivationFlags = 0;  // for inputs which are disabled
     Vector2i mMouseScreenPosition;
-    bool mIsJumpPressed = false;
-    bool mIsMovementEnabled = true;
-    bool mIsJumpingEnabled = true;
 };
 
 }  // namespace whal

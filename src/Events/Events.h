@@ -7,15 +7,15 @@ namespace whal {
 namespace ecs {
 class Entity;
 }
-enum class InputType : u64;
+
+struct InputEvent;
 struct HitInfo;
 struct ActiveLevel;
 
 namespace evt {
 class Death : public IEvent<ecs::Entity> {};
 class Collision : public IEvent<ecs::Entity, HitInfo> {};
-class ButtonPress : public IEvent<InputType> {};
-class ButtonRelease : public IEvent<InputType, bool> {};
+class Input : public IEvent<InputEvent> {};
 class Landing : public IEvent<ecs::Entity> {};
 class EnteredLevel : public IEvent<ecs::Entity, ActiveLevel&> {};
 class ShaderReload : public IEvent<> {};

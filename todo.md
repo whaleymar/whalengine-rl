@@ -8,7 +8,6 @@ NEXT GOAL:
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
-- want to edit Input mappings and add custom Input Enum values from Game 
 - editing globals like physics gravity/friction values from game -> put in Settings.cpp
 
 ## Components (some of these are duplicates of other tasks)
