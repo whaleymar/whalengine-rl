@@ -15,6 +15,8 @@ InputCode GetInputCode(rl::KeyboardKey key);
 InputCode GetInputCode(rl::MouseButton button);
 InputCode GetInputCode(rl::GamepadButton button);
 
+std::string InputCodeToString(InputCode code);
+
 struct InputEvent {
     std::string_view name;
     bool isPressed;
@@ -81,6 +83,9 @@ public:
     void enable(InputCode code) const;
     void enable(rl::KeyboardKey key) const;
     void enable(rl::MouseButton button) const;
+
+    std::string toString() const;
+    bool fromString(const std::string& data);  // returns true on error
 
 private:
     InputHandler(const InputHandler&) = delete;

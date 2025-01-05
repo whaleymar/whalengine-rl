@@ -21,7 +21,10 @@
 ///////////////// DEBUG SETTINGS ////////////////////////////
 /////////////////////////////////////////////////////////////
 
+#ifndef NDEBUG
 extern bool EDITOR_MODE;
+extern bool VIEW_COLLIDERS_MODE;
+#endif
 
 /////////////////////////////////////////////////////////////
 ///////////////// RAYLIB GRAPHICS ///////////////////////////
@@ -51,8 +54,11 @@ s32 WhalGetRenderWidth();
 s32 WhalGetRenderHeight();
 const char* WhalGetWindowTitle();
 s32 WhalGetTargetFPS();
+
+#ifndef NDEBUG
 bool WhalIsEditorMode();
 void WhalSetEditorMode(bool);
+#endif
 }
 
 // DERIVED STUFF
