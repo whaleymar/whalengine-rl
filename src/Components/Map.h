@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
+#include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -23,5 +21,12 @@ struct TileMapLayer {
 struct TileMapLevel {
     std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
 };
+
+// a "pointer" to an entity in the map
+struct TileMapEntity : ISerialize<TileMapEntity, ComponentFactory> {
+    std::string mapFile;
+    std::string entityName;
+};
+REGISTER_SERIALIZE(TileMapEntity);
 
 }  // namespace whal

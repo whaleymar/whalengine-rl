@@ -38,6 +38,8 @@ struct ActiveLevel : public Level {
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
+
+    ecs::Entity getChild(const std::string& name);
 };
 
 struct Scene {
@@ -55,6 +57,7 @@ struct Scene {
     Expected<ActiveLevel*> getLoadedLevelAt(Vector2i worldPosition);
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
+    Expected<ActiveLevel*> getLoadedLevel(const std::string& levelPath);
 };
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level);

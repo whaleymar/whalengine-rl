@@ -1,5 +1,6 @@
 #include "Level.h"
 
+#include "Components/Name.h"
 #include "IGame.h"
 
 #include "Components/Draw.h"
@@ -21,6 +22,16 @@ ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent)
     self.set(Transform::world(worldOffset.as<f32>()));
     TileMap::load(base.filepath.c_str(), *this);
     parent.loadedLevels.push_back(*this);
+}
+
+ecs::Entity ActiveLevel::getChild(const std::string& name) {
+    for (const ecs::Entity& child : self.children()) {
+        auto nameOpt = child.tryGet<Name>();
+        if (nameOpt && nameOpt->name == name) {
+            return child;
+        }
+    }
+    return ecs::Entity{};
 }
 
 bool Scene::isValid() const {
@@ -99,6 +110,15 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
     ActiveLevel* result = &loadedLevels[loadedLevels.size() - 1];
     assert(result->filepath == level.filepath && "Last active level doesn't match passed arg");
     return result;
+}
+
+Expected<ActiveLevel*> Scene::getLoadedLevel(const std::string& levelPath) {
+    for (const auto& aLvl : allLevels) {
+        if (aLvl.filepath == levelPath) {
+            return getLoadedLevel(aLvl);
+        }
+    }
+    return Error(whal_format("Level not found: {}", levelPath));
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
