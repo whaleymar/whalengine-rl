@@ -201,7 +201,7 @@ void Renderer::render() {
     gfx::RenderContext lightRenderContext = renderContext;
     lightRenderContext.camera.target = (cameraPosition * Vector2f(1, -1)).asRL();
     lightRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-    lightRenderContext.cameraPosition = lightRenderContext.camera.target;
+    lightRenderContext.cameraPosition = cameraPosition;
     drawLights(lightRenderContext);  // drawn to TextureID::Lighting
 
     // posterize before applying lighting

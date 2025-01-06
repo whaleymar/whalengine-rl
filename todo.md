@@ -1,6 +1,7 @@
 # To Do 
 
 NEXT GOAL: 
+- issue with boxlight, seems to be based on camera position or some shit
 - want to independently toggle when an entity is inactive, regardless of its parent 
     - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
     - e.g. parent is active, child is "inactive", so child is inactive 

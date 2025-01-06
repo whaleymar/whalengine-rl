@@ -5,6 +5,7 @@
 #include <rlgl.h>
 
 #include "Components/Light.h"
+#include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 
@@ -93,7 +94,8 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         BoxLight light = entity.get<BoxLight>();
         const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(light.offset);
-        Vector2i screenPosition = Vector2i(worldPosition.x, -worldPosition.y);
+        Vector2i drawPosition = Vector2i(worldPosition.x, -worldPosition.y);
+        Vector2i screenPosition = worldToScreenCoords(worldPosition.as<f32>(), ctx.cameraPosition, true);
         Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component
@@ -118,13 +120,15 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
 
         const Vector2i lightBounds(radius + light.halfLen.x, radius + light.halfLen.y);
-        const Vector2i destPosition = screenPosition - lightBounds;
+        const Vector2i destPosition = drawPosition - lightBounds;
         const Vector2i destSize = lightBounds * 2;
 
         const rl::Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
         const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
         gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
+        // testing:
+        // gfx::DrawRectangleHDR(dstRect, rl::Vector2(0, 0), 0.0f, Colors::Blue, gfx::DrawMetaData{});
     }
     Graphics.releaseTemporaryRT(randomTexture);
 }
