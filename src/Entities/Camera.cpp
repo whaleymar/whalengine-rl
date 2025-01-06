@@ -12,6 +12,9 @@
 
 #include "Sys/System.h"
 
+// #include "Components/PlayerControl.h"
+// #include "Components/Velocity.h"
+
 namespace whal {
 
 ecs::Entity createCamera(Transform trans) {
@@ -26,6 +29,8 @@ ecs::Entity createCamera(Transform trans) {
     camera.add<Camera>();
     camera.add<AudioListener>();
     camera.add<IgnoreTimeModifiers>();
+    // camera.add<PlayerControl>();
+    // camera.add<Velocity>();
 
     return camera;
 }
