@@ -16,10 +16,16 @@ Vector2f screenToWorldCoords(Vector2i screenCoords) {
     return yAtTop + cameraPos - middleOffset;
 }
 
-Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition) {
-    Vector2f worldF = worldCoords.as<f32>();
-    Vector2f screenPositionUnscaled(worldF.x, -worldF.y);
-    return (screenPositionUnscaled * VIRTUAL_SCREEN_RATIO).round();
+Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition, bool useGameResolution) {
+    const Vector2f screenPositionUnscaled(worldCoords.x - cameraPosition.x, worldCoords.y - cameraPosition.y);
+    if (!useGameResolution) {
+        const Vector2f screenHalf = Vector2f(FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER) * 0.5;
+        return (screenPositionUnscaled * VIRTUAL_SCREEN_RATIO + screenHalf).round();
+
+    } else {
+        const Vector2f screenHalf = Vector2f(FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME) * 0.5;
+        return (screenPositionUnscaled + screenHalf).round();
+    }
 }
 
 Vector2i worldToTileCoords(Vector2i worldCoords) {
@@ -41,6 +47,11 @@ Vector2f worldToUVcoords(Vector2f worldCoords) {
     const Vector2f cameraPos = getCameraPositionPrecise();
     return (Vector2f(worldCoords.x - cameraPos.x, worldCoords.y - cameraPos.y) + screenHalf) * resolutonRecip;
     // return (Vector2f(worldCoords.x, -worldCoords.y)) * resolutonRecip;
+}
+
+Vector2f worldToRenderCoords(Vector2f worldCoords) {
+    Vector2f screenPositionUnscaled(worldCoords.x, -worldCoords.y);
+    return screenPositionUnscaled * VIRTUAL_SCREEN_RATIO;
 }
 
 }  // namespace whal

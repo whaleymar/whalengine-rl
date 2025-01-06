@@ -230,10 +230,9 @@ Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffse
 #ifndef NDEBUG
 // Draws the root position + transformed root, according to the rotation + scale + pivot
 void Transform::draw() const {
-    const Vector2f cameraPos = getCameraPositionPrecise();
-    gfx::DrawPixel(worldToScreenCoords(position, cameraPos).as<f32>(), Colors::Red);
+    gfx::DrawPixel(worldToRenderCoords(position), Colors::Red);
     auto unrounded = _getRotatedPosition(position, scale, pivotOffset, rotation, 0.0f);
-    gfx::DrawPixel(worldToScreenCoords(unrounded, cameraPos).as<f32>(), Colors::Green);
+    gfx::DrawPixel(worldToRenderCoords(unrounded), Colors::Green);
 }
 #endif
 

@@ -32,8 +32,8 @@ static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStrai
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
     const LinePoints points = getRotatedPoints(eCtx.transform.position, eCtx.entity.get<Transform>(), line);
-    const rl::Vector2 p1 = worldToScreenCoords(points.p1, ctx.cameraPosition).asRL();
-    const rl::Vector2 p2 = worldToScreenCoords(points.p2, ctx.cameraPosition).asRL();
+    const rl::Vector2 p1 = worldToRenderCoords(points.p1).asRL();
+    const rl::Vector2 p2 = worldToRenderCoords(points.p2).asRL();
 
     gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
 }
