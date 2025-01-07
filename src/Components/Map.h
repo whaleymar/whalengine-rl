@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Map/ComponentFactory.h"
+#include <memory>
+#include <vector>
 #include "Util/Vector.h"
 
 namespace whal {
@@ -23,10 +24,9 @@ struct TileMapLevel {
 };
 
 // a "pointer" to an entity in the map
-struct TileMapEntity : ISerialize<TileMapEntity, ComponentFactory> {
+struct TileMapEntity {
     std::string mapFile;
     std::string entityName;
 };
-REGISTER_SERIALIZE(TileMapEntity);
 
 }  // namespace whal

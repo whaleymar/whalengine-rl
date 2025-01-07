@@ -1,5 +1,6 @@
 #include "TiledParse.h"
 
+#include "Components/Map.h"
 #include "Map/Tiled.h"
 #include "Physics/Shapes.h"
 #include "Util/DebugUtil.h"
@@ -37,6 +38,14 @@ bool readBool(const nlohmann::json& data, std::string_view key) {
 std::string readString(const nlohmann::json& data, std::string_view key) {
     DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
     return data[key];
+}
+
+TileMapEntity readEntity(const nlohmann::json& data, std::string_view key) {
+    DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
+    return TileMapEntity{
+        .mapFile = data["mapFile"],
+        .entityName = data["entityName"],
+    };
 }
 
 Color readColor(const std::string& hexString) {
@@ -203,6 +212,16 @@ bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view
 bool tryReadShape(const LoadContext& ctx, std::string_view key, Shape* dst, Vector2i* dstOffset) {
     if (ctx.values->contains(key)) {
         *dst = readShape(ctx, key, dstOffset);
+        return true;
+    }
+    return false;
+}
+
+template <>
+bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntity* dst) {
+    if (data.contains(key)) {
+        tryRead(data[key], "mapFile", &dst->mapFile);
+        tryRead(data[key], "entityName", &dst->entityName);
         return true;
     }
     return false;

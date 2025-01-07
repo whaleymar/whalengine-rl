@@ -17,6 +17,7 @@ struct Color;
 enum class Depth : u8;
 class Shape;
 struct LoadContext;
+struct TileMapEntity;
 
 namespace ecs {
 class Entity;
@@ -29,6 +30,7 @@ Vector2i readVector2i(const nlohmann::json& json, const char* xKey = "x", const 
 Vector2f readVector2f(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
 bool readBool(const nlohmann::json& data, std::string_view key);
 std::string readString(const nlohmann::json& json, std::string_view key);
+TileMapEntity readEntity(const nlohmann::json& json, std::string_view key);
 Color readColor(const std::string& hexString);
 Depth readDepth(const std::string& depthString);
 
@@ -68,6 +70,9 @@ bool tryRead(const nlohmann::json& data, std::string_view key, Vector2i* dst);
 
 template <>
 bool tryRead(const nlohmann::json& data, std::string_view key, Vector2f* dst);
+
+template <>
+bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntity* dst);
 
 bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst);
 bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst);
