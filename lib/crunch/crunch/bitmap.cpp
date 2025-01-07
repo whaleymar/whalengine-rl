@@ -29,36 +29,32 @@
 #include <iostream>
 
 #define LODEPNG_NO_COMPILE_CPP
-#include "third_party/lodepng.h"
 #include "hash.hpp"
 #include "options.hpp"
+#include "third_party/lodepng.h"
 
 using namespace std;
 
-Bitmap::Bitmap(const string &file, const string &name, bool premultiply, bool trim)
-    : name(name)
-{
+Bitmap Bitmap::fromPNG(const string& file, const string& name, bool premultiply, bool trim) {
     // Load the png file
-    unsigned char *pdata;
+    unsigned char* pdata;
     unsigned int pw, ph;
-    if (lodepng_decode32_file(&pdata, &pw, &ph, file.data()))
-    {
+
+    if (lodepng_decode32_file(&pdata, &pw, &ph, file.data())) {
         cerr << "failed to load png: " << file << endl;
         exit(EXIT_FAILURE);
     }
 
-    int w = static_cast<int>(pw);
-    int h = static_cast<int>(ph);
-    uint32_t *pixels = reinterpret_cast<uint32_t *>(pdata);
+    return Bitmap(name, reinterpret_cast<uint32_t*>(pdata), static_cast<int>(pw), static_cast<int>(ph), premultiply, trim);
+}
 
+Bitmap::Bitmap(const string& name_, uint32_t* pixels, int w, int h, bool premultiply, bool trim) : name(name_) {
     // Premultiply all the pixels by their alpha
-    if (premultiply)
-    {
+    if (premultiply) {
         int count = w * h;
         uint32_t c, a, r, g, b;
         float m;
-        for (int i = 0; i < count; ++i)
-        {
+        for (int i = 0; i < count; ++i) {
             c = pixels[i];
             a = c >> 24;
             m = static_cast<float>(a) / 255.0f;
@@ -76,16 +72,12 @@ Bitmap::Bitmap(const string &file, const string &name, bool premultiply, bool tr
     int minY = h - 1;
     int maxX = 0;
     int maxY = 0;
-    if (trim)
-    {
+    if (trim) {
         uint32_t p;
-        for (int y = 0; y < h; ++y)
-        {
-            for (int x = 0; x < w; ++x)
-            {
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
                 p = pixels[y * w + x];
-                if ((p >> 24) > 0)
-                {
+                if ((p >> 24) > 0) {
                     minX = min(x, minX);
                     minY = min(y, minY);
                     maxX = max(x, maxX);
@@ -93,18 +85,15 @@ Bitmap::Bitmap(const string &file, const string &name, bool premultiply, bool tr
                 }
             }
         }
-        if (maxX < minX || maxY < minY)
-        {
+        if (maxX < minX || maxY < minY) {
             minX = 0;
             minY = 0;
             maxX = w - 1;
             maxY = h - 1;
             if (options.verbose)
-                cout << "image is completely transparent: " << file << endl;
+                cout << "image is completely transparent: " << name << endl;
         }
-    }
-    else
-    {
+    } else {
         minX = 0;
         minY = 0;
         maxX = w - 1;
@@ -117,17 +106,14 @@ Bitmap::Bitmap(const string &file, const string &name, bool premultiply, bool tr
     frameW = w;
     frameH = h;
 
-    if (width == w && height == h)
-    {
+    if (width == w && height == h) {
         // If we aren't trimmed, use the loaded image data
         frameX = 0;
         frameY = 0;
         data = pixels;
-    }
-    else
-    {
+    } else {
         // Create the trimmed image data
-        data = reinterpret_cast<uint32_t *>(calloc(width * height, sizeof(uint32_t)));
+        data = reinterpret_cast<uint32_t*>(calloc(width * height, sizeof(uint32_t)));
         frameX = -minX;
         frameY = -minY;
 
@@ -144,61 +130,53 @@ Bitmap::Bitmap(const string &file, const string &name, bool premultiply, bool tr
     hashValue = 0;
     HashCombine(hashValue, static_cast<uint64_t>(width));
     HashCombine(hashValue, static_cast<uint64_t>(height));
-    HashData(hashValue, reinterpret_cast<char *>(data), sizeof(uint32_t) * width * height);
+    HashData(hashValue, reinterpret_cast<char*>(data), sizeof(uint32_t) * width * height);
 }
 
-Bitmap::Bitmap(int width, int height)
-    : width(width), height(height)
-{
-    data = reinterpret_cast<uint32_t *>(calloc(width * height, sizeof(uint32_t)));
+Bitmap::Bitmap(int width, int height) : width(width), height(height) {
+    data = reinterpret_cast<uint32_t*>(calloc(width * height, sizeof(uint32_t)));
 }
 
-Bitmap::~Bitmap()
-{
-    free(data);
+Bitmap::~Bitmap() {
+    if (data) {
+        free(data);
+    }
+    data = nullptr;
 }
 
-void Bitmap::SaveAs(const string &file)
-{
-    unsigned char *pdata = reinterpret_cast<unsigned char *>(data);
+void Bitmap::SaveAs(const string& file) {
+    unsigned char* pdata = reinterpret_cast<unsigned char*>(data);
     unsigned int pw = static_cast<unsigned int>(width);
     unsigned int ph = static_cast<unsigned int>(height);
-    if (lodepng_encode32_file(file.data(), pdata, pw, ph))
-    {
+    if (lodepng_encode32_file(file.data(), pdata, pw, ph)) {
         cout << "failed to save png: " << file << endl;
         exit(EXIT_FAILURE);
     }
 }
 
-void Bitmap::CopyPixels(const Bitmap *src, int tx, int ty)
-{
+void Bitmap::CopyPixels(const Bitmap* src, int tx, int ty) {
     for (int y = 0; y < src->height; ++y)
         for (int x = 0; x < src->width; ++x)
             CopyPixel(src, x, y, tx + x, ty + y);
 }
 
-void Bitmap::CopyPixelsRot(const Bitmap *src, int tx, int ty)
-{
+void Bitmap::CopyPixelsRot(const Bitmap* src, int tx, int ty) {
     int r = src->height - 1;
     for (int y = 0; y < src->width; ++y)
         for (int x = 0; x < src->height; ++x)
             CopyPixel(src, y, r - x, tx + x, ty + y);
 }
 
-bool Bitmap::Equals(const Bitmap *other) const
-{
+bool Bitmap::Equals(const Bitmap* other) const {
     if (width == other->width && height == other->height)
         return memcmp(data, other->data, sizeof(uint32_t) * width * height) == 0;
     return false;
 }
 
-void Bitmap::StretchPixels(int rectX, int rectY, int rectWidth, int rectHeight, int amount)
-{
+void Bitmap::StretchPixels(int rectX, int rectY, int rectWidth, int rectHeight, int amount) {
     int minx = rectX, miny = rectY, maxx = minx + rectWidth - 1, maxy = miny + rectHeight - 1;
-    for (int a = 0; a < amount; a++)
-    {
-        for (int x = minx; x <= maxx; x++)
-        {
+    for (int a = 0; a < amount; a++) {
+        for (int x = minx; x <= maxx; x++) {
             CopyPixel(x, miny, x, miny - 1);
             CopyPixel(x, maxy, x, maxy + 1);
         }
@@ -206,8 +184,7 @@ void Bitmap::StretchPixels(int rectX, int rectY, int rectWidth, int rectHeight, 
         miny--;
         maxy++;
 
-        for (int y = miny; y <= maxy; y++)
-        {
+        for (int y = miny; y <= maxy; y++) {
             CopyPixel(minx, y, minx - 1, y);
             CopyPixel(maxx, y, maxx + 1, y);
         }
@@ -217,12 +194,10 @@ void Bitmap::StretchPixels(int rectX, int rectY, int rectWidth, int rectHeight, 
     }
 }
 
-void Bitmap::CopyPixel(const Bitmap *src, int srcX, int srcY, int x, int y)
-{
+void Bitmap::CopyPixel(const Bitmap* src, int srcX, int srcY, int x, int y) {
     data[y * width + x] = src->data[srcY * src->width + srcX];
 }
 
-void Bitmap::CopyPixel(int srcX, int srcY, int x, int y)
-{
+void Bitmap::CopyPixel(int srcX, int srcY, int x, int y) {
     data[y * width + x] = data[srcY * width + srcX];
 }

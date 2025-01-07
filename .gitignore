@@ -6,7 +6,7 @@ engine
 *.exe
 *.pdb
 *.ilk
-lib/
+# lib/
 engined.data
 engined.html
 engined.js

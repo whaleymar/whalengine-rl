@@ -29,42 +29,35 @@
 #include <algorithm>
 #include <iostream>
 
-#include "third_party/MaxRectsBinPack.h"
 #include "binary.hpp"
 #include "options.hpp"
+#include "third_party/MaxRectsBinPack.h"
 
 using namespace std;
 using namespace rbp;
 
-Packer::Packer(int width, int height, int pad, int stretch)
-    : width(width), height(height), pad(pad), stretch(stretch)
-{
-}
+Packer::Packer(int width, int height, int pad, int stretch) : width(width), height(height), pad(pad), stretch(stretch) {}
 
-void Packer::Pack(vector<Bitmap *> &bitmaps, bool unique, bool rotate, MaxRectsBinPack::FreeRectChoiceHeuristic choiceHeuristic)
-{
+void Packer::Pack(vector<Bitmap*>& bitmapsToPack, bool unique, bool rotate, MaxRectsBinPack::FreeRectChoiceHeuristic choiceHeuristic) {
     MaxRectsBinPack packer(width + pad, height + pad, rotate);
 
     int ww = 0, hh = 0;
     int expandAmount = pad + stretch * 2;
-    while (!bitmaps.empty())
-    {
-        auto bitmap = bitmaps.back();
+    while (!bitmapsToPack.empty()) {
+        auto bitmap = bitmapsToPack.back();
 
         if (options.verbose)
-            cout << '\t' << bitmaps.size() << ": " << bitmap->name << endl;
+            cout << '\t' << bitmapsToPack.size() << ": " << bitmap->name << endl;
 
         // Check to see if this is a duplicate of an already packed bitmap
-        if (unique)
-        {
+        if (unique) {
             auto di = dupLookup.find(bitmap->hashValue);
-            if (di != dupLookup.end() && bitmap->Equals(this->bitmaps[di->second]))
-            {
+            if (di != dupLookup.end() && bitmap->Equals(this->bitmaps[di->second])) {
                 Point p = points[di->second];
                 p.dupID = di->second;
                 points.push_back(p);
                 this->bitmaps.push_back(bitmap);
-                bitmaps.pop_back();
+                bitmapsToPack.pop_back();
                 continue;
             }
         }
@@ -88,7 +81,7 @@ void Packer::Pack(vector<Bitmap *> &bitmaps, bool unique, bool rotate, MaxRectsB
 
         points.push_back(p);
         this->bitmaps.push_back(bitmap);
-        bitmaps.pop_back();
+        bitmapsToPack.pop_back();
 
         ww = max(rect.x + rect.width - pad, ww);
         hh = max(rect.y + rect.height - pad, hh);
@@ -100,11 +93,9 @@ void Packer::Pack(vector<Bitmap *> &bitmaps, bool unique, bool rotate, MaxRectsB
         height /= 2;
 }
 
-void Packer::SavePng(const string &file)
-{
+void Packer::SavePng(const string& file) {
     Bitmap bitmap(width, height);
-    for (int i = 0, j = bitmaps.size(); i < j; ++i)
-    {
+    for (int i = 0, j = bitmaps.size(); i < j; ++i) {
         if (points[i].dupID >= 0)
             continue;
 
@@ -122,18 +113,15 @@ void Packer::SavePng(const string &file)
     bitmap.SaveAs(file);
 }
 
-void Packer::SaveXml(const string &name, ofstream &xml, bool trim, bool rotate)
-{
+void Packer::SaveXml(const string& name, ofstream& xml, bool trim, bool rotate) {
     xml << "\t<tex n=\"" << name << "\">" << endl;
-    for (int i = 0, j = bitmaps.size(); i < j; ++i)
-    {
+    for (int i = 0, j = bitmaps.size(); i < j; ++i) {
         xml << "\t\t<img n=\"" << bitmaps[i]->name << "\" ";
         xml << "x=\"" << points[i].x << "\" ";
         xml << "y=\"" << points[i].y << "\" ";
         xml << "w=\"" << bitmaps[i]->width << "\" ";
         xml << "h=\"" << bitmaps[i]->height << "\" ";
-        if (trim)
-        {
+        if (trim) {
             xml << "fx=\"" << bitmaps[i]->frameX << "\" ";
             xml << "fy=\"" << bitmaps[i]->frameY << "\" ";
             xml << "fw=\"" << bitmaps[i]->frameW << "\" ";
@@ -146,19 +134,16 @@ void Packer::SaveXml(const string &name, ofstream &xml, bool trim, bool rotate)
     xml << "\t</tex>" << endl;
 }
 
-void Packer::SaveBin(const string &name, ofstream &bin, bool trim, bool rotate)
-{
+void Packer::SaveBin(const string& name, ofstream& bin, bool trim, bool rotate) {
     WriteString(bin, name);
     WriteShort(bin, (int16_t)bitmaps.size());
-    for (int i = 0, j = bitmaps.size(); i < j; ++i)
-    {
+    for (int i = 0, j = bitmaps.size(); i < j; ++i) {
         WriteString(bin, bitmaps[i]->name);
         WriteShort(bin, (int16_t)points[i].x);
         WriteShort(bin, (int16_t)points[i].y);
         WriteShort(bin, (int16_t)bitmaps[i]->width);
         WriteShort(bin, (int16_t)bitmaps[i]->height);
-        if (trim)
-        {
+        if (trim) {
             WriteShort(bin, (int16_t)bitmaps[i]->frameX);
             WriteShort(bin, (int16_t)bitmaps[i]->frameY);
             WriteShort(bin, (int16_t)bitmaps[i]->frameW);
@@ -169,18 +154,15 @@ void Packer::SaveBin(const string &name, ofstream &bin, bool trim, bool rotate)
     }
 }
 
-void Packer::SaveJson(const string &name, ofstream &json, bool trim, bool rotate)
-{
+void Packer::SaveJson(const string& name, ofstream& json, bool trim, bool rotate) {
     json << "\t\t\"" << name << "\": {" << endl;
-    for (int i = 0, j = bitmaps.size(); i < j; ++i)
-    {
+    for (size_t i = 0, j = bitmaps.size(); i < j; ++i) {
         json << "\t\t\t\"" << bitmaps[i]->name << "\": { ";
         json << "\"x\": " << points[i].x << ", ";
         json << "\"y\": " << points[i].y << ", ";
         json << "\"w\": " << bitmaps[i]->width << ", ";
         json << "\"h\": " << bitmaps[i]->height;
-        if (trim)
-        {
+        if (trim) {
             json << ", \"fx\": " << bitmaps[i]->frameX << ", ";
             json << "\"fy\": " << bitmaps[i]->frameY << ", ";
             json << "\"fw\": " << bitmaps[i]->frameW << ", ";
@@ -194,4 +176,13 @@ void Packer::SaveJson(const string &name, ofstream &json, bool trim, bool rotate
         json << endl;
     }
     json << "\t\t}" << endl;
+}
+
+void Packer::Release() {
+    for (size_t i = 0; i < bitmaps.size(); i++) {
+        delete bitmaps[i];
+    }
+    bitmaps.clear();
+    points.clear();
+    dupLookup.clear();
 }
