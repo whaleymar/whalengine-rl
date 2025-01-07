@@ -29,12 +29,10 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 using namespace std;
 
-struct Bitmap
-{
+struct Bitmap {
     string name;
     int width;
     int height;
@@ -42,20 +40,21 @@ struct Bitmap
     int frameY;
     int frameW;
     int frameH;
-    uint32_t *data;
+    uint32_t* data;
     uint64_t hashValue;
-    Bitmap(const string &file, const string &name, bool premultiply, bool trim);
+    static Bitmap fromPNG(const string& file, const string& name, bool premultiply, bool trim);
     Bitmap(int width, int height);
+    Bitmap(const string& name, uint32_t* data, int width, int height, bool premultiply, bool trim);
     ~Bitmap();
-    void SaveAs(const string &file);
-    void CopyPixels(const Bitmap *src, int tx, int ty);
-    void CopyPixelsRot(const Bitmap *src, int tx, int ty);
-    bool Equals(const Bitmap *other) const;
+    void SaveAs(const string& file);
+    void CopyPixels(const Bitmap* src, int tx, int ty);
+    void CopyPixelsRot(const Bitmap* src, int tx, int ty);
+    bool Equals(const Bitmap* other) const;
     void StretchPixels(int tx, int ty, int rectWidth, int rectHeight, int amount);
 
 private:
     void CopyPixel(int srcX, int srcY, int x, int y);
-    void CopyPixel(const Bitmap *src, int srcX, int srcY, int x, int y);
+    void CopyPixel(const Bitmap* src, int srcX, int srcY, int x, int y);
 };
 
 #endif

@@ -183,6 +183,16 @@ bool tryRead(const nlohmann::json& data, std::string_view key, Vector2f* dst) {
     return false;
 }
 
+template <>
+bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntity* dst) {
+    if (data.contains(key)) {
+        tryRead(data[key], "mapFile", &dst->mapFile);
+        tryRead(data[key], "entityName", &dst->entityName);
+        return true;
+    }
+    return false;
+}
+
 bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst) {
     bool foundOne = false;
     if (data.contains(xKey)) {
@@ -212,16 +222,6 @@ bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view
 bool tryReadShape(const LoadContext& ctx, std::string_view key, Shape* dst, Vector2i* dstOffset) {
     if (ctx.values->contains(key)) {
         *dst = readShape(ctx, key, dstOffset);
-        return true;
-    }
-    return false;
-}
-
-template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntity* dst) {
-    if (data.contains(key)) {
-        tryRead(data[key], "mapFile", &dst->mapFile);
-        tryRead(data[key], "entityName", &dst->entityName);
         return true;
     }
     return false;

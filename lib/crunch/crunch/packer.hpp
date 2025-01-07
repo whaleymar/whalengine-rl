@@ -31,37 +31,36 @@
 #include <unordered_map>
 #include <vector>
 
-#include "third_party/MaxRectsBinPack.h"
 #include "bitmap.hpp"
+#include "third_party/MaxRectsBinPack.h"
 
 using namespace std;
 using namespace rbp;
 
-struct Point
-{
+struct Point {
     int x;
     int y;
     int dupID;
     bool rot;
 };
 
-struct Packer
-{
+struct Packer {
     int width;
     int height;
     int pad;
     int stretch;
 
-    vector<Bitmap *> bitmaps;
+    vector<Bitmap*> bitmaps;
     vector<Point> points;
     unordered_map<uint64_t, int> dupLookup;
 
     Packer(int width, int height, int pad, int stretch);
-    void Pack(vector<Bitmap *> &bitmaps, bool unique, bool rotate, MaxRectsBinPack::FreeRectChoiceHeuristic choiceHeuristic);
-    void SavePng(const string &file);
-    void SaveXml(const string &name, ofstream &xml, bool trim, bool rotate);
-    void SaveBin(const string &name, ofstream &bin, bool trim, bool rotate);
-    void SaveJson(const string &name, ofstream &json, bool trim, bool rotate);
+    void Pack(vector<Bitmap*>& bitmaps, bool unique, bool rotate, MaxRectsBinPack::FreeRectChoiceHeuristic choiceHeuristic);
+    void SavePng(const string& file);
+    void SaveXml(const string& name, ofstream& xml, bool trim, bool rotate);
+    void SaveBin(const string& name, ofstream& bin, bool trim, bool rotate);
+    void SaveJson(const string& name, ofstream& json, bool trim, bool rotate);
+    void Release();
 };
 
 #endif
