@@ -97,20 +97,20 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& tex
 
     for (xml_node<>* animationNode = animationsNode->first_node("animation"); animationNode;
          animationNode = animationNode->next_sibling("animation")) {
-        // using placeholders for ID and secondsPerFrame
         const char* name = animationNode->first_attribute("name")->value();
         const s32 frameCount = std::stoi(animationNode->first_attribute("framecount")->value());
-        std::vector<Frame> frames;
+        std::vector<Animation::FrameExt> frames;
         frames.reserve(frameCount);
 
-        f32 frameTimeFinal;
         for (xml_node<>* frameNode = animationNode->first_node("frame"); frameNode; frameNode = frameNode->next_sibling("frame")) {
             f32 frameTime = std::stof(frameNode->first_attribute("time")->value());
-            frameTimeFinal = frameTime;
             s32 id = std::stoi(frameNode->first_attribute("id")->value());
-            frames.push_back(*getFrame(whal_format("{}{}", name, id)));
+            frames.push_back(Animation::FrameExt{
+                .frame = *getFrame(whal_format("{}{}", name, id)),
+                .duration = frameTime,
+            });
         }
-        Animation animation(0, std::move(frames), frameTimeFinal);
+        Animation animation(name, std::move(frames));
         AnimationFactory::add(name, animation);
     }
 

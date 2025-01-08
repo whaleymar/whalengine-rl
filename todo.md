@@ -47,10 +47,6 @@ NEXT GOAL:
 - refactor the Scene/Level hierarchy to use entities
     - (maybe) keep scenes as is, but levels could be entities
 
-## Sprite Editing workflow
-- .aseprite format support would be ideal. Could have some pre-compile step which unpacks the .ase files into PNGs, builds the atlas, then deletes the PNGs
-    - see how Murder Engine does this
-
 ## Camera 
 - follow a spline whose points are defined in the level.
     - can use this to find the closest point on a spline to the player: https://homepage.math.uiowa.edu/~atkinson/ftp/CurvesAndSufacesClosestPoint.pdf
