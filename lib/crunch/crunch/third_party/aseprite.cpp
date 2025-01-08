@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <cstring>
-#include <iostream>
 #include <stdio.h>
 #include <zlib.h>
 
@@ -394,6 +393,24 @@ std::vector<Color> Frame::getRaster(int rasterWidth, int rasterHeight) const {
         }
     }
     return base;
+}
+
+void Animation::addFrame(const Frame& frame) {
+    // frame time is in milliseconds
+    float durationSeconds = static_cast<float>(frame.header.frameDuration) / 1000.0f;
+    frameDurations.push_back(durationSeconds);
+}
+
+void Animation::saveXml(std::ofstream& xml) const {
+    using namespace std;
+
+    xml << "\t\t<animation name=\"" << name << "\" " << "framecount=\"" << frameDurations.size() << "\">" << endl;
+    int ix = 1;
+    for (float frameDuration : frameDurations) {
+        xml << "\t\t\t<frame id=\"" << ix << "\" time=\"" << frameDuration << "\"/>" << endl;
+        ix++;
+    }
+    xml << "\t\t</animation>" << endl;
 }
 
 }  // namespace ase

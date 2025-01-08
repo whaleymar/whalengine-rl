@@ -63,7 +63,7 @@ static void LoadBitmap(const string& path, const string& name, vector<Bitmap*>& 
     bitmaps.push_back(new Bitmap(Bitmap::fromPNG(path, name, options.premultiply, options.trim)));
 }
 
-static void LoadBitmapsAseprite(const string& path, const string& basename, vector<Bitmap*>& bitmaps) {
+static void LoadBitmapsAseprite(const string& path, const string& basename, vector<Bitmap*>& bitmaps, vector<ase::Animation>& animations) {
     if (options.verbose)
         cout << '\t' << path << endl;
 
@@ -73,8 +73,13 @@ static void LoadBitmapsAseprite(const string& path, const string& basename, vect
     const int frameCount = sprite.header.frameCount;
     const int width = sprite.header.width;
     const int height = sprite.header.height;
+    ase::Animation animation = ase::Animation{
+        .name = basename,
+    };
     for (int i = 0; i < frameCount; i++) {
         auto& frame = sprite.frameArray[i];
+        if (frameCount > 1)
+            animation.addFrame(frame);
 
         // match the naming convention that aseprite uses when exporting frames to PNGs
         std::string name = frameCount > 1 ? basename + to_string(i + 1) : basename;
@@ -92,6 +97,8 @@ static void LoadBitmapsAseprite(const string& path, const string& basename, vect
         memcpy(data, pixels.data(), len);
         bitmaps.push_back(new Bitmap(name, data, width, height, options.premultiply, options.trim));
     }
+    if (frameCount > 1)
+        animations.push_back(animation);
 }
 
 static void FindPackers(const string& root, const string& name, const string& ext, vector<string>& packers) {
@@ -142,6 +149,7 @@ static int Pack(uint64_t newHash, string& outputDirectory, string& name, vector<
         cout << "loading images..." << endl;
 
     vector<Bitmap*> bitmaps;
+    vector<ase::Animation> animations;
     for (auto& input : inputs) {
         if (fs::is_directory(input)) {
             for (auto& entry : fs::recursive_directory_iterator(input)) {
@@ -155,7 +163,7 @@ static int Pack(uint64_t newHash, string& outputDirectory, string& name, vector<
                                bitmaps);
                 else if (path.extension().string() == ".aseprite")
                     LoadBitmapsAseprite(NormalizePath(path.string()),
-                                        prefix + NormalizePath(fs::relative(path.parent_path() / path.stem(), input).string()), bitmaps);
+                                        prefix + NormalizePath(fs::relative(path.parent_path() / path.stem(), input).string()), bitmaps, animations);
             }
         } else
             LoadBitmap(NormalizePath(input), prefix + NormalizePath(input), bitmaps);
@@ -228,6 +236,15 @@ static int Pack(uint64_t newHash, string& outputDirectory, string& name, vector<
         }
         for (size_t i = 0; i < packers.size(); ++i)
             packers[i].SaveXml(name + (noZero ? "" : to_string(i)), xml, options.trim, options.rotate);
+
+        if (animations.size() > 0) {
+            xml << "\t<animations>" << endl;
+            for (const auto& animation : animations) {
+                animation.saveXml(xml);
+            }
+            xml << "\t</animations>" << endl;
+        }
+
         if (!options.splitSubdirectories)
             xml << "</atlas>" << endl;
         xml.close();

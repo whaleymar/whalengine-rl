@@ -7,7 +7,9 @@
 #include <raylib.h>
 #include <string>
 
+#include "Components/Animator.h"
 #include "Gfx/RaylibUtil.h"
+#include "Map/AnimationFactory.h"
 #include "Settings.h"
 
 #include "Util/FileUtils.h"
@@ -39,6 +41,7 @@ namespace whal {
 
 static std::array<rl::RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
+// TODO crunch has a json export option. Use that to eliminate rapidxml dependency
 Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::string& atlasDataPath) {
     using namespace rapidxml;
 
@@ -85,6 +88,29 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& tex
     }
 
     mIsValid = true;
+
+    // add animations to the animation factory
+    xml_node<>* animationsNode = atlasNode->first_node("animations");
+    if (!animationsNode) {
+        return Error("Could not find 'animations' root node");
+    }
+
+    for (xml_node<>* animationNode = animationsNode->first_node("animation"); animationNode;
+         animationNode = animationNode->next_sibling("animation")) {
+        // using placeholders for ID and secondsPerFrame
+        const char* name = animationNode->first_attribute("name")->value();
+        const s32 frameCount = std::stoi(animationNode->first_attribute("framecount")->value());
+        std::vector<Frame> frames;
+        frames.reserve(frameCount);
+
+        for (xml_node<>* frameNode = animationNode->first_node("frame"); frameNode; frameNode = frameNode->next_sibling("frame")) {
+            //     f32 frameTime = std::stof(frameNode->first_attribute("time")->value());
+            s32 id = std::stoi(frameNode->first_attribute("id")->value());
+            frames.push_back(*getFrame(whal_format("{}{}", name, id)));
+        }
+        Animation animation(0, std::move(frames), 0.1);
+        AnimationFactory::add(name, animation);
+    }
 
     return NULLOPT;
 }

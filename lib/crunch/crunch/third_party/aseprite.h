@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <fstream>
+#include <string>
 #include <sys/types.h>
 #include <vector>
 
@@ -145,6 +147,14 @@ public:
     };
 
     Aseprite(const char* filePath);
+};
+
+struct Animation {
+    std::string name;
+    std::vector<float> frameDurations;
+
+    void addFrame(const Frame& frame);
+    void saveXml(std::ofstream& xml) const;
 };
 
 }  // namespace ase
