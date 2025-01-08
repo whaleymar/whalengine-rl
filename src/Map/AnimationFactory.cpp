@@ -1,14 +1,20 @@
 #include "AnimationFactory.h"
 
+#include <string>
+#include <unordered_map>
+#include "Components/Animator.h"
+
 namespace whal {
 
-void AnimationFactory::add(const char* name, Animator animator) {
-    instance().mTable.insert({std::string(name), animator});
+std::unordered_map<std::string, Animation> S_ANIMATION_TABLE;
+
+void AnimationFactory::add(const char* name, const Animation& animation) {
+    S_ANIMATION_TABLE.insert({std::string(name), animation});
 }
 
-Animator AnimationFactory::get(const char* name) {
-    assert(instance().mTable.contains(name));
-    return instance().mTable[name];
+const Animation& AnimationFactory::get(const char* name) {
+    assert(S_ANIMATION_TABLE.contains(name));
+    return S_ANIMATION_TABLE[name];
 }
 
 }  // namespace whal
