@@ -136,6 +136,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             ecs::Entity e = layerEntity.createChild(false);
 
             // level transform inherited from parent
+            // TODO add rotation from map data
             e.get<Transform>().translate(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE), e);
             const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
             const EntityMapData mapData = {
@@ -576,6 +577,10 @@ void parseMapProject(const char* mapfile) {
                         std::string memberPropType = "";  // is possible that it's null
                         tryRead(member, "propertyType", &memberPropType);
                         ComponentFactory::memberTypes.insert({std::move(memberName), {memberType, std::move(memberPropType)}});
+                        // TODO if it's an enum I also need to store the propertytype
+                        // if the enum is stored as an int, memberType will be an int, but I'll also need propertytype
+                        // and if the enum is stored as a string, memberType will be a string
+                        // so I need to double check if memberPropType is in ComponentFactory::propertyTypes
                     } else {
                         // propertyType doesn't matter, do empty string
                         ComponentFactory::memberTypes.insert({std::move(memberName), {memberType, ""}});

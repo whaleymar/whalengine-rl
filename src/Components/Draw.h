@@ -31,6 +31,7 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     static Sprite fromFrame(Frame frame, Color color_ = Colors::White);
 
     void setFrame(Frame frame);
+    Frame getFrame() const;
     void setMask(Frame frame);
     void setMask(const char* maskAtlasPath);
     void removeMask();
@@ -82,5 +83,10 @@ struct DrawText : ISerialize<DrawText, ComponentFactory> {
 
     static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
+
+struct SpriteOutline : ISerialize<SpriteOutline, ComponentFactory> {
+    Color color = Colors::White;
+};
+REGISTER_SERIALIZE(SpriteOutline);
 
 }  // namespace whal
