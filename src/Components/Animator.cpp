@@ -19,9 +19,11 @@
 namespace whal {
 
 static void loadAnimations(Animator& animator, const AnimInfo& animInfo) {
-    for (auto [animBaseName, animName] : animInfo) {
+    for (const auto& [animBaseName, animName] : animInfo) {
         Animation anim = AnimationFactory::get(animBaseName);
-        anim.name = animName;
+        if (strlen(animName)) {
+            anim.name = animName;
+        }
         animator.animations.push_back(anim);
     }
     animator.resetAnimation();
@@ -32,7 +34,7 @@ bool basicAnimation(Animator& animator, ecs::Entity entity) {
 
     anim.curFrameDuration += Time.dt();
     animator.curAnimDuration += Time.dt();
-    if (anim.curFrameDuration >= anim.getFrameDuration()) {
+    if (anim.isFrameDone()) {
         animator.nextFrame();
         return true;
     }
@@ -167,6 +169,10 @@ f32 Animation::getFrameDuration() const {
 
 s32 Animation::getFrameCount() const {
     return frames.size();
+}
+
+bool Animation::isFrameDone() const {
+    return curFrameDuration >= frames[curFrameIx].duration;
 }
 
 void Animation::nextFrame(bool isLooping) {

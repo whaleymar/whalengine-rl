@@ -73,6 +73,7 @@ struct Animation {
     Frame getFrame() const;
     f32 getFrameDuration() const;
     s32 getFrameCount() const;
+    bool isFrameDone() const;
 
     void nextFrame(bool isLooping);
     void reset();

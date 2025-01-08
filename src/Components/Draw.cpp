@@ -38,6 +38,10 @@ void Sprite::setFrame(Frame frame) {
     atlasPosition = frame.atlasPosition.as<f32>();
 }
 
+Frame Sprite::getFrame() const {
+    return Frame(atlasPosition.as<s32>(), frameSize.as<s32>());
+}
+
 void Sprite::setMask(Frame frame) {
     maskPosRelative = frame.atlasPosition.as<f32>() - atlasPosition;
 }
@@ -79,11 +83,6 @@ void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_v
 
 void Sprite::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
-
-    s32 rotation;
-    if (tryRead(*ctx.values, "rotationDegrees", &rotation)) {
-        entity.get<Transform>().rotation = rotation;
-    }
 
     tryRead(*ctx.values, "Color", &sprite.color);
 

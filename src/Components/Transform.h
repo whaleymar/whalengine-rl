@@ -81,10 +81,10 @@ struct Transform {
 
     // global transform (read only):
     Vector2f position;
-    Vector2i positionPx;  // rounded replica of position, for convenience
-    Vector2f scale = Vector2f::ONE;
-    f32 rotation = 0.0f;     // degrees
-    f32 floatHeight = 0.0f;  // RESEARCH make position Vector3f?
+    Vector2i positionPx;             // rounded replica of position, for convenience
+    Vector2f scale = Vector2f::ONE;  // research negative scale to flip about X/Y axis (replaces Facing)
+    f32 rotation = 0.0f;             // degrees
+    f32 floatHeight = 0.0f;          // RESEARCH make position Vector3f?
 
     // local transform (read/write):
     Vector2f localPosition = Vector2f::ZERO;
@@ -93,7 +93,7 @@ struct Transform {
     Facing facing = Facing::Right;  // draw calls flipped if facing left
     bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
     Depth depth = Depth::Level;
-    Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation
+    Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation // RESEARCH maybe can get rid of this by using a parent entity for the offset?
 
     static Transform world(s32 x, s32 y);
     static Transform world(Vector2i pos);
