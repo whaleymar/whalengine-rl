@@ -103,12 +103,14 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& tex
         std::vector<Frame> frames;
         frames.reserve(frameCount);
 
+        f32 frameTimeFinal;
         for (xml_node<>* frameNode = animationNode->first_node("frame"); frameNode; frameNode = frameNode->next_sibling("frame")) {
-            //     f32 frameTime = std::stof(frameNode->first_attribute("time")->value());
+            f32 frameTime = std::stof(frameNode->first_attribute("time")->value());
+            frameTimeFinal = frameTime;
             s32 id = std::stoi(frameNode->first_attribute("id")->value());
             frames.push_back(*getFrame(whal_format("{}{}", name, id)));
         }
-        Animation animation(0, std::move(frames), 0.1);
+        Animation animation(0, std::move(frames), frameTimeFinal);
         AnimationFactory::add(name, animation);
     }
 
