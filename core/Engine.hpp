@@ -1,5 +1,6 @@
 #pragma once
 
+#include <future>
 #include <raylib.h>
 #include "IGame.h"
 #include "Settings.h"
@@ -32,6 +33,8 @@ const char* DL_PATH = "build/libgamed.so";
 extern "C" whal::IGame* CreateGame();
 extern "C" void DestroyGame(whal::IGame* game);
 #endif
+
+static std::string runCommandWithOutput(const std::string& command, int* exitCode);
 
 class GameHandler {
 public:
@@ -263,6 +266,11 @@ public:
     }
 
     void mainloop() {
+#if defined(DYNLIB)
+        bool isRecompiling = false;
+        std::future<std::string> recompileOutput;
+        int exitCode;
+#endif
 #ifdef __EMSCRIPTEN__
         EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
         mGameHandler.EngineSleep(1);
@@ -273,27 +281,42 @@ public:
             mGameHandler.EngineUpdate();
             // hot reloading
 #if defined(DYNLIB)
-            if (mGameHandler.EngineIsHotReload()) {
+            if (!isRecompiling && mGameHandler.EngineIsHotReload()) {
 // maintain previous editor state
 #ifndef NDEBUG
                 const bool isEditorMode = mGameHandler.GetEditorMode();
 #endif
 
+                print("Recompiling", DL_PATH);
+                recompileOutput = std::async(std::launch::async, runCommandWithOutput, "make", &exitCode);
+                isRecompiling = true;
+
+#ifndef NDEBUG
+                mGameHandler.SetEditorMode(isEditorMode);
+#endif
+            } else if (isRecompiling && recompileOutput.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                print("Async recompilation job done");
+                print("Unloading game");
                 unloadGame();
                 mGameHandler.EngineEnd();
-                print("Recompiling", DL_PATH);
-                int result = std::system("make");
-                if (result != 0) {
-                    print("Error recompiling. Got code: ", result);
-                    print("Reloading with old library");
+                std::string output = recompileOutput.get();
+                if (exitCode == -1) {
+                    // this doesn't mean recompilation failed. It means the process broke somehow...
+                    print("Got exit code == -1. Something weird happened");
+                    return;
+                } else if (exitCode != 0) {
+                    print("Got nonzero exit code", exitCode);
+                    print("output from `make`:\n", output);
+                    print("Reloading original", DL_PATH);
+                } else {
+                    print("Reloading new", DL_PATH);
                 }
-                print("Reloading Game library");
                 bool err = mGameHandler.loadLib();
                 if (err) {
                     print("Failed to reload library");
                     return;
                 }
-                print("Reloaded Game library");
+                print("Finished loading", DL_PATH);
                 err = mGameHandler.EngineStart();
                 if (err) {
                     print("Error Restarting Engine Modules");
@@ -304,10 +327,7 @@ public:
                     break;
                 }
                 print("Loaded Game");
-
-#ifndef NDEBUG
-                mGameHandler.SetEditorMode(isEditorMode);
-#endif
+                isRecompiling = false;
             }
 #endif
         }
@@ -332,5 +352,26 @@ private:
     GameHandler mGameHandler;
     IGame* mGame;
 };
+
+// Function to execute a command and capture its output
+std::string runCommandWithOutput(const std::string& command, int* exitCode) {
+    std::array<char, 128> buffer;
+    std::string result;
+    FILE* pipe = popen((command + " 2>&1").c_str(), "r");
+
+    if (!pipe) {
+        print("popen() failed!");
+        *exitCode = -1;
+        return "";
+    }
+
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
+        result += buffer.data();
+    }
+
+    *exitCode = pclose(pipe);
+
+    return result;
+}
 
 }  // namespace whal
