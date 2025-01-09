@@ -1,10 +1,6 @@
 # To Do 
 
 NEXT GOAL: 
-- want to independently toggle when an entity is inactive, regardless of its parent 
-    - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
-    - e.g. parent is active, child is "inactive", so child is inactive 
-    - e.g. parent is active, child is "active", so child is active
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -66,11 +62,14 @@ NEXT GOAL:
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
     - also want to support tags for effects, like the text moving in a wave pattern
 - invisibility tag should affect children
+- want to independently toggle when an entity is inactive, regardless of its parent 
+    - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
+    - e.g. parent is active, child is "inactive", so child is inactive 
+    - e.g. parent is active, child is "active", so child is active
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
 - controller support (low priority)
-- input remapping (saved to file too) (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Get web and windows builds working again

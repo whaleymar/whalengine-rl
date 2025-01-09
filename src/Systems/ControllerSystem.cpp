@@ -81,8 +81,7 @@ void FreeControlSystem::update() {
         auto control = entity.get<PlayerControl>();
         delta *= control.moveSpeed;
 
-        Velocity newVel = Velocity(delta);
-        entity.set(newVel);
+        entity.get<Velocity>().stable = delta;
     }
 }
 
