@@ -36,6 +36,7 @@ public:
     InputHandler() = default;
     void update();
     void loadMappings(const InputPair mappings[], s32 count) const;
+    void resetMappings() const;
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
     Vector2f getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }

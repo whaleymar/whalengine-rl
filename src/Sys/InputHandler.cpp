@@ -115,6 +115,11 @@ void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {
     }
 }
 
+void InputHandler::resetMappings() const {
+    S_NAME_TO_INPUTS.clear();
+    S_NAME_TO_STATE.clear();
+}
+
 bool InputHandler::isPressed(const std::string& name) const {
     auto it = S_NAME_TO_STATE.find(name);
     if (it == S_NAME_TO_STATE.end()) {
