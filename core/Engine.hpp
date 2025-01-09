@@ -282,21 +282,18 @@ public:
             // hot reloading
 #if defined(DYNLIB)
             if (!isRecompiling && mGameHandler.EngineIsHotReload()) {
-// maintain previous editor state
-#ifndef NDEBUG
-                const bool isEditorMode = mGameHandler.GetEditorMode();
-#endif
+                // maintain previous editor state
 
                 print("Recompiling", DL_PATH);
                 recompileOutput = std::async(std::launch::async, runCommandWithOutput, "make", &exitCode);
                 isRecompiling = true;
 
-#ifndef NDEBUG
-                mGameHandler.SetEditorMode(isEditorMode);
-#endif
             } else if (isRecompiling && recompileOutput.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 print("Async recompilation job done");
                 print("Unloading game");
+#ifndef NDEBUG
+                bool isEditorMode = mGameHandler.GetEditorMode();
+#endif
                 unloadGame();
                 mGameHandler.EngineEnd();
                 std::string output = recompileOutput.get();
@@ -328,6 +325,9 @@ public:
                 }
                 print("Loaded Game");
                 isRecompiling = false;
+#ifndef NDEBUG
+                mGameHandler.SetEditorMode(isEditorMode);
+#endif
             }
 #endif
         }
