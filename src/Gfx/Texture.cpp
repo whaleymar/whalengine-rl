@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <raylib.h>
+#include <rlgl.h>
 #include <string>
 
 #include "Components/Animator.h"
@@ -150,6 +151,49 @@ Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgrou
     return texture;
 }
 
+MultiTexture MultiTexture::create() {
+    MultiTexture mt;
+    const s32 width = WINDOW_WIDTH_RENDER;
+    const s32 height = WINDOW_HEIGHT_RENDER;
+    const auto hdrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
+    const auto ldrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+
+    mt.tex = LoadRenderTextureFormat(width, height, hdrFormat);
+
+    rl::rlEnableFramebuffer(mt.tex.id);
+
+    // Load additional buffers
+    mt.depth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+    mt.occlusionColor = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+    mt.occlusionDepth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+
+    // Activate and attach the buffers
+    rl::rlActiveDrawBuffers(4);
+    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+
+    // Automatically calls rlDisableFramebuffer()
+    if (!rl::rlFramebufferComplete(mt.tex.id)) {
+        print("failed to create MultiTexture");
+    }
+
+    return mt;
+}
+
+void MultiTexture::release() {
+    if (tex.id > 0) {
+        // rl::rlUnloadTexture(tex.texture.id);
+        rl::rlUnloadTexture(depth);
+        rl::rlUnloadTexture(occlusionColor);
+        rl::rlUnloadTexture(occlusionDepth);
+        // rl::rlUnloadFramebuffer(tex.id);
+        rl::UnloadRenderTexture(tex);
+        tex.id = 0;
+    }
+}
+
 rl::Texture MultiTexture::getOcclusionColor() const {
     return rl::Texture{
         .id = occlusionColor,
@@ -180,34 +224,30 @@ rl::Texture MultiTexture::getOcclusionDepth() const {
     };
 }
 
-// RESEARCH add a data point for Texture Filter?
+enum class WindowSize {
+    Game,
+    Render,
+};
+
 struct RenderTextureInfo {
     TextureID id;
-    s32 width;
-    s32 height;
+    WindowSize size;
     rl::TextureFilter filter;
     bool isHDR;
 };
 
 static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
-    {TextureID::Main, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_POINT, true},
-    {TextureID::Lighting, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_BILINEAR, true},
-    {TextureID::OcclusionColor, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::OcclusionDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::AllDepth, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::Bloom, WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::TEXTURE_FILTER_BILINEAR, true},
-    {TextureID::DistanceField, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, true},
+    {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::OcclusionDepth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::AllDepth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
+    {TextureID::DistanceField, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
 };
 
 TextureManager::TextureManager() {
-    for (auto rtInfo : S_RENDER_TEX_INFO) {
-        auto format = rtInfo.isHDR ? rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        rl::RenderTexture2D renderTexture = LoadRenderTextureFormat(rtInfo.width, rtInfo.height, format);
-        s32 ix = static_cast<s32>(rtInfo.id);
-        S_RENDER_TEXTURES[ix] = renderTexture;
-        setIsRenderTextureUsed(ix);
-        SetTextureFilter(renderTexture.texture, rtInfo.filter);
-    }
+    _loadRenderTextures();
 }
 
 TextureManager::~TextureManager() {
@@ -218,7 +258,7 @@ TextureManager::~TextureManager() {
     constexpr s32 rtLen = static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME);
     for (size_t i = 0; i < rtLen; i++) {
         if (isRenderTextureUsed(i)) {
-            UnloadRenderTexture(S_RENDER_TEXTURES[i]);
+            rl::UnloadRenderTexture(S_RENDER_TEXTURES[i]);
         }
     }
 }
@@ -301,7 +341,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const std::
     }
 
     rl::Texture2D texture = rl::LoadTexture(imagePath.c_str());
-    if (!IsTextureValid(texture)) {
+    if (!rl::IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
     }
     return registerTexture(texture, name);
@@ -344,7 +384,7 @@ void TextureManager::setIsRenderTextureUsed(s32 ix) {
 void TextureManager::unloadRenderTexture(TextureID id) {
     s32 ix = static_cast<s32>(id);
     assert(isRenderTextureUsed(ix) && "trying to unload RenderTexture that is already unloaded");
-    UnloadRenderTexture(_getRenderTexture(id));
+    rl::UnloadRenderTexture(_getRenderTexture(id));
     mRTUsageMask &= ~(1 << ix);
 }
 
@@ -376,18 +416,45 @@ const rl::Texture2D& TextureManager::_getTexture(const std::string& name) {
     return mTextures[getTextureIndex(name)];
 }
 
+void TextureManager::_loadRenderTextures() {
+    for (auto rtInfo : S_RENDER_TEX_INFO) {
+        auto format = rtInfo.isHDR ? rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        Vector2i size =
+            rtInfo.size == WindowSize::Render ? Vector2i(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER) : Vector2i(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+        rl::RenderTexture2D renderTexture = rl::LoadRenderTextureFormat(size.x, size.y, format);
+        s32 ix = static_cast<s32>(rtInfo.id);
+        S_RENDER_TEXTURES[ix] = renderTexture;
+        setIsRenderTextureUsed(ix);
+        rl::SetTextureFilter(renderTexture.texture, rtInfo.filter);
+    }
+}
+
+void TextureManager::_unloadRenderTextures() {
+    for (auto rtInfo : S_RENDER_TEX_INFO) {
+        s32 ix = static_cast<s32>(rtInfo.id);
+        if (isRenderTextureUsed(ix)) {
+            unloadRenderTexture(rtInfo.id);
+        }
+    }
+}
+
 void TextureManager::unloadAll() {
     for (auto texture : getAllTextures()) {
-        UnloadTexture(texture);
+        rl::UnloadTexture(texture);
     }
     for (auto atlas : getAllAtlases()) {
-        UnloadTexture(atlas.getTexture());
+        rl::UnloadTexture(atlas.getTexture());
     }
 
     mTextureAtlases.clear();
     mTextureAtlasNames.clear();
     mTextures.clear();
     mTextureNames.clear();
+}
+
+void TextureManager::reloadRenderTextures() {
+    _unloadRenderTextures();
+    _loadRenderTextures();
 }
 
 }  // namespace whal

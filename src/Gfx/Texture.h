@@ -54,6 +54,8 @@ struct MultiTexture {
     u32 depth;           // stores depth for everything on red channel
     u32 occlusionDepth;  // stores depth for occluders on red channel
 
+    static MultiTexture create();
+    void release();
     rl::Texture getOcclusionColor() const;
     rl::Texture getDepth() const;
     rl::Texture getOcclusionDepth() const;
@@ -87,6 +89,7 @@ public:
     static rl::RenderTexture& getRenderTexture(TextureID id) { return instance()._getRenderTexture(id); }
 
     void unloadAll();
+    void reloadRenderTextures();
 
 private:
     TextureManager();
@@ -105,6 +108,9 @@ private:
     bool isRenderTextureUsed(s32 ix) const;
     void setIsRenderTextureUsed(s32 ix);
     void unloadRenderTexture(TextureID id);
+
+    void _loadRenderTextures();
+    void _unloadRenderTextures();
 
     std::vector<TextureAtlas> mTextureAtlases;
     std::vector<std::string> mTextureAtlasNames;

@@ -60,7 +60,7 @@ Renderer::Renderer() {
 }
 
 void Renderer::init() {
-    mStagingTexture = gfx::CreateMultiTexture();
+    mStagingTexture = MultiTexture::create();
 }
 
 void Renderer::tick() {
@@ -96,6 +96,49 @@ void Renderer::tick() {
 
     // Clear used list
     mUsedRTs.clear();
+
+    // I am enforcing that the render aspect ratio matches the game's
+    // But resizing the window immediately doesn't work. Needs some delay.
+    // So I create an event flow to do it. If the window is resized again before the event flow is done, the job is cancelled.
+    static s32 resizeJobId = 0;
+    const f32 resizeDelay = 0.2f;
+    if (rl::IsWindowResized()) {
+        // Force the aspect ratio to be the same as the game:
+        const f32 targetAR = FWINDOW_WIDTH_GAME / FWINDOW_HEIGHT_GAME;
+        f32 newWidth = rl::GetRenderWidth();
+        f32 newHeight = rl::GetRenderHeight();
+        const f32 newAR = newWidth / newHeight;
+        if (newAR > targetAR) {
+            // too wide, reduce width manually
+            newWidth = std::round(targetAR * newHeight);
+            if (newWidth != rl::GetRenderWidth()) {
+                Schedule.cancelEventFlow(resizeJobId);
+                resizeJobId = Schedule.flow()
+                                  .addWait(resizeDelay)
+                                  .add([](s32 width, s32 height) { rl::SetWindowSize(width, height); }, newWidth, newHeight)
+                                  .getId();
+            }
+        } else if (newAR < targetAR) {
+            // too tall, reduce height manually
+            newHeight = std::round(newWidth / targetAR);
+            if (newHeight != rl::GetRenderHeight()) {
+                Schedule.cancelEventFlow(resizeJobId);
+                resizeJobId = Schedule.flow()
+                                  .addWait(resizeDelay)
+                                  .add([](s32 width, s32 height) { rl::SetWindowSize(width, height); }, newWidth, newHeight)
+                                  .getId();
+            }
+        }
+        WINDOW_WIDTH_RENDER = newWidth;
+        WINDOW_HEIGHT_RENDER = newHeight;
+        _UpdateWindowSize();  // updates derived variables like VIRTUAL_SCREEN_RATIO
+
+        mStagingTexture.release();
+        mStagingTexture = MultiTexture::create();
+        TextureManager::instance().reloadRenderTextures();
+        mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
+        Event.emit<evt::WindowResize>();
+    }
 }
 
 rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelFormat format, rl::TextureFilter filter) {

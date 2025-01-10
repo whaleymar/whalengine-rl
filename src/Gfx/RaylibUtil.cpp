@@ -193,6 +193,19 @@ void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color) {
     rl::DrawTextureRec(tex, rl::Rectangle(0, 0, tex.width, -tex.height), rl::Vector2(0, 0), color);
 }
 
+void DrawRenderTextureCentered(rl::RenderTexture renderTexture, rl::Color color) {
+    s32 x = 0;
+    s32 y = 0;
+    s32 width = renderTexture.texture.width;
+    s32 height = renderTexture.texture.height;
+    if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
+        // the window size is mismatched for some reason, make sure we're drawing it centered
+        x += (rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2;
+        y += (rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2;
+    }
+    rl::DrawTextureRec(TextureManager::getRenderTexture(TextureID::Main).texture, rl::Rectangle(0, 0, width, -height), rl::Vector2(x, y), rl::WHITE);
+}
+
 void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color) {
     const auto tex = renderTexture.texture;
     DrawSpriteHDR(tex, rl::Rectangle(0, 0, tex.width, -tex.height), rl::Rectangle(0, 0, tex.width, tex.height), rl::Vector2(0, 0), 0.0f, color.asRL(),
@@ -496,37 +509,6 @@ void DrawSplineSegmentBezierQuadraticHDR(rl::Vector2 p1, rl::Vector2 c2, rl::Vec
     }
 
     DrawTriangleStripHDR(points, 2 * SPLINE_SEGMENT_DIVISIONS + 2, color.asRL(), cbi.asRL());
-}
-
-MultiTexture CreateMultiTexture() {
-    MultiTexture mt;
-    const s32 width = WINDOW_WIDTH_RENDER;
-    const s32 height = WINDOW_HEIGHT_RENDER;
-    const auto hdrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
-    const auto ldrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-
-    mt.tex = LoadRenderTextureFormat(width, height, hdrFormat);
-
-    rl::rlEnableFramebuffer(mt.tex.id);
-
-    // Load additional buffers
-    mt.depth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
-    mt.occlusionColor = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
-    mt.occlusionDepth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
-
-    // Activate and attach the buffers
-    rl::rlActiveDrawBuffers(4);
-    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-
-    // Automatically calls rlDisableFramebuffer()
-    if (!rl::rlFramebufferComplete(mt.tex.id)) {
-        print("failed to create MultiTexture");
-    }
-
-    return mt;
 }
 
 }  // namespace whal::gfx

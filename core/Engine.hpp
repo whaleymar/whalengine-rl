@@ -215,6 +215,7 @@ public:
 
         // Raylib initialization
         rl::SetTraceLogLevel(rl::LOG_WARNING);
+        rl::SetConfigFlags(rl::FLAG_WINDOW_RESIZABLE);
         rl::InitWindow(mGameHandler.GetWindowWidth(), mGameHandler.GetWindowHeight(), mGameHandler.GetWindowTitle());
         rl::SetExitKey(rl::KEY_NULL);  // Escape quits by default
 
