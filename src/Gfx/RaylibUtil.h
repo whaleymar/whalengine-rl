@@ -31,6 +31,7 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, gfx::RaylibDrawPar
 
 void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color = rl::WHITE);
 void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color = Colors::White);
+void DrawRenderTextureCentered(rl::RenderTexture renderTexture, rl::Color color = rl::WHITE);
 
 ////////////////////////////
 // CUSTOM SHAPE FUNCTIONS //
@@ -53,7 +54,5 @@ void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, rl:
 void DrawLineHDR(rl::Vector2 startPos, rl::Vector2 endPos, float thick, Color color, gfx::DrawMetaData cbi);
 void DrawSplineSegmentBezierQuadraticHDR(rl::Vector2 p1, rl::Vector2 c2, rl::Vector2 p3, float thick, Color color, gfx::DrawMetaData cbi);
 
-// Adds extra texture targets for depth and occlusion buffers
-MultiTexture CreateMultiTexture();
 }  // namespace gfx
 }  // namespace whal
