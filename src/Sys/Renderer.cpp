@@ -113,20 +113,16 @@ void Renderer::tick() {
             newWidth = std::round(targetAR * newHeight);
             if (newWidth != rl::GetRenderWidth()) {
                 Schedule.cancelEventFlow(resizeJobId);
-                resizeJobId = Schedule.flow()
-                                  .addWait(resizeDelay)
-                                  .add([](s32 width, s32 height) { rl::SetWindowSize(width, height); }, newWidth, newHeight)
-                                  .getId();
+                resizeJobId =
+                    Schedule.flow().addWait(resizeDelay).add([]() { rl::SetWindowSize(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER); }).getId();
             }
         } else if (newAR < targetAR) {
             // too tall, reduce height manually
             newHeight = std::round(newWidth / targetAR);
             if (newHeight != rl::GetRenderHeight()) {
                 Schedule.cancelEventFlow(resizeJobId);
-                resizeJobId = Schedule.flow()
-                                  .addWait(resizeDelay)
-                                  .add([](s32 width, s32 height) { rl::SetWindowSize(width, height); }, newWidth, newHeight)
-                                  .getId();
+                resizeJobId =
+                    Schedule.flow().addWait(resizeDelay).add([]() { rl::SetWindowSize(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER); }).getId();
             }
         }
         WINDOW_WIDTH_RENDER = newWidth;
@@ -220,11 +216,12 @@ void Renderer::render() {
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotation;
 
-    // dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
+    // HACK dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
     Vector2f cameraPosition = cameraEntity.get<Transform>().position;
     f32 decimal = math::abs(math::remainder(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
-        cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
+        // cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
+        cameraPosition.y += 0.01f;
     }
 
     worldCamera.target = (cameraPosition * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO)).asRL();

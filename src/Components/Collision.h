@@ -63,14 +63,29 @@ public:
     CollisionDir getCollisionDir() const { return mCollisionDir; }
     void setCollisionDir(CollisionDir dir) { mCollisionDir = dir; }
     CollisionLayer::Layer getCollisionLayer() const { return mCollisionLayer; }
-    void setCollisionLayer(CollisionLayer::Layer layer) { mCollisionLayer = layer; }
+    void setCollisionLayer(CollisionLayer::Layer layer) {
+        // turn off old layer
+        mCollisionMask &= ~mCollisionLayer;
+        mInteractMask &= ~LAYER_MATRIX.getMask(mCollisionLayer);
 
-    // Only intended for "tag" layers that don't affect physics collisions.
-    void setCollisionMask(u16 mask) { mCollisionMask = mask; }
+        // add new layer
+        mCollisionMask |= layer;
+        mInteractMask |= LAYER_MATRIX.getMask(layer);
+        mCollisionLayer = layer;
+    }
+
+    void addLayer(CollisionLayer::Layer layer) {
+        mCollisionMask |= layer;
+        mInteractMask |= LAYER_MATRIX.getMask(layer);
+    }
 
     // Resets collision mask to the collision layer.
-    void clearCollisionMask() { mCollisionMask = 0; }
-    u16 getCollisionMask() const { return mCollisionMask | mCollisionLayer; }
+    void clearCollisionMask() {
+        mCollisionMask = mCollisionLayer;
+        mInteractMask = LAYER_MATRIX.getMask(mCollisionLayer);
+    }
+    u16 getLayerMask() const { return mCollisionMask; }
+    u16 getInteractMask() const { return mInteractMask; }
 
     ecs::Entity getEntity() const { return mSelf; }
     void setEntity(ecs::Entity entity);  //{ mSelf = entity; }
@@ -133,6 +148,7 @@ protected:
     WorldMaterial mMaterial;
     CollisionDir mCollisionDir;
     u16 mCollisionMask = 0;
+    u16 mInteractMask = 0;
 };
 
 // since movement is pixel perfect, rounding can have big effect on momentum

@@ -9,8 +9,6 @@
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
 
-#include "IGame.h"
-#include "Map/Level.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Events/Events.h"
@@ -63,7 +61,8 @@ void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other
 
 Collider::Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, ColliderParams params)
     : mShape(AABB(transform, halflen, params.offset)), mOffset(params.offset), mCollisionLayer(layer), mOnCollisionEnter(params.onCollisionEnter),
-      mSquishCallback(params.onSquish), mMaterial(params.material), mCollisionDir(params.collisionDir), mCollisionMask(layer) {}
+      mSquishCallback(params.onSquish), mMaterial(params.material), mCollisionDir(params.collisionDir), mCollisionMask(layer),
+      mInteractMask(LAYER_MATRIX.getMask(layer)) {}
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
@@ -455,14 +454,14 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
 
 // we are moving, other is still.
 bool Collider::isCollisionPossible(const Collider& other, const Vector2i moveNormal, const u16 layerMask) const {
-    return other.mIsCollidable && this != &other && LAYER_MATRIX.isOn(mCollisionLayer, other.mCollisionLayer) &&
-           (layerMask & other.mCollisionLayer) > 0 && checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir());
+    return other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && (layerMask & other.mCollisionLayer) > 0 &&
+           checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir());
 }
 
 // other is moving, we are still. Only affects directional collision check.
 bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask) const {
-    return other->mIsCollidable && this != other && LAYER_MATRIX.isOn(mCollisionLayer, other->mCollisionLayer) &&
-           (layerMask & other->mCollisionLayer) > 0 && checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir());
+    return other->mIsCollidable && this != other && (mInteractMask & other->mCollisionMask) > 0 && (layerMask & other->mCollisionLayer) > 0 &&
+           checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir());
 }
 
 // Check for collision 1 unit down.
@@ -754,16 +753,16 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
         // add 1 to toMove.y so ground colliders are fetched
         yPadding = 1;
     }
-    const auto bigCollider =
+    const auto moveAreaBoundingBox =
         AABB(mShape.getPosition() + toMove / 2, mShape.getHalf() + Vector2i(std::ceil(static_cast<f32>(math::abs(toMove.x)) / 2),
                                                                             std::ceil(static_cast<f32>(math::abs(toMove.y)) / 2) + yPadding));
 
     std::vector<std::pair<ecs::Entity, Collider>> toReturn;
-    for (auto entity : ColliderSystem::query(bigCollider)) {
+    for (auto entity : ColliderSystem::query(moveAreaBoundingBox)) {
         const auto& other = entity.get<Collider>();
         // quick and dirty check for collision layers; ignoring directional collision
-        bool isCollidable = other.mIsCollidable && this != &other && LAYER_MATRIX.isOn(mCollisionLayer, other.mCollisionLayer) &&
-                            (layerMask & other.mCollisionLayer) > 0;
+        bool isCollidable =
+            other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && (layerMask & other.mCollisionLayer) > 0;
         if (!isCollidable) {
             continue;
         }

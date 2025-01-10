@@ -4,6 +4,7 @@
 #include "IGame.h"
 
 #include "Gfx/ShaderManager.h"
+#include "Settings.h"
 #include "Util/Print.h"
 
 namespace whal {
@@ -198,4 +199,14 @@ void _UpdateWindowSize() {
     FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
     FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
     VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
+
+    // HACK
+    // if VIRTUAL_SCREEN_RATIO * game_height has a decimal value of approx. 0.5, then we get artifacts
+    // from floating point errors, so we need to slightly tweak the window size
+    f32 decimal = math::abs(math::remainder(VIRTUAL_SCREEN_RATIO * FWINDOW_HEIGHT_GAME));
+    if (math::isNearZero(decimal - 0.5f, 0.005)) {
+        WINDOW_WIDTH_RENDER -= 1;
+        WINDOW_HEIGHT_RENDER -= 1;
+        _UpdateWindowSize();
+    }
 }

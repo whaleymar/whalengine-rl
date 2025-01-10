@@ -160,7 +160,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             // This doesn't work if the collision is added with the collision editor.
             if (e.has<Collider>()) {
                 layer.collisionMask[ix] = true;
-                e.get<Collider>().setCollisionMask(CollisionLayer::BlocksVision);
+                e.get<Collider>().addLayer(CollisionLayer::BlocksVision);
                 level.navGrid[x][y] = false;
             }
         }
