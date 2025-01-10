@@ -7,6 +7,7 @@
 #include "Events/Events.h"
 #include "System.h"
 #include "Util/STL_reduce.h"
+#include "Util/Saveutil.h"
 
 namespace whal {
 
@@ -288,7 +289,7 @@ void InputHandler::enable(rl::MouseButton button) const {
 }
 
 std::string InputHandler::toString() const {
-    return rfl::json::write(S_NAME_TO_INPUTS);
+    return rfl::json::write(sortMap(S_NAME_TO_INPUTS));
 }
 
 bool InputHandler::fromString(const std::string& data) {
