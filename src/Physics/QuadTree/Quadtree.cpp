@@ -348,7 +348,7 @@ RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) const {
     for (auto entity : values) {
         const auto collider = entity.get<Collider>();
         const auto shape = collider.getShape();
-        if ((layerMask & collider.getCollisionMask()) == 0 || shape.contains(originI)) {
+        if ((layerMask & collider.getLayerMask()) == 0 || shape.contains(originI)) {
             continue;
         }
 

@@ -59,8 +59,12 @@ public:
     Tweener() = default;
     Tweener(std::shared_ptr<Tween<T>> tween) : mTween(tween) {}
 
-    void kill() const { mTween->kill(); }
-    bool isDone() const { return mTween->isDone(); }
+    void kill() const {
+        if (mTween) {
+            mTween->kill();
+        }
+    }
+    bool isDone() const { return mTween && mTween->isDone(); }
 
     Tweener<T>& setOnStart(TweenCallback onStart_) {
         mTween->mOnStart = onStart_;

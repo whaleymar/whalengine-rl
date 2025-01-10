@@ -21,8 +21,9 @@ enum Layer : u16 {
     Player = 1 << 6,
     Enemy = 1 << 7,
     Npc = 1 << 8,
-    Light = 1 << 9,
-    BlocksVision = 1 << 10,
+    Attack = 1 << 9,
+    Light = 1 << 10,
+    BlocksVision = 1 << 11,
 };
 
 Layer fromString(const char* layer);
