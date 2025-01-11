@@ -136,7 +136,6 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             ecs::Entity e = layerEntity.createChild(false);
 
             // level transform inherited from parent
-            // TODO add rotation from map data
             e.get<Transform>().translate(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE), e);
             const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
             const EntityMapData mapData = {
@@ -379,11 +378,19 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
             if (tryRead(*pPrefab, "width", "height", &entityMapData.size))
                 entityMapData.isPoint = false;
         }
-        if (tryRead(object, "width", "height", &entityMapData.size))
+        if (tryRead(object, "width", "height", &entityMapData.size)) {
             entityMapData.isPoint = false;
+        }
+
+        f32 rotation = 0.0f;
+        tryRead(object, "rotation", &rotation);
 
         // add transform
-        entity.set(TransformBuilder(entity).translate(getMapTranslation(entityMapData.position, entityMapData.size)).depth(layerDepth).build());
+        entity.set(TransformBuilder(entity)
+                       .translate(getMapTranslation(entityMapData.position, entityMapData.size))
+                       .rotation(rotation)
+                       .depth(layerDepth)
+                       .build());
 
         // add name
         std::string name = "";
@@ -612,7 +619,7 @@ static Expected<Level::MetaData> parseLevelInfo(const char* lvlFileName) {
         }
     }
 
-    return Error(whal_format("LevelInfo property not found in level: {}", lvlFileName));
+    return Error(whal_format("Map_MapInfo property not found in level: {}", lvlFileName));
 }
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
