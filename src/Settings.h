@@ -42,8 +42,6 @@ inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
 // Render: The actual window size on your screen
 // Pixels: Window size that the game uses
 
-// TODO should have a resizable window that triggers some event
-
 extern s32 WINDOW_WIDTH_RENDER;
 extern s32 WINDOW_HEIGHT_RENDER;
 extern s32 WINDOW_WIDTH_GAME;

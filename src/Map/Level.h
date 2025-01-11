@@ -48,6 +48,7 @@ struct Scene {
     std::vector<ActiveLevel> loadedLevels;
     Vector2f startPos;
     s32 startLevelIx = -1;
+    ecs::Entity self;
 
     bool isValid() const;
     Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);

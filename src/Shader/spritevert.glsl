@@ -33,39 +33,39 @@ void main()
     // Write the color buffer data
     uint intData = floatBitsToUint(vertexNormal.r);
 
-    // Extract the depth (first 8 bits) and normalize 
+    // Extract the depth (first 8 bits) and normalize
     fragDepth = float(intData & 0xFFu) / 255.0;
 
-    // Extract flags 
-    // 9th bit 
+    // Extract flags
+    // 9th bit
     if ((intData & 0x100u) != 0u) {
         isOccluder = 1.0;
     } else {
         isOccluder = 0.0;
     }
 
-    // 10th bit 
+    // 10th bit
     if ((intData & 0x200u) != 0u) {
         isUI = 1.0;
     } else {
         isUI = 0.0;
     }
 
-    // 11th bit 
+    // 11th bit
     if ((intData & 0x400u) != 0u) {
         isMask = 1.0;
     } else {
         isMask = 0.0;
     }
 
-    // 12th bit 
+    // 12th bit
     if ((intData & 0x800u) != 0u) {
         isSilhouette = 1.0;
     } else {
         isSilhouette = 0.0;
     }
 
-    // 13th bit 
+    // 13th bit
     if ((intData & 0x1000u) != 0u) {
         isMaskBlendAdditive = 1.0;
     } else {
@@ -74,7 +74,5 @@ void main()
 
     maskTexCoord = vertexNormal.gb + vertexTexCoord;
 
-    // this is from the raylib template, idk what it does, can't just do the commented version
-    gl_Position = mvp*vec4(vertexPosition, 1.0);
-    // gl_Position = vec4(vertexPosition, 1.0);
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
