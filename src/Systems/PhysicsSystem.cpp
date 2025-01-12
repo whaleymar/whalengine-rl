@@ -98,6 +98,8 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
     }
 }
 
+// RESEARCH (bug i will eventually run into)
+// if a parent and child entity both have colliders, the parent entity moving will not move the child in the quad tree and it will crash
 void PhysicsSystem::update() {
     if (System::isEnginePaused()) {
         return;

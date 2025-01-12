@@ -1,3 +1,6 @@
+#include "Components/Collision.h"
+#include "Components/Draw.h"
+#include "Systems/ColliderSystem.h"
 #ifndef NDEBUG
 
 #include "EditorUiSystem.h"
@@ -29,7 +32,7 @@ static bool S_TREE_INVALID = false;
 // TODO feature list:
 // 1) Display more components in imgui
 // 2) Make serializable components editable in imgui
-// 3) entities with a sprite have a bounding box matching that sprite
+// 3) entities without a sprite have some visual indicator of where they are
 
 static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) {
     const Vector2f cameraPos = getCameraPositionPrecise();
@@ -43,7 +46,14 @@ static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) 
 }
 
 static AABB getUiBox(ecs::Entity entity) {
-    return getUiBox(entity.get<Transform>().position);
+    if (entity.has<Sprite>()) {
+        const Sprite& sprite = entity.get<Sprite>();
+        Vector2i customSize = sprite.getFrame().size / 2;
+        customSize = (customSize.as<f32>() * VIRTUAL_SCREEN_RATIO).round();
+        return getUiBox(entity.get<Transform>().position, customSize);
+    } else {
+        return getUiBox(entity.get<Transform>().position);
+    }
 }
 
 void EditorUiSystem::buildEntityTree() const {
@@ -90,6 +100,11 @@ void EditorUiSystem::dragSelectedEntities() const {
         const AABB newUiBox = getUiBox(selected);
         if (S_QTREE.getBoundingBox().contains(newUiBox)) {
             S_QTREE.add(selected, newUiBox);
+            if (selected.has<Collider>()) {
+                // update collider (physics system is turned off during engine pause)
+                auto& collider = selected.get<Collider>();
+                ColliderSystem::updatePosition(selected, collider.getShapeMutable(), selected.get<Transform>(), collider.getOffset());
+            }
         } else {
             // undo the move
             selected.get<Transform>().translate(worldDelta * -1, selected);
@@ -231,7 +246,7 @@ void EditorUiSystem::draw() {
         }
 
         trans.draw();
-        AABB(trans, Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2)).draw(Colors::Green);
+        AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO).draw(Colors::Green);
         printComponents(entity);
     }
 }
