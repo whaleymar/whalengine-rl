@@ -129,6 +129,8 @@ struct Transform {
     Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
     Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
 
+    static std::string saveImpl(ecs::Entity entity);
+
 #ifndef NDEBUG
     void draw() const;
 #endif

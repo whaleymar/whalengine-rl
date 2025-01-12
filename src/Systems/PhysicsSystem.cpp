@@ -99,6 +99,10 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
 }
 
 void PhysicsSystem::update() {
+    if (System::isEnginePaused()) {
+        return;
+    }
+
     S_CALLBACK_QUEUE.clear();
 
     // is a little inefficient to call this on all entities (vs splitting up this system)

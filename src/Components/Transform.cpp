@@ -1,5 +1,7 @@
 #include "Transform.h"
 
+#include <rfl/json.hpp>
+
 #include "Gfx/Color.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
@@ -225,6 +227,10 @@ Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffse
     const Vector2i rotatedOffset = relOffset.isZero() ? Vector2i::ZERO : relOffset.as<f32>().rotate(rotation, Vector2f::ZERO).round();
     const Vector2i transformation = getRotatedPositionInt() + rotatedOffset;
     return transformedPosition - (transformation - this->positionPx);
+}
+
+std::string Transform::saveImpl(ecs::Entity entity) {
+    return rfl::json::write(entity.get<Transform>());
 }
 
 #ifndef NDEBUG

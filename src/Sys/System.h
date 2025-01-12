@@ -47,6 +47,10 @@ struct System {
     static void setQuietPaused(bool pause);
     static bool isQuietPaused();
 
+    // Pauses the game and engine. Emits a special evt::EnginePause signal
+    static void setEnginePaused(bool pause);
+    static bool isEnginePaused();
+
     static void quit();
     static bool isQuit();
 

@@ -25,20 +25,24 @@ Renderer Graphics = Renderer();
 
 // VARIABLES
 static bool S_IS_PAUSED = false;
+static bool S_IS_ENGINE_PAUSED = false;
+static bool S_IS_PAUSED_AND_ENGINE_PAUSED = false;
 static bool S_IS_QUIT = false;
 static bool S_IS_STARTED = false;
 static System::UpdateFunction S_UPDATE_FUNCTION = nullptr;
 static bool S_DO_HOTRELOAD = false;
+static f32 S_PREV_TIME_MULT;
 
 void System::setPaused(bool pause) {
     S_IS_PAUSED = pause;
     if (pause) {
+        S_PREV_TIME_MULT = Time.getMultiplier();
         Time.setMultiplier(0.0);
         Audio.pauseClips(true);
         World.pause();
         Event.emit<evt::Pause>(true);
     } else {
-        Time.setMultiplier(1.0);
+        Time.setMultiplier(S_PREV_TIME_MULT);
         Audio.pauseClips(false);
         World.unpause();
         Event.emit<evt::Pause>(false);
@@ -51,6 +55,38 @@ void System::setQuietPaused(bool pause) {
 
 bool System::isQuietPaused() {
     return S_IS_PAUSED;
+}
+
+void System::setEnginePaused(bool pause) {
+    // handle special case where engine and game are both paused
+    if (pause && S_IS_PAUSED) {
+        S_IS_PAUSED_AND_ENGINE_PAUSED = true;
+        S_IS_ENGINE_PAUSED = true;
+        Event.emit<evt::EnginePause>(true);
+        return;
+    } else if (!pause && S_IS_PAUSED_AND_ENGINE_PAUSED) {
+        S_IS_PAUSED_AND_ENGINE_PAUSED = false;
+        S_IS_ENGINE_PAUSED = false;
+        Event.emit<evt::EnginePause>(false);
+        return;
+    }
+
+    S_IS_PAUSED = pause;
+    S_IS_ENGINE_PAUSED = pause;
+    if (pause) {
+        S_PREV_TIME_MULT = Time.getMultiplier();
+        Time.setMultiplier(0.0);
+        Audio.pauseClips(true);
+        Event.emit<evt::EnginePause>(true);
+    } else {
+        Time.setMultiplier(S_PREV_TIME_MULT);
+        Audio.pauseClips(false);
+        Event.emit<evt::EnginePause>(false);
+    }
+}
+
+bool System::isEnginePaused() {
+    return S_IS_ENGINE_PAUSED;
 }
 
 void System::togglePause() {
