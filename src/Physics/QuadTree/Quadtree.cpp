@@ -60,37 +60,47 @@ AABB QuadTree::getBoundingBox() const {
 AABB QuadTree::computeBox(const AABB& box, s32 i) const {
     assert(i >= 0 && i <= 3 && "i not between 0-3");
 
-    auto center = box.getPosition();
-    const Vector2f exactHalf = box.getHalf().as<f32>() / 2;
-    const Vector2i biggerHalf(std::round(exactHalf.x), std::round(exactHalf.y));
+    static const Vector2i mults[4] = {
+        Vector2i(-1, 1),   // NW
+        Vector2i(1, 1),    // NE
+        Vector2i(-1, -1),  // SW
+        Vector2i(1, -1),   // SE
+    };
 
+    const Vector2i half = (box.getHalf().as<f32>() / 2.0f).round();
+    return AABB(box.getPosition() + half * mults[i], half);
+
+    // old code (delete once I've confirmed the new code is stable):
     // if the current quadrant's half is an odd number on either axis, give the extra pixel to the West/South halves.
-    const Vector2i smallerHalf = box.getHalf() - biggerHalf;
+    // auto center = box.getPosition();
+    // const Vector2f exactHalf = box.getHalf().as<f32>() / 2;
+    // const Vector2i biggerHalf(std::round(exactHalf.x), std::round(exactHalf.y));
+    // const Vector2i smallerHalf = box.getHalf() - biggerHalf;
 
-    switch (i) {
-    // North West
-    case 0: {
-        Vector2i halflen(biggerHalf.x, smallerHalf.y);
-        return AABB(center + Vector2i(-halflen.x, halflen.y), halflen);
-    }
-    // North East
-    case 1: {
-        Vector2i halflen(smallerHalf.x, smallerHalf.y);
-        return AABB(center + Vector2i(halflen.x, halflen.y), halflen);
-    }
-    // South West
-    case 2: {
-        Vector2i halflen(biggerHalf.x, biggerHalf.y);
-        return AABB(center + Vector2i(-halflen.x, -halflen.y), halflen);
-    }
-    // South East
-    case 3: {
-        Vector2i halflen(smallerHalf.x, biggerHalf.y);
-        return AABB(center + Vector2i(halflen.x, -halflen.y), halflen);
-    }
-    default:
-        return AABB();  // should never run due to assert
-    }
+    // switch (i) {
+    // // North West
+    // case 0: {
+    //     Vector2i halflen(biggerHalf.x, smallerHalf.y);
+    //     return AABB(center + Vector2i(-halflen.x, halflen.y), halflen);
+    // }
+    // // North East
+    // case 1: {
+    //     Vector2i halflen(smallerHalf.x, smallerHalf.y);
+    //     return AABB(center + Vector2i(halflen.x, halflen.y), halflen);
+    // }
+    // // South West
+    // case 2: {
+    //     Vector2i halflen(biggerHalf.x, biggerHalf.y);
+    //     return AABB(center + Vector2i(-halflen.x, -halflen.y), halflen);
+    // }
+    // // South East
+    // case 3: {
+    //     Vector2i halflen(smallerHalf.x, biggerHalf.y);
+    //     return AABB(center + Vector2i(halflen.x, -halflen.y), halflen);
+    // }
+    // default:
+    //     return AABB();  // should never run due to assert
+    // }
 }
 
 // returns quadrant index

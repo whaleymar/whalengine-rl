@@ -1,14 +1,14 @@
-#include "Components/Draw.h"
-#include "Components/Name.h"
-#include "Components/Tags.h"
-#include "Util/Print.h"
-#include "imgui.h"
-#include "raylib.h"
 #ifndef NDEBUG
 
 #include "EditorUiSystem.h"
 
+#include "imgui.h"
+#include "raylib.h"
+
+#include "Components/Name.h"
 #include "Components/Transform.h"
+
+#include "Events/Events.h"
 #include "Gfx/Coordinates.h"
 #include "Physics/QuadTree/Quadtree.h"
 #include "Settings.h"
@@ -16,7 +16,6 @@
 
 namespace whal {
 
-// TODO i should put this in game screen coords so resizing the window doesn't break the quadtree
 qtree::QuadTree makeQuadTree() {
     return qtree::QuadTree(
         AABB(Vector2i(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2), Vector2i(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2)));
@@ -28,9 +27,9 @@ static Vector2f S_CAMERA_POS;
 static bool S_TREE_INVALID = false;
 
 // TODO feature list:
-// 1) click and drag entities around (also updates them in the quadtree)
-// 2) Display components in imgui
-// 3) Make serializable components editable in imgui
+// 1) Display more components in imgui
+// 2) Make serializable components editable in imgui
+// 3) entities with a sprite have a bounding box matching that sprite
 
 static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) {
     const Vector2f cameraPos = getCameraPositionPrecise();
@@ -53,9 +52,6 @@ void EditorUiSystem::buildEntityTree() const {
     // this is imperfect for sprites partially on screen but idc
     for (auto [entityid, entity] : getEntities()) {
         const AABB uiBox = getUiBox(entity);
-        if (entity.has<Player>()) {
-            print("player box has center", uiBox.getPosition(), "and halflen", uiBox.getHalf());
-        }
         if (S_QTREE.getBoundingBox().contains(uiBox)) {
             // make each bounding box a single tile
             // ideally it should match the entity's sprite if they have one, but then it would need to update when those components changed... lots of
@@ -86,12 +82,6 @@ void EditorUiSystem::dragSelectedEntities() const {
         return;
     }
 
-    // print("Mouse drag delta is ", delta);
-    // const Vector2f worldPos = Input.getMouseWorld();
-    // const AABB newUiBox = getUiBox(worldPos);
-    // if (!S_QTREE.getBoundingBox().contains(newUiBox)) {
-    //     return;
-    // }
     for (ecs::Entity selected : mClickedEntities) {
         const Vector2f worldDelta = delta * Vector2f(1, -1) / VIRTUAL_SCREEN_RATIO;
         const AABB oldUiBox = getUiBox(selected);
@@ -189,6 +179,10 @@ void EditorUiSystem::onEvent(evt::EnginePause, bool isPaused) {
     }
 }
 
+void EditorUiSystem::onEvent(evt::WindowResize) {
+    S_TREE_INVALID = true;
+}
+
 void EditorUiSystem::onAdd(ecs::Entity entity) {
     if (!S_IS_ACTIVE) {
         return;
@@ -227,7 +221,15 @@ void EditorUiSystem::draw() {
     }
 
     for (ecs::Entity entity : mClickedEntities) {
-        const Transform& trans = entity.get<Transform>();
+        Transform trans = entity.get<Transform>();
+        // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:
+        if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
+            // the window size is mismatched for some reason, make sure we're drawing it centered
+            trans.position.x += static_cast<f32>((rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2) / VIRTUAL_SCREEN_RATIO;
+            trans.position.y -= static_cast<f32>((rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2) / VIRTUAL_SCREEN_RATIO;
+            trans.positionPx = trans.position.round();
+        }
+
         trans.draw();
         AABB(trans, Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2)).draw(Colors::Green);
         printComponents(entity);

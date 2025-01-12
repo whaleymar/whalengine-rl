@@ -57,6 +57,11 @@ std::string InputCodeToString(InputCode code) {
 
 void InputHandler::update() {
     mMouseScreenPosition = Vector2i(rl::GetMousePosition());
+    if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
+        mMouseScreenPosition.x -= (rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2;
+        mMouseScreenPosition.y -= (rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2;
+    }
+    mMouseWindowPosition = Vector2i(rl::GetMousePosition());
     // rl::Vector2 mousePos = rl::GetMousePosition();
     // mMouseScreenPosition = Vector2i(mousePos.x, WINDOW_HEIGHT_RENDER - mousePos.y);
 
