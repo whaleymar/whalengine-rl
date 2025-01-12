@@ -13,7 +13,8 @@ struct Transform;
 class EditorUiSystem : public ecs::ISystem<Transform>,
                        public ecs::IMonitorSystem,
                        public IListen<evt::Input, true, InputEvent>,
-                       public IListen<evt::EnginePause, true, bool> {
+                       public IListen<evt::EnginePause, true, bool>,
+                       public IListen<evt::WindowResize, true> {
 public:
     void activate();
     void deactivate();
@@ -23,6 +24,7 @@ public:
 
     void onEvent(evt::Input, InputEvent input) override;
     void onEvent(evt::EnginePause, bool isPaused) override;
+    void onEvent(evt::WindowResize) override;
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
     void draw();

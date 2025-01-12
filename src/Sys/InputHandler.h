@@ -39,6 +39,7 @@ public:
     void resetMappings() const;
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
+    Vector2i getMouseWindow() const { return mMouseWindowPosition; }
     Vector2f getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
 
     // NEW STUFF
@@ -93,6 +94,7 @@ private:
     void operator=(const InputHandler&) = delete;
 
     Vector2i mMouseScreenPosition;
+    Vector2i mMouseWindowPosition;  // if there's a mismatch between render and window size, this matches window
 };
 
 }  // namespace whal
