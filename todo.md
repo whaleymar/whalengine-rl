@@ -36,6 +36,9 @@ NEXT GOAL:
     - would need to finally add non-aabb shapes to collider though
     - i'm thinking QuadTree stays exactly the same (AABB only) and there's an extra isOverlapping step that non-aabb shapes have to do post-query
 
+## Save data
+- save window size
+
 ## Map 
 - put tiled project in game's root directory so paths are easier to work with
     - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?

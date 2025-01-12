@@ -146,6 +146,10 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 .isParsingTemplate = false,
             };
 
+#ifndef NDEBUG
+            e.add(Name{.name = whal_format("{} tile ({}, {})", layerEntity.get<Name>(), x, y)});
+#endif
+
             // this call is safe even if the tile doesn't have any top-level components
             addComponents(e, mapData, tiledata, emptyJson, emptyIdToIndex, level.self);
 
