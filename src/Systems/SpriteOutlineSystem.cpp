@@ -45,7 +45,7 @@ void sync(ecs::Entity child) {
 void SpriteOutlineSystem::update() {
     for (const auto [entityid, entity] : getEntities()) {
         // sync the outline entity sprite frames to the parent
-        entity.forChild(&sync);
+        entity.forChild(&sync, false);
     }
 }
 

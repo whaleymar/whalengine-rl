@@ -56,6 +56,10 @@ std::string InputCodeToString(InputCode code) {
 }
 
 void InputHandler::update() {
+    mMouseScreenPosition = Vector2i(rl::GetMousePosition());
+    // rl::Vector2 mousePos = rl::GetMousePosition();
+    // mMouseScreenPosition = Vector2i(mousePos.x, WINDOW_HEIGHT_RENDER - mousePos.y);
+
     // emits input events
     for (const auto& [name, inputCodes] : S_NAME_TO_INPUTS) {
         InputState state = InputState::Off;
@@ -107,7 +111,6 @@ void InputHandler::update() {
             });
         }
     }
-    mMouseScreenPosition = Vector2i(rl::GetMousePosition());
 }
 
 void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {

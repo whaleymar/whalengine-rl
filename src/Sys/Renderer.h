@@ -98,6 +98,8 @@ public:
     void fixedShaderMode(rl::Shader shader, bool isPersistUniforms = false);
     void endFixedShaderMode();
 
+    gfx::RenderContext getRenderContext() const;
+
 private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;

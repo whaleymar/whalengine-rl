@@ -20,7 +20,8 @@ class Landing : public IEvent<ecs::Entity> {};
 class EnteredLevel : public IEvent<ecs::Entity, ActiveLevel&> {};
 class ShaderReload : public IEvent<> {};
 class Restart : public IEvent<bool> {};
-class Pause : public IEvent<bool> {};
+class Pause : public IEvent<bool> {};        // game pause
+class EnginePause : public IEvent<bool> {};  // special internal pause signal
 class WindowResize : public IEvent<> {};
 }  // namespace evt
 

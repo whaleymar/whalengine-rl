@@ -210,8 +210,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     rl::EndTextureMode();
 }
 
-void Renderer::render() {
-    // 0. Create render context and build the render queue.
+gfx::RenderContext Renderer::getRenderContext() const {
     rl::Camera2D worldCamera = mRaylibCamera;
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotation;
@@ -226,12 +225,17 @@ void Renderer::render() {
 
     worldCamera.target = (cameraPosition * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO)).asRL();
 
-    const gfx::RenderContext renderContext{
+    return gfx::RenderContext{
         .cameraPosition = cameraPosition,
         .camera = worldCamera,
         .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
         .cameraEntity = cameraEntity,
     };
+}
+
+void Renderer::render() {
+    // 0. Create render context and build the render queue.
+    const gfx::RenderContext renderContext = getRenderContext();
     buildRenderQueue(renderContext.cameraPosition.round());
 
     // 1. IRender and IRenderLight systems are drawn
@@ -239,9 +243,9 @@ void Renderer::render() {
 
     // camera drawn at different resolution, so gotta change camera stuff
     gfx::RenderContext lightRenderContext = renderContext;
-    lightRenderContext.camera.target = (cameraPosition * Vector2f(1, -1)).asRL();
+    lightRenderContext.camera.target = (renderContext.cameraPosition * Vector2f(1, -1)).asRL();
     lightRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
-    lightRenderContext.cameraPosition = cameraPosition;
+    lightRenderContext.cameraPosition = renderContext.cameraPosition;
     drawLights(lightRenderContext);  // drawn to TextureID::Lighting
 
     // posterize before applying lighting
@@ -270,13 +274,13 @@ void Renderer::render() {
     rl::EndTextureMode();
 
     // 3. Apply post processing
-    gfx::applyShaders(mainTex, cameraEntity.get<Camera>().postEffects);
+    gfx::applyShaders(mainTex, renderContext.cameraEntity.get<Camera>().postEffects);
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
     if (VIEW_COLLIDERS_MODE) {
         rl::BeginTextureMode(mainTex);
-        rl::BeginMode2D(worldCamera);
+        rl::BeginMode2D(renderContext.camera);
         drawColliders();
         rl::EndMode2D();
         rl::EndTextureMode();
