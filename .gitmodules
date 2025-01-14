@@ -15,7 +15,7 @@
 	url = https://github.com/whaleymar/reflect-cpp.git
 [submodule "lib/rlImGui"]
 	path = lib/rlImGui
-	url = https://github.com/raylib-extras/rlImGui.git
+	url = https://github.com/whaleymar/rlImGui.git
 [submodule "lib/imgui"]
 	path = lib/imgui
 	url = https://github.com/ocornut/imgui.git

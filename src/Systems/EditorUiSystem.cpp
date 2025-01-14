@@ -73,7 +73,7 @@ void EditorUiSystem::buildEntityTree() const {
 }
 
 void EditorUiSystem::activate() {
-    assert(System::isQuietPaused() && EDITOR_MODE && "Must be paused and in editor mode to activate Editor UI");
+    assert(System::isQuietPaused() && EDITOR_MODE && EDITOR_SUSPEND && "Must be paused and in editor mode to activate Editor UI");
     S_IS_ACTIVE = true;
     S_CAMERA_POS = getCameraPositionPrecise();
     buildEntityTree();
@@ -194,7 +194,7 @@ void EditorUiSystem::onEvent(evt::EnginePause, bool isPaused) {
     }
 }
 
-void EditorUiSystem::onEvent(evt::WindowResize) {
+void EditorUiSystem::onEvent(evt::WindowResize, Vector2f scalar) {
     S_TREE_INVALID = true;
 }
 
@@ -238,10 +238,10 @@ void EditorUiSystem::draw() {
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
         // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:
-        if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
+        if (WINDOW_POS_OS_X > 0 || WINDOW_POS_OS_Y > 0) {
             // the window size is mismatched for some reason, make sure we're drawing it centered
-            trans.position.x += static_cast<f32>((rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2) / VIRTUAL_SCREEN_RATIO;
-            trans.position.y -= static_cast<f32>((rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2) / VIRTUAL_SCREEN_RATIO;
+            trans.position.x += static_cast<f32>(WINDOW_POS_OS_X) / VIRTUAL_SCREEN_RATIO;
+            trans.position.y -= static_cast<f32>(WINDOW_POS_OS_Y) / VIRTUAL_SCREEN_RATIO;
             trans.positionPx = trans.position.round();
         }
 

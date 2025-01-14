@@ -2,6 +2,9 @@
 
 #include "Sys/Event.h"
 
+template <typename T>
+struct Vector2;
+
 namespace whal {
 
 namespace ecs {
@@ -20,9 +23,9 @@ class Landing : public IEvent<ecs::Entity> {};
 class EnteredLevel : public IEvent<ecs::Entity, ActiveLevel&> {};
 class ShaderReload : public IEvent<> {};
 class Restart : public IEvent<bool> {};
-class Pause : public IEvent<bool> {};        // game pause
-class EnginePause : public IEvent<bool> {};  // special internal pause signal
-class WindowResize : public IEvent<> {};
+class Pause : public IEvent<bool> {};                   // game pause
+class EnginePause : public IEvent<bool> {};             // special internal pause signal
+class WindowResize : public IEvent<Vector2<float>> {};  // arg is resize scalar
 }  // namespace evt
 
 }  // namespace whal

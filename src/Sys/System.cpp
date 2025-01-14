@@ -6,6 +6,7 @@
 #include "Gfx/ShaderManager.h"
 #include "Settings.h"
 #include "Util/Print.h"
+#include "raylib.h"
 
 namespace whal {
 
@@ -229,20 +230,55 @@ bool _EngineIsHotReloadRequested() {
     return false;
 }
 
-void _UpdateWindowSize() {
-    FWINDOW_WIDTH_RENDER = WINDOW_WIDTH_RENDER;
-    FWINDOW_HEIGHT_RENDER = WINDOW_HEIGHT_RENDER;
-    FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
-    FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
-    VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
+s32 _EngineGetWindowWidth() {
+    return WINDOW_WIDTH_OS;
+}
 
-    // HACK
-    // if VIRTUAL_SCREEN_RATIO * game_height has a decimal value of approx. 0.5, then we get artifacts
-    // from floating point errors, so we need to slightly tweak the window size
-    f32 decimal = math::abs(math::remainder(VIRTUAL_SCREEN_RATIO * FWINDOW_HEIGHT_GAME));
-    if (math::isNearZero(decimal - 0.5f, 0.005)) {
-        WINDOW_WIDTH_RENDER -= 1;
-        WINDOW_HEIGHT_RENDER -= 1;
-        _UpdateWindowSize();
+s32 _EngineGetWindowHeight() {
+    return WINDOW_HEIGHT_OS;
+}
+
+const char* _EngineGetWindowTitle() {
+    return WINDOW_TITLE;
+}
+
+s32 _EngineGetTargetFPS() {
+    return FPS_TARGET;
+}
+
+#ifndef NDEBUG
+bool _EngineIsEditorMode() {
+    return EDITOR_MODE;
+}
+
+void _EngineSetEditorMode(bool isOn) {
+    EDITOR_MODE = isOn;
+    if (EDITOR_MODE) {
+        rl::ShowCursor();
+        // window resizing will be handled the next time imgui draws the UI
+    } else {
+        rl::HideCursor();
+
+        // change dock size to match the OS screen
+        const Vector2i osSize(WINDOW_WIDTH_OS, WINDOW_HEIGHT_OS);
+        WINDOW_WIDTH_DOCK = osSize.x;
+        WINDOW_HEIGHT_DOCK = osSize.y;
+
+        // reset render size to (try to) match OS screen
+        whal::Graphics.updateWindowSizes(osSize, osSize);
     }
 }
+
+bool _EngineIsEditorSuspend() {
+    return EDITOR_SUSPEND;
+}
+
+void _EngineSetEditorSuspend(bool isOn) {
+    EDITOR_SUSPEND = isOn;
+    if (EDITOR_SUSPEND) {
+        whal::System::setEnginePaused(true);
+    } else {
+        whal::System::setEnginePaused(false);
+    }
+}
+#endif

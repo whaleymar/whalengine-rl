@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Events/Events.h"
+#include "Settings.h"
 #include "System.h"
 #include "Util/STL_reduce.h"
 #include "Util/Saveutil.h"
@@ -56,11 +57,7 @@ std::string InputCodeToString(InputCode code) {
 }
 
 void InputHandler::update() {
-    mMouseScreenPosition = Vector2i(rl::GetMousePosition());
-    if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
-        mMouseScreenPosition.x -= (rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2;
-        mMouseScreenPosition.y -= (rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2;
-    }
+    mMouseScreenPosition = Vector2i(rl::GetMousePosition()) - Vector2i(WINDOW_POS_OS_X, WINDOW_POS_OS_Y);
     mMouseWindowPosition = Vector2i(rl::GetMousePosition());
     // rl::Vector2 mousePos = rl::GetMousePosition();
     // mMouseScreenPosition = Vector2i(mousePos.x, WINDOW_HEIGHT_RENDER - mousePos.y);

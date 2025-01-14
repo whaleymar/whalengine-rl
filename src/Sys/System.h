@@ -86,4 +86,16 @@ bool _EngineIsQuit();
 void _EngineUpdate();
 void _EngineEnd();
 bool _EngineIsHotReloadRequested();
+
+s32 _EngineGetWindowWidth();
+s32 _EngineGetWindowHeight();
+const char* _EngineGetWindowTitle();
+s32 _EngineGetTargetFPS();
+
+#ifndef NDEBUG
+bool _EngineIsEditorMode();
+void _EngineSetEditorMode(bool);
+bool _EngineIsEditorSuspend();
+void _EngineSetEditorSuspend(bool);
+#endif
 }
