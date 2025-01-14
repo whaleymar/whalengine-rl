@@ -266,6 +266,10 @@ void _EngineSetEditorMode(bool isOn) {
 
         // reset render size to (try to) match OS screen
         whal::Graphics.updateWindowSizes(osSize, osSize);
+
+        if (EDITOR_SUSPEND) {
+            _EngineSetEditorSuspend(false);
+        }
     }
 }
 
