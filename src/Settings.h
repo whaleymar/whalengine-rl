@@ -23,6 +23,7 @@
 
 #ifndef NDEBUG
 extern bool EDITOR_MODE;
+extern bool EDITOR_SUSPEND;
 extern bool VIEW_COLLIDERS_MODE;
 #endif
 
@@ -34,30 +35,28 @@ extern const char* WINDOW_TITLE;
 extern s32 FPS_TARGET;
 
 // stuff that doesn't change (for now)
-// inline constexpr s32 FPS_TARGET = 60;
 inline constexpr s32 PIXELS_PER_TILE = 8;
 inline constexpr f32 FPIXELS_PER_TILE = static_cast<f32>(PIXELS_PER_TILE);
 
-// 3 window sizes I use:
-// Render: The actual window size on your screen
-// Pixels: Window size that the game uses
+// 4 window sizes I use:
+// OS: The size of the Operating System window the game is running inside of.
+// RENDER: The size that the game is drawn in. This may be the same as Screen size, or different if you want to have a consistent aspect ratio when
+//         the window is resized / The game is running within the engine editor (debug only).
+// GAME: Window size that the game uses. One pixel here equals 1 world unit.
+// DOCK (debug only): Size of the imgui window that the game is docked in.
 
+extern s32 WINDOW_WIDTH_OS;
+extern s32 WINDOW_HEIGHT_OS;
 extern s32 WINDOW_WIDTH_RENDER;
 extern s32 WINDOW_HEIGHT_RENDER;
 extern s32 WINDOW_WIDTH_GAME;
 extern s32 WINDOW_HEIGHT_GAME;
+extern s32 WINDOW_WIDTH_DOCK;
+extern s32 WINDOW_HEIGHT_DOCK;
 
-extern "C" {
-s32 WhalGetRenderWidth();
-s32 WhalGetRenderHeight();
-const char* WhalGetWindowTitle();
-s32 WhalGetTargetFPS();
-
-#ifndef NDEBUG
-bool WhalIsEditorMode();
-void WhalSetEditorMode(bool);
-#endif
-}
+// If the OS and Render dimensions are not the same, these variables describe the render window's position (top left) on the screen
+extern s32 WINDOW_POS_OS_X;  // Render window's X position on the OS window
+extern s32 WINDOW_POS_OS_Y;  // Render window's Y position on the OS window
 
 // DERIVED STUFF
 extern f32 FWINDOW_WIDTH_RENDER;
@@ -65,8 +64,6 @@ extern f32 FWINDOW_HEIGHT_RENDER;
 extern f32 FWINDOW_WIDTH_GAME;
 extern f32 FWINDOW_HEIGHT_GAME;
 extern f32 VIRTUAL_SCREEN_RATIO;
-
-extern void _UpdateWindowSize();
 
 /////////////////////////////////////////////////////////////
 ////////////////////// FILE PATHS ///////////////////////////

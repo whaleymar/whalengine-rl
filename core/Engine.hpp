@@ -124,13 +124,13 @@ public:
         EngineUpdate = getSymbol<Callback>("_EngineUpdate");
         EngineEnd = getSymbol<Callback>("_EngineEnd");
         EngineIsHotReload = getSymbol<BoolCB>("_EngineIsHotReloadRequested");
-        GetWindowWidth = getSymbol<IntGetter>("WhalGetRenderWidth");
-        GetWindowHeight = getSymbol<IntGetter>("WhalGetRenderHeight");
-        GetTargetFPS = getSymbol<IntGetter>("WhalGetTargetFPS");
-        GetWindowTitle = getSymbol<StrGetter>("WhalGetWindowTitle");
+        GetWindowWidth = getSymbol<IntGetter>("_EngineGetWindowWidth");
+        GetWindowHeight = getSymbol<IntGetter>("_EngineGetWindowHeight");
+        GetTargetFPS = getSymbol<IntGetter>("_EngineGetTargetFPS");
+        GetWindowTitle = getSymbol<StrGetter>("_EngineGetWindowTitle");
 #ifndef NDEBUG
-        GetEditorMode = getSymbol<BoolCB>("WhalIsEditorMode");
-        SetEditorMode = getSymbol<BoolSetter>("WhalSetEditorMode");
+        GetEditorMode = getSymbol<BoolCB>("_EngineIsEditorMode");
+        SetEditorMode = getSymbol<BoolSetter>("_EngineSetEditorMode");
 #endif
 
         if (mAllLoadsSuccessful) {
@@ -154,13 +154,13 @@ public:
         EngineUpdate = _EngineUpdate;
         EngineEnd = _EngineEnd;
         EngineIsHotReload = _EngineIsHotReloadRequested;
-        GetWindowWidth = WhalGetRenderWidth;
-        GetWindowHeight = WhalGetRenderHeight;
-        GetTargetFPS = WhalGetTargetFPS;
-        GetWindowTitle = WhalGetWindowTitle;
+        GetWindowWidth = _EngineGetWindowWidth;
+        GetWindowHeight = _EngineGetWindowHeight;
+        GetTargetFPS = _EngineGetTargetFPS;
+        GetWindowTitle = _EngineGetWindowTitle;
 #ifndef NDEBUG
-        GetEditorMode = WhalIsEditorMode;
-        SetEditorMode = WhalSetEditorMode;
+        GetEditorMode = _EngineIsEditorMode;
+        SetEditorMode = _EngineSetEditorMode;
 #endif
         return false;
 

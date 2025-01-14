@@ -27,6 +27,7 @@ NEXT GOAL:
 
 ## Debug tools 
 - imgui integration
+    - dock the game as an imgui window (i will need a window_size_window in settings for this)
     - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline

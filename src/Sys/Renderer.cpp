@@ -97,43 +97,17 @@ void Renderer::tick() {
     // Clear used list
     mUsedRTs.clear();
 
-    // I am enforcing that the render aspect ratio matches the game's
-    // But resizing the window immediately doesn't work. Needs some delay.
-    // So I create an event flow to do it. If the window is resized again before the event flow is done, the job is cancelled.
-    static s32 resizeJobId = 0;
-    const f32 resizeDelay = 0.2f;
     if (rl::IsWindowResized()) {
-        // Force the aspect ratio to be the same as the game:
-        const f32 targetAR = FWINDOW_WIDTH_GAME / FWINDOW_HEIGHT_GAME;
-        f32 newWidth = rl::GetRenderWidth();
-        f32 newHeight = rl::GetRenderHeight();
-        const f32 newAR = newWidth / newHeight;
-        if (newAR > targetAR) {
-            // too wide, reduce width manually
-            newWidth = std::round(targetAR * newHeight);
-            if (newWidth != rl::GetRenderWidth()) {
-                Schedule.cancelEventFlow(resizeJobId);
-                resizeJobId =
-                    Schedule.flow().addWait(resizeDelay).add([]() { rl::SetWindowSize(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER); }).getId();
-            }
-        } else if (newAR < targetAR) {
-            // too tall, reduce height manually
-            newHeight = std::round(newWidth / targetAR);
-            if (newHeight != rl::GetRenderHeight()) {
-                Schedule.cancelEventFlow(resizeJobId);
-                resizeJobId =
-                    Schedule.flow().addWait(resizeDelay).add([]() { rl::SetWindowSize(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER); }).getId();
-            }
-        }
-        WINDOW_WIDTH_RENDER = newWidth;
-        WINDOW_HEIGHT_RENDER = newHeight;
-        _UpdateWindowSize();  // updates derived variables like VIRTUAL_SCREEN_RATIO
+        Vector2i newWindowSize(rl::GetRenderWidth(), rl::GetRenderHeight());
+        Vector2i delta = newWindowSize - Vector2i(WINDOW_WIDTH_OS, WINDOW_HEIGHT_OS);
+        Vector2i newRenderSize = Vector2i(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER) + delta;
+        updateWindowSizes(newRenderSize, newWindowSize);
+        WINDOW_WIDTH_OS = newWindowSize.x;
+        WINDOW_HEIGHT_OS = newWindowSize.y;
 
-        mStagingTexture.release();
-        mStagingTexture = MultiTexture::create();
-        TextureManager::instance().reloadRenderTextures();
-        mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
-        Event.emit<evt::WindowResize>();
+        // if we're in editor mode, this will force the dock window to recalculate
+        WINDOW_WIDTH_DOCK = WINDOW_WIDTH_OS;
+        WINDOW_HEIGHT_DOCK = WINDOW_HEIGHT_OS;
     }
 }
 
@@ -438,6 +412,84 @@ void Renderer::endFixedShaderMode() {
     if (mIsPersistUniforms) {
         mUniformQueue.clear();
         mIsPersistUniforms = false;
+    }
+}
+
+void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vector2i windowPosition) {
+    // Force the aspect ratio to be the same as the game:
+    const f32 targetAR = FWINDOW_WIDTH_GAME / FWINDOW_HEIGHT_GAME;
+    Vector2i newSize = renderSize;
+    const f32 newAR = static_cast<f32>(newSize.x) / static_cast<f32>(newSize.y);
+    if (newAR > targetAR) {
+        // too wide
+        // can we increase height?
+        s32 maybe = std::round(newSize.x / targetAR);
+        if (maybe <= parentSize.y) {
+            newSize.y = maybe;
+        } else {
+            // reduce width manually
+            newSize.x = std::round(targetAR * newSize.y);
+        }
+    } else if (newAR < targetAR) {
+        // too tall
+        // can we increase width?
+        s32 maybe = std::round(targetAR * newSize.y);
+        if (maybe <= parentSize.x) {
+            newSize.x = maybe;
+        } else {
+            // reduce height manually
+            newSize.y = std::round(newSize.x / targetAR);
+        }
+    }
+    Vector2f oldSize(FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER);
+    WINDOW_WIDTH_RENDER = newSize.x;
+    WINDOW_HEIGHT_RENDER = newSize.y;
+    cascadeWindowChanges(parentSize, windowPosition);
+
+    mStagingTexture.release();
+    mStagingTexture = MultiTexture::create();
+    TextureManager::instance().reloadRenderTextures();
+    mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
+    Event.emit<evt::WindowResize>(Vector2f(FWINDOW_WIDTH_RENDER / oldSize.x, FWINDOW_HEIGHT_RENDER / oldSize.y));
+}
+
+void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition) {
+    if (windowPosition.x == -1) {
+        // automatically calculate it
+        if (parentSize.x != WINDOW_WIDTH_RENDER) {
+            WINDOW_POS_OS_X = (parentSize.x - WINDOW_WIDTH_RENDER) / 2;
+        } else {
+            WINDOW_POS_OS_X = 0;
+        }
+    } else {
+        WINDOW_POS_OS_X = windowPosition.x;
+    }
+
+    if (windowPosition.y == -1) {
+        if (parentSize.y != WINDOW_HEIGHT_RENDER) {
+            WINDOW_POS_OS_Y = (parentSize.y - WINDOW_HEIGHT_RENDER) / 2;
+        } else {
+            WINDOW_POS_OS_Y = 0;
+        }
+
+    } else {
+        WINDOW_POS_OS_Y = windowPosition.y;
+    }
+
+    FWINDOW_WIDTH_RENDER = WINDOW_WIDTH_RENDER;
+    FWINDOW_HEIGHT_RENDER = WINDOW_HEIGHT_RENDER;
+    FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
+    FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
+    VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
+
+    // HACK
+    // if VIRTUAL_SCREEN_RATIO * game_height has a decimal value of approx. 0.5, then we get artifacts
+    // from floating point errors, so we need to slightly tweak the window size
+    f32 decimal = math::abs(math::remainder(VIRTUAL_SCREEN_RATIO * FWINDOW_HEIGHT_GAME));
+    if (math::isNearZero(decimal - 0.5f, 0.005)) {
+        WINDOW_WIDTH_RENDER -= 1;
+        WINDOW_HEIGHT_RENDER -= 1;
+        cascadeWindowChanges(parentSize, windowPosition);
     }
 }
 

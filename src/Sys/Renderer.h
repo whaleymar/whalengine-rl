@@ -100,6 +100,12 @@ public:
 
     gfx::RenderContext getRenderContext() const;
 
+    // updates the {F}WINDOW_{WIDTH/HEIGHT}_{RENDER/OS} variables, as well as the other global variables that depend on them.
+    // parentSize is the size of the window the game is rendered to. Is the OS window unless the engine editor is active. Then it is the ImGui window.
+    // renderPosition (optional) is the screen coordinates of the render window. If {-1, -1}, then it is automatically calculated to be the center of
+    // the parent window
+    void updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vector2i renderPosition = Vector2i(-1, -1));
+
 private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
@@ -112,6 +118,9 @@ private:
     void scaleDepthBuffers(gfx::RenderContext ctx) const;
     void buildDistanceField() const;
     void drawUI(const gfx::RenderContext ctx) const;
+
+    // updates variables which depend on WINDOW_{WIDTH/HEIGHT}_RENDER
+    void cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition);
 
     rl::Camera2D mRaylibCamera;
     gfx::RenderQueue mRenderQueue;

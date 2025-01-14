@@ -193,16 +193,10 @@ void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color) {
 }
 
 void DrawRenderTextureCentered(rl::RenderTexture renderTexture, rl::Color color) {
-    s32 x = 0;
-    s32 y = 0;
     s32 width = renderTexture.texture.width;
     s32 height = renderTexture.texture.height;
-    if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
-        // the window size is mismatched for some reason, make sure we're drawing it centered
-        x += (rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2;
-        y += (rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2;
-    }
-    rl::DrawTextureRec(TextureManager::getRenderTexture(TextureID::Main).texture, rl::Rectangle(0, 0, width, -height), rl::Vector2(x, y), rl::WHITE);
+    rl::DrawTextureRec(TextureManager::getRenderTexture(TextureID::Main).texture, rl::Rectangle(0, 0, width, -height),
+                       rl::Vector2(WINDOW_POS_OS_X, WINDOW_POS_OS_Y), rl::WHITE);
 }
 
 void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color) {

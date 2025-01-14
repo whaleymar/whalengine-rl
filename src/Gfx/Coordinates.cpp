@@ -13,12 +13,7 @@ Vector2f screenToWorldCoords(Vector2i screenCoords) {
     const auto middleOffset = Vector2f(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
 
     const Vector2f yAtTop = Vector2f(screenCoords.x, (WINDOW_HEIGHT_RENDER - screenCoords.y)) * invVirtualScreenRatio;
-    Vector2f screenSizeDiffOffset;
-    if (rl::GetRenderWidth() != WINDOW_WIDTH_RENDER || rl::GetRenderHeight() != WINDOW_HEIGHT_RENDER) {
-        screenSizeDiffOffset =
-            Vector2f((rl::GetRenderWidth() - WINDOW_WIDTH_RENDER) / 2, (rl::GetRenderHeight() - WINDOW_HEIGHT_RENDER) / 2) * invVirtualScreenRatio;
-    }
-    return yAtTop + cameraPos - middleOffset - screenSizeDiffOffset;
+    return yAtTop + cameraPos - middleOffset;
 }
 
 Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition, bool useGameResolution) {
