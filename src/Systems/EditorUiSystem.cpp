@@ -61,7 +61,6 @@ void EditorUiSystem::activate() {
 
 void EditorUiSystem::deactivate() {
     S_IS_ACTIVE = false;
-    mClickedEntities.clear();
     ecs::Entity camera = *getCamera();
     camera.get<Transform>().setPosition(S_CAMERA_POS, camera);
 }
@@ -178,17 +177,7 @@ void EditorUiSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-static void printComponents(ecs::Entity entity, const std::string prefix = "") {
-    ImGui::Text("%sName: %s\n%sTransform: %s\n", prefix.c_str(), entity.has<Name>() ? entity.get<Name>().name.c_str() : "None", prefix.c_str(),
-                Transform::saveImpl(entity).c_str());
-    entity.forChild(&printComponents, true, prefix + "\t");
-}
-
-void EditorUiSystem::draw() const {
-    if (!S_IS_ACTIVE) {
-        return;
-    }
-
+void EditorUiSystem::drawWorld() const {
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
         // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:
@@ -204,15 +193,19 @@ void EditorUiSystem::draw() const {
     }
 }
 
-// needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
-void EditorUiSystem::drawImGui() const {
-    if (!S_IS_ACTIVE) {
-        return;
-    }
+static void printComponents(ecs::Entity entity, const std::string prefix = "") {
+    ImGui::Text("%sName: %s\n%sTransform: %s\n", prefix.c_str(), entity.has<Name>() ? entity.get<Name>().name.c_str() : "None", prefix.c_str(),
+                Transform::saveImpl(entity).c_str());
+    entity.forChild(&printComponents, true, prefix + "\t");
+}
 
+// needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
+void EditorUiSystem::draw() {
+    ImGui::Begin("Inspector");
     for (ecs::Entity entity : mClickedEntities) {
         printComponents(entity);
     }
+    ImGui::End();  // Inspector
 }
 
 }  // namespace whal
