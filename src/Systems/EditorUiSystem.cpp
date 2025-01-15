@@ -1,3 +1,4 @@
+#include "rlImGuiColors.h"
 #ifndef NDEBUG
 
 #include "EditorUiSystem.h"
@@ -34,7 +35,7 @@ static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) 
     const Vector2f cameraPos = getCameraPositionPrecise();
     if (halflen.isZero()) {
         // make the uiBox 1 tile (imperfect)
-        halflen = Vector2i(PIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO, PIXELS_PER_TILE / 2 * VIRTUAL_SCREEN_RATIO);
+        halflen = Vector2f(FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO, FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO).ceil();
     }
 
     Vector2i screenPos = worldToScreenCoords(worldPosition, cameraPos);
@@ -193,10 +194,17 @@ void EditorUiSystem::drawWorld() const {
     }
 }
 
-static void printComponents(ecs::Entity entity, const std::string prefix = "") {
-    ImGui::Text("%sName: %s\n%sTransform: %s\n", prefix.c_str(), entity.has<Name>() ? entity.get<Name>().name.c_str() : "None", prefix.c_str(),
-                Transform::saveImpl(entity).c_str());
-    entity.forChild(&printComponents, true, prefix + "\t");
+static void printComponents(ecs::Entity entity, int xOffset = 0) {
+    if (xOffset == 0) {
+        xOffset = ImGui::GetCursorPosX();
+    } else {
+        ImGui::SetCursorPosX(xOffset);
+    }
+    ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE), "%s", entity.has<Name>() ? entity.get<Name>().name.c_str() : "None");
+    ImGui::SetCursorPosX(xOffset);
+    ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
+    ImGui::Separator();
+    entity.forChild(&printComponents, true, xOffset + 16);
 }
 
 // needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui

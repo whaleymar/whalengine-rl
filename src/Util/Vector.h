@@ -105,6 +105,7 @@ struct Vector2 {
     inline rl::Vector2 asRL() const { return rl::Vector2{static_cast<f32>(x), static_cast<f32>(y)}; }
 
     inline Vector2<s32> round() const { return Vector2<s32>(std::roundf(x), std::roundf(y)); }
+    inline Vector2<s32> ceil() const { return Vector2<s32>(std::ceil(x), std::ceil(y)); }
 
     // from https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
     inline Vector2<T> rotate(f32 angleDegrees, Vector2<T> about) const {
