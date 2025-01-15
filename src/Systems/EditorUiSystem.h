@@ -5,6 +5,7 @@
 #include "ECS.h"
 #include "Events/Events.h"
 #include "Sys/IListen.h"
+#include "Util/ImguiUtil.h"
 
 namespace whal {
 
@@ -13,7 +14,8 @@ struct Transform;
 class EditorUiSystem : public ecs::ISystem<Transform>,
                        public ecs::IMonitorSystem,
                        public IListen<evt::Input, true, InputEvent>,
-                       public IListen<evt::EnginePause, true, bool> {
+                       public IListen<evt::EnginePause, true, bool>,
+                       public IRenderDebug {
 public:
     void activate();
     void deactivate();
@@ -25,8 +27,8 @@ public:
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
 
-    void draw() const;
-    void drawImGui() const;
+    void drawWorld() const;
+    void draw() override;
 
 private:
     std::vector<ecs::Entity> mClickedEntities;
