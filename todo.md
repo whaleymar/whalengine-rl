@@ -27,8 +27,7 @@ NEXT GOAL:
 
 ## Debug tools 
 - imgui integration
-    - dock the game as an imgui window (i will need a window_size_window in settings for this)
-    - want to click on an entity and have access to all of its components & their values & be able to change them dynamically
+    - add more components to imgui component renderer
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline
 
@@ -38,7 +37,11 @@ NEXT GOAL:
     - i'm thinking QuadTree stays exactly the same (AABB only) and there's an extra isOverlapping step that non-aabb shapes have to do post-query
 
 ## Save data
-- save window size
+- figure out how to serialize callbacks (like onDeath component, Lifetime::onDeath, Collider::onCollisionEnter, Trigger::xyz)
+    - could integrate lua scripting and write the callbacks using those
+        - lua integration is doable (and brings benefits like insta hot reloading) 
+        - but would require extending ComponentFactory to convert components to/from lua tables
+    - could stop using lambdas and exclusively use named free functions. Then I can serialize the function signature
 
 ## Map 
 - put tiled project in game's root directory so paths are easier to work with

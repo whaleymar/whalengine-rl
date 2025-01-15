@@ -4,25 +4,12 @@
 
 namespace whal {
 
-void OnFrameEndSystem::update() {
-    for (auto [entityid, entity] : getEntitiesCopy()) {
-        // not bothering with a null check
-
-        const auto onFrameEnd = entity.get<OnFrameEnd>();
-        onFrameEnd.callback(entity);
-
-        if (onFrameEnd.removeSelf) {
-            entity.remove<OnFrameEnd>();
-        }
-    }
-}
-
 void CustomUpdateSystem::update() {
     for (auto [entityid, entity] : getEntities()) {
         // not bothering with a null check
 
-        const auto onFrameEnd = entity.get<CustomUpdate>();
-        onFrameEnd.callback(entity);
+        const auto update = entity.get<CustomUpdate>();
+        update.callback(entity);
     }
 }
 

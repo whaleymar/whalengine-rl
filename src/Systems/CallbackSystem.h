@@ -4,14 +4,8 @@
 
 namespace whal {
 
-struct OnFrameEnd;
 struct CustomUpdate;
 struct OnDeath;
-
-class OnFrameEndSystem : public ecs::ISystem<OnFrameEnd>, public ecs::IUpdate {
-public:
-    void update() override;
-};
 
 class CustomUpdateSystem : public ecs::ISystem<CustomUpdate>, public ecs::IUpdate {
 public:
