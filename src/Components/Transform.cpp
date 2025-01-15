@@ -103,7 +103,7 @@ void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
 void Transform::set(const Transform& trans, ecs::Entity self) {
     const Vector2f parentPosition = position - localPosition;
     position = trans.position;
-    positionPx = trans.positionPx;
+    positionPx = position.round();
     localPosition = position - parentPosition;
 
     const Vector2f parentScale = scale / localScale;
