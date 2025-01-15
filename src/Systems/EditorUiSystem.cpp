@@ -1,4 +1,3 @@
-#include "rlImGuiColors.h"
 #ifndef NDEBUG
 
 #include "EditorUiSystem.h"
@@ -16,6 +15,8 @@
 #include "Gfx/Coordinates.h"
 #include "Settings.h"
 #include "Util/CameraUtil.h"
+#include "rfl/NamedTuple.hpp"
+#include "rlImGuiColors.h"
 
 #include "Systems/ColliderSystem.h"
 
@@ -139,6 +140,11 @@ void EditorUiSystem::onEvent(evt::Input, InputEvent input) {
         return;
     }
 
+    // if click was outside of game window, do nothing (want to maintain clicked entity list)
+    if (Input.getMouseScreen().x > WINDOW_WIDTH_RENDER || Input.getMouseScreen().y > WINDOW_HEIGHT_RENDER) {
+        return;
+    }
+
     // build mClickedEntities
     Vector2i clickPoint = Input.getMouseScreen();
     AABB queryBox = AABB(clickPoint, Vector2i(1, 1));
@@ -194,17 +200,90 @@ void EditorUiSystem::drawWorld() const {
     }
 }
 
+template <typename T>
+static void thingEditor(const T& thing, std::string prefix = "") {
+    // if (prefix == "") {
+    //     prefix = whal_format("{}::", type_of<T>());
+    // }
+    if constexpr (rfl::internal::has_reflection_type_v<T>) {
+        thingEditor(thing.reflection(), prefix);
+        return;
+    } else {
+        // `thing` must be a const reference here
+        // RESEARCH I might want to do .transform instead of .apply?
+        rfl::to_named_tuple(thing).apply([prefix](const auto& f) {
+            using Dtype = decltype(f.value_);
+            std::string field_name = std::string(f.name());
+            std::string newPrefix = prefix + field_name;
+            // if (Time.getFrame() == 0) {
+            // print(field_name, "is a ", type_of<Dtype>(), ", prefix is ", newPrefix);
+            // print("and value is ", f.value_);
+            // }
+
+            const Dtype& val = f.value_;
+            Dtype& ref = (Dtype&)val;
+
+            // define ImGui actions for each primitive type
+            // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
+            // I should probably use concepts to group them anyway
+            if constexpr (std::is_same_v<char, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<short, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<int, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<long, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<long long, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<float, Dtype>) {
+                // TODO editing not working
+                ImGui::SliderFloat(newPrefix.c_str(), &ref, f.value_ - f.value_, f.value_ + f.value_, "%.1f");
+            } else if constexpr (std::is_same_v<double, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<bool, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<wchar_t, Dtype>) {
+                // ...
+            } else if constexpr (std::is_same_v<char*, Dtype>) {
+                // ...
+            } else if constexpr (std::is_pointer_v<Dtype>) {
+                // ...
+            } else if constexpr (std::is_enum_v<Dtype>) {
+                // ...
+            } else if constexpr (std::is_integral_v<Dtype>) {
+                // ...
+            } else {
+                // if constexpr (rfl::internal::has_fields<Dtype>()) {
+                // specify autoresize, otherwise the first child window will be huge
+                ImGui::BeginChild(newPrefix.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+                // ImGui::Text("%s", newPrefix.c_str());
+                thingEditor<Dtype>(ref, newPrefix + "::");
+                ImGui::EndChild();
+                // }
+            }
+        });
+    }
+}
+
 static void printComponents(ecs::Entity entity, int xOffset = 0) {
+    ImGui::PushID(entity.id());
     if (xOffset == 0) {
         xOffset = ImGui::GetCursorPosX();
     } else {
         ImGui::SetCursorPosX(xOffset);
     }
-    ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE), "%s", entity.has<Name>() ? entity.get<Name>().name.c_str() : "None");
+    ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE),
+                       "%s Components:", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str());
     ImGui::SetCursorPosX(xOffset);
-    ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
+    // ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
+    ImGui::BeginChild("Transform", ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    ImGui::Text("%s", "Transform");
+    thingEditor<Transform>(entity.get<Transform>());
+    ImGui::EndChild();
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
+    ImGui::PopID();
 }
 
 // needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
