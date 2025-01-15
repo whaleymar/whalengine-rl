@@ -15,7 +15,6 @@
 #include "Gfx/Coordinates.h"
 #include "Settings.h"
 #include "Util/CameraUtil.h"
-#include "rfl/NamedTuple.hpp"
 #include "rlImGuiColors.h"
 
 #include "Systems/ColliderSystem.h"
@@ -201,31 +200,27 @@ void EditorUiSystem::drawWorld() const {
 }
 
 template <typename T>
-static void thingEditor(const T& thing, std::string prefix = "") {
-    // if (prefix == "") {
-    //     prefix = whal_format("{}::", type_of<T>());
-    // }
+static T imguiRenderStruct(T thing, std::string prefix = "") {
     if constexpr (rfl::internal::has_reflection_type_v<T>) {
-        thingEditor(thing.reflection(), prefix);
-        return;
+        // make sure we use the reflectable type if it has one
+        return imguiRenderStruct(thing.reflection(), prefix);
     } else {
-        // `thing` must be a const reference here
-        // RESEARCH I might want to do .transform instead of .apply?
-        rfl::to_named_tuple(thing).apply([prefix](const auto& f) {
-            using Dtype = decltype(f.value_);
-            std::string field_name = std::string(f.name());
+        const auto tup = rfl::to_view(thing);
+        tup.apply([prefix]<typename Field>(Field& f) {
+            using Dtype = std::remove_reference_t<decltype(*f.value())>;
+            std::string field_name = std::string(Field::name());
             std::string newPrefix = prefix + field_name;
-            // if (Time.getFrame() == 0) {
-            // print(field_name, "is a ", type_of<Dtype>(), ", prefix is ", newPrefix);
-            // print("and value is ", f.value_);
-            // }
-
-            const Dtype& val = f.value_;
-            Dtype& ref = (Dtype&)val;
 
             // define ImGui actions for each primitive type
             // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
-            // I should probably use concepts to group them anyway
+            // I should probably use concepts to group them anyway. ImGui doesn't have separate widgets for similar types like {float, double}
+
+            // TODO custom component handlers for:
+            // - std::vector
+            // - std::unordered_map / std::map
+            // - std::unordered_set / std::set
+            // - Color / rl::Color (imgui color picker)
+            // - string-like types
             if constexpr (std::is_same_v<char, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<short, Dtype>) {
@@ -237,12 +232,27 @@ static void thingEditor(const T& thing, std::string prefix = "") {
             } else if constexpr (std::is_same_v<long long, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<float, Dtype>) {
-                // TODO editing not working
-                ImGui::SliderFloat(newPrefix.c_str(), &ref, f.value_ - f.value_, f.value_ + f.value_, "%.1f");
+                const f32 minSlideSpeed = 0.05;
+
+                // want slide speed to scale with the magnitude so it's easier to adjust small values
+                f32 slideSpeed = 0.025;
+                const f32 absVal = math::abs(*f.value());
+                if (absVal > 1.0f) {
+                    // log the value so speed isn't crazy for large values
+                    slideSpeed = slideSpeed * std::log(absVal) * 4.0f;
+                } else {
+                    slideSpeed = slideSpeed * absVal;
+                }
+                if (slideSpeed < minSlideSpeed) {
+                    slideSpeed = minSlideSpeed;
+                }
+                ImGui::DragFloat(newPrefix.c_str(), f.value(), slideSpeed, -FLT_MAX, +FLT_MAX, "%.2f", ImGuiSliderFlags_NoRoundToFormat);
+
             } else if constexpr (std::is_same_v<double, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<bool, Dtype>) {
-                // ...
+                ImGui::Checkbox(newPrefix.c_str(), f.value());
+
             } else if constexpr (std::is_same_v<wchar_t, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<char*, Dtype>) {
@@ -250,20 +260,50 @@ static void thingEditor(const T& thing, std::string prefix = "") {
             } else if constexpr (std::is_pointer_v<Dtype>) {
                 // ...
             } else if constexpr (std::is_enum_v<Dtype>) {
-                // ...
+                // is a std::array<std::pair<std::string_view, Dtype>, N>
+                constexpr auto enums = rfl::get_enumerator_array<Dtype>();
+                std::array<const char*, enums.size()> enumNames;
+                int selection = 0;
+                for (size_t i = 0; i < enums.size(); i++) {
+                    enumNames[i] = enums[i].first.data();
+                    if (enums[i].second == *f.value()) {
+                        selection = i;
+                    }
+                }
+                if (ImGui::Combo(newPrefix.c_str(), &selection, enumNames.data(), enumNames.size())) {
+                    *f.value() = enums[selection].second;
+                }
+
             } else if constexpr (std::is_integral_v<Dtype>) {
-                // ...
+                // catch-all for primitive types that I am not handling
+                print("unhandled integral type: ", type_of<Dtype>());
+
             } else {
-                // if constexpr (rfl::internal::has_fields<Dtype>()) {
+                // Recursively render struct.
                 // specify autoresize, otherwise the first child window will be huge
                 ImGui::BeginChild(newPrefix.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-                // ImGui::Text("%s", newPrefix.c_str());
-                thingEditor<Dtype>(ref, newPrefix + "::");
+                *f.value() = imguiRenderStruct<Dtype>(*f.value(), newPrefix + "::");
                 ImGui::EndChild();
-                // }
             }
         });
+        return thing;
     }
+}
+
+template <typename T>
+static void componentEditor(ecs::Entity entity) {
+    const std::string cmpName(type_of<T>());
+    // ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
+    ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    ImGui::Text("%s", cmpName.c_str());
+    T updated = imguiRenderStruct<T>(entity.get<T>());
+    if constexpr (std::is_same_v<T, Transform>) {
+        // special setter
+        entity.get<Transform>().set(updated, entity);
+    } else {
+        entity.set(updated);
+    }
+    ImGui::EndChild();
 }
 
 static void printComponents(ecs::Entity entity, int xOffset = 0) {
@@ -276,11 +316,7 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
     ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE),
                        "%s Components:", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str());
     ImGui::SetCursorPosX(xOffset);
-    // ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
-    ImGui::BeginChild("Transform", ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-    ImGui::Text("%s", "Transform");
-    thingEditor<Transform>(entity.get<Transform>());
-    ImGui::EndChild();
+    componentEditor<Transform>(entity);
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
     ImGui::PopID();
