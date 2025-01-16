@@ -11,18 +11,18 @@
 namespace whal::gfx {
 
 static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 position, float fontSize, rl::Vector4 hdrColor, float angle,
-                                 rl::Vector2 origin, rl::Vector3 packedCBI);
+                                 rl::Vector2 origin, rl::Vector3 packedCBI, rl::Vector2 scale);
 
 // Draw text using font inside rectangle limits
 void DrawTextBoxed(rl::Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,
-                   float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi) {
-    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, Colors::White, angle, pivotOffset, cbi);
+                   float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi, rl::Vector2 scale) {
+    DrawTextBoxedSelectable(font, text, params, fontSize, spacing, wordWrap, center, tint, 0, 0, Colors::White, angle, pivotOffset, cbi, scale);
 }
 
 // Draw text using font inside rectangle limits with support for text selection
 void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawParams params, float fontSize, float spacing, bool wordWrap,
                              bool center, Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset,
-                             gfx::DrawMetaData cbi) {
+                             gfx::DrawMetaData cbi, rl::Vector2 scale) {
     int length = rl::TextLength(text);  // Total length in bytes of the text, scanned by codepoints in loop
     const auto rec = params.rect;
 
@@ -32,7 +32,12 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawPa
     bool isLineMeasureNeeded = true;
     float centerOffsetX = 0.0f;
 
-    float scaleFactor = fontSize / (float)font.baseSize;  // Character rectangle scaling factor
+    // Character rectangle scaling factor
+    rl::Vector2 scaleFactor = rl::Vector2{
+        fontSize / (float)font.baseSize * scale.x,
+        fontSize / (float)font.baseSize * scale.y,
+
+    };
 
     // Word/character wrapping mechanism variables
     enum { MEASURE_STATE = 0, DRAW_STATE = 1 };
@@ -63,7 +68,7 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawPa
 
         float glyphWidth = 0;
         if (codepoint != '\n') {
-            glyphWidth = (font.glyphs[index].advanceX == 0) ? font.recs[index].width * scaleFactor : font.glyphs[index].advanceX * scaleFactor;
+            glyphWidth = (font.glyphs[index].advanceX == 0) ? font.recs[index].width * scaleFactor.x : font.glyphs[index].advanceX * scaleFactor.x;
 
             if (i + 1 < length)
                 glyphWidth = glyphWidth + spacing;
@@ -108,23 +113,25 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawPa
                                                             std::string(text).substr(startLine == -1 ? 0 : startLine + 1, endLine - startLine);
 
                 rl::Vector2 textDimensions = rl::MeasureTextEx(font, lineStr.c_str(), fontSize, spacing);
+                textDimensions.x *= scale.x;
+                textDimensions.y *= scale.y;
                 centerOffsetX = (rec.width - textDimensions.x) / 2;
 
                 isLineMeasureNeeded = false;
             }
             if (codepoint == '\n') {
                 if (!wordWrap) {
-                    textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
+                    textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor.y;
                     textOffsetX = 0;
                 }
             } else {
                 if (!wordWrap && ((textOffsetX + glyphWidth) > rec.width)) {
-                    textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
+                    textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor.y;
                     textOffsetX = 0;
                 }
 
                 // When text overflows rectangle height limit, just stop drawing
-                if ((textOffsetY + font.baseSize * scaleFactor) > rec.height)
+                if ((textOffsetY + font.baseSize * scaleFactor.y) > rec.height)
                     break;
 
                 // Draw selection background
@@ -137,13 +144,13 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawPa
                 if ((codepoint != ' ') && (codepoint != '\t')) {
                     Vector2f pos = Vector2f(rec.x + centerOffsetX + textOffsetX, rec.y + textOffsetY).rotate(-angle, centerpoint);
                     DrawTextCodepointPro(font, codepoint, pos.asRL(), fontSize, isGlyphSelected ? hdrSelectColor : hdrColor, angle, rl::Vector2{0, 0},
-                                         packedCBI);
+                                         packedCBI, scale);
                 }
             }
 
             if (wordWrap && (i == endLine)) {
                 // textOffsetY += (font.baseSize + font.baseSize / 2) * scaleFactor;
-                textOffsetY += (font.baseSize) * scaleFactor;
+                textOffsetY += (font.baseSize) * scaleFactor.y;
                 textOffsetX = 0;
                 startLine = endLine;
                 endLine = -1;
@@ -163,18 +170,19 @@ void DrawTextBoxedSelectable(rl::Font font, const char* text, const RaylibDrawPa
 
 // added rotation support :)
 static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 position, float fontSize, rl::Vector4 hdrColor, float angle,
-                                 rl::Vector2 origin, rl::Vector3 packedCBI) {
+                                 rl::Vector2 origin, rl::Vector3 packedCBI, rl::Vector2 scale) {
     // Character index position in sprite font
     // NOTE: In case a codepoint is not available in the font, index returned points to '?'
     int index = GetGlyphIndex(font, codepoint);
     float scaleFactor = fontSize / font.baseSize;  // Character quad scaling factor
+    scale = rl::Vector2{scaleFactor * scale.x, scaleFactor * scale.y};
 
     // Character destination rectangle on screen
     // NOTE: We consider glyphPadding on drawing
-    rl::Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                            position.y + font.glyphs[index].offsetY * scaleFactor - (float)font.glyphPadding * scaleFactor,
-                            (font.recs[index].width + 2.0f * font.glyphPadding) * scaleFactor,
-                            (font.recs[index].height + 2.0f * font.glyphPadding) * scaleFactor};
+    rl::Rectangle dstRec = {position.x + font.glyphs[index].offsetX * scale.x - (float)font.glyphPadding * scale.x,
+                            position.y + font.glyphs[index].offsetY * scale.y - (float)font.glyphPadding * scale.y,
+                            (font.recs[index].width + 2.0f * font.glyphPadding) * scale.x,
+                            (font.recs[index].height + 2.0f * font.glyphPadding) * scale.y};
 
     // Character source rectangle from font texture atlas
     // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects

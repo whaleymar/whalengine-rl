@@ -1,6 +1,8 @@
 #include "Listeners.h"
 
 #include "Components/Transform.h"
+#include "IGame.h"
+#include "Map/Level.h"
 #include "Sys/System.h"
 
 namespace whal {
@@ -11,7 +13,12 @@ void emitEntityDeathEvent(ecs::Entity entity) {
 }
 
 void onTopLevelEntityCreated(ecs::Entity entity) {
+    // make entity owned by current scene
     entity.add<Transform>();
+    ecs::Entity sceneRoot = System::getGame().getScene().self;
+    if (sceneRoot.isValid()) {
+        sceneRoot.addChild(entity);
+    }
 }
 
 void onChildEntityCreated(ecs::Entity child, ecs::Entity parent) {

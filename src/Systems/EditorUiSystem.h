@@ -15,6 +15,7 @@ class EditorUiSystem : public ecs::ISystem<Transform>,
                        public ecs::IMonitorSystem,
                        public IListen<evt::Input, true, InputEvent>,
                        public IListen<evt::EnginePause, true, bool>,
+                       public IListen<evt::Restart, true, bool>,
                        public IRenderDebug {
 public:
     void activate();
@@ -24,6 +25,7 @@ public:
 
     void onEvent(evt::Input, InputEvent input) override;
     void onEvent(evt::EnginePause, bool isPaused) override;
+    void onEvent(evt::Restart, bool resetPlayers) override;
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
 
@@ -32,6 +34,7 @@ public:
 
 private:
     std::vector<ecs::Entity> mClickedEntities;
+    f32 mLastClickTime = 0;
 };
 
 }  // namespace whal

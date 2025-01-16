@@ -2,6 +2,7 @@
 
 #include "Components/Collision.h"
 #include "Map/TiledParse.h"
+#include "Sys/System.h"
 
 namespace whal {
 
@@ -24,6 +25,13 @@ void TagLoader::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
 
     if (tryRead(*ctx.values, "BlocksLight", &hasTag) && hasTag) {
         entity.add<BlocksLight>();
+        hasTag = false;
+    }
+
+    if (tryRead(*ctx.values, "Inactive", &hasTag) && hasTag) {
+        // jank shit; i need children to have an independent activity flag!
+        // TODO
+        Schedule.flow({entity}).addWait(0.05).add([](ecs::Entity self) { self.deactivate(); }, entity);
         hasTag = false;
     }
 }

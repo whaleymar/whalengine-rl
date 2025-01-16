@@ -24,10 +24,10 @@ struct RaylibDrawParams;
 struct DrawMetaData;
 
 void DrawTextBoxed(rl::Font font, const char* text, gfx::RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
-                   Color tint, float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi);
+                   Color tint, float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi, rl::Vector2 scale);
 void DrawTextBoxedSelectable(rl::Font font, const char* text, gfx::RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
                              Color tint, int selectStart, int selectLength, Color selectTint, float angle, Vector2f pivotOffset,
-                             gfx::DrawMetaData cbi);
+                             gfx::DrawMetaData cbi, rl::Vector2 scale);
 
 void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color = rl::WHITE);
 void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color = Colors::White);

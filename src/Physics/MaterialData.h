@@ -113,7 +113,7 @@ struct MaterialData {
         }
 
         if (startScale != 1.0) {
-            Schedule.tween(entity, Vector2f(1.0, 1.0), lifetime / 2, &Transform::scale).from(Vector2f(1.0, 1.0) * startScale);
+            Schedule.tween(entity, Vector2f(0.25, 0.25), lifetime, &Transform::scale, &Transform::setScale).from(Vector2f(1.0, 1.0) * startScale);
         }
     }
 

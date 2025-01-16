@@ -12,11 +12,13 @@
 
 namespace whal {
 
-static const s32 FONT_SIZE = 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
+s32 getFontSize() {
+    return 40 * VIRTUAL_SCREEN_RATIO / 4.0f;
+}
 
 TextRenderSystem::TextRenderSystem() {
     mFont = new rl::Font();
-    *mFont = rl::LoadFontEx(FONT_PATH, FONT_SIZE, 0, 0);
+    *mFont = rl::LoadFontEx(FONT_PATH, getFontSize(), 0, 0);
 }
 
 TextRenderSystem::~TextRenderSystem() {
@@ -48,6 +50,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // }
 
     // TODO needs adjustment based on rotation? Currently not working for multi-line text
+    // it's definitely because my DrawTextBoxed function doesn't calculate Y values correctly
     // drawing wrapped:
     // dstPosition -= frameSize * Vector2f(0.5, 0.5);  // original
     screenPosition -= frameSize * Vector2f(0.5, 0.0);  // trying something new
@@ -61,8 +64,8 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         .origin = rl::Vector2{0, 0},
     };
 
-    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, FONT_SIZE, spacing, true, draw.isCentered, draw.color * tint, trans.rotation,
-                       pivotOffsetScreen, eCtx.colorBuf);
+    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, getFontSize(), spacing, draw.isWrapped, draw.isCentered, draw.color * tint, trans.rotation,
+                       pivotOffsetScreen, eCtx.colorBuf, trans.scale.asRL());
 }
 
 void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {

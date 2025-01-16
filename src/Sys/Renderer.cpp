@@ -191,7 +191,7 @@ gfx::RenderContext Renderer::getRenderContext() const {
 
     // HACK dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
     Vector2f cameraPosition = cameraEntity.get<Transform>().position;
-    f32 decimal = math::abs(math::remainder(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
+    f32 decimal = math::abs(math::getDecimal(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
         // cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
         cameraPosition.y += 0.01f;
@@ -485,7 +485,7 @@ void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition
     // HACK
     // if VIRTUAL_SCREEN_RATIO * game_height has a decimal value of approx. 0.5, then we get artifacts
     // from floating point errors, so we need to slightly tweak the window size
-    f32 decimal = math::abs(math::remainder(VIRTUAL_SCREEN_RATIO * FWINDOW_HEIGHT_GAME));
+    f32 decimal = math::abs(math::getDecimal(VIRTUAL_SCREEN_RATIO * FWINDOW_HEIGHT_GAME));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
         WINDOW_WIDTH_RENDER -= 1;
         WINDOW_HEIGHT_RENDER -= 1;

@@ -133,7 +133,10 @@ void EditorUiSystem::onEvent(evt::Input, InputEvent input) {
     }
 
     if (input.isHeld) {
-        dragSelectedEntities();
+        // don't accidentally move for a short click
+        if (Time.getElapsedPrecise() - mLastClickTime > 0.1) {
+            dragSelectedEntities();
+        }
         return;
     } else if (!input.isPressed) {
         return;
@@ -143,6 +146,8 @@ void EditorUiSystem::onEvent(evt::Input, InputEvent input) {
     if (Input.getMouseScreen().x > WINDOW_WIDTH_RENDER || Input.getMouseScreen().y > WINDOW_HEIGHT_RENDER) {
         return;
     }
+
+    mLastClickTime = Time.getElapsedPrecise();
 
     // build mClickedEntities
     Vector2i clickPoint = Input.getMouseScreen();
@@ -169,6 +174,10 @@ void EditorUiSystem::onEvent(evt::EnginePause, bool isPaused) {
     }
 }
 
+void EditorUiSystem::onEvent(evt::Restart, bool resetPlayers) {
+    mClickedEntities.clear();
+}
+
 void EditorUiSystem::onAdd(ecs::Entity entity) {}
 
 void EditorUiSystem::onRemove(ecs::Entity entity) {
@@ -179,6 +188,7 @@ void EditorUiSystem::onRemove(ecs::Entity entity) {
     // remove entity from clicked list
     auto it = ecs::whal_find(mClickedEntities.begin(), mClickedEntities.end(), entity);
     if (it != mClickedEntities.end()) {
+        print("removed entity id", entity.id(), "from clickedEntityies because DIE");
         mClickedEntities.erase(it);
     }
 }
@@ -199,14 +209,16 @@ void EditorUiSystem::drawWorld() const {
     }
 }
 
+// bool tracks if anything changed
 template <typename T>
-static T imguiRenderStruct(T thing, std::string prefix = "") {
+static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "") {
     if constexpr (rfl::internal::has_reflection_type_v<T>) {
         // make sure we use the reflectable type if it has one
         return imguiRenderStruct(thing.reflection(), prefix);
     } else {
         const auto tup = rfl::to_view(thing);
-        tup.apply([prefix]<typename Field>(Field& f) {
+        bool isChange = false;
+        tup.apply([&]<typename Field>(Field& f) {
             using Dtype = std::remove_reference_t<decltype(*f.value())>;
             std::string field_name = std::string(Field::name());
             std::string newPrefix = prefix + field_name;
@@ -246,12 +258,16 @@ static T imguiRenderStruct(T thing, std::string prefix = "") {
                 if (slideSpeed < minSlideSpeed) {
                     slideSpeed = minSlideSpeed;
                 }
-                ImGui::DragFloat(newPrefix.c_str(), f.value(), slideSpeed, -FLT_MAX, +FLT_MAX, "%.2f", ImGuiSliderFlags_NoRoundToFormat);
+                if (ImGui::DragFloat(newPrefix.c_str(), f.value(), slideSpeed, -FLT_MAX, +FLT_MAX, "%.2f", ImGuiSliderFlags_NoRoundToFormat)) {
+                    isChange = true;
+                }
 
             } else if constexpr (std::is_same_v<double, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<bool, Dtype>) {
-                ImGui::Checkbox(newPrefix.c_str(), f.value());
+                if (ImGui::Checkbox(newPrefix.c_str(), f.value())) {
+                    isChange = true;
+                }
 
             } else if constexpr (std::is_same_v<wchar_t, Dtype>) {
                 // ...
@@ -272,6 +288,7 @@ static T imguiRenderStruct(T thing, std::string prefix = "") {
                 }
                 if (ImGui::Combo(newPrefix.c_str(), &selection, enumNames.data(), enumNames.size())) {
                     *f.value() = enums[selection].second;
+                    isChange = true;
                 }
 
             } else if constexpr (std::is_integral_v<Dtype>) {
@@ -282,26 +299,31 @@ static T imguiRenderStruct(T thing, std::string prefix = "") {
                 // Recursively render struct.
                 // specify autoresize, otherwise the first child window will be huge
                 ImGui::BeginChild(newPrefix.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-                *f.value() = imguiRenderStruct<Dtype>(*f.value(), newPrefix + "::");
+                std::pair<Dtype, bool> result = imguiRenderStruct<Dtype>(*f.value(), newPrefix + "::");
+                if (result.second) {
+                    *f.value() = result.first;
+                    isChange = true;
+                }
                 ImGui::EndChild();
             }
         });
-        return thing;
+        return {thing, isChange};
     }
 }
 
 template <typename T>
 static void componentEditor(ecs::Entity entity) {
     const std::string cmpName(type_of<T>());
-    // ImGui::TextWrapped("Transform: %s\n", Transform::saveImpl(entity).c_str());
     ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
     ImGui::Text("%s", cmpName.c_str());
-    T updated = imguiRenderStruct<T>(entity.get<T>());
-    if constexpr (std::is_same_v<T, Transform>) {
-        // special setter
-        entity.get<Transform>().set(updated, entity);
-    } else {
-        entity.set(updated);
+    std::pair<T, bool> updated = imguiRenderStruct<T>(entity.get<T>());
+    if (updated.second) {
+        if constexpr (std::is_same_v<T, Transform>) {
+            // special setter
+            entity.get<Transform>().set(updated.first, entity);
+        } else {
+            entity.set(updated.first);
+        }
     }
     ImGui::EndChild();
 }

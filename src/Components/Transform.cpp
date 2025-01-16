@@ -73,6 +73,8 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     positionPx = position.round();
     scale = parentTrans.scale * localScale;
     rotation = parentTrans.rotation + localRotation;
+    depth = parentTrans.depth;
+    floatHeight = parentTrans.floatHeight;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParent(*this, child);
     }
@@ -100,15 +102,34 @@ void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
     }
 }
 
+void Transform::setParentFloatHeight(f32 parentFloat, ecs::Entity self) {
+    // local float is not a thing, inherit parent's value
+    floatHeight = parentFloat;
+    for (const ecs::Entity& child : self.children()) {
+        child.get<Transform>().setParentFloatHeight(floatHeight, child);
+    }
+}
+
 void Transform::set(const Transform& trans, ecs::Entity self) {
     const Vector2f parentPosition = position - localPosition;
     position = trans.position;
     positionPx = position.round();
     localPosition = position - parentPosition;
 
-    const Vector2f parentScale = scale / localScale;
-    scale = trans.scale;
-    localScale = scale / parentScale;
+    if (trans.scale != scale) {
+        const Vector2f parentScale = self.parent().isValid() ? self.parent().get<Transform>().scale : Vector2f::ONE;
+        scale = trans.scale;
+        if (parentScale.x == 0) {
+            localScale.x = scale.x;
+        } else {
+            localScale.x = scale.x / parentScale.x;
+        }
+        if (parentScale.y == 0) {
+            localScale.y = scale.y;
+        } else {
+            localScale.y = scale.y / parentScale.y;
+        }
+    }
 
     const f32 parentRotation = rotation - localRotation;
     rotation = trans.rotation;
@@ -146,9 +167,19 @@ void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
         return;
     }
 
-    const Vector2f parentScale = scale / localScale;
+    // do some schenanigans to avoid Divide-By-Zero
+    const Vector2f parentScale = self.parent().isValid() ? self.parent().get<Transform>().scale : Vector2f::ONE;
     scale = globalScale;
-    localScale = scale / parentScale;
+    if (parentScale.x == 0) {
+        localScale.x = scale.x;
+    } else {
+        localScale.x = scale.x / parentScale.x;
+    }
+    if (parentScale.y == 0) {
+        localScale.y = scale.y;
+    } else {
+        localScale.y = scale.y / parentScale.y;
+    }
 
     // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
@@ -168,6 +199,18 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
+    }
+}
+
+void Transform::setFloatHeight(f32 globalFloatHeight, ecs::Entity self) {
+    if (globalFloatHeight == floatHeight) {
+        return;
+    }
+
+    // local float height is not a thing
+    floatHeight = globalFloatHeight;
+    for (const ecs::Entity& child : self.children()) {
+        child.get<Transform>().setParentFloatHeight(floatHeight, child);
     }
 }
 
@@ -274,9 +317,12 @@ TransformBuilder& TransformBuilder::position(Vector2f globalPosition) {
 }
 
 TransformBuilder& TransformBuilder::scale(Vector2f globalScale) {
-    const Vector2f parentScale = mTrans.scale / mTrans.localScale;
+    // avoid DBZ:
+    const Vector2f parentScale(mTrans.localScale.x == 0 ? 0 : mTrans.scale.x / mTrans.localScale.x,
+                               mTrans.localScale.y == 0 ? 0 : mTrans.scale.y / mTrans.localScale.y);
+
     mTrans.scale = globalScale;
-    mTrans.localScale = mTrans.scale / parentScale;
+    mTrans.localScale = Vector2f(parentScale.x == 0 ? 0 : mTrans.scale.x / parentScale.x, parentScale.y == 0 ? 0 : mTrans.scale.y / parentScale.y);
     return *this;
 }
 
