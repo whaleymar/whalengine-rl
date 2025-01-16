@@ -7,11 +7,12 @@
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
 #include "Util/CameraUtil.h"
+#include "Util/Print.h"
 
 namespace whal {
 
 static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f pivotOffset, f32 rotationDegrees, f32 floatHeight) {
-    if (rotationDegrees == 0.0f) {
+    if (rotationDegrees == 0.0f || pivotOffset.isZero()) {
         return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + pivotOffset * (Vector2f::ONE - scale);
     }
     const Vector2f pivotRoot = position + pivotOffset;
@@ -48,7 +49,8 @@ void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
     positionPx = position.round();
     localPosition += moveAmount;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(position, child);
+        // child.get<Transform>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
 
@@ -69,22 +71,41 @@ void Transform::scaleBy(Vector2f amount, ecs::Entity self) {
 }
 
 void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
-    position = parentTrans.position + localPosition;
+    // rotate about parent's center
+    if (!localPosition.isZero()) {
+        const f32 oldParentRotation = rotation - localRotation;
+        localPosition = localPosition.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
+    }
+
+    // TODO i think I need to do something similar to ^ if there's a pivot offset
+    // but it's really confusing
+    // this might be a good excuse to abandon pivot offsets in favor of another approach
+    // if (!pivotOffset.isZero()) {
+    //     const f32 oldParentRotation = rotation - localRotation;
+    //     localPosition = pivotOffset.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
+    // }
+
+    position = parentTrans.getRotatedPosition() + localPosition;  // handles floating height
     positionPx = position.round();
     scale = parentTrans.scale * localScale;
     rotation = parentTrans.rotation + localRotation;
-    depth = parentTrans.depth;
-    floatHeight = parentTrans.floatHeight;
+    // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParent(*this, child);
     }
 }
 
-void Transform::setParentPosition(Vector2f parentPosition, ecs::Entity self) {
-    position = parentPosition + localPosition;
+void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entity self) {
+    // if (!pivotOffset.isZero()) {
+    //     const Vector2f oldParentPosition = position - localPosition;
+    //     localPosition += (parentPositionTransformed - oldParentPosition);
+    // }
+
+    position = parentPositionTransformed + localPosition;
     positionPx = position.round();
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(position, child);
+        // child.get<Transform>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
 
@@ -96,17 +117,18 @@ void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
 }
 
 void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
+    // rotate about parent's center
+    // TODO i think I need to do something similar if there's a pivot offset
+    if (!localPosition.isZero()) {
+        const f32 oldParentRotation = rotation - localRotation;
+        const Vector2f oldLocalPos = localPosition;
+        localPosition = localPosition.rotate(parentDegrees - oldParentRotation, Vector2f::ZERO);
+        position += (localPosition - oldLocalPos);
+        positionPx = position.round();
+    }
     rotation = parentDegrees + localRotation;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
-    }
-}
-
-void Transform::setParentFloatHeight(f32 parentFloat, ecs::Entity self) {
-    // local float is not a thing, inherit parent's value
-    floatHeight = parentFloat;
-    for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentFloatHeight(floatHeight, child);
     }
 }
 
@@ -158,7 +180,8 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
 
     // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(position, child);
+        // child.get<Transform>().setParentPosition(position, child);
+        child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
 
@@ -195,10 +218,19 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     const f32 parentRotation = rotation - localRotation;
     rotation = globalRotation;
     localRotation = rotation - parentRotation;
-
     // isManuallyMoved = true;
-    for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentRotation(rotation, child);
+    if (pivotOffset.isZero()) {
+        for (const ecs::Entity& child : self.children()) {
+            child.get<Transform>().setParentRotation(rotation, child);
+        }
+    } else {
+        // if we rotated about a pivot, we need to update child positions as well
+        const Vector2f transformedPos = getRotatedPosition();
+        for (const ecs::Entity& child : self.children()) {
+            auto& childTrans = child.get<Transform>();
+            childTrans.setParentRotation(rotation, child);
+            childTrans.setParentPosition(transformedPos, child);
+        }
     }
 }
 
@@ -210,7 +242,7 @@ void Transform::setFloatHeight(f32 globalFloatHeight, ecs::Entity self) {
     // local float height is not a thing
     floatHeight = globalFloatHeight;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentFloatHeight(floatHeight, child);
+        child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
 

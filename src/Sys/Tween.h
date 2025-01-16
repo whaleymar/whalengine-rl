@@ -119,6 +119,7 @@ public:
     Tweener<T>& from(T start) {
         mTween->setFlag(TweenParams::CustomOrigin);
         mTween->mStartValue = start;
+        mTween->setValue(start);
         return *this;
     }
 
@@ -212,11 +213,7 @@ private:
         }
         mIsStarted = true;
 
-        if (mSetter) {
-            mSetter(getValue(), mEntity);
-        } else {
-            mGetter(mEntity) = getValue();
-        }
+        setValue(getValue());
 
         if (getProgress() >= 1.0) {
             if (mNumLoops != 0) {
@@ -278,12 +275,22 @@ private:
     void setFlag(TweenParams::Flags flag) { mFlags = (mFlags | flag); }
 
     void init() override {
-        T val = isSet(TweenParams::CustomOrigin) ? mStartValue : mGetter(mEntity);
-        mStartValue = val;
+        if (!isSet(TweenParams::CustomOrigin)) {
+            mStartValue = mGetter(mEntity);
+        }
+
         if (isSet(TweenParams::RelativeTarget)) {
-            mEndValue = val + mTweenValue;
+            mEndValue = mStartValue + mTweenValue;
         } else {
             mEndValue = mTweenValue;
+        }
+    }
+
+    void setValue(const T& val) {
+        if (mSetter) {
+            mSetter(val, mEntity);
+        } else {
+            mGetter(mEntity) = val;
         }
     }
 
