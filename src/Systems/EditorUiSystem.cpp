@@ -181,10 +181,6 @@ void EditorUiSystem::onEvent(evt::Restart, bool resetPlayers) {
 void EditorUiSystem::onAdd(ecs::Entity entity) {}
 
 void EditorUiSystem::onRemove(ecs::Entity entity) {
-    if (!S_IS_ACTIVE) {
-        return;
-    }
-
     // remove entity from clicked list
     auto it = ecs::whal_find(mClickedEntities.begin(), mClickedEntities.end(), entity);
     if (it != mClickedEntities.end()) {
@@ -193,7 +189,7 @@ void EditorUiSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-void EditorUiSystem::drawWorld() const {
+void EditorUiSystem::drawWorld() {
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
         // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:

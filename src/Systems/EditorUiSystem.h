@@ -29,7 +29,7 @@ public:
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
 
-    void drawWorld() const;
+    void drawWorld();
     void draw() override;
 
 private:
