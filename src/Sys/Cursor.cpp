@@ -23,7 +23,12 @@ void CursorManager::set(Sprite sprite) const {
         entity.remove<Sprite>();
         entity.add(sprite);
     }
-    rl::HideCursor();
+
+#ifndef NDEBUG
+    if (!EDITOR_MODE) {
+        rl::HideCursor();
+    }
+#endif
 }
 
 void CursorManager::setDefault() const {

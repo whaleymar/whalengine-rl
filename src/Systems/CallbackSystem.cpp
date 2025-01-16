@@ -1,6 +1,7 @@
 #include "CallbackSystem.h"
 
 #include "Components/Callback.h"
+#include "Sys/System.h"
 
 namespace whal {
 
@@ -9,7 +10,9 @@ void CustomUpdateSystem::update() {
         // not bothering with a null check
 
         const auto update = entity.get<CustomUpdate>();
-        update.callback(entity);
+        if (Time.getFrame() % update.everyNFrame == 0) {
+            update.callback(entity);
+        }
     }
 }
 

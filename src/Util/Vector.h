@@ -95,6 +95,7 @@ struct Vector2 {
 
     inline Vector2<T> absolute() const { return Vector2<T>(math::abs(x), math::abs(y)); }
     inline bool isZero() const { return x == 0 && y == 0; }
+    inline bool isNearZero(const f32 epsilon) const { return math::isNearZero(x, epsilon) && math::isNearZero(y, epsilon); }
 
     template <typename Type>
     inline Vector2<Type> as() const {

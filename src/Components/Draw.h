@@ -80,6 +80,7 @@ struct DrawText : ISerialize<DrawText, ComponentFactory> {
     Vector2i frameSize;
     Color color = Colors::White;
     bool isCentered = false;
+    bool isWrapped = true;
 
     static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };

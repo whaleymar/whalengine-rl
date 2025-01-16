@@ -47,9 +47,14 @@ inline SignedNumber auto sign(SignedNumber auto const number) {
     return number < 0 ? -1 : 1;
 }
 
-inline f32 remainder(f32 num) {
+inline f32 getDecimal(f32 num) {
     f32 unused;
     return std::modf(num, &unused);
+}
+
+inline s32 remainder(s32 numerator, s32 divisor) {
+    // behaves like `a % b` in python (different from c++ for negative #s. this will always return a nonnegative number)
+    return (divisor + (numerator % divisor)) % divisor;
 }
 
 // inline Number auto lerp(Number auto n1, Number auto n2, f32 t) {

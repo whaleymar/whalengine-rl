@@ -1,7 +1,6 @@
 #pragma once
 
 #include <raylib.h>
-#include <set>
 #include <string>
 
 #include "CorradeOptional.h"

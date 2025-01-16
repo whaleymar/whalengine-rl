@@ -111,12 +111,14 @@ struct Transform {
     void setParentPosition(Vector2f parentPosition, ecs::Entity self);
     void setParentScale(Vector2f parentScale, ecs::Entity self);
     void setParentRotation(f32 parentDegrees, ecs::Entity self);
+    void setParentFloatHeight(f32 parentFloat, ecs::Entity self);
 
     // these work in reverse, computing the local transform needed to get the desired global state
     void set(const Transform& trans, ecs::Entity self);
     void setPosition(Vector2f globalPosition, ecs::Entity self);
     void setScale(Vector2f globalScale, ecs::Entity self);
     void setRotation(f32 globalRotation, ecs::Entity self);
+    void setFloatHeight(f32 globalFloatHeight, ecs::Entity self);
 
     Vector2f getRotatedPosition() const;
     Vector2i getRotatedPositionInt() const;
