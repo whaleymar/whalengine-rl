@@ -79,19 +79,19 @@ enum class Facing : u8 {
 struct Transform {
     friend class TransformBuilder;
 
-    // global transform (read only):
+    // global transform (use setters for these):
     Vector2f position;
     Vector2i positionPx;             // rounded replica of position, for convenience
-    Vector2f scale = Vector2f::ONE;  // research negative scale to flip about X/Y axis (replaces Facing)
+    Vector2f scale = Vector2f::ONE;  // negative scale to flip sprites
     f32 rotation = 0.0f;             // degrees
     f32 floatHeight = 0.0f;          // RESEARCH make position Vector3f?
 
-    // local transform (read/write):
-    Vector2f localPosition = Vector2f::ZERO;
-    Vector2f localScale = Vector2f::ONE;
-    f32 localRotation = 0.0;
-    Facing facing = Facing::Right;  // draw calls flipped if facing left
-    bool isManuallyMoved = true;    // if true, updates collider position without calling Collider.move
+    // local transform (don't edit these):
+    Vector2f _localPosition = Vector2f::ZERO;
+    Vector2f _localScale = Vector2f::ONE;
+    f32 _localRotation = 0.0;
+
+    bool isManuallyMoved = true;  // if true, updates collider position without calling Collider.move
     Depth depth = Depth::Level;
     Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation // RESEARCH maybe can get rid of this by using a parent entity for the offset?
 
@@ -118,6 +118,8 @@ struct Transform {
     void setScale(Vector2f globalScale, ecs::Entity self);
     void setRotation(f32 globalRotation, ecs::Entity self);
     void setFloatHeight(f32 globalFloatHeight, ecs::Entity self);
+
+    void setFacing(Facing dir, ecs::Entity self);
 
     Vector2f getRotatedPosition() const;
     Vector2i getRotatedPositionInt() const;

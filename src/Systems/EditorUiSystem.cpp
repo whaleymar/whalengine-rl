@@ -4,6 +4,7 @@
 
 #include "ECS.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "raylib.h"
 
 #include "Components/Collision.h"
@@ -207,17 +208,20 @@ void EditorUiSystem::drawWorld() {
 
 // bool tracks if anything changed
 template <typename T>
-static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "") {
+static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "", const std::string& ignoreFieldsWithPrefix = "_") {
     if constexpr (rfl::internal::has_reflection_type_v<T>) {
         // make sure we use the reflectable type if it has one
-        return imguiRenderStruct(thing.reflection(), prefix);
+        return imguiRenderStruct(thing.reflection(), prefix, ignoreFieldsWithPrefix);
     } else {
         const auto tup = rfl::to_view(thing);
         bool isChange = false;
         tup.apply([&]<typename Field>(Field& f) {
             using Dtype = std::remove_reference_t<decltype(*f.value())>;
-            std::string field_name = std::string(Field::name());
-            std::string newPrefix = prefix + field_name;
+            const std::string field_name = std::string(Field::name());
+            if (ignoreFieldsWithPrefix.size() > 0 && field_name.starts_with(ignoreFieldsWithPrefix)) {
+                return;
+            }
+            const std::string newPrefix = prefix + field_name;
 
             // define ImGui actions for each primitive type
             // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
@@ -231,30 +235,42 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
             // - string-like types
             if constexpr (std::is_same_v<char, Dtype>) {
                 // ...
+            } else if constexpr (std::is_same_v<Vector2i, Dtype>) {
+                if (ImGui::DragInt2(newPrefix.c_str(), &(f.value()->x), 1.0f, -INT_MAX, INT_MAX)) {
+                    isChange = true;
+                }
+            } else if constexpr (std::is_same_v<Vector2f, Dtype>) {
+                f32 dragSpeeds[] = {
+                    ImGui::GetSlideSpeedLogarithmic(f.value()->x),
+                    ImGui::GetSlideSpeedLogarithmic(f.value()->y),
+                };
+                const f32 minVal = -FLT_MAX;
+                const f32 maxVal = FLT_MAX;
+                if (ImGui::DragScalarNCustom(newPrefix.c_str(), ImGuiDataType_Float, 2, &(f.value()->x), dragSpeeds, &minVal, &maxVal, "%.2f",
+                                             ImGuiSliderFlags_NoRoundToFormat)) {
+                    isChange = true;
+                }
+            } else if constexpr (std::is_same_v<Color, Dtype>) {
+                if (ImGui::ColorEdit4(newPrefix.c_str(), &(f.value()->r), ImGuiColorEditFlags_HDR)) {
+                    isChange = true;
+                }
             } else if constexpr (std::is_same_v<short, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<int, Dtype>) {
-                // ...
+                if (ImGui::DragInt(newPrefix.c_str(), f.value(), 1.0f, -INT_MAX, INT_MAX)) {
+                    isChange = true;
+                }
+            } else if constexpr (std::is_same_v<unsigned int, Dtype>) {
+                if (ImGui::InputScalar(newPrefix.c_str(), ImGuiDataType_U32, f.value())) {
+                    isChange = true;
+                }
             } else if constexpr (std::is_same_v<long, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<long long, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<float, Dtype>) {
-                const f32 minSlideSpeed = 0.05;
-
-                // want slide speed to scale with the magnitude so it's easier to adjust small values
-                f32 slideSpeed = 0.025;
-                const f32 absVal = math::abs(*f.value());
-                if (absVal > 1.0f) {
-                    // log the value so speed isn't crazy for large values
-                    slideSpeed = slideSpeed * std::log(absVal) * 4.0f;
-                } else {
-                    slideSpeed = slideSpeed * absVal;
-                }
-                if (slideSpeed < minSlideSpeed) {
-                    slideSpeed = minSlideSpeed;
-                }
-                if (ImGui::DragFloat(newPrefix.c_str(), f.value(), slideSpeed, -FLT_MAX, +FLT_MAX, "%.2f", ImGuiSliderFlags_NoRoundToFormat)) {
+                if (ImGui::DragFloat(newPrefix.c_str(), f.value(), ImGui::GetSlideSpeedLogarithmic(*f.value()), -FLT_MAX, +FLT_MAX, "%.2f",
+                                     ImGuiSliderFlags_NoRoundToFormat)) {
                     isChange = true;
                 }
 
@@ -295,7 +311,7 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
                 // Recursively render struct.
                 // specify autoresize, otherwise the first child window will be huge
                 ImGui::BeginChild(newPrefix.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-                std::pair<Dtype, bool> result = imguiRenderStruct<Dtype>(*f.value(), newPrefix + "::");
+                std::pair<Dtype, bool> result = imguiRenderStruct<Dtype>(*f.value(), newPrefix + "::", ignoreFieldsWithPrefix);
                 if (result.second) {
                     *f.value() = result.first;
                     isChange = true;
@@ -335,6 +351,9 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
                        "%s Components:", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str());
     ImGui::SetCursorPosX(xOffset);
     componentEditor<Transform>(entity);
+    if (entity.has<Sprite>()) {
+        componentEditor<Sprite>(entity);
+    }
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
     ImGui::PopID();

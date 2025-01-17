@@ -37,114 +37,14 @@ void OrbitSystem::update() {
 }
 
 void FollowSystem::update() {
-    for (auto [entityid, entity] : getEntities()) {
-        Transform trans = entity.get<Transform>();
-        auto& follow = entity.get<Follow>();
-        if (!follow.isTargetInitialized) {
-            follow.initTarget(entity);
-        }
-
-        ecs::Entity targetEntity(follow.targetEntityID);
-        Transform targetTrans = targetEntity.get<Transform>();
-        // consider target speed if it has the component and adjust lookahead to be smaller for low speeds
-        f32 lookAheadX = follow.lookAhead.x;
-        f32 lookAheadY = follow.lookAhead.y;
-        bool isTargetMovingX = false;
-        bool isTargetMovingY = false;
-        bool isMovingUp = false;
-        if (auto velOpt = targetEntity.tryGet<Velocity>(); velOpt) {
-            f32 velx = velOpt->total.x;
-            f32 vely = velOpt->total.y;
-            lookAheadX *= math::clamp(math::abs(velx) * 0.1f, 0.0f, 1.0f);
-            lookAheadY *= math::clamp(math::abs(vely) * 0.1f, 0.0f, 1.0f);
-            isTargetMovingX = math::abs(velx) > 1;
-            isTargetMovingY = vely != 0;
-            isMovingUp = vely > 0;
-        }
-
-        s32 target;
-        if (follow.isMovingX && isTargetMovingX) {
-            s32 direction = targetTrans.facing == Facing::Right ? 1 : -1;
-            target = targetTrans.position.x + direction * lookAheadX;
-        } else {
-            target = targetTrans.position.x;
-        }
-        s32 min = follow.boundsX.x;
-        s32 max = follow.boundsX.y;
-        s32 currentTarget = math::clamp(target, min, max);
-        s32 distanceFromTarget = math::abs(currentTarget - trans.position.x);
-
-        // if the target is not moving, we shouldn't move away from it
-        if (follow.isMovingX && !isTargetMovingX &&
-            ((targetTrans.position.x <= trans.position.x && trans.position.x <= follow.currentTarget.x) ||
-             (targetTrans.position.x >= trans.position.x && trans.position.x >= follow.currentTarget.x))) {
-            follow.currentTarget.x = trans.position.x;
-            follow.isMovingX = false;
-        } else if (distanceFromTarget > follow.deadZone.x) {
-            follow.currentTarget.x = currentTarget;
-            follow.isMovingX = true;
-        }
-
-        if (follow.isMovingY && isTargetMovingY) {
-            s32 direction = isMovingUp ? 1 : -1;
-            target = targetTrans.position.y + direction * lookAheadY;
-        } else {
-            target = targetTrans.position.y;
-        }
-        min = follow.boundsY.x;
-        max = follow.boundsY.y;
-        currentTarget = math::clamp(target, min, max);
-        distanceFromTarget = math::abs(currentTarget - trans.position.y);
-
-        if (distanceFromTarget > follow.deadZone.y) {
-            follow.currentTarget.y = currentTarget;
-            follow.isMovingY = true;
-        }
-
-        // TEMP
-        Velocity& vel = entity.get<Velocity>();
-        // Velocity vel = entity.get<Velocity>();
-        f32 targetSpeedX = static_cast<f32>((follow.currentTarget.x - trans.position.x));
-        f32 targetSpeedY = static_cast<f32>(follow.currentTarget.y - trans.position.y);
-
-        if (math::abs(targetSpeedX) > math::abs(vel.stable.x)) {
-            targetSpeedX = math::lerp(vel.stable.x, targetSpeedX, follow.damping.x);
-        }
-        if (math::abs(targetSpeedY) > math::abs(vel.stable.y)) {
-            targetSpeedY = math::lerp(vel.stable.y, targetSpeedY, follow.damping.y);
-        }
-
-        vel.stable = {targetSpeedX, targetSpeedY};
-        vel.stable *= {2, 2};
-
-        // don't go too slow
-        f32 minspeed = 1.91;  // min speed for rounding to not zero at 60fps
-        if (vel.stable.x > 0 && vel.stable.x < minspeed) {
-            vel.stable.x = minspeed;
-        } else if (vel.stable.x < 0 && vel.stable.x > -minspeed) {
-            vel.stable.x = -minspeed;
-        }
-
-        if (vel.stable.x == 0 || !isTargetMovingX) {
-            follow.isMovingX = false;
-        }
-
-        if (vel.stable.y > 0 && vel.stable.y < minspeed) {
-            vel.stable.y = minspeed;
-        } else if (vel.stable.y < 0 && vel.stable.y > -minspeed) {
-            vel.stable.y = -minspeed;
-        } else if (vel.stable.y == 0) {
-            follow.isMovingY = false;
-        }
-
-#ifndef NDEBUG
-        ecs::Entity debugTargetTracker(follow.debugTargetTrackerID);
-        ecs::Entity debugPositionTracker(follow.debugPositionTrackerID);
-
-        debugTargetTracker.set(Transform::world(follow.currentTarget));
-        debugPositionTracker.set(trans);
-#endif  // !NDEBUG
-    }
+    // i nuked this because i wrote it when this engine was a baby and it didn't even work
+    // for (auto [entityid, entity] : getEntities()) {
+    //     Transform trans = entity.get<Transform>();
+    //     auto& follow = entity.get<Follow>();
+    //     if (!follow.isTargetInitialized) {
+    //         follow.initTarget(entity);
+    //     }
+    // }
 }
 
 void FollowSystem::onRemove(ecs::Entity entity) {

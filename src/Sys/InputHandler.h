@@ -86,6 +86,9 @@ public:
     void enable(rl::KeyboardKey key) const;
     void enable(rl::MouseButton button) const;
 
+    void stop() const;    // disables all inputs. can only be undone by `enable`
+    void resume() const;  // if `stop` was called previous, this will resume inputs
+
     std::string toString() const;
     bool fromString(const std::string& data);  // returns true on error
 

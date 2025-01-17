@@ -24,7 +24,7 @@ static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ec
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     ecs::Entity layerEntity = eCtx.entity;
     const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
-    const Vector2f tileSize = Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale;
+    const Vector2f tileSize = (Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale).absolute();
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
 
     // this shader could be slightly faster & more ergonomic if I make it a Shader class

@@ -37,9 +37,6 @@ void sync(ecs::Entity child) {
         return;
     }
     child.get<Sprite>().setFrame(child.parent().get<Sprite>().getFrame());
-
-    // TODO setting transform.facing should update children automatically so I don't have to do this
-    child.get<Transform>().facing = child.parent().get<Transform>().facing;
 }
 
 void SpriteOutlineSystem::update() {

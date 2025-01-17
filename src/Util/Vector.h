@@ -168,8 +168,14 @@ struct Vector2 {
     }
 
     // reflect-cpp compatibility:
-    using ReflectionType = rl::Vector2;
-    const ReflectionType reflection() const { return asRL(); }
+    struct POD {
+        T x;
+        T y;
+    };
+    using ReflectionType = POD;
+
+    Vector2(POD pod) : x(pod.x), y(pod.y) {}
+    const ReflectionType reflection() const { return POD{.x = x, .y = y}; }
 };
 
 template <typename T>

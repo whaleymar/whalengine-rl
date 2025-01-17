@@ -38,7 +38,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     Vector2f frameSize = draw.frameSize.as<f32>();
 
     // scale to full resolution
-    frameSize = frameSize * VIRTUAL_SCREEN_RATIO * trans.scale;
+    frameSize = (frameSize * VIRTUAL_SCREEN_RATIO * trans.scale).absolute();
     Vector2f screenPosition = trans.position * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO);
 
     // UNUSED
@@ -65,7 +65,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     };
 
     gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, getFontSize(), spacing, draw.isWrapped, draw.isCentered, draw.color * tint, trans.rotation,
-                       pivotOffsetScreen, eCtx.colorBuf, trans.scale.asRL());
+                       pivotOffsetScreen, eCtx.colorBuf, trans.scale.absolute().asRL());
 }
 
 void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {

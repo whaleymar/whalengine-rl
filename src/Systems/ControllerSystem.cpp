@@ -48,9 +48,9 @@ void ControllerSystem::update() {
 
         auto& trans = entity.get<Transform>();
         if (impulseX > 0) {
-            trans.facing = Facing::Right;
+            trans.setFacing(Facing::Right, entity);
         } else if (impulseX < 0) {
-            trans.facing = Facing::Left;
+            trans.setFacing(Facing::Left, entity);
         }
     }
 }
@@ -61,11 +61,11 @@ void FreeControlSystem::update() {
         Vector2f delta;
         if (Input.isOn("left")) {
             delta += Vector2f::LEFT;
-            trans.facing = Facing::Left;
+            trans.setFacing(Facing::Left, entity);
         }
         if (Input.isOn("right")) {
             delta += Vector2f::RIGHT;
-            trans.facing = Facing::Right;
+            trans.setFacing(Facing::Right, entity);
         }
         if (Input.isOn("up")) {
             delta += Vector2f::UP;
