@@ -233,6 +233,7 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
             // - std::unordered_set / std::set
             // - Color / rl::Color (imgui color picker)
             // - string-like types
+            // - entity/entityID (doing a drag & drop like unity would be cool. Also lookup by name would be nice)
             if constexpr (std::is_same_v<char, Dtype>) {
                 // ...
             } else if constexpr (std::is_same_v<Vector2i, Dtype>) {
@@ -327,7 +328,7 @@ template <typename T>
 static void componentEditor(ecs::Entity entity) {
     const std::string cmpName(type_of<T>());
     ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-    ImGui::Text("%s", cmpName.c_str());
+    ImGui::TextColored(rlImGuiColors::Convert(rl::SKYBLUE), "%s", cmpName.c_str());
     std::pair<T, bool> updated = imguiRenderStruct<T>(entity.get<T>());
     if (updated.second) {
         if constexpr (std::is_same_v<T, Transform>) {
