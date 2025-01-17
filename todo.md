@@ -30,6 +30,7 @@ NEXT GOAL:
     - add more components to imgui component renderer
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline
+    - search for entity by name, inspect in editor
 
 ## Triggers 
 - consolidate with colliders like unity. Makes a lot less work :) 
@@ -64,6 +65,7 @@ NEXT GOAL:
 - one of these:
     - have render systems maintain their entities sorted, then can merge using std::merge
     - cache entity positions from previous frame, remove and re-insert entities whose positions changed
+- Expanding the render window size to 1080p tanks my FPS
 
 ## Misc
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
@@ -81,6 +83,9 @@ NEXT GOAL:
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Get web and windows builds working again
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
+
+## Bugs 
+- some raylib error when I fullscreen
 
 ---------------------------------------------------------------------------------------------------------------------------
 
