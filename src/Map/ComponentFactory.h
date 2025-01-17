@@ -14,7 +14,6 @@ namespace whal {
 
 struct ActiveLevel;
 struct EntityMapData;
-struct Follow;
 struct PropertyType;
 enum class TiledDataType;
 

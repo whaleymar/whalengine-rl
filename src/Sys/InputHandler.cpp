@@ -22,6 +22,8 @@ enum class InputState {
 static std::unordered_map<std::string, InputState> S_NAME_TO_STATE;
 static std::unordered_map<std::string, std::vector<InputCode>> S_NAME_TO_INPUTS;
 static std::unordered_set<InputCode> S_DISABLED_INPUTS;
+static bool S_IS_STOPPED = false;  // flag for if all inputs are disabled
+
 static constexpr u32 KEYBOARD_ENUM_OFFSET = 512;                     // the max val is in the 300s
 static constexpr u32 MOUSE_ENUM_OFFSET = KEYBOARD_ENUM_OFFSET + 64;  // like 6 values
 
@@ -59,8 +61,10 @@ std::string InputCodeToString(InputCode code) {
 void InputHandler::update() {
     mMouseScreenPosition = Vector2i(rl::GetMousePosition()) - Vector2i(WINDOW_POS_OS_X, WINDOW_POS_OS_Y);
     mMouseWindowPosition = Vector2i(rl::GetMousePosition());
-    // rl::Vector2 mousePos = rl::GetMousePosition();
-    // mMouseScreenPosition = Vector2i(mousePos.x, WINDOW_HEIGHT_RENDER - mousePos.y);
+
+    if (S_IS_STOPPED) {
+        return;
+    }
 
     // emits input events
     for (const auto& [name, inputCodes] : S_NAME_TO_INPUTS) {
@@ -291,6 +295,14 @@ void InputHandler::enable(rl::KeyboardKey key) const {
 
 void InputHandler::enable(rl::MouseButton button) const {
     S_DISABLED_INPUTS.erase(GetInputCode(button));
+}
+
+void InputHandler::stop() const {
+    S_IS_STOPPED = true;
+}
+
+void InputHandler::resume() const {
+    S_IS_STOPPED = false;
 }
 
 std::string InputHandler::toString() const {

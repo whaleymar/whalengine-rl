@@ -15,9 +15,9 @@ namespace whal {
 void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto& sprite = eCtx.entity.get<Sprite>();
 
-    const s32 flipModifier = eCtx.transform.facing == Facing::Left ? -1 : 1;
     const rl::Rectangle srcRect =
-        rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, flipModifier * sprite.frameSize.x, sprite.frameSize.y};
+        rl::Rectangle{sprite.atlasPosition.x, sprite.atlasPosition.y, math::sign(eCtx.transform.scale.x) * sprite.frameSize.x,
+                      math::sign(eCtx.transform.scale.y) * sprite.frameSize.y};
     const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.transform, sprite.frameSize);
 
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.transform.rotation, sprite.color.asRL(),

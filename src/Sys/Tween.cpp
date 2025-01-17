@@ -33,7 +33,14 @@ void TweenManager::update() {
                                          const f32 dt = System::isPaused() && !pTween->isSet(TweenParams::IgnorePause) ? 0.0f :
                                                         pTween->isSet(TweenParams::IgnoreSlowdown)                     ? Time.getUnmodified() :
                                                                                                                          Time.dt();
+#ifndef NDEBUG
+                                         if (!EDITOR_SUSPEND) {
+                                             pTween->tick(dt);
+                                         }
+
+#else
                                          pTween->tick(dt);
+#endif
 
                                          // dispatch callback based on tween state
                                          if (!isStarted && pTween->isStarted()) {

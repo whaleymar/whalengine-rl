@@ -7,7 +7,6 @@
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
 #include "Util/CameraUtil.h"
-#include "Util/Print.h"
 
 namespace whal {
 
@@ -23,31 +22,31 @@ static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f 
 
 Transform Transform::world(s32 x, s32 y) {
     Vector2f pos(x, y);
-    return Transform{.position = pos, .positionPx = pos.as<s32>(), .localPosition = pos};
+    return Transform{.position = pos, .positionPx = pos.as<s32>(), ._localPosition = pos};
 }
 
 Transform Transform::world(Vector2i pos) {
-    return Transform{.position = pos.as<f32>(), .positionPx = pos, .localPosition = pos.as<f32>()};
+    return Transform{.position = pos.as<f32>(), .positionPx = pos, ._localPosition = pos.as<f32>()};
 }
 
 Transform Transform::world(Vector2f pos) {
-    return Transform{.position = pos, .positionPx = pos.round(), .localPosition = pos};
+    return Transform{.position = pos, .positionPx = pos.round(), ._localPosition = pos};
 }
 
 Transform Transform::tiles(s32 x, s32 y) {
     Vector2f pos(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
-    return Transform{.position = pos, .positionPx = pos.as<s32>(), .localPosition = pos};
+    return Transform{.position = pos, .positionPx = pos.as<s32>(), ._localPosition = pos};
 }
 
 Transform Transform::tiles(Vector2i pos) {
     Vector2f posF = Vector2f(pos.x * PIXELS_PER_TILE, pos.y * PIXELS_PER_TILE);
-    return Transform{.position = posF, .positionPx = posF.as<s32>(), .localPosition = posF};
+    return Transform{.position = posF, .positionPx = posF.as<s32>(), ._localPosition = posF};
 }
 
 void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
     position += moveAmount;
     positionPx = position.round();
-    localPosition += moveAmount;
+    _localPosition += moveAmount;
     for (const ecs::Entity& child : self.children()) {
         // child.get<Transform>().setParentPosition(position, child);
         child.get<Transform>().setParentPosition(getRotatedPosition(), child);
@@ -56,7 +55,7 @@ void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
 
 void Transform::rotate(f32 degrees, ecs::Entity self) {
     rotation += degrees;
-    localRotation += degrees;
+    _localRotation += degrees;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
     }
@@ -64,7 +63,7 @@ void Transform::rotate(f32 degrees, ecs::Entity self) {
 
 void Transform::scaleBy(Vector2f amount, ecs::Entity self) {
     scale *= amount;
-    localScale *= amount;
+    _localScale *= amount;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentScale(scale, child);
     }
@@ -72,9 +71,9 @@ void Transform::scaleBy(Vector2f amount, ecs::Entity self) {
 
 void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     // rotate about parent's center
-    if (!localPosition.isZero()) {
-        const f32 oldParentRotation = rotation - localRotation;
-        localPosition = localPosition.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
+    if (!_localPosition.isZero()) {
+        const f32 oldParentRotation = rotation - _localRotation;
+        _localPosition = _localPosition.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
     }
 
     // TODO i think I need to do something similar to ^ if there's a pivot offset
@@ -85,10 +84,10 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     //     localPosition = pivotOffset.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
     // }
 
-    position = parentTrans.getRotatedPosition() + localPosition;  // handles floating height
+    position = parentTrans.getRotatedPosition() + _localPosition;  // handles floating height
     positionPx = position.round();
-    scale = parentTrans.scale * localScale;
-    rotation = parentTrans.rotation + localRotation;
+    scale = parentTrans.scale * _localScale;
+    rotation = parentTrans.rotation + _localRotation;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParent(*this, child);
@@ -101,7 +100,7 @@ void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entit
     //     localPosition += (parentPositionTransformed - oldParentPosition);
     // }
 
-    position = parentPositionTransformed + localPosition;
+    position = parentPositionTransformed + _localPosition;
     positionPx = position.round();
     for (const ecs::Entity& child : self.children()) {
         // child.get<Transform>().setParentPosition(position, child);
@@ -110,7 +109,7 @@ void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entit
 }
 
 void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
-    scale = parentScale * localScale;
+    scale = parentScale * _localScale;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentScale(scale, child);
     }
@@ -119,46 +118,45 @@ void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
 void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
     // rotate about parent's center
     // TODO i think I need to do something similar if there's a pivot offset
-    if (!localPosition.isZero()) {
-        const f32 oldParentRotation = rotation - localRotation;
-        const Vector2f oldLocalPos = localPosition;
-        localPosition = localPosition.rotate(parentDegrees - oldParentRotation, Vector2f::ZERO);
-        position += (localPosition - oldLocalPos);
+    if (!_localPosition.isZero()) {
+        const f32 oldParentRotation = rotation - _localRotation;
+        const Vector2f oldLocalPos = _localPosition;
+        _localPosition = _localPosition.rotate(parentDegrees - oldParentRotation, Vector2f::ZERO);
+        position += (_localPosition - oldLocalPos);
         positionPx = position.round();
     }
-    rotation = parentDegrees + localRotation;
+    rotation = parentDegrees + _localRotation;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
     }
 }
 
 void Transform::set(const Transform& trans, ecs::Entity self) {
-    const Vector2f parentPosition = position - localPosition;
+    const Vector2f parentPosition = position - _localPosition;
     position = trans.position;
     positionPx = position.round();
-    localPosition = position - parentPosition;
+    _localPosition = position - parentPosition;
 
     if (trans.scale != scale) {
         const Vector2f parentScale = self.parent().isValid() ? self.parent().get<Transform>().scale : Vector2f::ONE;
         scale = trans.scale;
         if (parentScale.x == 0) {
-            localScale.x = scale.x;
+            _localScale.x = scale.x;
         } else {
-            localScale.x = scale.x / parentScale.x;
+            _localScale.x = scale.x / parentScale.x;
         }
         if (parentScale.y == 0) {
-            localScale.y = scale.y;
+            _localScale.y = scale.y;
         } else {
-            localScale.y = scale.y / parentScale.y;
+            _localScale.y = scale.y / parentScale.y;
         }
     }
 
-    const f32 parentRotation = rotation - localRotation;
+    const f32 parentRotation = rotation - _localRotation;
     rotation = trans.rotation;
-    localRotation = rotation - parentRotation;
+    _localRotation = rotation - parentRotation;
 
     floatHeight = trans.floatHeight;
-    facing = trans.facing;
     // isManuallyMoved = true;
     depth = trans.depth;
     pivotOffset = trans.pivotOffset;
@@ -173,10 +171,10 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
         return;
     }
 
-    const Vector2f parentPosition = position - localPosition;
+    const Vector2f parentPosition = position - _localPosition;
     position = globalPosition;
     positionPx = position.round();
-    localPosition = position - parentPosition;
+    _localPosition = position - parentPosition;
 
     // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
@@ -194,14 +192,14 @@ void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
     const Vector2f parentScale = self.parent().isValid() ? self.parent().get<Transform>().scale : Vector2f::ONE;
     scale = globalScale;
     if (parentScale.x == 0) {
-        localScale.x = scale.x;
+        _localScale.x = scale.x;
     } else {
-        localScale.x = scale.x / parentScale.x;
+        _localScale.x = scale.x / parentScale.x;
     }
     if (parentScale.y == 0) {
-        localScale.y = scale.y;
+        _localScale.y = scale.y;
     } else {
-        localScale.y = scale.y / parentScale.y;
+        _localScale.y = scale.y / parentScale.y;
     }
 
     // isManuallyMoved = true;
@@ -215,9 +213,9 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
         return;
     }
 
-    const f32 parentRotation = rotation - localRotation;
+    const f32 parentRotation = rotation - _localRotation;
     rotation = globalRotation;
-    localRotation = rotation - parentRotation;
+    _localRotation = rotation - parentRotation;
     // isManuallyMoved = true;
     if (pivotOffset.isZero()) {
         for (const ecs::Entity& child : self.children()) {
@@ -246,18 +244,25 @@ void Transform::setFloatHeight(f32 globalFloatHeight, ecs::Entity self) {
     }
 }
 
+void Transform::setFacing(Facing dir, ecs::Entity self) {
+    bool isDirChange = (dir == Facing::Left && scale.x > 0.0f) || (dir == Facing::Right && scale.x < 0.0f);
+    if (isDirChange) {
+        scaleBy(Vector2f(-1.0f, 1.0f), self);
+    }
+}
+
 Vector2f Transform::getRotatedPosition() const {
-    return _getRotatedPosition(position, scale, pivotOffset, rotation, floatHeight);
+    return _getRotatedPosition(position, scale.absolute(), pivotOffset, rotation, floatHeight);
 }
 
 Vector2i Transform::getRotatedPositionInt() const {
-    return _getRotatedPosition(positionPx.as<f32>(), scale, pivotOffset, rotation, floatHeight).round();
+    return _getRotatedPosition(positionPx.as<f32>(), scale.absolute(), pivotOffset, rotation, floatHeight).round();
 }
 
 Vector2f Transform::apply(Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale));
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
         return position + relOffset + scaleAdjustment;
     }
 
@@ -269,7 +274,7 @@ Vector2f Transform::apply(Vector2f relOffset) const {
 Vector2i Transform::apply(Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale)).round();
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
         return positionPx + relOffset + scaleAdjustment;
     }
 
@@ -281,7 +286,7 @@ Vector2i Transform::apply(Vector2i relOffset) const {
 Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale));
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
         return transformedPosition - relOffset - scaleAdjustment;
     }
 
@@ -294,7 +299,7 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
 Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale)).round();
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
         return transformedPosition - relOffset - scaleAdjustment;
     }
 
@@ -312,7 +317,7 @@ std::string Transform::saveImpl(ecs::Entity entity) {
 // Draws the root position + transformed root, according to the rotation + scale + pivot
 void Transform::draw() const {
     gfx::DrawPixel(worldToRenderCoords(position), Colors::Red);
-    auto unrounded = _getRotatedPosition(position, scale, pivotOffset, rotation, 0.0f);
+    auto unrounded = _getRotatedPosition(position, scale.absolute(), pivotOffset, rotation, 0.0f);
     gfx::DrawPixel(worldToRenderCoords(unrounded), Colors::Green);
 }
 #endif
@@ -323,45 +328,45 @@ TransformBuilder::TransformBuilder(ecs::Entity entity) : mTrans(entity.get<Trans
 
 TransformBuilder& TransformBuilder::translate(Vector2f moveAmount) {
     mTrans.position += moveAmount;
-    mTrans.localPosition += moveAmount;
+    mTrans._localPosition += moveAmount;
     mTrans.positionPx = mTrans.position.round();
     return *this;
 }
 
 TransformBuilder& TransformBuilder::scaleBy(Vector2f mult) {
     mTrans.scale *= mult;
-    mTrans.localScale *= mult;
+    mTrans._localScale *= mult;
     return *this;
 }
 
 TransformBuilder& TransformBuilder::rotate(f32 degrees) {
     mTrans.rotation += degrees;
-    mTrans.localRotation += degrees;
+    mTrans._localRotation += degrees;
     return *this;
 }
 
 TransformBuilder& TransformBuilder::position(Vector2f globalPosition) {
-    const Vector2f parentPosition = mTrans.position - mTrans.localPosition;
+    const Vector2f parentPosition = mTrans.position - mTrans._localPosition;
     mTrans.position = globalPosition;
     mTrans.positionPx = mTrans.position.round();
-    mTrans.localPosition = mTrans.position - parentPosition;
+    mTrans._localPosition = mTrans.position - parentPosition;
     return *this;
 }
 
 TransformBuilder& TransformBuilder::scale(Vector2f globalScale) {
     // avoid DBZ:
-    const Vector2f parentScale(mTrans.localScale.x == 0 ? 0 : mTrans.scale.x / mTrans.localScale.x,
-                               mTrans.localScale.y == 0 ? 0 : mTrans.scale.y / mTrans.localScale.y);
+    const Vector2f parentScale(mTrans._localScale.x == 0 ? 0 : mTrans.scale.x / mTrans._localScale.x,
+                               mTrans._localScale.y == 0 ? 0 : mTrans.scale.y / mTrans._localScale.y);
 
     mTrans.scale = globalScale;
-    mTrans.localScale = Vector2f(parentScale.x == 0 ? 0 : mTrans.scale.x / parentScale.x, parentScale.y == 0 ? 0 : mTrans.scale.y / parentScale.y);
+    mTrans._localScale = Vector2f(parentScale.x == 0 ? 0 : mTrans.scale.x / parentScale.x, parentScale.y == 0 ? 0 : mTrans.scale.y / parentScale.y);
     return *this;
 }
 
 TransformBuilder& TransformBuilder::rotation(f32 globalRotation) {
-    const f32 parentRotation = mTrans.rotation - mTrans.localRotation;
+    const f32 parentRotation = mTrans.rotation - mTrans._localRotation;
     mTrans.rotation = globalRotation;
-    mTrans.localRotation = mTrans.rotation - parentRotation;
+    mTrans._localRotation = mTrans.rotation - parentRotation;
     return *this;
 }
 
@@ -374,8 +379,11 @@ TransformBuilder& TransformBuilder::depth(Depth depth) {
     mTrans.depth = depth;
     return *this;
 }
-TransformBuilder& TransformBuilder::facing(Facing facing) {
-    mTrans.facing = facing;
+TransformBuilder& TransformBuilder::facing(Facing dir) {
+    bool isDirChange = (dir == Facing::Left && mTrans.scale.x > 0.0f) || (dir == Facing::Right && mTrans.scale.x < 0.0f);
+    if (isDirChange) {
+        mTrans.scale.x *= -1.0f;
+    }
     return *this;
 }
 

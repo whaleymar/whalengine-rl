@@ -123,7 +123,7 @@ void clampToPixelGrid(RaylibDrawParams& params) {
 }
 
 RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize) {
-    const Vector2f size = frameSize * transform.scale * VIRTUAL_SCREEN_RATIO;
+    const Vector2f size = (frameSize * transform.scale * VIRTUAL_SCREEN_RATIO).absolute();
     const Vector2f screenPosition = transform.getRotatedPosition() * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO);
     const Vector2f origin = size * Vector2f(0.5, 0.5);
 
