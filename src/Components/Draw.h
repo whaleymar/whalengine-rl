@@ -27,6 +27,15 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
         // outline
     };
 
+    Vector2f frameSize;
+    Vector2f atlasPosition;
+    Color color = Colors::White;
+
+    // RESEARCH i should have some "mask self" flag so I can trivially use the intersection of the mask position with the Sprite's frame to do
+    // rectangle masks would be nice for clipping/tweening
+    Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
+    u32 flags = flag::None;
+
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
     static Sprite fromFrame(Frame frame, Color color_ = Colors::White);
 
@@ -39,15 +48,6 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     void setFlag(flag f);
     void resetFlag(flag f);
     bool isFlagSet(flag f) const;
-
-    Vector2f frameSize;
-    Vector2f atlasPosition;
-    Color color = Colors::White;
-
-    // RESEARCH i should have some "mask self" flag so I can trivially use the intersection of the mask position with the Sprite's frame to do
-    // rectangle masks would be nice for clipping/tweening
-    Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
-    u32 flags = flag::None;
 
     static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };

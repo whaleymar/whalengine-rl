@@ -2,9 +2,10 @@
 
 #include "EditorUiSystem.h"
 
-#include "ECS.h"
 #include "imgui.h"
-#include "imgui_internal.h"
+#include "misc/cpp/imgui_stdlib.h"
+
+#include "ECS.h"
 #include "raylib.h"
 
 #include "Components/Collision.h"
@@ -206,6 +207,40 @@ void EditorUiSystem::drawWorld() {
     }
 }
 
+// Define a type alias to reduce verbosity
+template <typename T>
+using BaseType = std::remove_cvref_t<std::remove_pointer_t<T>>;
+
+// Define the concept
+template <typename T>
+concept IsVectorLike =
+    requires {
+        typename BaseType<T>;  // Ensure the type can be stripped
+    } && (std::same_as<BaseType<T>, std::vector<typename T::value_type>> || std::same_as<BaseType<T>, std::deque<typename T::value_type>> ||
+          std::same_as<BaseType<T>, std::forward_list<typename T::value_type>> || std::same_as<BaseType<T>, std::list<typename T::value_type>> ||
+          std::same_as<BaseType<T>, std::set<typename T::value_type>> || std::same_as<BaseType<T>, std::multiset<typename T::value_type>> ||
+          std::same_as<BaseType<T>, std::unordered_set<typename T::value_type>> ||
+          std::same_as<BaseType<T>, std::unordered_multiset<typename T::value_type>>);
+
+// Define the concept
+template <typename T>
+concept IsMapLike =
+    requires {
+        typename BaseType<T>;  // Ensure the type can be stripped
+    } && (std::same_as<BaseType<T>, std::map<typename T::key_type, typename T::mapped_type>> ||
+          std::same_as<BaseType<T>, std::multimap<typename T::key_type, typename T::mapped_type>> ||
+          std::same_as<BaseType<T>, std::unordered_map<typename T::key_type, typename T::mapped_type>> ||
+          std::same_as<BaseType<T>, std::unordered_multimap<typename T::key_type, typename T::mapped_type>>);
+
+// TODO include stdlib types
+template <typename T>
+concept IsReflectable = std::is_aggregate_v<T> || rfl::internal::has_reflection_type_v<T> || IsVectorLike<T> || IsMapLike<T>;
+
+// using tmpT = Collider;
+// bool asdf = IsReflectable<tmpT>;                          // true
+// bool asdf2 = std::is_aggregate_v<tmpT>;                   // false
+// bool asdf3 = rfl::internal::has_reflection_type_v<tmpT>;  // false
+
 // bool tracks if anything changed
 template <typename T>
 static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "", const std::string& ignoreFieldsWithPrefix = "_") {
@@ -231,15 +266,12 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
             // - std::vector
             // - std::unordered_map / std::map
             // - std::unordered_set / std::set
-            // - Color / rl::Color (imgui color picker)
-            // - string-like types
             // - entity/entityID (doing a drag & drop like unity would be cool. Also lookup by name would be nice)
-            if constexpr (std::is_same_v<char, Dtype>) {
-                // ...
-            } else if constexpr (std::is_same_v<Vector2i, Dtype>) {
+            if constexpr (std::is_same_v<Vector2i, Dtype>) {
                 if (ImGui::DragInt2(newPrefix.c_str(), &(f.value()->x), 1.0f, -INT_MAX, INT_MAX)) {
                     isChange = true;
                 }
+
             } else if constexpr (std::is_same_v<Vector2f, Dtype>) {
                 f32 dragSpeeds[] = {
                     ImGui::GetSlideSpeedLogarithmic(f.value()->x),
@@ -251,24 +283,31 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
                                              ImGuiSliderFlags_NoRoundToFormat)) {
                     isChange = true;
                 }
+
             } else if constexpr (std::is_same_v<Color, Dtype>) {
                 if (ImGui::ColorEdit4(newPrefix.c_str(), &(f.value()->r), ImGuiColorEditFlags_HDR)) {
                     isChange = true;
                 }
+
             } else if constexpr (std::is_same_v<short, Dtype>) {
-                // ...
+                print("unhandled integral type: ", type_of<Dtype>());
+
             } else if constexpr (std::is_same_v<int, Dtype>) {
                 if (ImGui::DragInt(newPrefix.c_str(), f.value(), 1.0f, -INT_MAX, INT_MAX)) {
                     isChange = true;
                 }
+
             } else if constexpr (std::is_same_v<unsigned int, Dtype>) {
                 if (ImGui::InputScalar(newPrefix.c_str(), ImGuiDataType_U32, f.value())) {
                     isChange = true;
                 }
+
             } else if constexpr (std::is_same_v<long, Dtype>) {
-                // ...
+                print("unhandled integral type: ", type_of<Dtype>());
+
             } else if constexpr (std::is_same_v<long long, Dtype>) {
-                // ...
+                print("unhandled integral type: ", type_of<Dtype>());
+
             } else if constexpr (std::is_same_v<float, Dtype>) {
                 if (ImGui::DragFloat(newPrefix.c_str(), f.value(), ImGui::GetSlideSpeedLogarithmic(*f.value()), -FLT_MAX, +FLT_MAX, "%.2f",
                                      ImGuiSliderFlags_NoRoundToFormat)) {
@@ -276,18 +315,24 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
                 }
 
             } else if constexpr (std::is_same_v<double, Dtype>) {
-                // ...
+                print("unhandled integral type: ", type_of<Dtype>());
+
             } else if constexpr (std::is_same_v<bool, Dtype>) {
                 if (ImGui::Checkbox(newPrefix.c_str(), f.value())) {
                     isChange = true;
                 }
 
-            } else if constexpr (std::is_same_v<wchar_t, Dtype>) {
-                // ...
-            } else if constexpr (std::is_same_v<char*, Dtype>) {
-                // ...
+            } else if constexpr (std::is_same_v<char*, Dtype> || std::is_same_v<const char*, Dtype>) {
+                ImGui::Text(*f.value());
+
+            } else if constexpr (std::is_same_v<std::string, Dtype>) {
+                if (ImGui::InputText(newPrefix.c_str(), f.value())) {
+                    isChange = true;
+                }
+
             } else if constexpr (std::is_pointer_v<Dtype>) {
-                // ...
+                // do nothing
+
             } else if constexpr (std::is_enum_v<Dtype>) {
                 // is a std::array<std::pair<std::string_view, Dtype>, N>
                 constexpr auto enums = rfl::get_enumerator_array<Dtype>();
@@ -354,6 +399,9 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
     componentEditor<Transform>(entity);
     if (entity.has<Sprite>()) {
         componentEditor<Sprite>(entity);
+    }
+    if (entity.has<Name>()) {
+        componentEditor<Name>(entity);
     }
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
