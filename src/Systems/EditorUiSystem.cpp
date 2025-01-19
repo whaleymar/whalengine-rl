@@ -373,7 +373,7 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
         }
 
     } else if constexpr (std::is_same_v<char*, Dtype> || std::is_same_v<const char*, Dtype>) {
-        ImGui::Text(*thing);
+        ImGui::Text("%s", *thing);
 
     } else if constexpr (std::is_same_v<std::string, Dtype>) {
         if (ImGui::InputText(newPrefix.c_str(), thing)) {
@@ -381,6 +381,8 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
         }
     } else if constexpr (IsVectorLike<Dtype>) {
         s32 i = 0;
+        // TODO handle unordered_ structs
+        // RESEARCH `+` button?
         if (ImGui::TreeNode(newPrefix.c_str())) {
             for (auto& elem : *thing) {
                 ImGui::PushID(i);
