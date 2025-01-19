@@ -7,8 +7,6 @@
 
 #include "Components/Draw.h"
 
-#include "Gfx/Texture.h"
-
 #include "Map/AnimationFactory.h"
 #include "Map/TiledParse.h"
 
@@ -18,23 +16,10 @@
 
 namespace whal {
 
-static void loadAnimations(Animator& animator, const AnimInfo& animInfo) {
-    for (const auto& [animBaseName, animName] : animInfo) {
-        Animation anim = AnimationFactory::get(animBaseName);
-        if (strlen(animName)) {
-            anim.name = animName;
-        }
-        animator.animations.push_back(anim);
-    }
-    animator.resetAnimation();
-}
-
 bool basicAnimation(Animator& animator, ecs::Entity entity) {
-    Animation& anim = animator.getAnimation();
-
-    anim.curFrameDuration += Time.dt();
+    animator._curFrameDuration += Time.dt();
     animator.curAnimDuration += Time.dt();
-    if (anim.isFrameDone()) {
+    if (animator.isFrameDone()) {
         animator.nextFrame();
         return true;
     }
@@ -50,16 +35,33 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     return basicAnimation(animator, entity);
 }
 
-Animator::Animator(const Animation& animation, bool isLooping_) : animations({animation}), isLooping(isLooping_) {
-    resetAnimation();
+Animator Animator::fromAnimation(const Animation& animation, bool isLooping) {
+    Animator animator = Animator{
+        .animations = {animation},
+        .isLooping = isLooping,
+    };
+    animator.resetAnimation();
+    return animator;
 }
 
-Animator::Animator(const AnimInfo& animInfo, AnimBrain brain_, bool isLooping_) : brain(brain_), isLooping(isLooping_) {
-    loadAnimations(*this, animInfo);
+Animator Animator::from(const AnimInfo& animInfo, AnimBrain brain, bool isLooping) {
+    Animator animator = Animator{
+        .brain = brain,
+        .isLooping = isLooping,
+    };
+    for (const auto& [animBaseName, animName] : animInfo) {
+        Animation anim = AnimationFactory::get(animBaseName);
+        if (strlen(animName)) {
+            anim.name = animName;
+        }
+        animator.animations.push_back(anim);
+    }
+    animator.resetAnimation();
+    return animator;
 }
 
 Frame Animator::getFrame() const {
-    return animations[curAnimIx].getFrame();
+    return animations[curAnimIx].frames[curFrameIx].frame;
 }
 
 Animation& Animator::getAnimation() {
@@ -67,11 +69,19 @@ Animation& Animator::getAnimation() {
 }
 
 s32 Animator::getFrameIx() const {
-    return animations[curAnimIx].curFrameIx;
+    return curFrameIx;
 }
 
 f32 Animator::getFrameTimeElapsed() const {
-    return animations[curAnimIx].curFrameDuration;
+    return _curFrameDuration;
+}
+
+f32 Animator::getFrameDuration() const {
+    return animations[curAnimIx].frames[curFrameIx].duration;
+}
+
+bool Animator::isFrameDone() const {
+    return _curFrameDuration >= animations[curAnimIx].frames[curFrameIx].duration;
 }
 
 bool Animator::play(const std::string& name) {
@@ -104,12 +114,19 @@ bool Animator::isPlaying(const std::initializer_list<std::string>& names) const 
 }
 
 void Animator::nextFrame() {
-    getAnimation().nextFrame(isLooping);
+    const s32 frameCount = getAnimation().getFrameCount();
+    if (curFrameIx + 1 == frameCount && !isLooping) {
+        // animation is done
+        return;
+    }
+    curFrameIx = (curFrameIx + 1) % frameCount;
+    _curFrameDuration = 0.0;
 }
 
 void Animator::resetAnimation() {
     curAnimDuration = 0;
-    getAnimation().reset();
+    curFrameIx = 0;
+    _curFrameDuration = Rng.uniform() * 0.5;
 }
 
 void Animator::setLooping(bool loop) {
@@ -119,7 +136,7 @@ void Animator::setLooping(bool loop) {
 void Animator::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
     std::string animatorName = readString(*ctx.values, "Animator");
-    Animator animator = Animator(AnimationFactory::get(animatorName.c_str()));
+    Animator animator = Animator::fromAnimation(AnimationFactory::get(animatorName.c_str()));
     entity.add(animator);
     sprite.setFrame(animator.getFrame());
 
@@ -137,57 +154,8 @@ void Animator::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     entity.add(sprite);
 }
 
-Animation::Animation() : frames({}) {};
-
-Animation::Animation(const char* basename, std::vector<FrameExt> frames_) : frames(frames_), name(basename) {}
-
-Animation::Animation(const char* basename, s32 frameCount, f32 secondsPerFrame_) : name(basename) {
-    const auto& spriteTexture = TextureManager::getAtlas(TEXNAME_SPRITE);
-    for (s32 i = 0; i < frameCount; i++) {
-        auto animName = whal_format("{}{}", basename, i + 1);
-
-        auto frame = spriteTexture.getFrame(animName.c_str());
-#ifndef NDEBUG
-        if (!frame) {
-            print("Failed to load animation frame:", animName);
-            assert(false);
-        }
-#endif
-        frames.push_back(FrameExt{
-            .frame = *frame,
-            .duration = secondsPerFrame_,
-        });
-    }
-}
-
-Frame Animation::getFrame() const {
-    return frames[curFrameIx].frame;
-}
-
-f32 Animation::getFrameDuration() const {
-    return frames[curFrameIx].duration;
-}
-
 s32 Animation::getFrameCount() const {
     return frames.size();
-}
-
-bool Animation::isFrameDone() const {
-    return curFrameDuration >= frames[curFrameIx].duration;
-}
-
-void Animation::nextFrame(bool isLooping) {
-    if (curFrameIx + 1 == getFrameCount() && !isLooping) {
-        // animation is done
-        return;
-    }
-    curFrameIx = (curFrameIx + 1) % getFrameCount();
-    curFrameDuration = 0.0;
-}
-
-void Animation::reset() {
-    curFrameIx = 0;
-    curFrameDuration = Rng.uniform() * 0.5;
 }
 
 }  // namespace whal
