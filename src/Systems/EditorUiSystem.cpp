@@ -8,6 +8,7 @@
 #include "ECS.h"
 #include "raylib.h"
 
+#include "Components/Animator.h"
 #include "Components/Collision.h"
 #include "Components/Draw.h"
 #include "Components/Name.h"
@@ -232,21 +233,51 @@ concept IsMapLike =
           std::same_as<BaseType<T>, std::unordered_map<typename T::key_type, typename T::mapped_type>> ||
           std::same_as<BaseType<T>, std::unordered_multimap<typename T::key_type, typename T::mapped_type>>);
 
-// TODO include stdlib types
 template <typename T>
-concept IsReflectable = std::is_aggregate_v<T> || rfl::internal::has_reflection_type_v<T> || IsVectorLike<T> || IsMapLike<T>;
+concept IsStringLike = std::same_as<T, std::string> || std::same_as<T, char*> || std::same_as<T, const char*>;
 
-// using tmpT = Collider;
-// bool asdf = IsReflectable<tmpT>;                          // true
-// bool asdf2 = std::is_aggregate_v<tmpT>;                   // false
-// bool asdf3 = rfl::internal::has_reflection_type_v<tmpT>;  // false
+template <typename T>
+concept IsReflectable = std::is_aggregate_v<T> || rfl::internal::has_reflection_type_v<T> || IsVectorLike<T> || IsMapLike<T> || IsStringLike<T>;
+
+// Primitive == Anything which has specific ImGui rendering code
+template <typename T>
+concept IsPrimitive = std::is_fundamental_v<T> || std::same_as<T, Vector2i> || std::same_as<T, Vector2f> || std::same_as<T, Color> ||
+                      std::is_pointer_v<T> || std::is_enum_v<T> || IsStringLike<T> || IsVectorLike<T> || IsMapLike<T>;
+
+template <typename T>
+    requires(!IsReflectable<T> && !IsPrimitive<T>)
+static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "", const std::string& ignoreFieldsWithPrefix = "_") {
+    static bool isLogged = false;
+    if (!isLogged) {
+        print("non-reflectable type in imguiRenderStruct: ", type_of<T>());
+        isLogged = true;
+    }
+    return {thing, false};
+}
+
+template <typename Dtype>
+    requires IsPrimitive<Dtype>
+static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, const std::string& ignoreFieldsWithPrefix, bool& isChange);
+
+template <typename T>
+    requires IsPrimitive<T>
+static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "", const std::string& ignoreFieldsWithPrefix = "_") {
+    bool isChange = false;
+    imguiRenderPrimitive(&thing, prefix, ignoreFieldsWithPrefix, isChange);
+    return {thing, isChange};
+}
 
 // bool tracks if anything changed
 template <typename T>
+    requires(IsReflectable<T> && !IsPrimitive<T>)
 static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix = "", const std::string& ignoreFieldsWithPrefix = "_") {
     if constexpr (rfl::internal::has_reflection_type_v<T>) {
         // make sure we use the reflectable type if it has one
         return imguiRenderStruct(thing.reflection(), prefix, ignoreFieldsWithPrefix);
+    } else if constexpr (IsPrimitive<T>) {
+        bool isChange = false;
+        imguiRenderPrimitive(&thing, prefix, ignoreFieldsWithPrefix, isChange);
+        return {thing, isChange};
     } else {
         const auto tup = rfl::to_view(thing);
         bool isChange = false;
@@ -258,101 +289,8 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
             }
             const std::string newPrefix = prefix + field_name;
 
-            // define ImGui actions for each primitive type
-            // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
-            // I should probably use concepts to group them anyway. ImGui doesn't have separate widgets for similar types like {float, double}
-
-            // TODO custom component handlers for:
-            // - std::vector
-            // - std::unordered_map / std::map
-            // - std::unordered_set / std::set
-            // - entity/entityID (doing a drag & drop like unity would be cool. Also lookup by name would be nice)
-            if constexpr (std::is_same_v<Vector2i, Dtype>) {
-                if (ImGui::DragInt2(newPrefix.c_str(), &(f.value()->x), 1.0f, -INT_MAX, INT_MAX)) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<Vector2f, Dtype>) {
-                f32 dragSpeeds[] = {
-                    ImGui::GetSlideSpeedLogarithmic(f.value()->x),
-                    ImGui::GetSlideSpeedLogarithmic(f.value()->y),
-                };
-                const f32 minVal = -FLT_MAX;
-                const f32 maxVal = FLT_MAX;
-                if (ImGui::DragScalarNCustom(newPrefix.c_str(), ImGuiDataType_Float, 2, &(f.value()->x), dragSpeeds, &minVal, &maxVal, "%.2f",
-                                             ImGuiSliderFlags_NoRoundToFormat)) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<Color, Dtype>) {
-                if (ImGui::ColorEdit4(newPrefix.c_str(), &(f.value()->r), ImGuiColorEditFlags_HDR)) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<short, Dtype>) {
-                print("unhandled integral type: ", type_of<Dtype>());
-
-            } else if constexpr (std::is_same_v<int, Dtype>) {
-                if (ImGui::DragInt(newPrefix.c_str(), f.value(), 1.0f, -INT_MAX, INT_MAX)) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<unsigned int, Dtype>) {
-                if (ImGui::InputScalar(newPrefix.c_str(), ImGuiDataType_U32, f.value())) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<long, Dtype>) {
-                print("unhandled integral type: ", type_of<Dtype>());
-
-            } else if constexpr (std::is_same_v<long long, Dtype>) {
-                print("unhandled integral type: ", type_of<Dtype>());
-
-            } else if constexpr (std::is_same_v<float, Dtype>) {
-                if (ImGui::DragFloat(newPrefix.c_str(), f.value(), ImGui::GetSlideSpeedLogarithmic(*f.value()), -FLT_MAX, +FLT_MAX, "%.2f",
-                                     ImGuiSliderFlags_NoRoundToFormat)) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<double, Dtype>) {
-                print("unhandled integral type: ", type_of<Dtype>());
-
-            } else if constexpr (std::is_same_v<bool, Dtype>) {
-                if (ImGui::Checkbox(newPrefix.c_str(), f.value())) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_same_v<char*, Dtype> || std::is_same_v<const char*, Dtype>) {
-                ImGui::Text(*f.value());
-
-            } else if constexpr (std::is_same_v<std::string, Dtype>) {
-                if (ImGui::InputText(newPrefix.c_str(), f.value())) {
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_pointer_v<Dtype>) {
-                // do nothing
-
-            } else if constexpr (std::is_enum_v<Dtype>) {
-                // is a std::array<std::pair<std::string_view, Dtype>, N>
-                constexpr auto enums = rfl::get_enumerator_array<Dtype>();
-                std::array<const char*, enums.size()> enumNames;
-                int selection = 0;
-                for (size_t i = 0; i < enums.size(); i++) {
-                    enumNames[i] = enums[i].first.data();
-                    if (enums[i].second == *f.value()) {
-                        selection = i;
-                    }
-                }
-                if (ImGui::Combo(newPrefix.c_str(), &selection, enumNames.data(), enumNames.size())) {
-                    *f.value() = enums[selection].second;
-                    isChange = true;
-                }
-
-            } else if constexpr (std::is_integral_v<Dtype>) {
-                // catch-all for primitive types that I am not handling
-                print("unhandled integral type: ", type_of<Dtype>());
-
+            if constexpr (IsPrimitive<Dtype>) {
+                imguiRenderPrimitive<Dtype>(f.value(), newPrefix, ignoreFieldsWithPrefix, isChange);
             } else {
                 // Recursively render struct.
                 // specify autoresize, otherwise the first child window will be huge
@@ -366,6 +304,122 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
             }
         });
         return {thing, isChange};
+    }
+}
+
+template <typename Dtype>
+    requires IsPrimitive<Dtype>
+static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, const std::string& ignoreFieldsWithPrefix, bool& isChange) {
+    // define ImGui actions for each primitive type
+    // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
+    // I should probably use concepts to group them anyway. ImGui doesn't have separate widgets for similar types like {float, double}
+
+    // TODO custom component handlers for:
+    // - IsMapLike
+    // - entity/entityID (doing a drag & drop like unity would be cool. Also lookup by name would be nice)
+    if constexpr (std::is_same_v<Vector2i, Dtype>) {
+        if (ImGui::DragInt2(newPrefix.c_str(), &(thing->x), 1.0f, -INT_MAX, INT_MAX)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<Vector2f, Dtype>) {
+        f32 dragSpeeds[] = {
+            ImGui::GetSlideSpeedLogarithmic(thing->x),
+            ImGui::GetSlideSpeedLogarithmic(thing->y),
+        };
+        const f32 minVal = -FLT_MAX;
+        const f32 maxVal = FLT_MAX;
+        if (ImGui::DragScalarNCustom(newPrefix.c_str(), ImGuiDataType_Float, 2, &(thing->x), dragSpeeds, &minVal, &maxVal, "%.2f",
+                                     ImGuiSliderFlags_NoRoundToFormat)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<Color, Dtype>) {
+        if (ImGui::ColorEdit4(newPrefix.c_str(), &(thing->r), ImGuiColorEditFlags_HDR)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<short, Dtype>) {
+        print("unhandled fundamental type: ", type_of<Dtype>());
+
+    } else if constexpr (std::is_same_v<int, Dtype>) {
+        if (ImGui::DragInt(newPrefix.c_str(), thing, 1.0f, -INT_MAX, INT_MAX)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<unsigned int, Dtype>) {
+        if (ImGui::InputScalar(newPrefix.c_str(), ImGuiDataType_U32, thing)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<long, Dtype>) {
+        print("unhandled fundamental type: ", type_of<Dtype>());
+
+    } else if constexpr (std::is_same_v<long long, Dtype>) {
+        print("unhandled fundamental type: ", type_of<Dtype>());
+
+    } else if constexpr (std::is_same_v<float, Dtype>) {
+        if (ImGui::DragFloat(newPrefix.c_str(), thing, ImGui::GetSlideSpeedLogarithmic(*thing), -FLT_MAX, +FLT_MAX, "%.2f",
+                             ImGuiSliderFlags_NoRoundToFormat)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<double, Dtype>) {
+        print("unhandled fundamental type: ", type_of<Dtype>());
+
+    } else if constexpr (std::is_same_v<bool, Dtype>) {
+        if (ImGui::Checkbox(newPrefix.c_str(), thing)) {
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_same_v<char*, Dtype> || std::is_same_v<const char*, Dtype>) {
+        ImGui::Text(*thing);
+
+    } else if constexpr (std::is_same_v<std::string, Dtype>) {
+        if (ImGui::InputText(newPrefix.c_str(), thing)) {
+            isChange = true;
+        }
+    } else if constexpr (IsVectorLike<Dtype>) {
+        s32 i = 0;
+        if (ImGui::TreeNode(newPrefix.c_str())) {
+            for (auto& elem : *thing) {
+                ImGui::PushID(i);
+                auto result = imguiRenderStruct(elem, newPrefix + "::", ignoreFieldsWithPrefix);
+                if (result.second) {
+                    elem = result.first;
+                    isChange = true;
+                }
+                ImGui::PopID();
+                i++;
+            }
+            ImGui::TreePop();
+        }
+
+    } else if constexpr (IsMapLike<Dtype>) {
+        print("unhandled type: MapLike");
+
+    } else if constexpr (std::is_pointer_v<Dtype>) {
+        // do nothing
+
+    } else if constexpr (std::is_enum_v<Dtype>) {
+        // is a std::array<std::pair<std::string_view, Dtype>, N>
+        constexpr auto enums = rfl::get_enumerator_array<Dtype>();
+        std::array<const char*, enums.size()> enumNames;
+        int selection = 0;
+        for (size_t i = 0; i < enums.size(); i++) {
+            enumNames[i] = enums[i].first.data();
+            if (enums[i].second == *thing) {
+                selection = i;
+            }
+        }
+        if (ImGui::Combo(newPrefix.c_str(), &selection, enumNames.data(), enumNames.size())) {
+            *thing = enums[selection].second;
+            isChange = true;
+        }
+
+    } else if constexpr (std::is_fundamental_v<Dtype>) {
+        // catch-all for primitive types that I am not handling
+        print("unhandled fundamental type: ", type_of<Dtype>());
     }
 }
 
@@ -403,6 +457,15 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
     if (entity.has<Name>()) {
         componentEditor<Name>(entity);
     }
+
+    // test a component with a vector
+    // if (entity.has<Animator>()) {
+    //     componentEditor<Animator>(entity);
+    // }
+
+    // test of vector with a fundamental type
+    // std::vector<int> test = {1, 2, 3, 4, 5};
+    // imguiRenderStruct(test);
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
     ImGui::PopID();

@@ -111,8 +111,11 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& tex
                 .duration = frameTime,
             });
         }
-        Animation animation(name, std::move(frames));
-        AnimationFactory::add(name, animation);
+
+        AnimationFactory::add(name, Animation{
+                                        .frames = std::move(frames),
+                                        .name = name,
+                                    });
     }
 
     return NULLOPT;
