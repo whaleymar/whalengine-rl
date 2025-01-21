@@ -1,7 +1,7 @@
 #include "ColliderSystem.h"
 #include <raylib.h>
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 

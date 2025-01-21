@@ -1,7 +1,7 @@
 #include "Tiled.h"
 #include <memory>
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "ECS.h"
 #include "json.hpp"
 

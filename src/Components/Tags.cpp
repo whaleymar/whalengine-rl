@@ -1,6 +1,6 @@
 #include "Tags.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Map/TiledParse.h"
 #include "Sys/System.h"
 

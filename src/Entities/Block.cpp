@@ -3,7 +3,7 @@
 #include "Settings.h"
 #include "Sys/System.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "whalECS/src/ECS.h"

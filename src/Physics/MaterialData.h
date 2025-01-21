@@ -3,7 +3,7 @@
 #include "Material.h"
 #include "Shapes.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"

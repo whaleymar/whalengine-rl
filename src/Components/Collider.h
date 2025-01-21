@@ -16,9 +16,6 @@ class Collider;
 struct HitInfo;
 class PhysicsSystem;
 class TweenPositionSystem;
-// namespace ecs {
-// class Entity;
-// }
 
 // the default function which is called when a non-solid collider is squished between two solids (it dies).
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal);

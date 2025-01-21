@@ -1,7 +1,7 @@
 #include "EntityFactory.h"
 
 #include "Components/Callback.h"
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/RailsControl.h"
 #include "Components/TriggerZone.h"
 #include "whalECS/src/ECS.h"
