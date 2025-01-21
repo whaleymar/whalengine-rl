@@ -8,8 +8,11 @@ namespace whal {
 
 // velocity in pixels per second
 struct Velocity : ISerialize<Velocity, ComponentFactory> {
-    Velocity() = default;
-    Velocity(Vector2f velocity) : stable(velocity) {}
+    static Velocity from(Vector2f stableVelocity) {
+        return Velocity{
+            .stable = stableVelocity,
+        };
+    }
 
     Vector2f stable;
     Vector2f impulse;

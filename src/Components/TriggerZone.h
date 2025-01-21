@@ -17,10 +17,6 @@ class Entity;
 using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 
 struct Trigger : ISerialize<Trigger, ComponentFactory> {
-    Trigger() = default;
-    Trigger(Shape shape_, CollisionLayer::Layer layer_, TriggerCallback callbackEnter, Vector2i offset = {0, 0},
-            TriggerCallback callbackExit = nullptr, TriggerCallback callbackStay = nullptr);
-
     Shape shape;
     Vector2i offset;  // offset from transform
     CollisionLayer::Layer layer = CollisionLayer::TriggerActors;
