@@ -1,6 +1,6 @@
 #include "RailsSystem.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/RailsControl.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"

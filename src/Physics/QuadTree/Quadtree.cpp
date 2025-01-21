@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Segment.h"
 #include "Util/Vector.h"

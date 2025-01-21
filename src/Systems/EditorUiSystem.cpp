@@ -9,7 +9,7 @@
 #include "ECS.h"
 #include "raylib.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/Name.h"
 #include "Components/Transform.h"
 

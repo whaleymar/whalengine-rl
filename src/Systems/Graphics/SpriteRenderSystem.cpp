@@ -1,7 +1,7 @@
 #include "SpriteRenderSystem.h"
 
 #include "Common.h"
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
@@ -32,21 +32,11 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                             AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
                             Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
-        // make physics objects appear to move smoothly
-        if (entity.has<Collider>()) {
-            queue.add(gfx::EntityPreRenderInfo{
-                .boundingBox = bb,
-                // .transform = TransformBuilder(trans).translate(entity.get<Collider>().getRemainder()).build(),
-                .transform = trans,
-                .entity = entity,
-            });
-        } else {
-            queue.add(gfx::EntityPreRenderInfo{
-                .boundingBox = bb,
-                .transform = trans,
-                .entity = entity,
-            });
-        }
+        queue.add(gfx::EntityPreRenderInfo{
+            .boundingBox = bb,
+            .transform = trans,
+            .entity = entity,
+        });
     }
 }
 

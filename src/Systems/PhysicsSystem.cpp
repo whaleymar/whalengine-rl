@@ -7,7 +7,7 @@
 #include "Physics/Shapes.h"
 #include "Systems/ColliderSystem.h"
 
-#include "Components/Collision.h"
+#include "Components/Collider.h"
 #include "Components/PlayerControl.h"
 #include "Components/RigidBody.h"
 #include "Components/Tags.h"
