@@ -211,18 +211,20 @@ void EditorUiSystem::drawWorld() {
 template <typename T>
 using BaseType = std::remove_cvref_t<std::remove_pointer_t<T>>;
 
-// Define the concept
+// anything where we can iterate like `for (auto& thing : collection)`
+// vector<bool> excluded because we can't get a reference
 template <typename T>
 concept IsVectorLike =
     requires {
         typename BaseType<T>;  // Ensure the type can be stripped
-    } && (std::same_as<BaseType<T>, std::vector<typename T::value_type>> || std::same_as<BaseType<T>, std::deque<typename T::value_type>> ||
-          std::same_as<BaseType<T>, std::forward_list<typename T::value_type>> || std::same_as<BaseType<T>, std::list<typename T::value_type>> ||
-          std::same_as<BaseType<T>, std::set<typename T::value_type>> || std::same_as<BaseType<T>, std::multiset<typename T::value_type>> ||
-          std::same_as<BaseType<T>, std::unordered_set<typename T::value_type>> ||
-          std::same_as<BaseType<T>, std::unordered_multiset<typename T::value_type>>);
+    } &&
+    (std::same_as<BaseType<T>, std::vector<typename T::value_type>> || std::same_as<BaseType<T>, std::deque<typename T::value_type>> ||
+     std::same_as<BaseType<T>, std::forward_list<typename T::value_type>> || std::same_as<BaseType<T>, std::list<typename T::value_type>> ||
+     std::same_as<BaseType<T>, std::set<typename T::value_type>> || std::same_as<BaseType<T>, std::multiset<typename T::value_type>> ||
+     std::same_as<BaseType<T>, std::unordered_set<typename T::value_type>> ||
+     std::same_as<BaseType<T>, std::unordered_multiset<typename T::value_type>>) &&
+    !std::same_as<BaseType<T>, std::vector<bool>>;
 
-// Define the concept
 template <typename T>
 concept IsMapLike =
     requires {
