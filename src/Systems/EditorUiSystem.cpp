@@ -2,15 +2,14 @@
 
 #include "EditorUiSystem.h"
 
+#include "InspectorComponents.h"  // DEFINED IN GAME REPO
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 
 #include "ECS.h"
 #include "raylib.h"
 
-#include "Components/Animator.h"
 #include "Components/Collision.h"
-#include "Components/Draw.h"
 #include "Components/Name.h"
 #include "Components/Transform.h"
 
@@ -428,18 +427,32 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
 template <typename T>
 static void componentEditor(ecs::Entity entity) {
     const std::string cmpName(type_of<T>());
-    ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-    ImGui::TextColored(rlImGuiColors::Convert(rl::SKYBLUE), "%s", cmpName.c_str());
-    std::pair<T, bool> updated = imguiRenderStruct<T>(entity.get<T>());
-    if (updated.second) {
-        if constexpr (std::is_same_v<T, Transform>) {
-            // special setter
-            entity.get<Transform>().set(updated.first, entity);
-        } else {
-            entity.set(updated.first);
+    // ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    if (ImGui::TreeNode(cmpName.c_str())) {
+        // ImGui::TextColored(rlImGuiColors::Convert(rl::SKYBLUE), "%s", cmpName.c_str());
+        std::pair<T, bool> updated = imguiRenderStruct<T>(entity.get<T>());
+        if (updated.second) {
+            if constexpr (std::is_same_v<T, Transform>) {
+                // special setter
+                entity.get<Transform>().set(updated.first, entity);
+            } else {
+                entity.set(updated.first);
+            }
         }
+        ImGui::TreePop();
     }
-    ImGui::EndChild();
+    // ImGui::EndChild();
+}
+
+template <typename Tuple, std::size_t Index = 0>
+constexpr void iterComponents(ecs::Entity entity) {
+    if constexpr (Index < std::tuple_size_v<Tuple>) {
+        using T = std::tuple_element_t<Index, Tuple>;
+        if (entity.has<T>()) {
+            componentEditor<T>(entity);
+        }
+        iterComponents<Tuple, Index + 1>(entity);
+    }
 }
 
 static void printComponents(ecs::Entity entity, int xOffset = 0) {
@@ -452,22 +465,9 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
     ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE),
                        "%s Components:", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str());
     ImGui::SetCursorPosX(xOffset);
-    componentEditor<Transform>(entity);
-    if (entity.has<Sprite>()) {
-        componentEditor<Sprite>(entity);
-    }
-    if (entity.has<Name>()) {
-        componentEditor<Name>(entity);
-    }
-
-    // test a component with a vector
-    // if (entity.has<Animator>()) {
-    //     componentEditor<Animator>(entity);
-    // }
-
-    // test of vector with a fundamental type
-    // std::vector<int> test = {1, 2, 3, 4, 5};
-    // imguiRenderStruct(test);
+    ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    iterComponents<InspectorComponents>(entity);
+    ImGui::EndChild();
     ImGui::Separator();
     entity.forChild(&printComponents, true, xOffset + 16);
     ImGui::PopID();

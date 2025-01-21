@@ -66,7 +66,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
                     entity.add<Velocity>();
                     rails.curActionTime = rails.waitTime;
                 } else {
-                    Velocity velToAdd = Velocity(newDelta.as<f32>().norm() * rails.getSpeed(transform.positionPx));
+                    Velocity velToAdd = Velocity::from(newDelta.as<f32>().norm() * rails.getSpeed(transform.positionPx));
                     entity.add<Velocity>(velToAdd);
                 }
 
@@ -96,7 +96,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
         // moving to next checkpoint
         if (rails.isVelocityUpdateNeeded && !delta.isZero()) {
             f32 speed = rails.getSpeed(transform.positionPx);
-            entity.set(Velocity(delta.norm() * speed));
+            entity.set(Velocity::from(delta.norm() * speed));
         }
         rails.curActionTime += dt;
     }

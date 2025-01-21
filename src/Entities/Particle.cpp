@@ -79,7 +79,7 @@ void particleBurst(Transform transform, Direction direction, WorldMaterial mater
             continue;
         }
 
-        particle.set(Velocity(Vector2f::fromAngleFast(finalAngle) * finalSpeed));
+        particle.set(Velocity::from(Vector2f::fromAngleFast(finalAngle) * finalSpeed));
         if (particle.has<AngularVelocity>()) {
             particle.set(AngularVelocity::fromSecondsPerRotation(Rng.range(1.5f, 2.5f)));
         }

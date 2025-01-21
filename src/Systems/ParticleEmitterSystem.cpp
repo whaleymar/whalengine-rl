@@ -77,7 +77,7 @@ void ParticleEmitterSystem::update() {
                 continue;
             }
 
-            particle.add(Velocity(velocity));
+            particle.add(Velocity::from(velocity));
         }
     }
 }
