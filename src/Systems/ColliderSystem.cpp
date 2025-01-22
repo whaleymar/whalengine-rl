@@ -37,11 +37,11 @@ void drawColliders() {
     for (const auto [entityid, entity] : ColliderSystem::getEntities()) {
         const auto collider = entity.get<Collider>();
         Color color;
-        if (collider.isActor()) {
+        if (collider.isFeatherBody()) {
             color = Colors::Magenta;
-        } else if (collider.isSolid()) {
+        } else if (collider.isHeavyBody()) {
             color = Colors::Red;
-        } else if (collider.isSemiSolid()) {
+        } else if (collider.isRigidBody()) {
             color = Colors::Pink;
         } else {
             color = Colors::Blue;
@@ -89,7 +89,7 @@ void ColliderSystem::onAdd(ecs::Entity entity) {
     // RESEARCH unhandled edge case: fails if we try to create an entity beyond quadtree bounds.
     auto& collider = entity.get<Collider>();
     collider.setEntity(entity);
-    if (collider.isActor() || collider.isSemiSolid()) {
+    if (collider.isFeatherBody() || collider.isRigidBody()) {
         entity.add<Momentum>();
     }
     QUAD_TREE.add(entity);

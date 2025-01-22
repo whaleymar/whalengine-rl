@@ -20,7 +20,7 @@ void TriggerSystem::update() {
         for (auto other : ColliderSystem::query(trigger.shape.getBoundingBox())) {
             auto collider = other.get<Collider>();
 
-            if (!LAYER_MATRIX.isOn(trigger.layer, collider.getCollisionLayer())) {
+            if ((trigger.layerMask & collider.getLayerMask()) == 0) {
                 continue;
             }
             auto it = whal_find(trigger.insideEntities.begin(), trigger.insideEntities.end(), other);

@@ -1,5 +1,6 @@
 #include "Block.h"
 
+#include "Physics/CollisionLayer.h"
 #include "Settings.h"
 #include "Sys/System.h"
 
@@ -22,7 +23,7 @@ ecs::Entity createBlock(Transform transform) {
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid));
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), PhysicsBody::Heavy, CollisionLayer::DefaultPhysics));
 
     return block;
 }
@@ -39,7 +40,7 @@ ecs::Entity createBlock(Transform transform, DrawRect rect) {
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid));
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), PhysicsBody::Heavy, CollisionLayer::DefaultPhysics));
 
     return block;
 }
@@ -56,7 +57,7 @@ ecs::Entity createBlock(Transform transform, Sprite sprite, WorldMaterial materi
 
     const s32 widthTileHL = PIXELS_PER_TILE / 2;
     const s32 heightTileHL = PIXELS_PER_TILE / 2;
-    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), CollisionLayer::Solid,
+    block.add(Collider(transform, Vector2i(widthTileHL, heightTileHL), PhysicsBody::Heavy, CollisionLayer::DefaultPhysics,
                        ColliderParams{
                            .material = material,
                        }));

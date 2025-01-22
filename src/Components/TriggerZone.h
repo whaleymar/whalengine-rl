@@ -19,7 +19,7 @@ using TriggerCallback = void (*)(ecs::Entity self, ecs::Entity other);
 struct Trigger : ISerialize<Trigger, ComponentFactory> {
     Shape shape;
     Vector2i offset;  // offset from transform
-    CollisionLayer::Layer layer = CollisionLayer::TriggerActors;
+    u16 layerMask = CollisionLayer::ActorPhysics;
     TriggerCallback onTriggerEnter = nullptr;
     TriggerCallback onTriggerExit = nullptr;
     TriggerCallback onTriggerStay = nullptr;

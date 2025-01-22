@@ -10,7 +10,7 @@ void Trigger::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
 
     std::string layerName;
     if (tryReadVal(*ctx.values, "Layer", &layerName)) {
-        trigger.layer = CollisionLayer::fromString(layerName.c_str());
+        trigger.layerMask = CollisionLayer::fromString(layerName.c_str());
     }
 
     trigger.shape = readShapeOrDefault(ctx, "Shape", &trigger.offset);

@@ -33,9 +33,10 @@ class Entity;
 
 struct HitInfo {
     ecs::EntityID otherID;
+    PhysicsBody otherBody;
     u8 flags = 0;
     WorldMaterial otherMaterial = WorldMaterial::None;
-    CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
+    u16 otherMask = CollisionLayer::None;
 
     HitInfo() = default;
     HitInfo(Vector2i normal, bool isCollision = false, bool isPush = false, bool isCarry = false);
@@ -76,7 +77,7 @@ struct RaycastHit {
     f32 distance;    // distance from ray's origin to the impact point
     u8 flags = 0;
     WorldMaterial otherMaterial = WorldMaterial::None;
-    CollisionLayer::Layer otherLayer = CollisionLayer::None;  // so i know if it was a solid, semisolid, etc. w/out fetching component
+    u16 otherMask = CollisionLayer::None;
 
     RaycastHit() = default;
     RaycastHit(ecs::Entity other, Vector2i point, f32 distance, Vector2i normal);

@@ -30,7 +30,7 @@ constexpr s32 BOUNCE_THRESHOLD = 2;  // need to be moving at least 2px/sec to bo
 
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
     auto& callbackEntityCollider = callbackEntity.get<Collider>();
-    if (callbackEntityCollider.isSemiSolid() && other.get<Collider>().isSemiSolid()) {
+    if (callbackEntityCollider.isRigidBody() && other.get<Collider>().isRigidBody()) {
         return;
     }
     callbackEntityCollider.getEntity().kill();
@@ -40,7 +40,7 @@ void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNo
 // try wiggling out of upward collision.
 bool defaultWiggle(Wiggle wiggleComponent, Collider& callbackCollider, HitInfo hitinfo, Vector2i moveNormal, Vector2f fullMoveAmount) {
     auto nextPos = callbackCollider.getShape().getPosition() + moveNormal;
-    if ((hitinfo.otherLayer & (callbackCollider.getCollisionLayersThatCanStopMe())) > 0) {
+    if (callbackCollider.canOtherStopMe(hitinfo.otherBody)) {
         return callbackCollider.tryCornerCorrection(nextPos, fullMoveAmount.x, moveNormal, wiggleComponent.wiggleAmount);
     }
     return false;
@@ -53,19 +53,26 @@ void squishEntity(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNor
 // a semisolid pushing another semisolid shouldn't squish it. If it runs into a [semi]solid, just stop movement
 void squishEntityPushedBySemiSolid(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal) {
     auto& callbackEntityCollider = callbackEntity.get<Collider>();
-    if (callbackEntityCollider.isSemiSolid() && other.get<Collider>().isSolidAny()) {
+    if (callbackEntityCollider.isRigidBody() && other.get<Collider>().canPushOthers()) {
         return;
     }
     callbackEntityCollider.squish(other, hitNormal);
 }
 
-Collider::Collider(Transform transform, Vector2i halflen, CollisionLayer::Layer layer, ColliderParams params)
-    : mShape(AABB(transform, halflen, params.offset)), mOffset(params.offset), mCollisionLayer(layer), mOnCollisionEnter(params.onCollisionEnter),
-      mSquishCallback(params.onSquish), mMaterial(params.material), mCollisionDir(params.collisionDir), mCollisionMask(layer),
-      mInteractMask(LAYER_MATRIX.getMask(layer)) {}
+Collider::Collider(Transform transform, Vector2i halflen, PhysicsBody physicsBody, u16 layerMask, ColliderParams params)
+    : mShape(AABB(transform, halflen, params.offset)), mOffset(params.offset), mPhysicsBody(physicsBody), mOnCollisionEnter(params.onCollisionEnter),
+      mSquishCallback(params.onSquish), mMaterial(params.material), mCollisionDir(params.collisionDir) {
+    mCollisionMask = layerMask;
+    mInteractMask = LAYER_MATRIX.getMask(layerMask);
+}
 
 void Collider::setCollisionCallback(CollisionCallback callback) {
     mOnCollisionEnter = callback;
+}
+
+void Collider::setCollisionMask(u16 mask) {
+    mCollisionMask = mask;
+    mInteractMask = LAYER_MATRIX.getMask(mask);
 }
 
 void Collider::setEntity(ecs::Entity entity) {
@@ -253,15 +260,15 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
     Vector2i toMoveRounded = Vector2i(std::round(mXRemainder), std::round(mYRemainder));
     // only return early if we don't need a grounded check (solids can never be grounded)
-    if (toMoveRounded.x == 0 && toMoveRounded.y == 0 && (!isGroundedCheckNeeded || isSolid())) {
+    if (toMoveRounded.x == 0 && toMoveRounded.y == 0 && (!isGroundedCheckNeeded || isHeavyBody())) {
         return false;
     }
     mXRemainder -= toMoveRounded.x;
     mYRemainder -= toMoveRounded.y;
 
     bool isHit = false;
-    switch (mCollisionLayer) {
-    case CollisionLayer::Solid: {
+    switch (mPhysicsBody) {
+    case PhysicsBody::Heavy: {
         // check riding status *before* moving
         const auto riding = getRidingCollidersQT();
 
@@ -276,12 +283,12 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
         pushAndCarry1D(amount, moveVec, riding, isSkipmomentumUpdate);
         break;
     }
-    case CollisionLayer::SemiSolid: {
+    case PhysicsBody::Rigid: {
         // check riding status *before* moving
         const auto riding = getRidingCollidersQT();
 
         // moveX, then push/carry in that direction only
-        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, updateRigidBodyFlags);
         auto originalPosition = getShape().getPosition();
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         Vector2i moveAmount = getShape().getPosition() - originalPosition;
@@ -299,8 +306,8 @@ bool Collider::move(const Vector2f amount, const CollisionCallback callback, boo
 
         break;
     }
-    default: {
-        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, getCollisionLayersThatCanStopMe(), updateRigidBodyFlags);
+    case PhysicsBody::Feather: {
+        const auto collidersInArea = getCollidersInMoveArea(toMoveRounded, updateRigidBodyFlags);
         isHit = emitCollisionInfo(amount, moveX(amount, toMoveRounded, callback, collidersInArea), true, false);
         isHit =
             emitCollisionInfo(amount, moveY(amount, toMoveRounded, callback, collidersInArea, isGroundedCheckNeeded), false, updateRigidBodyFlags) ||
@@ -453,14 +460,14 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
 }
 
 // we are moving, other is still.
-bool Collider::isCollisionPossible(const Collider& other, const Vector2i moveNormal, const u16 layerMask) const {
-    return other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && (layerMask & other.mCollisionLayer) > 0 &&
+bool Collider::isCollisionPossible(const Collider& other, const Vector2i moveNormal) const {
+    return other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 &&
            checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir());
 }
 
 // other is moving, we are still. Only affects directional collision check.
-bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal, const u16 layerMask) const {
-    return other->mIsCollidable && this != other && (mInteractMask & other->mCollisionMask) > 0 && (layerMask & other->mCollisionLayer) > 0 &&
+bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal) const {
+    return other->mIsCollidable && this != other && (mInteractMask & other->mCollisionMask) > 0 &&
            checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir());
 }
 
@@ -474,8 +481,7 @@ HitInfo Collider::checkIsGrounded(const bool triggerCollisionEvents, const std::
 bool Collider::isOtherGround(const Collider& other) const {
     // semisolids should be ground for each other, so just check if other is any solid? Works ig.
 
-    // return (other->mCollisionLayer & getCollisionLayersThatCanStopMe()) > 0 &&
-    return (other.isSolidAny() && (other.mCollisionDir == CollisionDir::ALL || other.mCollisionDir == CollisionDir::UP));
+    return (other.canPushOthers() && (other.mCollisionDir == CollisionDir::ALL || other.mCollisionDir == CollisionDir::UP));
 }
 
 // get colliders that are riding us. Basically check which colliders would intersect us if we moved 1px up, taking collision layers and directional
@@ -483,38 +489,32 @@ bool Collider::isOtherGround(const Collider& other) const {
 std::vector<Collider*> Collider::getRidingCollidersQT() const {
     std::vector<Collider*> riding;
     const auto movedCollider = AABB(mShape.getPosition() + Vector2i::UP, mShape.getHalf());
-    const auto layerMask = getCollisionLayersThatCanRideMe();
 
     for (auto entity : ColliderSystem::query(movedCollider)) {
         const auto pCollider = &entity.get<Collider>();
 
         // (making sure to not use the moved collider for the directional collision check so the edges are properly aligned)
-        if (isCollisionPossibleReversed(pCollider, {0, -1}, layerMask)) {
+        if (canOtherRideMe(pCollider->mPhysicsBody) && isCollisionPossibleReversed(pCollider, {0, -1})) {
             riding.push_back(pCollider);
         }
     }
     return riding;
 }
 
-u16 Collider::getCollisionLayersThatCanStopMe() const {
-    // Special case: actors shouldn't stop SemiSolid colliders from moving.
-    // SemiSolids should also push each other instead of stopping movement.
-    // Collision layer matrix is also checked in checkCollision. This is an additional check that must pass for a collision to happen, so returning
-    // ALL as default is fine. Only add something here for special stuff like asymmetric behavior.
-    if (mCollisionLayer == CollisionLayer::SemiSolid) {
-        return CollisionLayer::Solid;
-    } else if (mCollisionLayer == CollisionLayer::Solid) {
-        return CollisionLayer::None;
-    } else {
-        return CollisionLayer::ALL;
-    }
+bool Collider::canOtherRideMe(PhysicsBody otherBody) const {
+    return canPushOthers() && otherBody != PhysicsBody::Heavy;
 }
 
-u16 Collider::getCollisionLayersThatCanRideMe() const {
-    if (isSolidAny()) {
-        return CollisionLayer::SemiSolid | CollisionLayer::Actor;
+// handles the asymmetric collision properties of PhysicsBodies
+// Collision Layers are symmetric and cannot represent the idea that RigidBody stops FeatherBody, but FeatherBody does not stop RigidBody
+bool Collider::canOtherStopMe(PhysicsBody otherBody) const {
+    if (mPhysicsBody == PhysicsBody::Heavy) {
+        return false;
+    } else if (mPhysicsBody == PhysicsBody::Rigid) {
+        return otherBody == PhysicsBody::Heavy;
     } else {
-        return CollisionLayer::None;
+        // return otherBody != PhysicsBody::Feather;
+        return true;
     }
 }
 
@@ -537,20 +537,15 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     } else {
         moveVec = {0, toMoveRounded};
     }
-    const auto prevColliderState = Collider(Transform::world(mShape.getPosition() - moveVec), mShape.getHalf(), mCollisionLayer,
-                                            ColliderParams{
-                                                .material = mMaterial,
-                                                .collisionDir = mCollisionDir,
-                                                .onCollisionEnter = nullptr,
-                                            });
+    Collider prevColliderState = *this;
+    prevColliderState.mShape.setPosition(mShape.getPosition() - moveVec);
 
     assert(math::abs(static_cast<f32>(toMoveRounded) - toMoveUnrounded) <= 1 && "Rounding anomaly");
 
     std::vector<Collider*> toCarry = riding;
-    const u16 notSolidMask = ~CollisionLayer::Solid;  // cannot be pushed or carried
     for (auto entity : ColliderSystem::query(mShape)) {
         Collider* other = &entity.get<Collider>();
-        if (this != other && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1, notSolidMask)) {
+        if (this != other && other->mPhysicsBody != PhysicsBody::Heavy && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1)) {
             // push takes priority over carry
             auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
             if (it != toCarry.end()) {
@@ -563,7 +558,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
 
             // If we are a semisolid pushing another semisolid, and a solid is not pushing us, then `other` may "push back" on us.
             // If a solid is pushing us though, then `other` is effectively being pushed by a solid.
-            if (!isPushedBySolid && isSemiSolid()) {
+            if (!isPushedBySolid && isRigidBody()) {
                 Vector2i originalPosition = other->getShape().getPosition();
                 bool hitSolid = false;
                 hitSolid =
@@ -573,7 +568,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
                 // Calculate difference between newPosition and expected position.
                 // If we didn't hit something, but delta is nonzero, then something that `other` pushed hit a solid.
                 auto delta = ((originalPosition + otherMoveVec) - newPosition) * -1;
-                if (other->mIsAlive && other->isSemiSolid() && (hitSolid || delta.x != 0 || delta.y != 0)) {
+                if (other->mIsAlive && other->isRigidBody() && (hitSolid || delta.x != 0 || delta.y != 0)) {
                     // if other didn't move the full amount, it must have hit a solid, so push *this* back by the difference
                     // using &squishCollider as the callback because we're effectively being pushed by the solid that `other` hit
                     mIsCollidable = true;
@@ -607,8 +602,9 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
             // emit push event
             HitInfo hitinfo(moveVec, false, true);
             hitinfo.setOther(other->getEntity());
+            hitinfo.otherBody = other->mPhysicsBody;
             hitinfo.otherMaterial = other->getMaterial();
-            hitinfo.otherLayer = other->getCollisionLayer();
+            hitinfo.otherMask = other->getLayerMask();
             Event.emit<evt::Collision>(mSelf, hitinfo);
 
             if (other->mSelf.has<Momentum>()) {
@@ -646,7 +642,8 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         HitInfo hitinfo({0, 1}, false, false, true);
         hitinfo.setOther(other->getEntity());
         hitinfo.otherMaterial = other->getMaterial();
-        hitinfo.otherLayer = other->getCollisionLayer();
+        hitinfo.otherBody = other->mPhysicsBody;
+        hitinfo.otherMask = other->getLayerMask();
         Event.emit<evt::Collision>(mSelf, hitinfo);
 
         if (other->getEntity().has<Momentum>()) {
@@ -687,7 +684,8 @@ HitInfo Collider::checkCollisionInMoveArea(const Vector2i newPosition, const Vec
         HitInfo hitInfo = movedCollider.collide(otherCollider.getShape());
         if (hitInfo) {
             hitInfo.setOther(entity);
-            hitInfo.otherLayer = otherCollider.getCollisionLayer();
+            hitInfo.otherMask = otherCollider.getLayerMask();
+            hitInfo.otherBody = otherCollider.mPhysicsBody;
             hitInfo.otherMaterial = otherCollider.getMaterial();
 
             // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
@@ -706,7 +704,7 @@ HitInfo Collider::checkCollisionInMoveArea(const Vector2i newPosition, const Vec
     return hitInfoToReturn;
 }
 
-HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const u16 layerMask, const bool triggerCollisionEvents) const {
+HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const bool triggerCollisionEvents) const {
     if (!isCollidable()) {
         return HitInfo();
     }
@@ -715,14 +713,15 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
 
     for (auto entity : ColliderSystem::query(movedCollider)) {
         const auto& collider = entity.get<Collider>();
-        if (!isCollisionPossible(collider, moveNormal, layerMask)) {
+        if (!isCollisionPossible(collider, moveNormal)) {
             continue;
         }
 
         HitInfo hitInfo = movedCollider.collide(collider.getShape());
         if (hitInfo) {
             hitInfo.setOther(entity);
-            hitInfo.otherLayer = collider.getCollisionLayer();
+            hitInfo.otherMask = collider.getLayerMask();
+            hitInfo.otherBody = collider.mPhysicsBody;
             hitInfo.otherMaterial = collider.getMaterial();
 
             // only care about the hit flag for the direction we're moving in (in the case of a corner hit)
@@ -742,8 +741,7 @@ HitInfo Collider::checkCollisionQT(const Vector2i position, const Vector2i moveN
     return hitInfoToReturn;
 }
 
-std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(const Vector2i toMove, const u16 layerMask,
-                                                                               bool updateRigidBodyFlags) const {
+std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(const Vector2i toMove, bool updateRigidBodyFlags) const {
     if (!isCollidable()) {
         return {};
     }
@@ -761,8 +759,7 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
     for (auto entity : ColliderSystem::query(moveAreaBoundingBox)) {
         const auto& other = entity.get<Collider>();
         // quick and dirty check for collision layers; ignoring directional collision
-        bool isCollidable =
-            other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && (layerMask & other.mCollisionLayer) > 0;
+        bool isCollidable = other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && canOtherStopMe(other.mPhysicsBody);
         if (!isCollidable) {
             continue;
         }
@@ -816,10 +813,25 @@ void Collider::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
     if (tryReadVal(*ctx.values, "Material", &material)) {
         collider.setMaterial(material);
     }
+    tryReadVal(*ctx.values, "Type", &collider.mPhysicsBody);
 
     std::string layerName;
     if (tryReadVal(*ctx.values, "Layer", &layerName)) {
-        collider.setCollisionLayer(CollisionLayer::fromString(layerName.c_str()));
+        // can have multiple values. Written as "layername,layername,layername"
+        u16 mask = 0;
+        size_t curIx = 0;
+        while (true) {
+            size_t commaIx = layerName.find(",", curIx);
+            if (commaIx == std::string::npos) {
+                mask |= CollisionLayer::fromString(layerName.substr(curIx).c_str());
+                break;
+            }
+            // add layer and update curIx
+            mask |= CollisionLayer::fromString(layerName.substr(curIx, commaIx - curIx).c_str());
+            curIx = commaIx + 1;
+        }
+        // collider.setCollisionMask(CollisionLayer::fromString(layerName.c_str()));
+        collider.setCollisionMask(mask);
     }
 
     collider.setShape(readShapeOrDefault(ctx, "Shape", &collider.mOffset).getAABB());
