@@ -370,7 +370,7 @@ RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) const {
 
             // Add the entity info (has placeholder value)
             hitinfo.setOther(entity);
-            hitinfo.otherLayer = collider.getCollisionLayer();
+            hitinfo.otherMask = collider.getLayerMask();
             hitinfo.otherMaterial = collider.getMaterial();
         }
     }

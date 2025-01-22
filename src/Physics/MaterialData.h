@@ -57,7 +57,7 @@ struct MaterialData {
         entity.add(Lifetime{.secondsRemaining = lifetime});
 
         if (isFlagSet(Collision)) {
-            auto collider = Collider(entity.get<Transform>(), {halfLen, halfLen}, CollisionLayer::Actor);
+            auto collider = Collider(entity.get<Transform>(), {halfLen, halfLen}, PhysicsBody::Feather, CollisionLayer::ActorPhysics);
             collider.setMaterial(id);
             entity.add(collider);
         }

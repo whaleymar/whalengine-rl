@@ -343,6 +343,14 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
     } else if constexpr (std::is_same_v<short, Dtype>) {
         print("unhandled fundamental type: ", type_of<Dtype>());
 
+    } else if constexpr (std::is_same_v<unsigned short, Dtype>) {
+        // print("unhandled fundamental type: ", type_of<Dtype>());
+        const u16 min = 0;
+        const u16 max = 0xffff;
+        if (ImGui::DragScalar(newPrefix.c_str(), ImGuiDataType_U16, thing, 1.0f, &min, &max)) {
+            isChange = true;
+        }
+
     } else if constexpr (std::is_same_v<int, Dtype>) {
         if (ImGui::DragInt(newPrefix.c_str(), thing, 1.0f, -INT_MAX, INT_MAX)) {
             isChange = true;
@@ -465,7 +473,7 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
         ImGui::SetCursorPosX(xOffset);
     }
     ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE),
-                       "%s Components:", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str());
+                       "%s (ID = %d):", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str(), entity.id());
     ImGui::SetCursorPosX(xOffset);
     ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
     iterComponents<InspectorComponents>(entity);

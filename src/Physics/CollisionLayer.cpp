@@ -13,15 +13,11 @@ namespace CollisionLayer {
 
 Layer fromString(const char* layer) {
     RETURN_IF(layer, None);
-    RETURN_IF(layer, Actor);
-    RETURN_IF(layer, Solid);
-    RETURN_IF(layer, SemiSolid);
-    RETURN_IF(layer, TriggerPhysics);
-    RETURN_IF(layer, TriggerActors);
+    RETURN_IF(layer, ActorPhysics);
+    RETURN_IF(layer, DefaultPhysics);
     RETURN_IF(layer, Player);
     RETURN_IF(layer, Enemy);
     RETURN_IF(layer, Npc);
-    RETURN_IF(layer, Light);
     RETURN_IF(layer, BlocksVision);
 
     return None;
@@ -33,17 +29,14 @@ Layer fromString(const char* layer) {
 // The Actor layer's line includes Solid, meaning they interact with each other.
 static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {None, None},
-    {Layer::Actor, Solid | SemiSolid | TriggerActors | TriggerPhysics},
-    {Layer::Solid, SemiSolid | Light | TriggerPhysics | PlayerFriendlyFire | Attack},
-    {Layer::SemiSolid, SemiSolid | Light | TriggerPhysics | PlayerFriendlyFire | Attack},
-    {Layer::TriggerPhysics, None},
-    {Layer::TriggerActors, None},
-    {Layer::PlayerFriendlyFire, PlayerFriendlyFire},
+    {Layer::ActorPhysics, DefaultPhysics},
+    {Layer::DefaultPhysics, DefaultPhysics | PhysicsNoActor | Attack | BlocksVision},
+    // {Layer::SolidPhysics, DefaultPhysics | PhysicsNoActor | Attack | BlocksVision},
+    {Layer::PhysicsNoActor, PhysicsNoActor},
     {Layer::Player, Attack},
     {Layer::Enemy, Attack},
     {Layer::Npc, None},
     {Layer::Attack, Attack},
-    {Layer::Light, None},
     {Layer::BlocksVision, None},
 };
 
@@ -71,6 +64,18 @@ LayerMatrix::LayerMatrix() {
             }
         }
     }
+}
+
+u16 LayerMatrix::getMask(u16 mask) const {
+    u16 result = 0;
+    for (s32 i = 0; i < 16; i++) {
+        // check each bit
+        Layer bitmask = static_cast<Layer>(1 << i);
+        if ((mask & bitmask) > 0) {
+            result |= getMask(bitmask);
+        }
+    }
+    return result;
 }
 
 }  // namespace CollisionLayer
