@@ -479,7 +479,7 @@ static void printComponents(ecs::Entity entity, int xOffset = 0) {
     iterComponents<InspectorComponents>(entity);
     ImGui::EndChild();
     ImGui::Separator();
-    entity.forChild(&printComponents, true, xOffset + 16);
+    entity.forChild(&printComponents, false, xOffset + 16);
     ImGui::PopID();
 }
 
