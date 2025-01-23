@@ -47,8 +47,8 @@ void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
     position += moveAmount;
     positionPx = position.round();
     _localPosition += moveAmount;
+    isDirty = true;
     for (const ecs::Entity& child : self.children()) {
-        // child.get<Transform>().setParentPosition(position, child);
         child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
@@ -56,6 +56,7 @@ void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
 void Transform::rotate(f32 degrees, ecs::Entity self) {
     rotation += degrees;
     _localRotation += degrees;
+    // isDirty = true; // RESEARCH
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
     }
@@ -88,6 +89,7 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     positionPx = position.round();
     scale = parentTrans.scale * _localScale;
     rotation = parentTrans.rotation + _localRotation;
+    isDirty = true;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParent(*this, child);
@@ -95,15 +97,10 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
 }
 
 void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entity self) {
-    // if (!pivotOffset.isZero()) {
-    //     const Vector2f oldParentPosition = position - localPosition;
-    //     localPosition += (parentPositionTransformed - oldParentPosition);
-    // }
-
     position = parentPositionTransformed + _localPosition;
     positionPx = position.round();
+    isDirty = true;
     for (const ecs::Entity& child : self.children()) {
-        // child.get<Transform>().setParentPosition(position, child);
         child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
@@ -117,7 +114,6 @@ void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
 
 void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
     // rotate about parent's center
-    // TODO i think I need to do something similar if there's a pivot offset
     if (!_localPosition.isZero()) {
         const f32 oldParentRotation = rotation - _localRotation;
         const Vector2f oldLocalPos = _localPosition;
@@ -126,6 +122,7 @@ void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
         positionPx = position.round();
     }
     rotation = parentDegrees + _localRotation;
+    // isDirty = true; // RESEARCH
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
     }
@@ -157,7 +154,7 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
     _localRotation = rotation - parentRotation;
 
     floatHeight = trans.floatHeight;
-    // isManuallyMoved = true;
+    isDirty = true;
     depth = trans.depth;
     pivotOffset = trans.pivotOffset;
 
@@ -176,9 +173,8 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
     positionPx = position.round();
     _localPosition = position - parentPosition;
 
-    // isManuallyMoved = true;
+    isDirty = true;
     for (const ecs::Entity& child : self.children()) {
-        // child.get<Transform>().setParentPosition(position, child);
         child.get<Transform>().setParentPosition(getRotatedPosition(), child);
     }
 }
@@ -202,7 +198,6 @@ void Transform::setScale(Vector2f globalScale, ecs::Entity self) {
         _localScale.y = scale.y / parentScale.y;
     }
 
-    // isManuallyMoved = true;
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentScale(scale, child);
     }
@@ -216,7 +211,7 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     const f32 parentRotation = rotation - _localRotation;
     rotation = globalRotation;
     _localRotation = rotation - parentRotation;
-    // isManuallyMoved = true;
+    // isDirty = true; // RESEARCH
     if (pivotOffset.isZero()) {
         for (const ecs::Entity& child : self.children()) {
             child.get<Transform>().setParentRotation(rotation, child);
