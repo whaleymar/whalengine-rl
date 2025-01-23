@@ -11,6 +11,9 @@ struct Velocity : ISerialize<Velocity, ComponentFactory> {
     static Velocity from(Vector2f stableVelocity) {
         return Velocity{
             .stable = stableVelocity,
+            .impulse = {},
+            .total = {},
+            .residualImpulse = {},
         };
     }
 

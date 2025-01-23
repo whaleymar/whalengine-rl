@@ -313,32 +313,25 @@ void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle de
         rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
         rl::rlSetNormals(packedCBI);
 
+        const float texLeft = flipX ? (source.x + source.width) / width : source.x / width;
+        const float texRight = flipX ? source.x / width : (source.x + source.width) / width;
+        const float texTop = source.y / height;
+        const float texBottom = (source.y + source.height) / height;
+
         // Top-left corner for texture and quad
-        if (flipX)
-            rl::rlTexCoord2f((source.x + source.width) / width, source.y / height);
-        else
-            rl::rlTexCoord2f(source.x / width, source.y / height);
+        rl::rlTexCoord2f(texLeft, texTop);
         rl::rlVertex2f(topLeft.x, topLeft.y);
 
         // Bottom-left corner for texture and quad
-        if (flipX)
-            rl::rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
-        else
-            rl::rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+        rl::rlTexCoord2f(texLeft, texBottom);
         rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
 
         // Bottom-right corner for texture and quad
-        if (flipX)
-            rl::rlTexCoord2f(source.x / width, (source.y + source.height) / height);
-        else
-            rl::rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+        rl::rlTexCoord2f(texRight, texBottom);
         rl::rlVertex2f(bottomRight.x, bottomRight.y);
 
         // Top-right corner for texture and quad
-        if (flipX)
-            rl::rlTexCoord2f(source.x / width, source.y / height);
-        else
-            rl::rlTexCoord2f((source.x + source.width) / width, source.y / height);
+        rl::rlTexCoord2f(texRight, texTop);
         rl::rlVertex2f(topRight.x, topRight.y);
 
         rl::rlEnd();
