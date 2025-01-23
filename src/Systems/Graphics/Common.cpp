@@ -29,8 +29,7 @@ rl::Vector3 DrawMetaData::asRL() const {
 }
 
 rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const {
-    u32 packed = 0;
-    packed |= static_cast<u32>(depth);
+    u32 packed = static_cast<u32>(depth);
 
     if (isOccluder) {
         packed |= (1 << 8);
@@ -40,13 +39,13 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
         packed |= (1 << 9);
     }
 
-    Vector2f maskOffsetUV;
+    f32 maskOffsetUVX = 0.0f;
+    f32 maskOffsetUVY = 0.0f;
     if (!sprite.maskPosRelative.isZero()) {
         // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
-        f32 x = sprite.maskPosRelative.x / textureDims.x;  // x offset
-        f32 y = sprite.maskPosRelative.y / textureDims.y;  // y offset
+        maskOffsetUVX = sprite.maskPosRelative.x / textureDims.x;  // x offset
+        maskOffsetUVY = sprite.maskPosRelative.y / textureDims.y;  // y offset
 
-        maskOffsetUV = {x, y};
         packed |= (1 << 10);  // set flag so we know there's a mask
     }
 
@@ -60,7 +59,7 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
 
     f32 x;
     std::memcpy(&x, &packed, sizeof(f32));
-    return rl::Vector3{x, maskOffsetUV.x, maskOffsetUV.y};
+    return rl::Vector3{x, maskOffsetUVX, maskOffsetUVY};
 }
 
 bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {

@@ -60,12 +60,12 @@ struct TileInfo {
 };
 
 inline TileInfo getTile(u32 tileMask) {
-    TileInfo tile;
-    tile.isFlipH = tileMask & 0x80000000;   // Check if the 32nd bit is on
-    tile.isFlipY = tileMask & 0x40000000;   // Check if the 31st bit is on
-    tile.isRotate = tileMask & 0x20000000;  // Check if the 30th bit is on
-    tile.gid = tileMask & 0x0FFFFFFF;       // Mask out the upper 4 bits to get the ID
-    return tile;
+    return TileInfo{
+        .gid = static_cast<s32>(tileMask & 0x0FFFFFFF),  // Mask out the upper 4 bits to get the ID
+        .isFlipH = (tileMask & 0x80000000) > 0,          // Check if the 32nd bit is on
+        .isFlipY = (tileMask & 0x40000000) > 0,          // Check if the 31st bit is on
+        .isRotate = (tileMask & 0x20000000) > 0,         // Check if the 30th bit is on
+    };
 }
 
 struct TileSet {

@@ -21,11 +21,124 @@ static void buildYsortList(ecs::Entity e, const TileMapLayer& tml);
 static std::unordered_map<ecs::Entity, std::vector<Vector2i>, ecs::EntityHash> S_YSORT_COORD_LUT;
 static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ecs::EntityHash> S_YSORT_RENDERINFO_LUT;
 
+// NOTE: assumptions made when drawing tiles:
+/*
+
+- tiles don't move independently of their TileMapLayer
+
+*/
+
+// slightly optimized version of DrawSpriteHDR
+static void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 source, rl::Rectangle dest, rl::Vector2 origin, float rotation,
+                        rl::Vector4 hdrColor, rl::Vector3 packedCBI, bool flipX) {
+    rl::Vector2 topLeft;
+    rl::Vector2 topRight;
+    rl::Vector2 bottomLeft;
+    rl::Vector2 bottomRight;
+
+    // Only calculate rotation if needed
+    if (rotation == 0.0f) {
+        float x = dest.x - origin.x;
+        float y = dest.y - origin.y;
+        topLeft = (rl::Vector2){x, y};
+        topRight = (rl::Vector2){x + dest.width, y};
+        bottomLeft = (rl::Vector2){x, y + dest.height};
+        bottomRight = (rl::Vector2){x + dest.width, y + dest.height};
+    } else {
+        float sinRotation = sinf(rotation * DEG2RAD);
+        float cosRotation = cosf(rotation * DEG2RAD);
+        float x = dest.x;
+        float y = dest.y;
+        float dx = -origin.x;
+        float dy = -origin.y;
+
+        topLeft.x = x + dx * cosRotation - dy * sinRotation;
+        topLeft.y = y + dx * sinRotation + dy * cosRotation;
+
+        topRight.x = x + (dx + dest.width) * cosRotation - dy * sinRotation;
+        topRight.y = y + (dx + dest.width) * sinRotation + dy * cosRotation;
+
+        bottomLeft.x = x + dx * cosRotation - (dy + dest.height) * sinRotation;
+        bottomLeft.y = y + dx * sinRotation + (dy + dest.height) * cosRotation;
+
+        bottomRight.x = x + (dx + dest.width) * cosRotation - (dy + dest.height) * sinRotation;
+        bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
+    }
+
+    rl::rlBegin(RL_QUADS);
+
+    rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+    rl::rlSetNormals(packedCBI);
+
+    const float texLeft = flipX ? (source.x + FPIXELS_PER_TILE) * invTexWidth : source.x * invTexWidth;
+    const float texRight = flipX ? source.x * invTexWidth : (source.x + FPIXELS_PER_TILE) * invTexWidth;
+    const float texTop = source.y * invTexHeight;
+    const float texBottom = (source.y + FPIXELS_PER_TILE) * invTexHeight;
+
+    // Top-left corner for texture and quad
+    rl::rlTexCoord2f(texLeft, texTop);
+    rl::rlVertex2f(topLeft.x, topLeft.y);
+
+    // Bottom-left corner for texture and quad
+    rl::rlTexCoord2f(texLeft, texBottom);
+    rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
+
+    // Bottom-right corner for texture and quad
+    rl::rlTexCoord2f(texRight, texBottom);
+    rl::rlVertex2f(bottomRight.x, bottomRight.y);
+
+    // Top-right corner for texture and quad
+    rl::rlTexCoord2f(texRight, texTop);
+    rl::rlVertex2f(topRight.x, topRight.y);
+
+    rl::rlEnd();
+}
+
+// slightly faster version of DrawMetaData::asRL
+rl::Vector3 GetTileMetaFlags(const Sprite& sprite, u8 depth, bool isOccluder, bool isUI, f32 invTexWidth, f32 invTexHeight) {
+    u32 packed = static_cast<u32>(depth);
+
+    if (isOccluder) {
+        packed |= (1 << 8);
+    }
+
+    if (isUI) {
+        packed |= (1 << 9);
+    }
+
+    f32 maskOffsetUVX = 0.0f;
+    f32 maskOffsetUVY = 0.0f;
+    if (!sprite.maskPosRelative.isZero()) {
+        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
+        maskOffsetUVX = sprite.maskPosRelative.x * invTexWidth;   // x offset
+        maskOffsetUVY = sprite.maskPosRelative.y * invTexHeight;  // y offset
+
+        packed |= (1 << 10);  // set flag so we know there's a mask
+    }
+
+    if (sprite.isFlagSet(Sprite::Silhouette)) {
+        packed |= (1 << 11);
+    }
+
+    if (sprite.isFlagSet(Sprite::MaskBlendAdditive)) {
+        packed |= (1 << 12);
+    }
+
+    f32 x;
+    memcpy(&x, &packed, sizeof(f32));
+    return {x, maskOffsetUVX, maskOffsetUVY};
+}
+
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     ecs::Entity layerEntity = eCtx.entity;
     const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
     const Vector2f tileSize = (Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale).absolute();
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
+
+    // caching these values once. Thousands of calls to shared_ptr_access really add up
+    const s32 widthTiles = layer.tilemap->widthTiles;
+    const s32 heightTiles = layer.tilemap->heightTiles;
+    const stl::Map<s32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
 
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
@@ -40,42 +153,57 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         rl::SetShaderValue(shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
     }
 
+    const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
     const auto drawTile = [&](s32 x, s32 y, s32 ix, TileInfo tile) {
-        // RESEARCH this lookup is SLOW and makes me want to ditch the STL
-        // const Sprite& sprite = layer.tilemap->spriteCache[tile.gid];
-        const TileRenderInfo& renderInfo = layer.tilemap->spriteCache.get(tile.gid);
-        const auto srcRect = rl::Rectangle{
+        // using a dense map here (a vector of pairs) because it's much faster than std::unordered_map
+        const TileRenderInfo& renderInfo = spriteCache.get(tile.gid);
+        const auto src = rl::Vector2{
             renderInfo.sprite.atlasPosition.x,
             renderInfo.sprite.atlasPosition.y,
-            (renderInfo.orient.second == Facing::Left ? -1 : 1) * renderInfo.sprite.frameSize.x,
-            renderInfo.sprite.frameSize.y,
         };
 
         const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.transform.position;
 
-        const rl::Rectangle rect = rl::Rectangle{
+        const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
             -worldPosition.y * VIRTUAL_SCREEN_RATIO,
             tileSize.x,
             tileSize.y,
         };
 
-        auto meta = eCtx.colorBuf;
-        meta.isOccluder = renderInfo.isOccluder;
-        gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, rect, origin, renderInfo.orient.first + eCtx.transform.rotation,
-                           renderInfo.sprite.color.asRL(), meta.asRL(renderInfo.sprite, ctx.atlas.getSize()));
+        // RESEARCH could pass invTexDims to meta.asRL too
+        DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform.rotation,
+                    renderInfo.sprite.color.asRL(),
+                    GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, renderInfo.isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
+                    renderInfo.orient.second == Facing::Left);
     };
 
     if (layer.isYSorted) {
         const s32 ySortIx = eCtx.internal;
         const Vector2i coord = S_YSORT_COORD_LUT[eCtx.entity][ySortIx];
-        const s32 ix = layer.tilemap->widthTiles * coord.y + coord.x;
+        const s32 ix = widthTiles * coord.y + coord.x;
+        rl::rlSetTexture(ctx.atlas.getTexture().id);
         drawTile(coord.x, coord.y, ix, getTile(layer.ids[ix]));
+        rl::rlSetTexture(0);
 
     } else {
-        for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
-            for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
-                const s32 ix = layer.tilemap->widthTiles * y + x;
+        // formula for camera view box:
+        // const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
+        const s32 viewWidthHalfTiles = WINDOW_WIDTH_GAME / PIXELS_PER_TILE / 2 + 1;
+        const s32 viewHeightHalfTiles = WINDOW_HEIGHT_GAME / PIXELS_PER_TILE / 2 + 1;
+
+        // these can be outside of the range ((0, widthTiles), (0, heightTiles))
+        const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - eCtx.transform.position.x) / PIXELS_PER_TILE;
+        const s32 cameraTileY = static_cast<s32>(eCtx.transform.position.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
+        const s32 minX = std::max(0, cameraTileX - viewWidthHalfTiles);
+        const s32 maxX = std::min(widthTiles, cameraTileX + viewWidthHalfTiles + 1);
+        const s32 minY = std::max(0, cameraTileY - viewHeightHalfTiles);
+        const s32 maxY = std::min(heightTiles, cameraTileY + viewHeightHalfTiles + 1);
+
+        rl::rlSetTexture(ctx.atlas.getTexture().id);
+        for (s32 x = minX; x < maxX; x++) {
+            for (s32 y = minY; y < maxY; y++) {
+                const s32 ix = widthTiles * y + x;
                 const TileInfo tile = getTile(layer.ids[ix]);
 
                 if (tile.gid == 0) {
@@ -85,6 +213,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                 drawTile(x, y, ix, tile);
             }
         }
+        rl::rlSetTexture(0);
     }
 }
 
@@ -117,9 +246,12 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 void TileRenderSystem::onAdd(ecs::Entity e) {
     // make sure all the tile sprites for this layer are in the cache
     const TileMapLayer& layer = e.get<TileMapLayer>();
-    for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
-        for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
-            const s32 ix = layer.tilemap->widthTiles * y + x;
+    // caching these values once. Thousands of calls to shared_ptr_access really add up
+    const s32 widthTiles = layer.tilemap->widthTiles;
+    const s32 heightTiles = layer.tilemap->heightTiles;
+    for (s32 x = 0; x < widthTiles; x++) {
+        for (s32 y = 0; y < heightTiles; y++) {
+            const s32 ix = widthTiles * y + x;
             const TileInfo tile = getTile(layer.ids[ix]);
 
             if (tile.gid == 0) {
