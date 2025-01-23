@@ -104,12 +104,6 @@ void Collider::updateEntityPosition() {
     // for stability though, the integer position (which the physics system uses) should not include the remainder
     trans.positionPx = newPosition;
     // }
-
-    if (mSelf.has<Trigger>()) {
-        auto trigger = mSelf.get<Trigger>();
-        trigger.shape.setPosition(trans, trigger.offset);
-        mSelf.set(trigger);
-    }
 }
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {

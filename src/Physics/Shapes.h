@@ -55,6 +55,21 @@ public:
 private:
     Vector2i mCenter;
     Vector2i mHalf;
+
+public:
+    struct AABBDisplay {
+        Vector2i _center;
+        Vector2i half;
+    };
+
+    using ReflectionType = AABBDisplay;
+    AABB(AABBDisplay display) : mCenter(display._center), mHalf(display.half) {}
+    ReflectionType reflection() const {
+        return AABBDisplay{
+            ._center = mCenter,
+            .half = mHalf,
+        };
+    }
 };
 
 using EdgeGetter = s32 (AABB::*)() const;
@@ -83,6 +98,21 @@ public:
 private:
     Vector2i mCenter;
     s32 mRadius;
+
+public:
+    struct CircleDisplay {
+        Vector2i _center;
+        s32 radius;
+    };
+
+    using ReflectionType = CircleDisplay;
+    Circle(CircleDisplay display) : mCenter(display._center), mRadius(display.radius) {}
+    ReflectionType reflection() const {
+        return CircleDisplay{
+            ._center = mCenter,
+            .radius = mRadius,
+        };
+    }
 };
 
 enum class ShapeTag : u16 { AABB, Circle };
@@ -121,6 +151,43 @@ private:
         Circle mCircle;
     };
     ShapeTag mShape;
+
+public:
+    struct ShapeDisplay {
+        ShapeTag tag;
+        Vector2i _center;
+        Vector2i size;
+    };
+
+    using ReflectionType = ShapeDisplay;
+
+    Shape(ShapeDisplay display) {
+        mShape = display.tag;
+        switch (display.tag) {
+        case ShapeTag::AABB:
+            mAABB = AABB(display._center, display.size);
+            break;
+        case ShapeTag::Circle:
+            mCircle = Circle(display._center, display.size.x);
+            break;
+        }
+    }
+
+    ShapeDisplay reflection() const {
+        if (mShape == ShapeTag::AABB) {
+            return ShapeDisplay{
+                .tag = mShape,
+                ._center = mAABB.getPosition(),
+                .size = mAABB.getHalf(),
+            };
+        } else {
+            return ShapeDisplay{
+                .tag = mShape,
+                ._center = mCircle.getPosition(),
+                .size = {mCircle.getRadius(), mCircle.getRadius()},
+            };
+        }
+    }
 };
 
 bool isIntersectAABBvsAABB(const AABB&, const AABB&);

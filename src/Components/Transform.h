@@ -92,6 +92,7 @@ struct Transform {
     f32 _localRotation = 0.0;
 
     bool isManuallyMoved = true;  // if true, updates collider position without calling Collider.move
+    bool isDirty = true;          // true if entity has moved since the last frame was rendered (Renderer is in charge of clearing this)
     Depth depth = Depth::Level;
     Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation // RESEARCH maybe can get rid of this by using a parent entity for the offset?
 
