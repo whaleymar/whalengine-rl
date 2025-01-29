@@ -107,7 +107,6 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     const nlohmann::json emptyJson;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
-    // TODO navgrid should be owned by layerEntity
     for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
         level.navGrid.push_back(std::vector<bool>(layer.tilemap->heightTiles, true));
 
@@ -147,7 +146,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             };
 
 #ifndef NDEBUG
-            e.add(Name{.name = whal_format("{} tile ({}, {})", layerEntity.get<Name>(), x, y)});
+            e.add(Name{.name = whal_format("Tile ({}, {})", x, y)});
 #endif
 
             // this call is safe even if the tile doesn't have any top-level components
@@ -241,7 +240,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         BoxLight boxLight = {
             .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
-        lightEntity.add(Name{.name = level.filepath + " BoxLight"});
+        lightEntity.add(Name{.name = "BoxLight"});
     } else {
         print("Couldn't allocate entity for level lighting");
     }
@@ -325,8 +324,13 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
     }
 
     for (const auto& object : objects) {
+        EntityMapData entityMapData;
+        entityMapData.id = readInt(object, "id");
+        ecs::Entity entity = idToIndex.at(entityMapData.id).second;
+
         bool isVisible = true;
         if (tryRead(object, "visible", &isVisible) && !isVisible) {
+            entity.kill();
             continue;
         }
         std::string objType = "";
@@ -343,6 +347,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 
         if (!isTypeFound) {
             print("skipping object ID", readInt(object, "id"), "because it didn't have a type");
+            entity.kill();
             continue;
         }
         if (levelOpt != nullptr && objType != "Entity") {
@@ -352,6 +357,9 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
                 levelOpt->cameraFocalPoint = (parent.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO)).as<s32>();
             }
+
+            // not an entity, so kill it
+            entity.kill();
             continue;
         }
 
@@ -364,9 +372,6 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 
         // now get transform
         // check position/size in prefab first, then object
-        EntityMapData entityMapData;
-        entityMapData.id = readInt(object, "id");
-        ecs::Entity entity = idToIndex.at(entityMapData.id).second;
         bool hasPosition = false;
         entityMapData.isPoint = true;
         if (pPrefab) {
@@ -398,7 +403,10 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 
         // add name
         std::string name = "";
-        if (tryRead(object, "name", &name)) {
+        if (pPrefab) {
+            tryRead(*pPrefab, "name", &name);
+        }
+        if (tryRead(object, "name", &name) || name.size() > 0) {
             entity.add(Name(name.c_str()));
             print("created entity: ", name);
         }

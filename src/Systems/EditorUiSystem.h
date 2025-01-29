@@ -38,6 +38,7 @@ private:
     void drawHierarchyRecursive(ecs::Entity rootEntity, const std::vector<ecs::Entity>& openEntities);
 
     std::vector<ecs::Entity> mClickedEntities;
+    ecs::Entity mHierachySelectionMouseDown;  // the entity clicked in the hierarchy with MouseDown
     f32 mLastClickTime = 0;
 };
 

@@ -28,11 +28,6 @@ namespace whal {
 static bool S_IS_ACTIVE = false;
 static Vector2f S_CAMERA_POS;
 
-// TODO feature list:
-// 1) Display more components in imgui
-// 2) Make serializable components editable in imgui
-// 3) entities without a sprite have some visual indicator of where they are
-
 static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) {
     const Vector2f cameraPos = getCameraPositionPrecise();
     if (halflen.isZero()) {
@@ -444,8 +439,11 @@ template <typename T>
 static void componentEditor(ecs::Entity entity) {
     const std::string cmpName(type_of<T>());
     // ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
-    if (ImGui::TreeNode(cmpName.c_str())) {
-        // ImGui::TextColored(rlImGuiColors::Convert(rl::SKYBLUE), "%s", cmpName.c_str());
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth;
+    if constexpr (std::is_same_v<T, Transform>) {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
+    }
+    if (ImGui::TreeNodeEx(cmpName.c_str(), flags)) {
         std::pair<T, bool> updated = imguiRenderStruct<T>(entity.get<T>());
         if (updated.second) {
             if constexpr (std::is_same_v<T, Transform>) {
@@ -487,13 +485,14 @@ static void drawComponents(ecs::Entity entity, int xOffset = 0) {
         ImGui::SetCursorPosX(xOffset);
     }
     ImGui::SetCursorPosX(xOffset);
-    ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    // ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
+    ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
     iterComponents<InspectorComponents>(entity);
     ImGui::EndChild();
     ImGui::Separator();
     for (auto child : entity.children()) {
         ImGui::PushStyleColor(ImGuiCol_Text, rlImGuiColors::Convert(rl::ORANGE));
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed;
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (ImGui::TreeNodeEx(getEntityName(child).c_str(), flags)) {
             ImGui::PopStyleColor();
             drawComponents(child, xOffset + 16);
@@ -514,8 +513,18 @@ void EditorUiSystem::drawHierarchyRecursive(ecs::Entity rootEntity, const std::v
 
     auto checkIfEntitySelected = [&]() {
         // updates selected entity on click
+
+        // definition of IsItemClicked:
+        // return IsMouseClicked(mouse_button) && IsItemHovered(ImGuiHoveredFlags_None);
+
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-            mClickedEntities = {rootEntity};
+            mHierachySelectionMouseDown = rootEntity;
+
+        } else if (ImGui::IsMouseReleased(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None) && !ImGui::IsItemToggledOpen()) {
+            // make sure the entity we are setting is the same one selected with mouse down
+            if (mHierachySelectionMouseDown == rootEntity) {
+                mClickedEntities = {rootEntity};
+            }
         }
     };
 
