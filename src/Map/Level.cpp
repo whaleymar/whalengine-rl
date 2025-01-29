@@ -20,6 +20,7 @@ namespace whal {
 ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent) : Level(base) {
     self = World.entity();
     self.set(Transform::world(worldOffset.as<f32>()));
+    self.add(Name{base.filepath});
     TileMap::load(base.filepath.c_str(), *this);
     parent.loadedLevels.push_back(*this);
 }
