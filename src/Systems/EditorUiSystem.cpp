@@ -1,3 +1,5 @@
+#include "IGame.h"
+#include "Map/Level.h"
 #ifndef NDEBUG
 
 #include "EditorUiSystem.h"
@@ -485,7 +487,6 @@ static void drawComponents(ecs::Entity entity, int xOffset = 0) {
         ImGui::SetCursorPosX(xOffset);
     }
     ImGui::SetCursorPosX(xOffset);
-    // ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
     ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
     iterComponents<InspectorComponents>(entity);
     ImGui::EndChild();
@@ -583,6 +584,8 @@ void EditorUiSystem::draw() {
     ImGui::Begin("Hierarchy");
     if (mClickedEntities.size() > 0) {
         drawHierarchy(mClickedEntities[0]);
+    } else {
+        drawHierarchy(System::getGame().getScene().self);
     }
     ImGui::End();
 }

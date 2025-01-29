@@ -63,12 +63,14 @@ static const MaterialData S_MATERIAL_GRASS = {
     .name = "Grass",
     .id = WorldMaterial::Grass,
     .colorRange = {Colors::DarkGreen, Colors::Green},
-    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag | MaterialData::RandomSpinDir,
     .bounciness = 0.0,
     .gravityCoef = 0.0,
     .frictionCoefs = {0.0, 0.5},
     .decayParams = {.decayTime = {.decaySecondsMin = 5.0, .decaySecondsMax = 10.0}},
     .particleShape = DrawTag::Line,
+    .minRotationsPerSec = 0.25f,
+    .maxRotationsPerSec = 2.0f,
 };
 
 static const MaterialData S_MATERIAL_WATER = {.name = "Water",
@@ -108,7 +110,8 @@ static const MaterialData S_MATERIAL_DUST = {
     .gravityCoef = 0.0,
     .frictionCoefs = {0.0, 0.0},
     .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
-    .startScale = 2.0,
+    .minScale = 0.0,
+    .maxScale = 2.0,
 };
 
 static const MaterialData S_MATERIAL_FIRE = {
@@ -162,6 +165,22 @@ static const MaterialData S_MATERIAL_TINYDUST = {
     .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
 };
 
+static const MaterialData S_MATERIAL_MAGIK = {
+    .name = "Magik",
+    .id = WorldMaterial::Magik,
+    .colorRange = {Colors::Purple, Colors::DarkBlue},
+    // .flags = MaterialData::DecayTime | MaterialData::ScaleUp | MaterialData::ScaleBounce | MaterialData::RandomSpinDir,
+    .flags = MaterialData::DecayTime | MaterialData::RandomSpinDir,
+    .bounciness = 0.0,
+    .gravityCoef = 0.0,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams(0.25, 0.5)},
+    .minScale = 0.0,
+    .maxScale = 3.0,
+    .minRotationsPerSec = 0.25f,
+    .maxRotationsPerSec = 1.5f,
+};
+
 MaterialData getMaterialData(WorldMaterial material) {
     switch (material) {
     case WorldMaterial::None:
@@ -192,6 +211,8 @@ MaterialData getMaterialData(WorldMaterial material) {
         return S_MATERIAL_POISON;
     case WorldMaterial::TinyDust:
         return S_MATERIAL_TINYDUST;
+    case WorldMaterial::Magik:
+        return S_MATERIAL_MAGIK;
     }
 }
 

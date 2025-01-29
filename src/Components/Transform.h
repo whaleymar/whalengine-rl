@@ -23,27 +23,54 @@ inline bool isCardinal(Direction d) {
     }
 }
 
-template <typename T>
-inline Vector2<T> directionToVector(Direction direction) {
+inline Vector2i directionToVector(Direction direction) {
     switch (direction) {
     case Direction::Neutral:
-        return Vector2<T>::ZERO;
+        return Vector2i::ZERO;
     case Direction::N:
-        return Vector2<T>::UP;
+        return Vector2i::UP;
     case Direction::S:
-        return Vector2<T>::DOWN;
+        return Vector2i::DOWN;
     case Direction::E:
-        return Vector2<T>::RIGHT;
+        return Vector2i::RIGHT;
     case Direction::W:
-        return Vector2<T>::LEFT;
+        return Vector2i::LEFT;
     case Direction::NE:
-        return Vector2<T>{1, 1};
+        return Vector2i{1, 1};
     case Direction::SE:
-        return Vector2<T>{1, -1};
+        return Vector2i{1, -1};
     case Direction::NW:
-        return Vector2<T>{-1, 1};
+        return Vector2i{-1, 1};
     case Direction::SW:
-        return Vector2<T>{-1, -1};
+        return Vector2i{-1, -1};
+    }
+}
+
+inline Direction directionFromVector(Vector2i vec) {
+    if (vec.x > 0) {
+        if (vec.y > 0) {
+            return Direction::NE;
+        } else if (vec.y < 0) {
+            return Direction::SE;
+        } else {
+            return Direction::E;
+        }
+    } else if (vec.x < 0) {
+        if (vec.y > 0) {
+            return Direction::NW;
+        } else if (vec.y < 0) {
+            return Direction::SW;
+        } else {
+            return Direction::W;
+        }
+    } else {
+        if (vec.y > 0) {
+            return Direction::N;
+        } else if (vec.y < 0) {
+            return Direction::S;
+        } else {
+            return Direction::Neutral;
+        }
     }
 }
 

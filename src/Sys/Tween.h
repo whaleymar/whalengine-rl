@@ -98,6 +98,10 @@ public:
 
     Tweener<T>& asBounce() {
         mTween->setFlag(TweenParams::Bounce);
+        if (mTween->mNumLoops == 0) {
+            // make sure we have at least 1 loop for the bounce
+            mTween->mNumLoops = 1;
+        }
         return *this;
     }
 
@@ -189,6 +193,7 @@ public:
 
     f32 getProgress() const { return (mElapsedTime - mDelay) / mDuration; }
     T getValue() const { return ease(mStartValue, mEndValue, getProgress(), mEaseFunc); }
+    f32 getDuration() const { return mDuration; }
 
     // for casting (not rounding)
     template <typename NewType>

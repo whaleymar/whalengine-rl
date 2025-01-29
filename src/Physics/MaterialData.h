@@ -24,15 +24,18 @@ class Entity;
 }
 
 struct MaterialData {
-    enum Flags : u8 {
+    enum Flags : u32 {
         None = 0,
         Collision = 1,
         RigidBodyFlag = 1 << 1,
         Liquid = 1 << 2,
         Light = 1 << 3,
-        DecayTime = 1 << 4,
-        DecaySpeed = 1 << 5,
-        FadeOutFlag = 1 << 6,
+        DecayTime = 1 << 4,      // lifetime is based on material's DecayTimeParams
+        DecaySpeed = 1 << 5,     // lifetime is based on material's DecaySpeedParams
+        FadeOutFlag = 1 << 6,    // tweens colors towards `fadeColor`. if `Light` flag is set then tweens the radius towards zero
+        ScaleUp = 1 << 7,        // from min to max (Scaling Down is default)
+        ScaleBounce = 1 << 8,    // from max to min to max (or min to max to min if ScaleUp is set)
+        RandomSpinDir = 1 << 9,  // randomly choose between clockwise/counterclockwise spinning
     };
 
     struct DecayTimeParams {
@@ -112,15 +115,39 @@ struct MaterialData {
             entity.get<T>().color.scale(brightness);
         }
 
-        if (startScale != 1.0) {
-            Schedule.tween(entity, Vector2f(0.25, 0.25), lifetime, &Transform::scale, &Transform::setScale).from(Vector2f(1.0, 1.0) * startScale);
+        if (minScale != maxScale) {
+            Tweener<Vector2f> tween;
+            f32 tweenTime = isFlagSet(ScaleBounce) ? lifetime * 0.5f : lifetime;
+            if (isFlagSet(ScaleUp)) {
+                tween = Schedule.tween(entity, Vector2f(maxScale, maxScale), tweenTime, &Transform::scale, &Transform::setScale)
+                            .from(Vector2f(minScale, minScale));
+            } else {
+                // by default, scale down
+                tween = Schedule.tween(entity, Vector2f(minScale, minScale), tweenTime, &Transform::scale, &Transform::setScale)
+                            .from(Vector2f(maxScale, maxScale));
+            }
+
+            if (isFlagSet(ScaleBounce)) {
+                tween.asBounce();
+            }
+        } else if (minScale != 1.0f) {
+            // minScale and maxScale are the same, but not 1, so set the scale normally
+            entity.get<Transform>().setScale(Vector2f(minScale, minScale), entity);
+        }
+
+        if (maxRotationsPerSec != 0.0f || minRotationsPerSec != 0.0f) {
+            f32 modifier = 1.0f;
+            if (isFlagSet(RandomSpinDir) && Rng.uniform() > 0.5f) {
+                modifier = -1.0f;
+            }
+            entity.add(AngularVelocity{.rotationsPerSecond = Rng.range(minRotationsPerSec, maxRotationsPerSec) * modifier});
         }
     }
 
     const char* name;
     WorldMaterial id;
     Color colorRange[2];
-    u8 flags = DecayTime | FadeOutFlag;
+    u32 flags = DecayTime | FadeOutFlag;
     f32 bounciness = 0.0;
     f32 gravityCoef = 1.0;
     Vector2f frictionCoefs = {1.0, 1.0};
@@ -129,9 +156,12 @@ struct MaterialData {
         DecayTimeParams decayTime;
         DecaySpeedParams decaySpeed;
     } decayParams;
-    f32 startScale = 1.0;
+    f32 minScale = 1.0f;
+    f32 maxScale = 1.0f;
     DrawTag particleShape = DrawTag::Rect;
     f32 brightness = 1.0;
+    f32 minRotationsPerSec = 0.0f;
+    f32 maxRotationsPerSec = 0.0f;
 };
 
 }  // namespace whal

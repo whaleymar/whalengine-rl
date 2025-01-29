@@ -9,18 +9,13 @@
 
 template <typename T>
 struct Vector2 {
-    // T x, y;
     T x = 0;
     T y = 0;
 
-    // Vector2() : x(0), y(0) {}
     Vector2() = default;
-
+    Vector2(T elem) : x(elem), y(elem) {}
     Vector2(T elem1, T elem2) : x(elem1), y(elem2) {}
-
-    // Vector2(const Vector2<T>& other) : x(other.x), y(other.y) {}
     Vector2(const Vector2<T>& other) = default;
-
     Vector2(rl::Vector2 rlVec) : x(rlVec.x), y(rlVec.y) {}
 
     static inline const Vector2<T> UP{0, 1};

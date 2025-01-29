@@ -26,7 +26,7 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
             break;
         }
         outline.get<Transform>().depth = outlineDepth;
-        outline.get<Transform>().translate(directionToVector<f32>(dir), outline);
+        outline.get<Transform>().translate(directionToVector(dir).as<f32>(), outline);
         outline.add(silhouette);
         outline.add<IsOutlineSprite>();
     }
