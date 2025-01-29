@@ -1,6 +1,8 @@
 # To Do 
 
-NEXT GOAL: 
+ACTIVELY WORKING ON:
+- Godot 4.x Shader Language -> GLSL Transpiler
+- Monobehavior Component
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
