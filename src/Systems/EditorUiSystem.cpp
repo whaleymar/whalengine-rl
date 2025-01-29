@@ -154,12 +154,18 @@ void EditorUiSystem::onEvent(evt::Input, InputEvent input) {
     // build mClickedEntities
     Vector2i clickPoint = Input.getMouseScreen();
     AABB queryBox = AABB(clickPoint, Vector2i(1, 1));
+    std::vector<ecs::Entity> prevClickedEntities = mClickedEntities;
     mClickedEntities.clear();
     for (auto [entityid, entity] : getEntities()) {
         const AABB uiBox = getUiBox(entity);
         if (uiBox.isOverlapping(queryBox)) {
             mClickedEntities.push_back(entity);
         }
+    }
+
+    // if nothing was clicked, keep old selection
+    if (mClickedEntities.empty()) {
+        mClickedEntities = prevClickedEntities;
     }
 
     // If this list has an entity that's a parent of another entity in this list, BAD
@@ -465,31 +471,111 @@ constexpr void iterComponents(ecs::Entity entity) {
     }
 }
 
-static void printComponents(ecs::Entity entity, int xOffset = 0) {
+std::string getEntityName(ecs::Entity entity) {
+    if (entity.has<Name>()) {
+        return whal_format("{} (ID = {})", entity.get<Name>(), entity.id());
+    } else {
+        return "Entity " + std::to_string(entity.id());
+    }
+}
+
+static void drawComponents(ecs::Entity entity, int xOffset = 0) {
     ImGui::PushID(entity.id());
     if (xOffset == 0) {
         xOffset = ImGui::GetCursorPosX();
     } else {
         ImGui::SetCursorPosX(xOffset);
     }
-    ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE),
-                       "%s (ID = %d):", entity.has<Name>() ? entity.get<Name>().name.c_str() : sprint("Entity ", entity.id()).c_str(), entity.id());
     ImGui::SetCursorPosX(xOffset);
     ImGui::BeginChild(std::to_string(entity.id()).c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
     iterComponents<InspectorComponents>(entity);
     ImGui::EndChild();
     ImGui::Separator();
-    entity.forChild(&printComponents, false, xOffset + 16);
+    for (auto child : entity.children()) {
+        ImGui::PushStyleColor(ImGuiCol_Text, rlImGuiColors::Convert(rl::ORANGE));
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed;
+        if (ImGui::TreeNodeEx(getEntityName(child).c_str(), flags)) {
+            ImGui::PopStyleColor();
+            drawComponents(child, xOffset + 16);
+            ImGui::TreePop();
+        } else {
+            ImGui::PopStyleColor();
+        }
+    }
     ImGui::PopID();
+}
+
+void EditorUiSystem::drawHierarchyRecursive(ecs::Entity rootEntity, const std::vector<ecs::Entity>& openEntities) {
+    const ecs::Entity selectedEntity = openEntities.front();
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (rootEntity == selectedEntity) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    auto checkIfEntitySelected = [&]() {
+        // updates selected entity on click
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+            mClickedEntities = {rootEntity};
+        }
+    };
+
+    if (rootEntity.children().size() == 0) {
+        // selectable leaf node
+        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        ImGui::TreeNodeEx(getEntityName(rootEntity).c_str(), flags);
+
+        checkIfEntitySelected();
+
+    } else {
+        auto it = ecs::whal_find(openEntities.begin(), openEntities.end(), rootEntity);
+        if (rootEntity != selectedEntity && it != openEntities.end()) {
+            // make sure the parent hierarchy above `selectedEntity` is open by default
+            // flags |= ImGuiTreeNodeFlags_DefaultOpen; // not persistent
+            ImGui::SetNextItemOpen(true, ImGuiCond_Once);  // persistent
+        }
+        if (ImGui::TreeNodeEx(getEntityName(rootEntity).c_str(), flags)) {
+            checkIfEntitySelected();
+            for (auto child : rootEntity.children()) {
+                drawHierarchyRecursive(child, openEntities);
+            }
+            ImGui::TreePop();
+        } else {
+            checkIfEntitySelected();
+        }
+    }
+}
+
+// draws the hierarchy of entities that parent/are children of `entity`
+void EditorUiSystem::drawHierarchy(ecs::Entity entity) {
+    std::vector<ecs::Entity> parentChain = {entity};
+    ecs::Entity current = entity;
+    while (true) {
+        ecs::Entity parent = current.parent();
+        if (parent.isValid()) {
+            parentChain.push_back(parent);
+            current = parent;
+        } else {
+            break;
+        }
+    }
+
+    drawHierarchyRecursive(parentChain.back(), parentChain);
 }
 
 // needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
 void EditorUiSystem::draw() {
     ImGui::Begin("Inspector");
     for (ecs::Entity entity : mClickedEntities) {
-        printComponents(entity);
+        ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE), "%s:", getEntityName(entity).c_str());
+        drawComponents(entity);
     }
     ImGui::End();  // Inspector
+
+    ImGui::Begin("Hierarchy");
+    if (mClickedEntities.size() > 0) {
+        drawHierarchy(mClickedEntities[0]);
+    }
+    ImGui::End();
 }
 
 }  // namespace whal

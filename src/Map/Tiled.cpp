@@ -628,6 +628,7 @@ static Expected<Level::MetaData> parseLevelInfo(const char* lvlFileName) {
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     const auto data = getWorldFile(mapfile);
+    dstScene.self.add<Name>({mapfile});
 
 #ifndef NDEBUG
     std::string type = readString(*data, "type");

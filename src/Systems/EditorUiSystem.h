@@ -32,7 +32,11 @@ public:
     void drawWorld();
     void draw() override;
 
+    void drawHierarchy(ecs::Entity entity);  // draws the hierarchy of entities that parent/are children of `entity`
+
 private:
+    void drawHierarchyRecursive(ecs::Entity rootEntity, const std::vector<ecs::Entity>& openEntities);
+
     std::vector<ecs::Entity> mClickedEntities;
     f32 mLastClickTime = 0;
 };
