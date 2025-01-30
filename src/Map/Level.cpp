@@ -27,7 +27,7 @@ ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent)
 
 ecs::Entity ActiveLevel::getChild(const std::string& name) {
     for (const ecs::Entity& child : self.children()) {
-        auto nameOpt = child.tryGet<Name>();
+        const Name* nameOpt = child.tryGet<Name>();
         if (nameOpt && nameOpt->name == name) {
             return child;
         }

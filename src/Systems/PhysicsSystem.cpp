@@ -120,7 +120,7 @@ void PhysicsSystem::update() {
             dt = Time.dt();
         }
 
-        auto rbOpt = entity.tryGet<RigidBody>();
+        const RigidBody* rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
         if (rbOpt) {
             frictionMultiplier = rbOpt->frictionMultiplier;
@@ -148,7 +148,7 @@ void PhysicsSystem::update() {
         vel.impulse = {0, 0};
         vel.total = totalVelocity;
 
-        auto jumpControlOpt = entity.tryGet<Jumper>();
+        const Jumper* jumpControlOpt = entity.tryGet<Jumper>();
 
         // ----------------------------------------------------------------
         // UPDATE POSITION
