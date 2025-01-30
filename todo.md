@@ -7,6 +7,7 @@ ACTIVELY WORKING ON:
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - editing globals like physics gravity/friction values from game -> put in Settings.cpp
+- Want to create more world materials in game
 
 ## Components (some of these are duplicates of other tasks)
 - dashed line
