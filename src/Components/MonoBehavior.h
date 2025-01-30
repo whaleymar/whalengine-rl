@@ -31,8 +31,7 @@ struct MonoBase {
     virtual void onTriggerEnter() {}
     virtual void onTriggerStay() {}
     virtual void onTriggerExit() {}
-    virtual void onDestroy() {}     // runs when an entity is killed
-    virtual void onDeactivate() {}  // runs when an entity goes from active to inactive
+    virtual void onDestroy(ecs::Entity self) {}  // runs when an entity is killed or deactivated
     // onDrawGizmo?
     virtual void onInput(ecs::Entity self, InputEvent input) {}
 
