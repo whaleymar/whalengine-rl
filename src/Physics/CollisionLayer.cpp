@@ -33,7 +33,7 @@ static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {Layer::DefaultPhysics, DefaultPhysics | PhysicsNoActor | Attack | BlocksVision},
     {Layer::PhysicsNoActor, PhysicsNoActor | Attack},
     {Layer::Player, Attack},
-    {Layer::Enemy, Attack},
+    {Layer::Enemy, Enemy | Attack},
     {Layer::Npc, None},
     {Layer::Attack, Attack},
     {Layer::BlocksVision, None},
