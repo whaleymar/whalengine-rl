@@ -35,13 +35,18 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity) {
     return basicAnimation(animator, entity);
 }
 
-Animator Animator::fromAnimation(const Animation& animation, bool isLooping) {
+Animator Animator::fromAnimation(const Animation& animation, AnimBrain brain, bool isLooping) {
     Animator animator = Animator{
         .animations = {animation},
+        .brain = brain,
         .isLooping = isLooping,
     };
     animator.resetAnimation();
     return animator;
+}
+
+Animator Animator::fromAnimation(const char* factoryName, AnimBrain brain, bool isLooping) {
+    return Animator::fromAnimation(AnimationFactory::get(factoryName), brain, isLooping);
 }
 
 Animator Animator::from(const AnimInfo& animInfo, AnimBrain brain, bool isLooping) {

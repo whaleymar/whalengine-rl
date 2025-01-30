@@ -34,7 +34,8 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
 // 2. the animation's simple name, which is used to play it with Animator::play. Pass an empty string to use the animation's full name.
 using AnimInfo = std::vector<std::tuple<const char*, const char*>>;
 struct Animator : ISerialize<Animator, ComponentFactory> {
-    static Animator fromAnimation(const Animation& animation, bool isLooping = true);
+    static Animator fromAnimation(const Animation& animation, AnimBrain brain = &basicAnimation, bool isLooping = true);
+    static Animator fromAnimation(const char* factoryName, AnimBrain brain = &basicAnimation, bool isLooping = true);
     static Animator from(const AnimInfo& animInfo, AnimBrain brain, bool isLooping = true);
 
     std::vector<Animation> animations;

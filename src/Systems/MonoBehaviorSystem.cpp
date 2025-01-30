@@ -15,6 +15,14 @@ void MonoBehaviorSystem::update() {
     }
 }
 
+void MonoBehaviorSystem::onAdd(ecs::Entity entity) {
+    entity.get<MonoBehavior>().pBehavior->start(entity);
+}
+
+void MonoBehaviorSystem::onRemove(ecs::Entity entity) {
+    entity.get<MonoBehavior>().pBehavior->onDestroy(entity);
+}
+
 void MonoBehaviorSystem::onEvent(evt::Input, InputEvent input) {
     for (auto [entityid, entity] : getEntities()) {
         MonoBehavior& mono = entity.get<MonoBehavior>();
