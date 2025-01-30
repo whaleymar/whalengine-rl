@@ -40,7 +40,7 @@ static void updatePhysicsRails(ecs::Entity entity, RailsControl& rails) {
 
     // scale checkpoint threshold with speed
     f32 entitySpeed = [entity]() -> f32 {
-        auto velOpt = entity.tryGet<Velocity>();
+        const Velocity* velOpt = entity.tryGet<Velocity>();
         if (!velOpt || (velOpt->stable.x == 0 && velOpt->stable.y == 0)) {
             return 0;
         }

@@ -113,8 +113,8 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
     if (updateRigidBodyFlags && !isX) {
         auto& rigidbody = mSelf.get<RigidBody>();
         const bool wasGrounded = rigidbody.isGrounded;
-        auto jumpControlOpt = mSelf.tryGet<Jumper>();
-        auto momentumOpt = mSelf.tryGet<Momentum>();
+        Jumper* jumpControlOpt = mSelf.tryGet<Jumper>();
+        Momentum* momentumOpt = mSelf.tryGet<Momentum>();
         const bool hasMomentum = momentumOpt && momentumOpt->isMomentumStored();
 
         if (hitinfo && hitinfo.isVertical()) {
@@ -171,17 +171,6 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
             } else if (momentumOpt && momentumOpt->cooldownFrames > 0) {
                 momentumOpt->cooldownFrames--;
             }
-        }
-
-        if (jumpControlOpt) {
-            // mSelf.set(*jumpControlOpt);
-            // this is 2x faster:
-            mSelf.get<Jumper>() = *jumpControlOpt;
-        }
-        if (momentumOpt) {
-            // mSelf.set(*momentumOpt);
-            // this is 2x faster:
-            mSelf.get<Momentum>() = *momentumOpt;
         }
     }
 
@@ -338,7 +327,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             // Try to wiggle out of it
-            if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
+            if (const Wiggle* wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
                 if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
@@ -397,7 +386,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             toMove -= moveSign;
         } else {
             // try to wiggle out of it
-            if (auto wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
+            if (const Wiggle* wiggleOpt = mSelf.tryGet<Wiggle>(); wiggleOpt) {
                 if (wiggleOpt->callback(*wiggleOpt, *this, hitInfo, moveNormal, amount)) {
                     continue;
                 }
@@ -833,7 +822,7 @@ void Collider::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
 }
 
 void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {
-    auto eRB = self.tryGet<RigidBody>();
+    const RigidBody* eRB = self.tryGet<RigidBody>();
     if (!eRB) {
         return;
     }
@@ -847,7 +836,7 @@ void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {
 }
 
 void Momentum::setMomentumY(ecs::Entity self, const f32 momentumY) {
-    auto eRB = self.tryGet<RigidBody>();
+    const RigidBody* eRB = self.tryGet<RigidBody>();
     if (!eRB) {
         return;
     }
