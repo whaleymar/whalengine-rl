@@ -275,7 +275,8 @@ void InputHandler::updateGamepadState() {
         }
     }
 
-    if (!isUsingGamepad()) {
+    // Most OSes will send gamepad input to the window even if it isn't focused (unlike keyboard/mouse inputs)
+    if (!isUsingGamepad() || !rl::IsWindowFocused()) {
         return;
     }
 
