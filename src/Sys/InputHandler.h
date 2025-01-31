@@ -65,8 +65,6 @@ public:
     void loadMappings(const InputPair mappings[], s32 count) const;
     void resetMappings() const;
     void setActiveGamepad(s32 id);
-    void setGamepadDeadzone(f32 deadzone);           // between 0 and 1
-    void setIsGamepadDeadzoneCircle(bool isCircle);  // toggle circle or square deadzone shape
     s32 getActiveGamepad() const { return mActiveGamepad; }
     GamepadType getGamepadType() const { return mGamepadType; }
     bool isUsingGamepad() const;
@@ -77,49 +75,54 @@ public:
 
     // input pressed this frame
     bool isPressed(const std::string& name) const;
-    bool isPressed(InputCode code) const;
+    bool isPressed(InputCode code, f32 deadzone) const;
     bool isPressed(rl::KeyboardKey key) const;
     bool isPressed(rl::MouseButton button) const;
     bool isPressed(rl::GamepadButton button) const;
-    bool isPressed(whal::GamepadAxis axis) const;
+    bool isPressed(whal::GamepadAxis axis, f32 deadzone = 0.5) const;
 
     // input released this frame
     bool isReleased(const std::string& name) const;
-    bool isReleased(InputCode code) const;
+    bool isReleased(InputCode code, f32 deadzone) const;
     bool isReleased(rl::KeyboardKey key) const;
     bool isReleased(rl::MouseButton button) const;
     bool isReleased(rl::GamepadButton button) const;
-    bool isReleased(whal::GamepadAxis axis) const;
+    bool isReleased(whal::GamepadAxis axis, f32 deadzone = 0.5) const;
 
     // Input is active, but not pressed this frame
     bool isHeld(const std::string& name) const;
-    bool isHeld(InputCode code) const;
+    bool isHeld(InputCode code, f32 deadzone) const;
     bool isHeld(rl::KeyboardKey key) const;
     bool isHeld(rl::MouseButton button) const;
     bool isHeld(rl::GamepadButton button) const;
-    bool isHeld(whal::GamepadAxis axis) const;
+    bool isHeld(whal::GamepadAxis axis, f32 deadzone = 0.5) const;
 
     // Input is pressed or held
     bool isOn(const std::string& name) const;
-    bool isOn(InputCode code) const;
+    bool isOn(InputCode code, f32 deadzone) const;
     bool isOn(rl::KeyboardKey key) const;
     bool isOn(rl::MouseButton button) const;
     bool isOn(rl::GamepadButton button) const;
-    bool isOn(whal::GamepadAxis axis) const;
+    bool isOn(whal::GamepadAxis axis, f32 deadzone = 0.5) const;
 
     // Axis-specific methods
-    f32 getStrength(const std::string& name) const;   // returns value between 0-1 for analog inputs, 0/1 for digital
-    f32 getStrength(InputCode code) const;            // returns 0/1
-    f32 getStrength(rl::KeyboardKey key) const;       // returns 0/1
-    f32 getStrength(rl::MouseButton button) const;    // returns 0/1
-    f32 getStrength(rl::GamepadButton button) const;  // returns 0/1
-    f32 getStrength(whal::GamepadAxis axis) const;    // returns value between 0-1
+    f32 getStrength(const std::string& name) const;                     // returns value between 0-1 for analog inputs, 0/1 for digital
+    f32 getStrength(InputCode code, f32 deadzone) const;                // returns 0/1
+    f32 getStrength(rl::KeyboardKey key) const;                         // returns 0/1
+    f32 getStrength(rl::MouseButton button) const;                      // returns 0/1
+    f32 getStrength(rl::GamepadButton button) const;                    // returns 0/1
+    f32 getStrength(whal::GamepadAxis axis, f32 deadzone = 0.5) const;  // returns value between 0-1
+
+    f32 getStrengthRaw(const std::string& name) const;  // returns value between 0-1 for analog inputs, 0/1 for digital
+    f32 getStrengthRaw(InputCode code) const;           // returns 0/1
 
     void add(const std::string& name, InputCode code) const;
     void add(const std::string& name, rl::KeyboardKey key) const;
     void add(const std::string& name, rl::MouseButton button) const;
     void add(const std::string& name, rl::GamepadButton button) const;
     void add(const std::string& name, whal::GamepadAxis axis) const;
+
+    void setDeadzone(const std::string& name, f32 deadzone) const;
 
     void remove(const std::string& name) const;
 
@@ -151,8 +154,6 @@ private:
     Vector2i mMouseWindowPosition;  // if there's a mismatch between render and window size, this matches window
     s32 mActiveGamepad = 10;        // raylib supports 4 gamepads (0-3).
     GamepadType mGamepadType = GamepadType::Unknown;
-    float mJoystickDeadzone = 0.1;
-    bool mUseCircleDeadzone = true;
 };
 
 }  // namespace whal
