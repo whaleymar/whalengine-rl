@@ -20,16 +20,21 @@ enum class InputState {
     Released,
 };
 
-struct InputAction {
+struct InputStateEx {
     InputState state;
     f32 strength;
+    f32 strengthRaw;
 };
 
-// TODO enable unique deadzone values for each input name
-// mimic godot API for circle/square deadzone shape
+struct InputAction {
+    std::vector<InputCode> inputs;  // which inputs can trigger this action
+    f32 deadzone = 0.5;             // minimum value for analog inputs to be "on"
+};
 
-static std::unordered_map<std::string, InputAction> S_NAME_TO_STATE;
-static std::unordered_map<std::string, std::vector<InputCode>> S_NAME_TO_INPUTS;
+// TODO mimic godot API for getVector
+
+static std::unordered_map<std::string, InputStateEx> S_NAME_TO_STATE;
+static std::unordered_map<std::string, InputAction> S_NAME_TO_ACTIONS;
 static std::unordered_set<InputCode> S_DISABLED_INPUTS;
 static bool S_IS_STOPPED = false;  // flag for if all inputs are disabled
 
@@ -42,83 +47,50 @@ static const char* rlMouseToString(rl::MouseButton button);
 static const char* rlGamepadButtonToString(rl::GamepadButton button, GamepadType controller);
 static const char* GamepadAxisToString(whal::GamepadAxis axis);
 
+static constexpr f32 S_DEFAULT_DEADZONE = 0.5;
 static constexpr s32 AXIS_ENUM_COUNT = 10;
 struct GamepadAxisState {
-    enum class Joystick {
-        Left,
-        Right,
-    };
-
     GamepadAxisState() {
-        mState.fill(InputState::Off);
+        mPrevFrameStrength.fill(0);
         mStrength.fill(0);
-        mStrengthRaw.fill(0);
     }
 
-    // this should only be called once per frame for each axis!!!
-    void setStrength(f32 stren, whal::GamepadAxis axis) {
-        const s32 ix = getIndex(axis);
-        mStrength[ix] = math::abs(stren);
-        bool wasOn = mState[ix] == InputState::Pressed || mState[ix] == InputState::Held;
-        if (mStrength[ix] > 0) {
-            mState[ix] = wasOn ? InputState::Held : InputState::Pressed;
-        } else {
-            mState[ix] = wasOn ? InputState::Released : InputState::Off;
-        }
+    void update(int gamepad) {
+        mPrevFrameStrength = mStrength;
+
+        f32 strength;
+
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_X);
+        mStrength[getIndex(GamepadAxis::AXIS_0_PLUS)] = strength > 0.0 ? strength : 0;
+        mStrength[getIndex(GamepadAxis::AXIS_0_MINUS)] = strength < 0.0 ? -strength : 0;
+
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_Y);
+        mStrength[getIndex(GamepadAxis::AXIS_1_PLUS)] = strength > 0.0 ? strength : 0;
+        mStrength[getIndex(GamepadAxis::AXIS_1_MINUS)] = strength < 0.0 ? -strength : 0;
+
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_X);
+        mStrength[getIndex(GamepadAxis::AXIS_2_PLUS)] = strength > 0.0 ? strength : 0;
+        mStrength[getIndex(GamepadAxis::AXIS_2_MINUS)] = strength < 0.0 ? -strength : 0;
+
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_Y);
+        mStrength[getIndex(GamepadAxis::AXIS_3_PLUS)] = strength > 0.0 ? strength : 0;
+        mStrength[getIndex(GamepadAxis::AXIS_3_MINUS)] = strength < 0.0 ? -strength : 0;
+
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_TRIGGER);
+        mStrength[getIndex(GamepadAxis::AXIS_LEFT_TRIGGER)] = strength;
+        strength = rl::GetGamepadAxisMovement(gamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_TRIGGER);
+        mStrength[getIndex(GamepadAxis::AXIS_RIGHT_TRIGGER)] = strength;
     }
 
-    void syncStrength(whal::GamepadAxis axis) { setStrength(mStrengthRaw[getIndex(axis)], axis); }
-    void setStrengthRaw(f32 stren, whal::GamepadAxis axis) { mStrengthRaw[getIndex(axis)] = math::abs(stren); }
-    void setState(InputState s, whal::GamepadAxis axis) { mState[getIndex(axis)] = s; }
     s32 getIndex(whal::GamepadAxis axis) { return static_cast<s32>(axis); }
     f32 getStrength(whal::GamepadAxis axis) { return mStrength[getIndex(axis)]; }
-    f32 getStrengthRaw(whal::GamepadAxis axis) { return mStrengthRaw[getIndex(axis)]; }
-    InputState getState(whal::GamepadAxis axis) { return mState[getIndex(axis)]; }
-
-    bool isJoystickInDeadzoneCircle(Joystick joystick, f32 deadzone) {
-        Vector2f vec = joystick == Joystick::Left ? mLeftJoystickVecRaw : mRightJoystickVecRaw;
-        return vec.isZero() || vec.len() <= deadzone;
-    }
-
-    bool isJoystickInDeadzoneSquare(Joystick joystick, f32 deadzone, bool isX) {
-        Vector2f vec = joystick == Joystick::Left ? mLeftJoystickVecRaw : mRightJoystickVecRaw;
-        if (isX) {
-            return math::abs(vec.x) <= deadzone;
-        } else {
-            return math::abs(vec.y) <= deadzone;
-        }
-    }
-
-    void setRawVector(f32 stren, Joystick joystick, bool isX) {
-        if (joystick == Joystick::Left) {
-            if (isX) {
-                mLeftJoystickVecRaw.x = stren;
-            } else {
-                mLeftJoystickVecRaw.y = stren;
-            }
-        } else {
-            if (isX) {
-                mRightJoystickVecRaw.x = stren;
-            } else {
-                mRightJoystickVecRaw.y = stren;
-            }
-        }
-    }
-
-    Vector2f getVector(Joystick joystick) {
-        if (joystick == Joystick::Left) {
-            return mLeftJoystickVecRaw;
-        } else {
-            return mRightJoystickVecRaw;
-        }
-    }
+    f32 getPrevStrength(whal::GamepadAxis axis) { return mPrevFrameStrength[getIndex(axis)]; }
 
 private:
-    std::array<InputState, AXIS_ENUM_COUNT> mState;
-    std::array<f32, AXIS_ENUM_COUNT> mStrength;  // accounts for deadzone (circular deadzone for joysticks)
-    std::array<f32, AXIS_ENUM_COUNT> mStrengthRaw;
-    Vector2f mLeftJoystickVecRaw;
-    Vector2f mRightJoystickVecRaw;
+    // RESEARCH for multi gamepad support, will need to be
+    // std::array<std::array<f32, AXIS_ENUM_COUNT>, 4>;
+    std::array<f32, AXIS_ENUM_COUNT> mPrevFrameStrength;
+    std::array<f32, AXIS_ENUM_COUNT> mStrength;
 };
 static GamepadAxisState S_GAMEPAD_AXIS_STATE;
 
@@ -207,33 +179,43 @@ void InputHandler::update() {
     updateGamepadState();
 
     // emits input events
-    for (const auto& [name, inputCodes] : S_NAME_TO_INPUTS) {
+    for (const auto& [name, inputAction] : S_NAME_TO_ACTIONS) {
         InputState state = InputState::Off;
-        for (auto inputCode : inputCodes) {
+        const f32 deadzone = inputAction.deadzone;
+        InputStateEx& newState = S_NAME_TO_STATE[name];
+        for (auto inputCode : inputAction.inputs) {
             if (S_DISABLED_INPUTS.contains(inputCode)) {
                 continue;
             }
 
-            if (isPressed(inputCode) && state == InputState::Off) {
+            if (isPressed(inputCode, deadzone) && state == InputState::Off) {
                 // Pressed can override Off
                 state = InputState::Pressed;
-                S_NAME_TO_STATE[name].state = InputState::Pressed;
-                S_NAME_TO_STATE[name].strength = getStrength(inputCode);
-            } else if (isHeld(inputCode) && (state == InputState::Off || state == InputState::Pressed || state == InputState::Released)) {
+                newState.state = InputState::Pressed;
+                newState.strength = getStrength(inputCode, deadzone);
+                newState.strengthRaw = getStrengthRaw(inputCode);
+
+            } else if (isHeld(inputCode, deadzone) && (state == InputState::Off || state == InputState::Pressed || state == InputState::Released)) {
                 // Held can override Off and Pressed (i.e. if 2 buttons are registered to "jump", then if button 1 is held, pressing button 2 will not
                 // caused a "pressed" event) and releasing button 2 won't cause a "released" event
                 state = InputState::Held;
-                S_NAME_TO_STATE[name].state = InputState::Held;
-                S_NAME_TO_STATE[name].strength = getStrength(inputCode);
-            } else if (isReleased(inputCode) && state == InputState::Off) {
+                newState.state = InputState::Held;
+                newState.strength = getStrength(inputCode, deadzone);
+                newState.strengthRaw = getStrengthRaw(inputCode);
+
+            } else if (isReleased(inputCode, deadzone) && state == InputState::Off) {
                 state = InputState::Released;
-                S_NAME_TO_STATE[name].state = InputState::Released;
-                S_NAME_TO_STATE[name].strength = getStrength(inputCode);
-            } else if ((isPressed(inputCode) && state == InputState::Released) || (isReleased(inputCode) && state == InputState::Pressed)) {
+                newState.state = InputState::Released;
+                newState.strength = getStrength(inputCode, deadzone);
+                newState.strengthRaw = getStrengthRaw(inputCode);
+
+            } else if ((isPressed(inputCode, deadzone) && state == InputState::Released) ||
+                       (isReleased(inputCode, deadzone) && state == InputState::Pressed)) {
                 // press + release on same frame => held
                 state = InputState::Held;
-                S_NAME_TO_STATE[name].state = InputState::Held;
-                S_NAME_TO_STATE[name].strength = getStrength(inputCode);
+                newState.state = InputState::Held;
+                newState.strength = getStrength(inputCode, deadzone);
+                newState.strengthRaw = getStrengthRaw(inputCode);
             }
         }
 
@@ -279,130 +261,7 @@ void InputHandler::updateGamepadState() {
     if (!isUsingGamepad() || !rl::IsWindowFocused()) {
         return;
     }
-
-    // THIS
-    // IS
-    // A
-    // MESS
-
-    // RAW INPUT STRENGTH
-    f32 strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_X);
-    if (strength > 0) {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_0_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_0_MINUS);
-    } else {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_0_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_0_MINUS);
-    }
-    S_GAMEPAD_AXIS_STATE.setRawVector(strength, GamepadAxisState::Joystick::Left, true);
-
-    strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_Y);
-    if (strength > 0) {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_1_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_1_MINUS);
-    } else {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_1_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_1_MINUS);
-    }
-    S_GAMEPAD_AXIS_STATE.setRawVector(strength, GamepadAxisState::Joystick::Left, false);
-
-    strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_X);
-    if (strength > 0) {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_2_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_2_MINUS);
-    } else {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_2_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_2_MINUS);
-    }
-    S_GAMEPAD_AXIS_STATE.setRawVector(strength, GamepadAxisState::Joystick::Right, true);
-
-    strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_Y);
-    if (strength > 0) {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_3_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_3_MINUS);
-    } else {
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(0, GamepadAxis::AXIS_3_PLUS);
-        S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_3_MINUS);
-    }
-    S_GAMEPAD_AXIS_STATE.setRawVector(strength, GamepadAxisState::Joystick::Right, false);
-
-    strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_LEFT_TRIGGER);
-    S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_LEFT_TRIGGER);
-
-    strength = rl::GetGamepadAxisMovement(mActiveGamepad, rl::GamepadAxis::GAMEPAD_AXIS_RIGHT_TRIGGER);
-    S_GAMEPAD_AXIS_STATE.setStrengthRaw(strength, GamepadAxis::AXIS_RIGHT_TRIGGER);
-
-    // ADJUSTED STRENGTH (accounts for deadzone)
-    // for axes 0-3, use a circular deadzone (feels more natural)
-    if (mUseCircleDeadzone) {
-        bool isOutsideDeadzone = !S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneCircle(GamepadAxisState::Joystick::Left, mJoystickDeadzone);
-        if (isOutsideDeadzone) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_0_PLUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_1_PLUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_0_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_1_MINUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_0_PLUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_1_PLUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_0_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_1_MINUS);
-        }
-    } else {
-        if (!S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneSquare(GamepadAxisState::Joystick::Left, mJoystickDeadzone, true)) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_0_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_0_PLUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_0_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_0_PLUS);
-        }
-
-        if (!S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneSquare(GamepadAxisState::Joystick::Left, mJoystickDeadzone, false)) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_1_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_1_PLUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_1_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_1_PLUS);
-        }
-    }
-
-    if (mUseCircleDeadzone) {
-        bool isOutsideDeadzone = !S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneCircle(GamepadAxisState::Joystick::Right, mJoystickDeadzone);
-        if (isOutsideDeadzone) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_2_PLUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_3_PLUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_2_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_3_MINUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_2_PLUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_3_PLUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_2_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_3_MINUS);
-        }
-    } else {
-        if (!S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneSquare(GamepadAxisState::Joystick::Right, mJoystickDeadzone, true)) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_2_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_2_PLUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_2_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_2_PLUS);
-        }
-
-        if (!S_GAMEPAD_AXIS_STATE.isJoystickInDeadzoneSquare(GamepadAxisState::Joystick::Right, mJoystickDeadzone, false)) {
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_3_MINUS);
-            S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_3_PLUS);
-        } else {
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_3_MINUS);
-            S_GAMEPAD_AXIS_STATE.setStrength(0, whal::GamepadAxis::AXIS_3_PLUS);
-        }
-    }
-
-    if (S_GAMEPAD_AXIS_STATE.getStrengthRaw(whal::GamepadAxis::AXIS_LEFT_TRIGGER) > mJoystickDeadzone) {
-        S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_LEFT_TRIGGER);
-    }
-
-    if (S_GAMEPAD_AXIS_STATE.getStrengthRaw(whal::GamepadAxis::AXIS_RIGHT_TRIGGER) > mJoystickDeadzone) {
-        S_GAMEPAD_AXIS_STATE.syncStrength(whal::GamepadAxis::AXIS_RIGHT_TRIGGER);
-    }
+    S_GAMEPAD_AXIS_STATE.update(mActiveGamepad);
 }
 
 void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {
@@ -412,7 +271,7 @@ void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {
 }
 
 void InputHandler::resetMappings() const {
-    S_NAME_TO_INPUTS.clear();
+    S_NAME_TO_ACTIONS.clear();
     S_NAME_TO_STATE.clear();
 }
 
@@ -421,14 +280,6 @@ void InputHandler::setActiveGamepad(s32 id) {
     mActiveGamepad = id;
     const char* name = rl::GetGamepadName(id);
     mGamepadType = GamepadFromString(name);
-}
-
-void InputHandler::setGamepadDeadzone(f32 deadzone) {
-    mJoystickDeadzone = deadzone;
-}
-
-void InputHandler::setIsGamepadDeadzoneCircle(bool isCircle) {
-    mUseCircleDeadzone = isCircle;
 }
 
 bool InputHandler::isUsingGamepad() const {
@@ -443,7 +294,7 @@ bool InputHandler::isPressed(const std::string& name) const {
     return it->second.state == InputState::Pressed;
 }
 
-bool InputHandler::isPressed(InputCode code) const {
+bool InputHandler::isPressed(InputCode code, f32 deadzone) const {
     if (code < KEYBOARD_ENUM_OFFSET) {
         // keyboard key
         return rl::IsKeyPressed(static_cast<rl::KeyboardKey>(code));
@@ -456,7 +307,7 @@ bool InputHandler::isPressed(InputCode code) const {
     } else {
         // gamepad axis
         whal::GamepadAxis axis = static_cast<whal::GamepadAxis>(code - GAMEPAD_ENUM_OFFSET);
-        return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Pressed;
+        return S_GAMEPAD_AXIS_STATE.getStrength(axis) > deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) <= deadzone;
     }
     return false;
 }
@@ -473,8 +324,8 @@ bool InputHandler::isPressed(rl::GamepadButton button) const {
     return rl::IsGamepadButtonPressed(mActiveGamepad, button);
 }
 
-bool InputHandler::isPressed(whal::GamepadAxis axis) const {
-    return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Pressed;
+bool InputHandler::isPressed(whal::GamepadAxis axis, f32 deadzone) const {
+    return S_GAMEPAD_AXIS_STATE.getStrength(axis) > deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) <= deadzone;
 }
 
 bool InputHandler::isReleased(const std::string& name) const {
@@ -485,7 +336,7 @@ bool InputHandler::isReleased(const std::string& name) const {
     return it->second.state == InputState::Released;
 }
 
-bool InputHandler::isReleased(InputCode code) const {
+bool InputHandler::isReleased(InputCode code, f32 deadzone) const {
     if (code < KEYBOARD_ENUM_OFFSET) {
         // keyboard key
         return rl::IsKeyReleased(static_cast<rl::KeyboardKey>(code));
@@ -498,7 +349,7 @@ bool InputHandler::isReleased(InputCode code) const {
     } else {
         // gamepad axis
         whal::GamepadAxis axis = static_cast<whal::GamepadAxis>(code - GAMEPAD_ENUM_OFFSET);
-        return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Released;
+        return S_GAMEPAD_AXIS_STATE.getStrength(axis) <= deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) > deadzone;
     }
     return false;
 }
@@ -515,8 +366,8 @@ bool InputHandler::isReleased(rl::GamepadButton button) const {
     return rl::IsGamepadButtonReleased(mActiveGamepad, button);
 }
 
-bool InputHandler::isReleased(whal::GamepadAxis axis) const {
-    return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Released;
+bool InputHandler::isReleased(whal::GamepadAxis axis, f32 deadzone) const {
+    return S_GAMEPAD_AXIS_STATE.getStrength(axis) <= deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) > deadzone;
 }
 
 bool InputHandler::isHeld(const std::string& name) const {
@@ -527,7 +378,7 @@ bool InputHandler::isHeld(const std::string& name) const {
     return it->second.state == InputState::Held;
 }
 
-bool InputHandler::isHeld(InputCode code) const {
+bool InputHandler::isHeld(InputCode code, f32 deadzone) const {
     if (code < KEYBOARD_ENUM_OFFSET) {
         // keyboard key
         // return rl::IsKeyPressedRepeat(static_cast<rl::KeyboardKey>(code));
@@ -538,17 +389,16 @@ bool InputHandler::isHeld(InputCode code) const {
         return isHeld(button);
     } else if (code < GAMEPAD_ENUM_OFFSET) {
         // gamepad button
-        return rl::IsGamepadButtonPressed(mActiveGamepad, static_cast<rl::GamepadButton>(code - MOUSE_ENUM_OFFSET));
+        return rl::IsGamepadButtonDown(mActiveGamepad, static_cast<rl::GamepadButton>(code - MOUSE_ENUM_OFFSET));
     } else {
         // gamepad axis
         whal::GamepadAxis axis = static_cast<whal::GamepadAxis>(code - GAMEPAD_ENUM_OFFSET);
-        return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Held;
+        return S_GAMEPAD_AXIS_STATE.getStrength(axis) > deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) > deadzone;
     }
     return false;
 }
 
 bool InputHandler::isHeld(rl::KeyboardKey key) const {
-    // return rl::IsKeyPressedRepeat(key);
     return rl::IsKeyDown(key) && !rl::IsKeyPressed(key);
 }
 
@@ -560,16 +410,16 @@ bool InputHandler::isHeld(rl::GamepadButton button) const {
     return rl::IsGamepadButtonDown(mActiveGamepad, button) && !rl::IsGamepadButtonPressed(mActiveGamepad, button);
 }
 
-bool InputHandler::isHeld(whal::GamepadAxis axis) const {
-    return S_GAMEPAD_AXIS_STATE.getState(axis) == InputState::Held;
+bool InputHandler::isHeld(whal::GamepadAxis axis, f32 deadzone) const {
+    return S_GAMEPAD_AXIS_STATE.getStrength(axis) > deadzone && S_GAMEPAD_AXIS_STATE.getPrevStrength(axis) > deadzone;
 }
 
 bool InputHandler::isOn(const std::string& name) const {
     return isPressed(name) || isHeld(name);
 }
 
-bool InputHandler::isOn(InputCode code) const {
-    return isPressed(code) || isHeld(code);
+bool InputHandler::isOn(InputCode code, f32 deadzone) const {
+    return isPressed(code, deadzone) || isHeld(code, deadzone);
 }
 
 bool InputHandler::isOn(rl::KeyboardKey key) const {
@@ -584,8 +434,8 @@ bool InputHandler::isOn(rl::GamepadButton button) const {
     return isPressed(button) || isHeld(button);
 }
 
-bool InputHandler::isOn(whal::GamepadAxis axis) const {
-    return isPressed(axis) || isHeld(axis);
+bool InputHandler::isOn(whal::GamepadAxis axis, f32 deadzone) const {
+    return isPressed(axis, deadzone) || isHeld(axis, deadzone);
 }
 
 f32 InputHandler::getStrength(const std::string& name) const {
@@ -596,7 +446,7 @@ f32 InputHandler::getStrength(const std::string& name) const {
     return it->second.strength;
 }
 
-f32 InputHandler::getStrength(InputCode code) const {
+f32 InputHandler::getStrength(InputCode code, f32 deadzone) const {
     if (code < KEYBOARD_ENUM_OFFSET) {
         // keyboard key
         return rl::IsKeyPressed(static_cast<rl::KeyboardKey>(code)) ? 1 : 0;
@@ -609,7 +459,8 @@ f32 InputHandler::getStrength(InputCode code) const {
     } else {
         // gamepad axis
         whal::GamepadAxis axis = static_cast<whal::GamepadAxis>(code - GAMEPAD_ENUM_OFFSET);
-        return S_GAMEPAD_AXIS_STATE.getStrength(axis);
+        f32 strength = S_GAMEPAD_AXIS_STATE.getStrength(axis);
+        return strength > deadzone ? strength : 0;
     }
     return false;
 }
@@ -626,19 +477,35 @@ f32 InputHandler::getStrength(rl::GamepadButton button) const {
     return isOn(button) ? 1.0f : 0.0f;
 }
 
-f32 InputHandler::getStrength(whal::GamepadAxis axis) const {
-    return S_GAMEPAD_AXIS_STATE.getStrength(axis);
+f32 InputHandler::getStrength(whal::GamepadAxis axis, f32 deadzone) const {
+    f32 strength = S_GAMEPAD_AXIS_STATE.getStrength(axis);
+    return strength > deadzone ? strength : 0;
+}
+
+f32 InputHandler::getStrengthRaw(const std::string& name) const {
+    auto it = S_NAME_TO_STATE.find(name);
+    if (it == S_NAME_TO_STATE.end()) {
+        return false;
+    }
+    return it->second.strengthRaw;
+}
+
+f32 InputHandler::getStrengthRaw(InputCode code) const {
+    return getStrength(code, -1);
 }
 
 void InputHandler::add(const std::string& name, InputCode code) const {
-    if (S_NAME_TO_INPUTS.contains(name)) {
+    if (S_NAME_TO_ACTIONS.contains(name)) {
         // check to make sure it's not already added
-        auto it = stl::find(S_NAME_TO_INPUTS[name].begin(), S_NAME_TO_INPUTS[name].end(), code);
-        if (it == S_NAME_TO_INPUTS[name].end()) {
-            S_NAME_TO_INPUTS[name].push_back(code);
+        auto it = stl::find(S_NAME_TO_ACTIONS[name].inputs.begin(), S_NAME_TO_ACTIONS[name].inputs.end(), code);
+        if (it == S_NAME_TO_ACTIONS[name].inputs.end()) {
+            S_NAME_TO_ACTIONS[name].inputs.push_back(code);
         }
     } else {
-        S_NAME_TO_INPUTS[name] = {code};
+        S_NAME_TO_ACTIONS[name] = InputAction{
+            .inputs = {code},
+            .deadzone = S_DEFAULT_DEADZONE,
+        };
     }
 }
 
@@ -658,8 +525,18 @@ void InputHandler::add(const std::string& name, whal::GamepadAxis axis) const {
     add(name, GetInputCode(axis));
 }
 
+void InputHandler::setDeadzone(const std::string& name, f32 deadzone) const {
+    if (S_NAME_TO_ACTIONS.contains(name)) {
+        S_NAME_TO_ACTIONS[name].deadzone = deadzone;
+    } else {
+        S_NAME_TO_ACTIONS[name] = InputAction{
+            .deadzone = deadzone,
+        };
+    }
+}
+
 void InputHandler::remove(const std::string& name) const {
-    S_NAME_TO_INPUTS.erase(name);
+    S_NAME_TO_ACTIONS.erase(name);
 }
 
 void InputHandler::disable(InputCode code) const {
@@ -711,13 +588,13 @@ void InputHandler::resume() const {
 }
 
 std::string InputHandler::toString() const {
-    return rfl::json::write(sortMap(S_NAME_TO_INPUTS));
+    return rfl::json::write(sortMap(S_NAME_TO_ACTIONS));
 }
 
 bool InputHandler::fromString(const std::string& data) {
-    auto inputMap = rfl::json::read<std::unordered_map<std::string, std::vector<InputCode>>>(data);
+    auto inputMap = rfl::json::read<std::unordered_map<std::string, InputAction>>(data);
     if (inputMap) {
-        S_NAME_TO_INPUTS = inputMap.value();
+        S_NAME_TO_ACTIONS = inputMap.value();
         return false;
     }
     return true;
