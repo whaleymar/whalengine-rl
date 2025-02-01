@@ -442,7 +442,7 @@ bool InputHandler::isOn(whal::GamepadAxis axis, f32 deadzone) const {
 f32 InputHandler::getStrength(const std::string& name) const {
     auto it = S_NAME_TO_STATE.find(name);
     if (it == S_NAME_TO_STATE.end()) {
-        return false;
+        return 0.0;
     }
     return it->second.strength;
 }
@@ -461,7 +461,7 @@ f32 InputHandler::getStrength(InputCode code, f32 deadzone) const {
         // gamepad axis
         whal::GamepadAxis axis = static_cast<whal::GamepadAxis>(code - GAMEPAD_ENUM_OFFSET);
         f32 strength = S_GAMEPAD_AXIS_STATE.getStrength(axis);
-        return strength > deadzone ? strength : 0;
+        return strength > deadzone ? math::lerp(0.0f, 1.0f, (strength - deadzone) / (1.0f - deadzone)) : 0;
     }
     return false;
 }
@@ -480,13 +480,13 @@ f32 InputHandler::getStrength(rl::GamepadButton button) const {
 
 f32 InputHandler::getStrength(whal::GamepadAxis axis, f32 deadzone) const {
     f32 strength = S_GAMEPAD_AXIS_STATE.getStrength(axis);
-    return strength > deadzone ? strength : 0;
+    return strength > deadzone ? math::lerp(0.0f, 1.0f, (strength - deadzone) / (1.0f - deadzone)) : 0;
 }
 
 f32 InputHandler::getStrengthRaw(const std::string& name) const {
     auto it = S_NAME_TO_STATE.find(name);
     if (it == S_NAME_TO_STATE.end()) {
-        return false;
+        return 0.0;
     }
     return it->second.strengthRaw;
 }
@@ -511,10 +511,15 @@ Vector2f InputHandler::getVector(const std::string& negativeX, const std::string
         return raw;
     }
 
-    if (raw.len() < deadzone) {
+    f32 len = raw.len();
+    if (len < deadzone) {
         return Vector2f::ZERO;
+    } else if (len > 1.0f) {
+        return raw / len;
     }
-    return raw;
+
+    // lerp to be in the range [0-1]
+    return raw * math::lerp(0.0f, 1.0f, (len - deadzone) / (1.0f - deadzone));
 }
 
 void InputHandler::add(const std::string& name, InputCode code) const {
