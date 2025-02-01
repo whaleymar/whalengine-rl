@@ -447,13 +447,14 @@ void Collider::pushAndCarry1D(Vector2f moveOriginal, Vector2i move1D, const std:
 // we are moving, other is still.
 bool Collider::isCollisionPossible(const Collider& other, const Vector2i moveNormal) const {
     return other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 &&
-           checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir());
+           checkDirectionalCollision(mShape, other.mShape, moveNormal, other.getCollisionDir()) &&
+           !ColliderSystem::isIgnoreCollision(mSelf, other.mSelf);
 }
 
 // other is moving, we are still. Only affects directional collision check.
 bool Collider::isCollisionPossibleReversed(const Collider* other, const Vector2i moveNormal) const {
     return other->mIsCollidable && this != other && (mInteractMask & other->mCollisionMask) > 0 &&
-           checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir());
+           checkDirectionalCollision(other->mShape, mShape, moveNormal, getCollisionDir()) && !ColliderSystem::isIgnoreCollision(mSelf, other->mSelf);
 }
 
 // Check for collision 1 unit down.
@@ -530,7 +531,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     std::vector<Collider*> toCarry = riding;
     for (auto entity : ColliderSystem::query(mShape)) {
         Collider* other = &entity.get<Collider>();
-        if (this != other && other->mPhysicsBody != PhysicsBody::Heavy && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1)) {
+        if (other->mPhysicsBody != PhysicsBody::Heavy && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1)) {
             // push takes priority over carry
             auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
             if (it != toCarry.end()) {
@@ -744,7 +745,8 @@ std::vector<std::pair<ecs::Entity, Collider>> Collider::getCollidersInMoveArea(c
     for (auto entity : ColliderSystem::query(moveAreaBoundingBox)) {
         const auto& other = entity.get<Collider>();
         // quick and dirty check for collision layers; ignoring directional collision
-        bool isCollidable = other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 && canOtherStopMe(other.mPhysicsBody);
+        bool isCollidable = other.mIsCollidable && this != &other && (mInteractMask & other.mCollisionMask) > 0 &&
+                            canOtherStopMe(other.mPhysicsBody) && !ColliderSystem::isIgnoreCollision(mSelf, other.mSelf);
         if (!isCollidable) {
             continue;
         }
