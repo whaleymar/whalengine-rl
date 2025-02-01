@@ -28,6 +28,27 @@ static qtree::QuadTree makeDefaultQuadtree() {
 
 static qtree::QuadTree QUAD_TREE = makeDefaultQuadtree();
 
+// Custom hash function
+struct PairHash {
+    std::size_t operator()(const std::pair<ecs::EntityID, ecs::EntityID>& p) const {
+        int a = std::min(p.first, p.second);
+        int b = std::max(p.first, p.second);
+        return std::hash<int>()(a) ^ (std::hash<int>()(b) << 1);
+    }
+};
+
+// Custom equality function
+struct PairEqual {
+    bool operator()(const std::pair<ecs::EntityID, ecs::EntityID>& lhs, const std::pair<ecs::EntityID, ecs::EntityID>& rhs) const {
+        return (lhs.first == rhs.first && lhs.second == rhs.second) || (lhs.first == rhs.second && lhs.second == rhs.first);
+    }
+};
+
+// Define the unordered_set with custom hash and equality
+using PairSet = std::unordered_set<std::pair<ecs::EntityID, ecs::EntityID>, PairHash, PairEqual>;
+
+static PairSet S_IGNORE_COLLISION;
+
 ColliderSystem::ColliderSystem() {
     QUAD_TREE = makeDefaultQuadtree();
 }
@@ -78,6 +99,21 @@ RaycastHit ColliderSystem::circlecast(Vector2f origin, Vector2f direction, f32 m
     return QUAD_TREE.circlecast(origin, direction, maxDistance, radius, layerMask);
 }
 
+void ColliderSystem::setIsIgnoreCollision(ecs::Entity first, ecs::Entity second, bool ignore) {
+    if (getEntities().contains(first.id()) && getEntities().contains(second.id())) {
+        if (ignore) {
+            S_IGNORE_COLLISION.emplace(first.id(), second.id());
+
+        } else {
+            S_IGNORE_COLLISION.erase({first.id(), second.id()});
+        }
+    }
+}
+
+bool ColliderSystem::isIgnoreCollision(ecs::Entity first, ecs::Entity second) {
+    return S_IGNORE_COLLISION.find({first.id(), second.id()}) != S_IGNORE_COLLISION.end();
+}
+
 void ColliderSystem::rebuild(s32 width, s32 height) {
     QUAD_TREE = qtree::QuadTree(AABB(Vector2i(0, 0), Vector2i(width / 2, height / 2)));
     for (auto [entityid, entity] : getEntities()) {
@@ -97,6 +133,39 @@ void ColliderSystem::onAdd(ecs::Entity entity) {
 
 void ColliderSystem::onRemove(ecs::Entity entity) {
     QUAD_TREE.remove(entity);
+    for (auto it = S_IGNORE_COLLISION.begin(); it != S_IGNORE_COLLISION.end();) {
+        if (it->first == entity.id() || it->second == entity.id()) {
+            it = S_IGNORE_COLLISION.erase(it);  // erase returns the next valid iterator
+        } else {
+            ++it;
+        }
+    }
+}
+
+void ColliderSystem::syncColliders() {
+    for (const auto [entityid, entity] : getEntities()) {
+        Transform& trans = entity.get<Transform>();
+        const bool isManuallyMoved = trans.isManuallyMoved;
+        trans.isManuallyMoved = false;
+
+        auto& collider = entity.get<Collider>();
+        if (isManuallyMoved) {
+            // Sync collider position without checking collision
+            if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
+                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
+            }
+
+        } else {
+            // Move collider within physics engine
+            const Vector2i targetColliderPosition = trans.apply(collider.getOffset());
+            if (collider.getShape().getPosition() != targetColliderPosition) {
+                const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
+
+                // IsManualMove=true, so transform and QuadTree are synced automatically
+                collider.move(toMove, nullptr, false, true);
+            }
+        }
+    }
 }
 
 }  // namespace whal

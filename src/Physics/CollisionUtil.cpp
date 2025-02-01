@@ -40,9 +40,6 @@ bool checkDirectionalCollision(const AABB& movingCollider, const AABB& oneWayCol
     case CollisionDir::UP: {
         bool isSweep =
             movement.y < -1 && movingCollider.bottom() >= oneWayCollider.top() && (movingCollider.bottom() + movement.y) <= oneWayCollider.top();
-        // if (true) {
-        //     print("movement: ", movement, "\nactor bottom: ", movingCollider.bottom(), "\nSolid top: ", oneWayCollider.top(), "\n\n");
-        // }
         if (movement.y >= 0 || ((movement.y <= -1 && movingCollider.bottom() != oneWayCollider.top()) && !isSweep)) {
             return false;
         }
