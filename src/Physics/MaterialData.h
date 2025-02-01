@@ -48,7 +48,7 @@ struct MaterialData {
         f32 decaySeconds = 0.25;
     };
 
-    static MaterialData get(WorldMaterial material);
+    static const MaterialData& get(WorldMaterial material);
     bool isFlagSet(Flags flag) const { return (flags & flag) > 0; }
     f32 getDecayTime() const;
     Color getColor() const;

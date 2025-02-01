@@ -9,8 +9,8 @@ namespace whal {
 
 constexpr f32 MAX_LIFETIME_SECONDS = 60.0f;
 
-static MaterialData getMaterialData(WorldMaterial material);
-MaterialData MaterialData::get(WorldMaterial material) {
+static const MaterialData& getMaterialData(WorldMaterial material);
+const MaterialData& MaterialData::get(WorldMaterial material) {
     return getMaterialData(material);
 }
 
@@ -181,7 +181,7 @@ static const MaterialData S_MATERIAL_MAGIK = {
     .maxRotationsPerSec = 1.5f,
 };
 
-MaterialData getMaterialData(WorldMaterial material) {
+const MaterialData& getMaterialData(WorldMaterial material) {
     switch (material) {
     case WorldMaterial::None:
         return S_MATERIAL_DEFAULT;

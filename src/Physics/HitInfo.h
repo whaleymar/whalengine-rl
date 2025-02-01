@@ -37,6 +37,7 @@ struct HitInfo {
     u8 flags = 0;
     WorldMaterial otherMaterial = WorldMaterial::None;
     u16 otherMask = CollisionLayer::None;
+    f32 otherBounciness = 0.5;
 
     HitInfo() = default;
     HitInfo(Vector2i normal, bool isCollision = false, bool isPush = false, bool isCarry = false);

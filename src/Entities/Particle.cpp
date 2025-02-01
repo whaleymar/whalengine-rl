@@ -21,7 +21,10 @@ namespace whal {
 constexpr f32 BURST_SPREAD_ANGLE = 45.0f;
 
 ecs::Entity createParticle(Vector2i worldPosition, WorldMaterial material, Depth depth, f32 lifetimeMultiplier) {
-    const MaterialData materialData = MaterialData::get(material);
+    return createParticle(worldPosition, MaterialData::get(material), depth, lifetimeMultiplier);
+}
+
+ecs::Entity createParticle(Vector2i worldPosition, const MaterialData& materialData, Depth depth, f32 lifetimeMultiplier) {
     const Color color = materialData.getColor();
 
     auto particle = World.entity(false);
@@ -55,6 +58,11 @@ ecs::Entity createParticle(Vector2i worldPosition, WorldMaterial material, Depth
 
 void particleBurst(Transform transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier, f32 minSpeed,
                    f32 maxSpeed) {
+    particleBurst(transform, direction, MaterialData::get(material), count, depth, lifetimeMultiplier, minSpeed, maxSpeed);
+}
+
+void particleBurst(Transform transform, Direction direction, const MaterialData& material, s32 count, Depth depth, f32 lifetimeMultiplier,
+                   f32 minSpeed, f32 maxSpeed) {
     f32 angle = directionToAngle(direction);
     const AABB spawnZone(transform, {PIXELS_PER_TILE / 2, 1}, Vector2i());
 
