@@ -4,7 +4,6 @@
 
 #include "Components/PlayerControl.h"
 #include "Components/RigidBody.h"
-#include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
@@ -166,7 +165,7 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
         // average bounciness of both colliders
         const f32 selfBounciness = MaterialData::get(mMaterial).bounciness;
         const f32 otherBounciness = MaterialData::get(hitinfo.otherMaterial).bounciness;
-        const f32 bounciness = mSelf.has<IsIdealSpring>() ? 1.0f : (selfBounciness + otherBounciness) / 2.0f;
+        const f32 bounciness = std::max(selfBounciness, otherBounciness);
         if (!skipBounceStep && bounciness != 0.0 && mSelf.has<Velocity>()) {
             if ((isX && math::abs(velocity.total.x) >= BOUNCE_THRESHOLD) || (!isX && math::abs(velocity.total.y) >= BOUNCE_THRESHOLD)) {
                 // stable can be negative (like for gravity) when impulse makes total velocity positive.

@@ -8,7 +8,6 @@ struct AudioListener {};
 struct Particle {};
 struct Invisible {};
 struct IgnoreTimeModifiers {};
-struct IsIdealSpring {};
 struct BlocksLight {};
 struct MouseCursor {};
 
