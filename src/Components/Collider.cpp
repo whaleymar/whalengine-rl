@@ -85,25 +85,10 @@ void Collider::updateEntityPosition() {
     auto const shape = getShape();
     Vector2i newPosition = trans.applyInverse(shape.getPosition(), getOffset());
 
-    // TODO this broke
-    // make sure player(s) can't go out of bounds
-    // if (mSelf.has<Player>()) {
-    //     if (System::getGame().getScene().getLevelAt(newPosition)) {
-    //         trans.setPosition(newPosition.as<f32>(), mSelf);
-    //     } else {
-    //         // tried to go out of bounds. simulate fake collision with world boundary
-    //         const Vector2i closestPointInBounds = System::getGame().getScene().getClosestPositionInBounds(newPosition);
-    //         trans.setPosition(closestPointInBounds.as<f32>(), mSelf);
-    //         ColliderSystem::updatePosition(mSelf, getShapeMutable(), trans, getOffset());
-    //     }
-    //
-    // } else {
-
     // include remainder so movement looks smooth
     trans.setPosition(newPosition.as<f32>() + getRemainder(), mSelf);
     // for stability though, the integer position (which the physics system uses) should not include the remainder
     trans.positionPx = newPosition;
-    // }
 }
 
 bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, bool isX, bool updateRigidBodyFlags) {

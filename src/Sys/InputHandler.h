@@ -152,7 +152,9 @@ public:
     void enable(whal::GamepadAxis axis) const;
 
     void stop() const;    // disables all inputs. can only be undone by `enable`
-    void resume() const;  // if `stop` was called previous, this will resume inputs
+    void resume() const;  // if `stop` was called previously, this will resume inputs
+
+    InputCode getLastInput(bool isJustPressed = false) const;
 
     std::string toString() const;
     bool fromString(const std::string& data);  // returns true on error
@@ -162,11 +164,14 @@ private:
     void operator=(const InputHandler&) = delete;
 
     void updateGamepadState();
+    void updateLastInput();
 
     Vector2i mMouseScreenPosition;
     Vector2i mMouseWindowPosition;  // if there's a mismatch between render and window size, this matches window
     s32 mActiveGamepad = 10;        // raylib supports 4 gamepads (0-3).
     GamepadType mGamepadType = GamepadType::Unknown;
+    InputCode mLastInput = 0;             // the last input received
+    InputCode mLastInputJustPressed = 0;  // last input received, or 0 if nothing was pressed this frame
 };
 
 }  // namespace whal
