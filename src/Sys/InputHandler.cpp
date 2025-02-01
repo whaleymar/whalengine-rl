@@ -175,6 +175,7 @@ void InputHandler::update() {
     }
 
     updateGamepadState();
+    updateLastInput();
 
     // emits input events
     for (const auto& [name, inputAction] : S_NAME_TO_ACTIONS) {
@@ -263,6 +264,49 @@ void InputHandler::updateGamepadState() {
         return;
     }
     S_GAMEPAD_AXIS_STATE.update(mActiveGamepad);
+}
+
+void InputHandler::updateLastInput() {
+    mLastInputJustPressed = 0;
+
+    while (true) {
+        // raylib stores pressed keys in a queue, including ones pressed in a previous frame
+        rl::KeyboardKey key = static_cast<rl::KeyboardKey>(rl::GetKeyPressed());
+        if (key == rl::KEY_NULL) {
+            break;
+        }
+
+        if (isPressed(key)) {
+            InputCode code = GetInputCode(key);
+            mLastInput = code;
+            mLastInputJustPressed = code;
+            return;
+        }
+    }
+
+    // GetGamepadButtonPressed will also return held inputs
+    rl::GamepadButton gpButton = static_cast<rl::GamepadButton>(rl::GetGamepadButtonPressed());
+    if (gpButton != 0 && isPressed(gpButton)) {
+        InputCode code = GetInputCode(gpButton);
+        mLastInput = code;
+        mLastInputJustPressed = code;
+        return;
+    }
+
+    // raylib doesn't have anything to get last mouse button pressed, so I have to iterate
+    static const rl::MouseButton mouseButtons[] = {
+        rl::MOUSE_BUTTON_LEFT,  rl::MOUSE_BUTTON_RIGHT,   rl::MOUSE_BUTTON_MIDDLE, rl::MOUSE_BUTTON_SIDE,
+        rl::MOUSE_BUTTON_EXTRA, rl::MOUSE_BUTTON_FORWARD, rl::MOUSE_BUTTON_BACK,
+    };
+
+    for (rl::MouseButton mb : mouseButtons) {
+        if (isPressed(mb)) {
+            InputCode code = GetInputCode(mb);
+            mLastInput = code;
+            mLastInputJustPressed = code;
+            return;
+        }
+    }
 }
 
 void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {
@@ -614,6 +658,10 @@ void InputHandler::stop() const {
 
 void InputHandler::resume() const {
     S_IS_STOPPED = false;
+}
+
+InputCode InputHandler::getLastInput(bool isJustPressed) const {
+    return isJustPressed ? mLastInputJustPressed : mLastInput;
 }
 
 std::string InputHandler::toString() const {
