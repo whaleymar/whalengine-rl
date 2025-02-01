@@ -222,6 +222,8 @@ bool Collider::emitCollisionInfo(const Vector2f amount, const HitInfo hitinfo, b
                 }
             }
         }
+
+        Event.emit<evt::Collision>(mSelf, hitinfo);
         return true;
     }
     return false;
@@ -320,7 +322,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
     const auto moveNormal = Vector2i(moveSign, 0);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
-        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, true);
+        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, false);
 
         if (!hitInfo) {
             mShape.setPosition(nextPos);
@@ -379,7 +381,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
     const auto moveNormal = Vector2i(0, moveSign);
     while (toMove != 0) {
         auto nextPos = mShape.getPosition() + moveNormal;
-        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, true);
+        auto hitInfo = checkCollisionInMoveArea(nextPos, moveNormal, others, false);
 
         if (!hitInfo) {
             mShape.setPosition(nextPos);
