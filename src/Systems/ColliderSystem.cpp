@@ -152,7 +152,7 @@ void ColliderSystem::syncColliders() {
         if (isManuallyMoved) {
             // Sync collider position without checking collision
             if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
-                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
+                updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
             }
 
         } else {
