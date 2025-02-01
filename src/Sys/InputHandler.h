@@ -116,6 +116,19 @@ public:
     f32 getStrengthRaw(const std::string& name) const;  // returns value between 0-1 for analog inputs, 0/1 for digital
     f32 getStrengthRaw(InputCode code) const;           // returns 0/1
 
+    /*
+    Gets an input vector by specifying four actions for the positive and negative X and Y axes.
+
+    This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1
+    and has a circular deadzone, which is useful for using vector input as movement.
+
+    By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be
+    whatever you want (on the range of 0 to 1).
+    (description from Godot; this works the same)
+    */
+    Vector2f getVector(const std::string& negativeX, const std::string& positiveX, const std::string& negativeY, const std::string& positiveY,
+                       f32 deadzone = -1.0) const;
+
     void add(const std::string& name, InputCode code) const;
     void add(const std::string& name, rl::KeyboardKey key) const;
     void add(const std::string& name, rl::MouseButton button) const;
