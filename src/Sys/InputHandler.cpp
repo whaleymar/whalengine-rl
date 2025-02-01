@@ -31,8 +31,6 @@ struct InputAction {
     f32 deadzone = 0.5;             // minimum value for analog inputs to be "on"
 };
 
-// TODO mimic godot API for getVector
-
 static std::unordered_map<std::string, InputStateEx> S_NAME_TO_STATE;
 static std::unordered_map<std::string, InputAction> S_NAME_TO_ACTIONS;
 static std::unordered_set<InputCode> S_DISABLED_INPUTS;
@@ -183,6 +181,8 @@ void InputHandler::update() {
         InputState state = InputState::Off;
         const f32 deadzone = inputAction.deadzone;
         InputStateEx& newState = S_NAME_TO_STATE[name];
+        f32 strengthRaw = 0;
+        f32 strength = 0;
         for (auto inputCode : inputAction.inputs) {
             if (S_DISABLED_INPUTS.contains(inputCode)) {
                 continue;
@@ -191,33 +191,34 @@ void InputHandler::update() {
             if (isPressed(inputCode, deadzone) && state == InputState::Off) {
                 // Pressed can override Off
                 state = InputState::Pressed;
-                newState.state = InputState::Pressed;
-                newState.strength = getStrength(inputCode, deadzone);
-                newState.strengthRaw = getStrengthRaw(inputCode);
+                strength = std::max(strength, getStrength(inputCode, deadzone));
+                strengthRaw = std::max(strengthRaw, getStrengthRaw(inputCode));
 
             } else if (isHeld(inputCode, deadzone) && (state == InputState::Off || state == InputState::Pressed || state == InputState::Released)) {
                 // Held can override Off and Pressed (i.e. if 2 buttons are registered to "jump", then if button 1 is held, pressing button 2 will not
                 // caused a "pressed" event) and releasing button 2 won't cause a "released" event
                 state = InputState::Held;
-                newState.state = InputState::Held;
-                newState.strength = getStrength(inputCode, deadzone);
-                newState.strengthRaw = getStrengthRaw(inputCode);
+                strength = std::max(strength, getStrength(inputCode, deadzone));
+                strengthRaw = std::max(strengthRaw, getStrengthRaw(inputCode));
 
             } else if (isReleased(inputCode, deadzone) && state == InputState::Off) {
                 state = InputState::Released;
-                newState.state = InputState::Released;
-                newState.strength = getStrength(inputCode, deadzone);
-                newState.strengthRaw = getStrengthRaw(inputCode);
+                strength = std::max(strength, getStrength(inputCode, deadzone));
+                strengthRaw = std::max(strengthRaw, getStrengthRaw(inputCode));
 
             } else if ((isPressed(inputCode, deadzone) && state == InputState::Released) ||
                        (isReleased(inputCode, deadzone) && state == InputState::Pressed)) {
                 // press + release on same frame => held
                 state = InputState::Held;
-                newState.state = InputState::Held;
-                newState.strength = getStrength(inputCode, deadzone);
-                newState.strengthRaw = getStrengthRaw(inputCode);
+                strength = std::max(strength, getStrength(inputCode, deadzone));
+                strengthRaw = std::max(strengthRaw, getStrengthRaw(inputCode));
+            } else {
+                strengthRaw = std::max(strengthRaw, getStrengthRaw(inputCode));
             }
         }
+        newState.state = state;
+        newState.strength = strength;
+        newState.strengthRaw = strengthRaw;
 
         if (state == InputState::Pressed) {
             Event.emit<evt::Input, InputEvent>(InputEvent{
@@ -494,6 +495,28 @@ f32 InputHandler::getStrengthRaw(InputCode code) const {
     return getStrength(code, -1);
 }
 
+Vector2f InputHandler::getVector(const std::string& negativeX, const std::string& positiveX, const std::string& negativeY,
+                                 const std::string& positiveY, f32 deadzone) const {
+    Vector2f raw(getStrengthRaw(positiveX) - getStrengthRaw(negativeX), getStrengthRaw(positiveY) - getStrengthRaw(negativeY));
+
+    if (deadzone < 0) {
+        // get average of all deadzones
+        deadzone = (S_NAME_TO_ACTIONS[negativeX].deadzone + S_NAME_TO_ACTIONS[positiveX].deadzone + S_NAME_TO_ACTIONS[negativeY].deadzone +
+                    S_NAME_TO_ACTIONS[positiveY].deadzone) *
+                   0.25f;
+    } else {
+        deadzone = math::clamp(deadzone, 0.0f, 1.0f);
+    }
+    if (raw.isZero()) {
+        return raw;
+    }
+
+    if (raw.len() < deadzone) {
+        return Vector2f::ZERO;
+    }
+    return raw;
+}
+
 void InputHandler::add(const std::string& name, InputCode code) const {
     if (S_NAME_TO_ACTIONS.contains(name)) {
         // check to make sure it's not already added
@@ -526,6 +549,7 @@ void InputHandler::add(const std::string& name, whal::GamepadAxis axis) const {
 }
 
 void InputHandler::setDeadzone(const std::string& name, f32 deadzone) const {
+    deadzone = math::clamp(deadzone, 0.0f, 1.0f);
     if (S_NAME_TO_ACTIONS.contains(name)) {
         S_NAME_TO_ACTIONS[name].deadzone = deadzone;
     } else {
