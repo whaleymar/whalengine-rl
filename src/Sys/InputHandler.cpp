@@ -32,7 +32,7 @@ struct InputAction {
 };
 
 static std::unordered_map<std::string, InputStateEx> S_NAME_TO_STATE;
-static std::unordered_map<std::string, InputAction> S_NAME_TO_ACTIONS;
+static std::unordered_map<std::string, InputAction> S_NAME_TO_ACTION;
 static std::unordered_set<InputCode> S_DISABLED_INPUTS;
 static bool S_IS_STOPPED = false;  // flag for if all inputs are disabled
 
@@ -178,7 +178,7 @@ void InputHandler::update() {
     updateLastInput();
 
     // emits input events
-    for (const auto& [name, inputAction] : S_NAME_TO_ACTIONS) {
+    for (const auto& [name, inputAction] : S_NAME_TO_ACTION) {
         InputState state = InputState::Off;
         const f32 deadzone = inputAction.deadzone;
         InputStateEx& newState = S_NAME_TO_STATE[name];
@@ -316,7 +316,7 @@ void InputHandler::loadMappings(const InputPair mappings[], s32 count) const {
 }
 
 void InputHandler::resetMappings() const {
-    S_NAME_TO_ACTIONS.clear();
+    S_NAME_TO_ACTION.clear();
     S_NAME_TO_STATE.clear();
 }
 
@@ -549,8 +549,8 @@ Vector2f InputHandler::getVector(const std::string& negativeX, const std::string
 
     if (deadzone < 0) {
         // get average of all deadzones
-        deadzone = (S_NAME_TO_ACTIONS[negativeX].deadzone + S_NAME_TO_ACTIONS[positiveX].deadzone + S_NAME_TO_ACTIONS[negativeY].deadzone +
-                    S_NAME_TO_ACTIONS[positiveY].deadzone) *
+        deadzone = (S_NAME_TO_ACTION[negativeX].deadzone + S_NAME_TO_ACTION[positiveX].deadzone + S_NAME_TO_ACTION[negativeY].deadzone +
+                    S_NAME_TO_ACTION[positiveY].deadzone) *
                    0.25f;
     } else {
         deadzone = math::clamp(deadzone, 0.0f, 1.0f);
@@ -571,14 +571,14 @@ Vector2f InputHandler::getVector(const std::string& negativeX, const std::string
 }
 
 void InputHandler::add(const std::string& name, InputCode code) const {
-    if (S_NAME_TO_ACTIONS.contains(name)) {
+    if (S_NAME_TO_ACTION.contains(name)) {
         // check to make sure it's not already added
-        auto it = stl::find(S_NAME_TO_ACTIONS[name].inputs.begin(), S_NAME_TO_ACTIONS[name].inputs.end(), code);
-        if (it == S_NAME_TO_ACTIONS[name].inputs.end()) {
-            S_NAME_TO_ACTIONS[name].inputs.push_back(code);
+        auto it = stl::find(S_NAME_TO_ACTION[name].inputs.begin(), S_NAME_TO_ACTION[name].inputs.end(), code);
+        if (it == S_NAME_TO_ACTION[name].inputs.end()) {
+            S_NAME_TO_ACTION[name].inputs.push_back(code);
         }
     } else {
-        S_NAME_TO_ACTIONS[name] = InputAction{
+        S_NAME_TO_ACTION[name] = InputAction{
             .inputs = {code},
             .deadzone = S_DEFAULT_DEADZONE,
         };
@@ -603,17 +603,17 @@ void InputHandler::add(const std::string& name, whal::GamepadAxis axis) const {
 
 void InputHandler::setDeadzone(const std::string& name, f32 deadzone) const {
     deadzone = math::clamp(deadzone, 0.0f, 1.0f);
-    if (S_NAME_TO_ACTIONS.contains(name)) {
-        S_NAME_TO_ACTIONS[name].deadzone = deadzone;
+    if (S_NAME_TO_ACTION.contains(name)) {
+        S_NAME_TO_ACTION[name].deadzone = deadzone;
     } else {
-        S_NAME_TO_ACTIONS[name] = InputAction{
+        S_NAME_TO_ACTION[name] = InputAction{
             .deadzone = deadzone,
         };
     }
 }
 
 void InputHandler::remove(const std::string& name) const {
-    S_NAME_TO_ACTIONS.erase(name);
+    S_NAME_TO_ACTION.erase(name);
 }
 
 void InputHandler::disable(InputCode code) const {
@@ -658,6 +658,9 @@ void InputHandler::enable(whal::GamepadAxis axis) const {
 
 void InputHandler::stop() const {
     S_IS_STOPPED = true;
+    for (auto& [name, stateEx] : S_NAME_TO_STATE) {
+        stateEx.state = InputState::Off;
+    }
 }
 
 void InputHandler::resume() const {
@@ -669,13 +672,13 @@ InputCode InputHandler::getLastInput(bool isJustPressed) const {
 }
 
 std::string InputHandler::toString() const {
-    return rfl::json::write(sortMap(S_NAME_TO_ACTIONS));
+    return rfl::json::write(sortMap(S_NAME_TO_ACTION));
 }
 
 bool InputHandler::fromString(const std::string& data) {
     auto inputMap = rfl::json::read<std::unordered_map<std::string, InputAction>>(data);
     if (inputMap) {
-        S_NAME_TO_ACTIONS = inputMap.value();
+        S_NAME_TO_ACTION = inputMap.value();
         return false;
     }
     return true;

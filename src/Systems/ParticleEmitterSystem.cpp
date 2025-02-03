@@ -6,6 +6,7 @@
 #include "Entities/Particle.h"
 #include "Physics/Shapes.h"
 #include "Sys/System.h"
+#include "Util/MathUtil.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -20,11 +21,11 @@ void ParticleEmitterSystem::update() {
 
     for (auto [entityid, entity] : getEntities()) {
         const auto trans = entity.get<Transform>();
-        const auto emitter = entity.get<ParticleEmitter>();
+        const auto& emitter = entity.get<ParticleEmitter>();
 
-        s32 nParticles = std::round(static_cast<f32>(emitter.particlesPerSecond / 60) * Time.getMultiplier());
-        const f32 spawnSample = Rng.uniform();
-        if (static_cast<f32>((emitter.particlesPerSecond % 60)) / 60.0f * Time.getMultiplier() > spawnSample) {
+        f32 nParticlesFloat = static_cast<f32>(emitter.particlesPerSecond) * Time.dt();
+        s32 nParticles = nParticlesFloat;
+        if (math::getDecimal(nParticlesFloat) >= Rng.uniform()) {
             nParticles++;
         }
 
