@@ -99,6 +99,7 @@ ACTIVELY WORKING ON:
 - window is resized on hot-reload
 - quad bleeding -- can only be fixed by adding padding between sprites in sprite atlas
 - hot reloading texture atlas is broken? at least when refreshing animation frame times
+- ParticleEmitter is dependent on framerate
 
 ---------------------------------------------------------------------------------------------------------------------------
 

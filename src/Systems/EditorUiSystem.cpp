@@ -26,7 +26,7 @@
 namespace whal {
 
 // static const AABB S_SCREEN_BOX =
-//     AABB(Vector2i(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2), Vector2i(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2));
+//     AABB(Vector2i(WINDOW_WIDTH_STRETCH / 2, WINDOW_HEIGHT_STRETCH / 2), Vector2i(WINDOW_WIDTH_STRETCH / 2, WINDOW_HEIGHT_STRETCH / 2));
 static bool S_IS_ACTIVE = false;
 static Vector2f S_CAMERA_POS;
 
@@ -34,11 +34,11 @@ static AABB getUiBox(Vector2f worldPosition, Vector2i halflen = Vector2i::ZERO) 
     const Vector2f cameraPos = getCameraPositionPrecise();
     if (halflen.isZero()) {
         // make the uiBox 1 tile (imperfect)
-        halflen = Vector2f(FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO, FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO).ceil();
+        halflen = Vector2f(FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO_STRETCH, FPIXELS_PER_TILE / 2.0 * VIRTUAL_SCREEN_RATIO_STRETCH).ceil();
     }
 
-    Vector2i screenPos = worldToScreenCoords(worldPosition, cameraPos);
-    screenPos = Vector2i(screenPos.x, WINDOW_HEIGHT_RENDER - screenPos.y);  // idk why i only have to do this here
+    Vector2i screenPos = worldToScreenCoords(worldPosition, cameraPos, ScreenResolution::Stretched);
+    screenPos = Vector2i(screenPos.x, WINDOW_HEIGHT_STRETCH - screenPos.y);  // idk why i only have to do this here
     return AABB(screenPos, halflen);
 }
 
@@ -46,7 +46,7 @@ static AABB getUiBox(ecs::Entity entity) {
     if (entity.has<Sprite>()) {
         const Sprite& sprite = entity.get<Sprite>();
         Vector2i customSize = sprite.getFrame().size / 2;
-        customSize = (customSize.as<f32>() * VIRTUAL_SCREEN_RATIO).round();
+        customSize = (customSize.as<f32>() * VIRTUAL_SCREEN_RATIO_STRETCH).round();
         return getUiBox(entity.get<Transform>().position, customSize);
     } else {
         return getUiBox(entity.get<Transform>().position);
@@ -72,7 +72,7 @@ void EditorUiSystem::dragSelectedEntities() const {
     }
 
     for (ecs::Entity selected : mClickedEntities) {
-        const Vector2f worldDelta = delta * Vector2f(1, -1) / VIRTUAL_SCREEN_RATIO;
+        const Vector2f worldDelta = delta * Vector2f(1, -1) / VIRTUAL_SCREEN_RATIO_STRETCH;
         selected.get<Transform>().translate(worldDelta, selected);
         if (selected.has<Collider>()) {
             // update collider (physics system is turned off during engine pause)
@@ -89,7 +89,7 @@ void EditorUiSystem::panCamera() const {
     }
 
     ecs::Entity camera = *getCamera();
-    camera.get<Transform>().translate(delta * Vector2f(-1, 1) / VIRTUAL_SCREEN_RATIO, camera);
+    camera.get<Transform>().translate(delta * Vector2f(-1, 1) / VIRTUAL_SCREEN_RATIO_STRETCH, camera);
 }
 
 static std::vector<ecs::Entity> pruneChildren(const std::vector<ecs::Entity>& entities) {
@@ -142,7 +142,7 @@ void EditorUiSystem::onEvent(evt::Input, InputEvent input) {
     }
 
     // if click was outside of game window, do nothing (want to maintain clicked entity list)
-    if (Input.getMouseScreen().x > WINDOW_WIDTH_RENDER || Input.getMouseScreen().y > WINDOW_HEIGHT_RENDER) {
+    if (Input.getMouseScreen().x > WINDOW_WIDTH_STRETCH || Input.getMouseScreen().y > WINDOW_HEIGHT_STRETCH) {
         return;
     }
 
@@ -195,18 +195,31 @@ void EditorUiSystem::onRemove(ecs::Entity entity) {
 }
 
 void EditorUiSystem::drawWorld() {
+    // needs custom draw func. AABB::draw is designed to work with the Render window not screen.
+    auto drawAABB = [](const AABB& aabb, Color color) {
+        const Vector2f position(aabb.left(), aabb.bottom());
+        Vector2f size = aabb.getHalf().as<f32>() * 2.0f;
+
+        // subtract size.y so we draw from bottom left instead of top left
+        Vector2f dstPosition = {position.x, -position.y - size.y};
+
+        dstPosition *= VIRTUAL_SCREEN_RATIO_STRETCH;
+        size *= VIRTUAL_SCREEN_RATIO_STRETCH;
+
+        DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), 2.0f, color.asLDR());
+    };
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
         // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:
         if (WINDOW_POS_OS_X > 0 || WINDOW_POS_OS_Y > 0) {
-            // the window size is mismatched for some reason, make sure we're drawing it centered
-            trans.position.x += static_cast<f32>(WINDOW_POS_OS_X) / VIRTUAL_SCREEN_RATIO;
-            trans.position.y -= static_cast<f32>(WINDOW_POS_OS_Y) / VIRTUAL_SCREEN_RATIO;
+            // make sure we're drawing it centered
+            trans.position.x += static_cast<f32>(WINDOW_POS_OS_X) / VIRTUAL_SCREEN_RATIO_STRETCH;
+            trans.position.y -= static_cast<f32>(WINDOW_POS_OS_Y) / VIRTUAL_SCREEN_RATIO_STRETCH;
             trans.positionPx = trans.position.round();
         }
 
-        trans.draw();
-        AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO).draw(Colors::Green);
+        // trans.draw(); // also hard-coded for render window size
+        drawAABB(AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::Green);
     }
 }
 

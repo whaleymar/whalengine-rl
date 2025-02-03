@@ -71,7 +71,7 @@ public:
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
     Vector2i getMouseWindow() const { return mMouseWindowPosition; }
-    Vector2f getMouseWorld() const { return screenToWorldCoords(mMouseScreenPosition); }
+    Vector2f getMouseWorld() const;
 
     // input pressed this frame
     bool isPressed(const std::string& name) const;

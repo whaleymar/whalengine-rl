@@ -1,7 +1,6 @@
 #include "RaylibUtil.h"
 #include <cstring>
 
-#include "Gfx/Texture.h"
 #include "Settings.h"
 #include "raylib.h"
 #include "rlgl.h"
@@ -203,8 +202,8 @@ void DrawRenderTexture(rl::RenderTexture renderTexture, rl::Color color) {
 void DrawRenderTextureCentered(rl::RenderTexture renderTexture, rl::Color color) {
     s32 width = renderTexture.texture.width;
     s32 height = renderTexture.texture.height;
-    rl::DrawTextureRec(TextureManager::getRenderTexture(TextureID::Main).texture, rl::Rectangle(0, 0, width, -height),
-                       rl::Vector2(WINDOW_POS_OS_X, WINDOW_POS_OS_Y), rl::WHITE);
+    rl::DrawTexturePro(renderTexture.texture, rl::Rectangle(0, 0, width, -height),
+                       rl::Rectangle(WINDOW_POS_OS_X, WINDOW_POS_OS_Y, WINDOW_WIDTH_STRETCH, WINDOW_HEIGHT_STRETCH), rl::Vector2{0, 0}, 0, color);
 }
 
 void DrawRenderTextureHDR(rl::RenderTexture renderTexture, Color color) {
@@ -219,7 +218,6 @@ void DrawPixel(Vector2f screenCoord, Color color, gfx::DrawMetaData cbi) {
 
 // Draws pixelated ellipse even for higher resolution target textures.
 void DrawEllipse(Vector2f center, Vector2f radii, Color color, gfx::DrawMetaData cbi) {
-    // const s32 step = static_cast<s32>(VIRTUAL_SCREEN_RATIO);
     const f32 step = VIRTUAL_SCREEN_RATIO;
 
     // offset center by subpixel for better distance calculations

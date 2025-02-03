@@ -71,8 +71,6 @@ bool AABB::contains(Vector2i point) const {
 
 #ifndef NDEBUG
 
-constexpr static f32 S_DEBUG_SHAPE_THICKNESS = 2.0f;
-
 void AABB::draw(Color color) const {
     Vector2f position(left(), bottom());
     Vector2f size = Vector2f(mHalf.x, mHalf.y) * 2;
@@ -82,8 +80,9 @@ void AABB::draw(Color color) const {
 
     dstPosition *= VIRTUAL_SCREEN_RATIO;
     size *= VIRTUAL_SCREEN_RATIO;
+    f32 thickness = std::max(1.0f, 0.5f * VIRTUAL_SCREEN_RATIO);
 
-    DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), S_DEBUG_SHAPE_THICKNESS, color.asLDR());
+    DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), thickness, color.asLDR());
 }
 #endif
 

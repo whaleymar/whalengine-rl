@@ -98,7 +98,7 @@ public:
     void fixedShaderMode(rl::Shader shader, bool isPersistUniforms = false);
     void endFixedShaderMode();
 
-    gfx::RenderContext getRenderContext() const;
+    gfx::RenderContext getRenderContext(bool useUnstretchedRenderWindow = true) const;
 
     // updates the {F}WINDOW_{WIDTH/HEIGHT}_{RENDER/OS} variables, as well as the other global variables that depend on them.
     // parentSize is the size of the window the game is rendered to. Is the OS window unless the engine editor is active. Then it is the ImGui window.
@@ -109,8 +109,8 @@ public:
 private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
-    void init();  // called after OpenGL context established
-    void tick();  // called once per frame
+    void init();    // called after OpenGL context established
+    void update();  // called once per frame
 
     void buildRenderQueue(Vector2i cameraPosition);
     void drawEntities(gfx::RenderContext ctx);
