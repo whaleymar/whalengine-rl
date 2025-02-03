@@ -93,7 +93,7 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const auto trans = entity.get<Transform>();
         const Vector2i worldPosition = trans.apply(light.offset);
         Vector2i drawPosition = Vector2i(worldPosition.x, -worldPosition.y);
-        Vector2i screenPosition = worldToScreenCoords(worldPosition.as<f32>(), ctx.cameraPosition, true);
+        Vector2i screenPosition = worldToScreenCoords(worldPosition.as<f32>(), ctx.cameraPosition, ScreenResolution::Game);
         Color color = light.color;
 
         // RESEARCH may want to put this as a param in the component

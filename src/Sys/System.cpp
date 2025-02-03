@@ -118,7 +118,7 @@ void System::Update() {
     S_UPDATE_FUNCTION();
 
     // Renderer update (want to make sure we're not clearing RenderTextures between world and game update, so do this at the very end)
-    Graphics.tick();
+    Graphics.update();
 }
 
 bool System::IsValid() {

@@ -63,7 +63,7 @@ void Renderer::init() {
     mStagingTexture = MultiTexture::create();
 }
 
-void Renderer::tick() {
+void Renderer::update() {
     const s32 RELEASE_FRAMES = 60;
 
     // iterate through the available RTs and get the range of ones that should be freed
@@ -97,11 +97,10 @@ void Renderer::tick() {
     // Clear used list
     mUsedRTs.clear();
 
+    // If the OS window was resized, we need to update the global screen size variables
     if (rl::IsWindowResized()) {
         Vector2i newWindowSize(rl::GetRenderWidth(), rl::GetRenderHeight());
-        Vector2i delta = newWindowSize - Vector2i(WINDOW_WIDTH_OS, WINDOW_HEIGHT_OS);
-        Vector2i newRenderSize = Vector2i(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER) + delta;
-        updateWindowSizes(newRenderSize, newWindowSize);
+        updateWindowSizes(newWindowSize, newWindowSize);
         WINDOW_WIDTH_OS = newWindowSize.x;
         WINDOW_HEIGHT_OS = newWindowSize.y;
 
@@ -184,20 +183,23 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     rl::EndTextureMode();
 }
 
-gfx::RenderContext Renderer::getRenderContext() const {
+gfx::RenderContext Renderer::getRenderContext(bool useUnstretchedRenderWindow) const {
     rl::Camera2D worldCamera = mRaylibCamera;
+    const f32 vRatio = useUnstretchedRenderWindow ? VIRTUAL_SCREEN_RATIO : VIRTUAL_SCREEN_RATIO_STRETCH;
+    if (!useUnstretchedRenderWindow) {
+        worldCamera.offset = rl::Vector2(WINDOW_WIDTH_STRETCH / 2, WINDOW_HEIGHT_STRETCH / 2);
+    }
     ecs::Entity cameraEntity = *getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotation;
 
     // HACK dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
     Vector2f cameraPosition = cameraEntity.get<Transform>().position;
-    f32 decimal = math::abs(math::getDecimal(cameraPosition.y * VIRTUAL_SCREEN_RATIO));
+    f32 decimal = math::abs(math::getDecimal(cameraPosition.y * vRatio));
     if (math::isNearZero(decimal - 0.5f, 0.005)) {
-        // cameraPosition.y += 0.01f * VIRTUAL_SCREEN_RATIO;
         cameraPosition.y += 0.01f;
     }
 
-    worldCamera.target = (cameraPosition * Vector2f(VIRTUAL_SCREEN_RATIO, -VIRTUAL_SCREEN_RATIO)).asRL();
+    worldCamera.target = (cameraPosition * Vector2f(vRatio, -vRatio)).asRL();
 
     return gfx::RenderContext{
         .cameraPosition = cameraPosition,
@@ -427,7 +429,7 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
         if (maybe <= parentSize.y) {
             newSize.y = maybe;
         } else {
-            // reduce width manually
+            // can't get taller, so need to reduce width
             newSize.x = std::round(targetAR * newSize.y);
         }
     } else if (newAR < targetAR) {
@@ -437,8 +439,21 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
         if (maybe <= parentSize.x) {
             newSize.x = maybe;
         } else {
-            // reduce height manually
+            // can't get wider, so need to reduce height
             newSize.y = std::round(newSize.x / targetAR);
+        }
+    }
+
+    WINDOW_WIDTH_STRETCH = newSize.x;
+    WINDOW_HEIGHT_STRETCH = newSize.y;
+
+    // make sure we aren't exceeding the size limit
+    if (IS_CAP_RENDER_WINDOW) {
+        if (newSize.x > WINDOW_MAX_WIDTH_RENDER) {
+            newSize.x = WINDOW_MAX_WIDTH_RENDER;
+        }
+        if (newSize.y > WINDOW_MAX_HEIGHT_RENDER) {
+            newSize.y = WINDOW_MAX_HEIGHT_RENDER;
         }
     }
     Vector2f oldSize(FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER);
@@ -456,8 +471,8 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
 void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition) {
     if (windowPosition.x == -1) {
         // automatically calculate it
-        if (parentSize.x != WINDOW_WIDTH_RENDER) {
-            WINDOW_POS_OS_X = (parentSize.x - WINDOW_WIDTH_RENDER) / 2;
+        if (parentSize.x != WINDOW_WIDTH_STRETCH) {
+            WINDOW_POS_OS_X = (parentSize.x - WINDOW_WIDTH_STRETCH) / 2;
         } else {
             WINDOW_POS_OS_X = 0;
         }
@@ -466,8 +481,8 @@ void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition
     }
 
     if (windowPosition.y == -1) {
-        if (parentSize.y != WINDOW_HEIGHT_RENDER) {
-            WINDOW_POS_OS_Y = (parentSize.y - WINDOW_HEIGHT_RENDER) / 2;
+        if (parentSize.y != WINDOW_HEIGHT_STRETCH) {
+            WINDOW_POS_OS_Y = (parentSize.y - WINDOW_HEIGHT_STRETCH) / 2;
         } else {
             WINDOW_POS_OS_Y = 0;
         }
@@ -481,6 +496,9 @@ void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition
     FWINDOW_WIDTH_GAME = WINDOW_WIDTH_GAME;
     FWINDOW_HEIGHT_GAME = WINDOW_HEIGHT_GAME;
     VIRTUAL_SCREEN_RATIO = FWINDOW_WIDTH_RENDER / FWINDOW_WIDTH_GAME;
+    FWINDOW_WIDTH_STRETCH = WINDOW_WIDTH_STRETCH;
+    FWINDOW_HEIGHT_STRETCH = WINDOW_HEIGHT_STRETCH;
+    VIRTUAL_SCREEN_RATIO_STRETCH = FWINDOW_WIDTH_STRETCH / FWINDOW_WIDTH_GAME;
 
     // HACK
     // if VIRTUAL_SCREEN_RATIO * game_height has a decimal value of approx. 0.5, then we get artifacts

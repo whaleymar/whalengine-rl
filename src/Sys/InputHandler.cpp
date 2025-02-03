@@ -331,6 +331,10 @@ bool InputHandler::isUsingGamepad() const {
     return rl::IsGamepadAvailable(mActiveGamepad);
 }
 
+Vector2f InputHandler::getMouseWorld() const {
+    return screenToWorldCoords(mMouseScreenPosition, ScreenResolution::Stretched);
+}
+
 bool InputHandler::isPressed(const std::string& name) const {
     auto it = S_NAME_TO_STATE.find(name);
     if (it == S_NAME_TO_STATE.end()) {
