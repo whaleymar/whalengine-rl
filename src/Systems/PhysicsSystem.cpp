@@ -66,6 +66,36 @@ void PhysicsSystem::onEvent(evt::Collision, ecs::Entity movingEntity, HitInfo hi
         addIfUnique(S_CALLBACK_QUEUE[hitinfo.getOther()], movingEntity, hitinfo.toVec() * -1);
     }
 }
+// syncs collider in case position changed in another system
+static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& physicsEntities) {
+    for (auto& [entityid, entity] : physicsEntities) {
+        Transform& trans = entity.get<Transform>();
+        const bool isManuallyMoved = trans.isManuallyMoved;
+        trans.isManuallyMoved = false;
+
+        if (!entity.has<Collider>()) {
+            continue;
+        }
+
+        auto& collider = entity.get<Collider>();
+        if (isManuallyMoved) {
+            // Sync collider position without checking collision
+            if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
+                ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
+            }
+
+        } else {
+            // Move collider within physics engine
+            const Vector2i targetColliderPosition = trans.apply(collider.getOffset());
+            if (collider.getShape().getPosition() != targetColliderPosition) {
+                const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
+
+                // IsManualMove=true, so transform and QuadTree are synced automatically
+                collider.move(toMove, nullptr, false, true);
+            }
+        }
+    }
+}
 
 // RESEARCH (bug i will eventually run into)
 // if a parent and child entity both have colliders, the parent entity moving will not move the child in the quad tree and it will crash
@@ -75,7 +105,8 @@ void PhysicsSystem::update() {
     }
 
     S_CALLBACK_QUEUE.clear();
-    ColliderSystem::syncColliders();
+    // ColliderSystem::syncColliders();
+    syncColliders(getEntities());
 
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntities()) {

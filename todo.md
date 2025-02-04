@@ -71,10 +71,6 @@ ACTIVELY WORKING ON:
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - cache entity positions from previous frame, remove and re-insert entities whose positions changed
 - calling BeginShaderMode for every draw miiiight be bad actually. Seems like it's actually drawing a batch most times
-- Expanding the render window size to 1080p tanks my FPS
-- instead of TileRenderSystem iterating through each (x,y) coord, fetching sprite data, and drawing that tile, I could group tiles by ID & cache a list of (x,y) coords where they appear. Then drawing would look like `for tileId in cache[entity.layer] -> for (x,y) in tileCache[tileId] -> DrawTile(x,y)`
-    - would result in fewer calls to `spriteCache.get()` and `GetTileMetaFlags()` (1 call per unique tile)
-    - would also let me inline `DrawTileHDR` and precompute most of the math, so all I'm doing is sending data to the GPU per-tile
 
 ## Misc
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
