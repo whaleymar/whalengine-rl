@@ -145,6 +145,9 @@ void ColliderSystem::onRemove(ecs::Entity entity) {
 void ColliderSystem::syncColliders() {
     for (const auto [entityid, entity] : getEntities()) {
         Transform& trans = entity.get<Transform>();
+        if (!trans.isDirty) {
+            continue;
+        }
         const bool isManuallyMoved = trans.isManuallyMoved;
         trans.isManuallyMoved = false;
 
