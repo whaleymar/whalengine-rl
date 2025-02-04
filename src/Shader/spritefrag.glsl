@@ -1,8 +1,8 @@
 #version 330
-layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 AllDepth;
-layout (location = 2) out vec4 OcclColor;
-layout (location = 3) out vec4 OcclDepth;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 AllDepth;
+layout(location = 2) out vec4 OcclColor;
+layout(location = 3) out vec4 OcclDepth;
 
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
@@ -19,8 +19,6 @@ in float isMaskBlendAdditive;
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 
-// Output fragment color
-
 void main() {
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
@@ -35,14 +33,14 @@ void main() {
     }
 
     if (isSilhouette > 0.) {
-        FragColor = fragColor * vec4(1., 1., 1., texelColor.a); 
+        FragColor = fragColor * vec4(1., 1., 1., texelColor.a);
     } else {
-        FragColor = fragColor * texelColor; 
+        FragColor = fragColor * texelColor;
     }
 
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0
-    const float scalar = 20.0; 
+    const float scalar = 20.0;
     if (isOccluder > 0.5) {
         OcclDepth = vec4(fragDepth * scalar, 0., 0., texelColor.a);
     } else {
@@ -55,5 +53,4 @@ void main() {
     }
 
     OcclColor = FragColor * vec4(isOccluder);
-
 }

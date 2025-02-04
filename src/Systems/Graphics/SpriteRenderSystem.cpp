@@ -1,7 +1,6 @@
 #include "SpriteRenderSystem.h"
 
 #include "Common.h"
-#include "Components/Collider.h"
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"

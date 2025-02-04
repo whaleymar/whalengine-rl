@@ -125,8 +125,6 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
         gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
-        // testing:
-        // gfx::DrawRectangleHDR(dstRect, rl::Vector2(0, 0), 0.0f, Colors::Blue, gfx::DrawMetaData{});
     }
     Graphics.releaseTemporaryRT(randomTexture);
 }
