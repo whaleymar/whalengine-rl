@@ -326,9 +326,6 @@ public:
                 }
                 print("Loaded Game");
                 isRecompiling = false;
-#ifndef NDEBUG
-                mGameHandler.SetEditorMode(isEditorMode);
-#endif
             }
 #endif
         }

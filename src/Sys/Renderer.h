@@ -106,6 +106,8 @@ public:
     // the parent window
     void updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vector2i renderPosition = Vector2i(-1, -1));
 
+    void toggleFullscreen();
+
 private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
@@ -134,6 +136,8 @@ private:
     std::vector<UniformVariant> mUniformQueue;
 
     rl::Shader mFixedShader;
+    Vector2i mPrevWindowSizeBeforeFullscreen;
+    Vector2i mPrevWindowPosBeforeFullscreen;
     bool mIsFixedShaderMode = false;
     bool mIsPersistUniforms = false;
 };

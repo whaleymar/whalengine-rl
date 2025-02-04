@@ -100,6 +100,10 @@ void Renderer::update() {
     // If the OS window was resized, we need to update the global screen size variables
     if (rl::IsWindowResized()) {
         Vector2i newWindowSize(rl::GetRenderWidth(), rl::GetRenderHeight());
+        if (newWindowSize.x == 0 || newWindowSize.y == 0) {
+            // happens sometimes when fullscreening
+            return;
+        }
         updateWindowSizes(newWindowSize, newWindowSize);
         WINDOW_WIDTH_OS = newWindowSize.x;
         WINDOW_HEIGHT_OS = newWindowSize.y;
@@ -466,6 +470,22 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
     TextureManager::instance().reloadRenderTextures();
     mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
     Event.emit<evt::WindowResize>(Vector2f(FWINDOW_WIDTH_RENDER / oldSize.x, FWINDOW_HEIGHT_RENDER / oldSize.y));
+}
+
+void Renderer::toggleFullscreen() {
+    if (rl::IsWindowFullscreen()) {
+        // deactivate:
+        rl::ToggleFullscreen();
+        rl::SetWindowSize(mPrevWindowSizeBeforeFullscreen.x, mPrevWindowSizeBeforeFullscreen.y);
+        rl::SetWindowPosition(mPrevWindowPosBeforeFullscreen.x, mPrevWindowPosBeforeFullscreen.y);
+    } else {
+        // activate:
+        mPrevWindowSizeBeforeFullscreen = {WINDOW_WIDTH_OS, WINDOW_HEIGHT_OS};
+        mPrevWindowPosBeforeFullscreen = rl::GetWindowPosition();
+        int monitor = rl::GetCurrentMonitor();
+        rl::SetWindowSize(rl::GetMonitorWidth(monitor), rl::GetMonitorHeight(monitor));
+        rl::ToggleFullscreen();
+    }
 }
 
 void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition) {
