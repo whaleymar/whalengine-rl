@@ -87,16 +87,13 @@ ACTIVELY WORKING ON:
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
-- controller support (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Get web and windows builds working again
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 
 ## Bugs 
-- some raylib error when I fullscreen
 - lights are brighter after selecting `Restart`
-- window is resized on hot-reload
 - quad bleeding -- can only be fixed by adding padding between sprites in sprite atlas
 - hot reloading texture atlas is broken? at least when refreshing animation frame times
 
