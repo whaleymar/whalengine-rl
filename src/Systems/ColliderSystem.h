@@ -48,6 +48,9 @@ private:
     // If a Transform's isManuallyMoved flag is set, then the collider teleports to the transform.
     // Otherwise, the collider tries to move to the transform within the physics system. If it is
     // stopped by another physics object, the transform is updated to its new position.
+
+    // TODO this needs to take the physics system's entity list? It used to operate on entities with Velocity
+    // and it worked fine? Now that velocity isn't required it's WAY slower.
     static void syncColliders();
 };
 
