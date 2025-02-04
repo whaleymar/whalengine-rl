@@ -19,6 +19,7 @@ namespace whal {
 static std::pair<f32, Facing> getOrientation(TileInfo tile);
 static void buildYsortList(ecs::Entity e, const TileMapLayer& tml);
 static std::unordered_map<ecs::Entity, std::vector<Vector2i>, ecs::EntityHash> S_YSORT_COORD_LUT;
+static std::unordered_map<ecs::Entity, std::vector<TileInstance>, ecs::EntityHash> S_TILE_BATCH;  // for non-ysorted layers
 static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ecs::EntityHash> S_YSORT_RENDERINFO_LUT;
 
 // NOTE: assumptions made when drawing tiles:
@@ -154,15 +155,22 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
-    const auto drawTile = [&](s32 x, s32 y, s32 ix, TileInfo tile) {
-        // using a dense map here (a vector of pairs) because it's much faster than std::unordered_map
+
+    if (layer.isYSorted) {
+        // just drawing one tile
+        const s32 ySortIx = eCtx.internal;
+        const Vector2i coord = S_YSORT_COORD_LUT[eCtx.entity][ySortIx];
+        const s32 ix = widthTiles * coord.y + coord.x;
+        rl::rlSetTexture(ctx.atlas.getTexture().id);
+        auto tile = getTile(layer.ids[ix]);
+
         const TileRenderInfo& renderInfo = spriteCache.get(tile.gid);
         const auto src = rl::Vector2{
             renderInfo.sprite.atlasPosition.x,
             renderInfo.sprite.atlasPosition.y,
         };
 
-        const Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + eCtx.transform.position;
+        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + eCtx.transform.position;
 
         const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
@@ -171,24 +179,16 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             tileSize.y,
         };
 
-        // RESEARCH could pass invTexDims to meta.asRL too
         DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform.rotation,
                     renderInfo.sprite.color.asRL(),
                     GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, renderInfo.isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
                     renderInfo.orient.second == Facing::Left);
-    };
-
-    if (layer.isYSorted) {
-        const s32 ySortIx = eCtx.internal;
-        const Vector2i coord = S_YSORT_COORD_LUT[eCtx.entity][ySortIx];
-        const s32 ix = widthTiles * coord.y + coord.x;
-        rl::rlSetTexture(ctx.atlas.getTexture().id);
-        drawTile(coord.x, coord.y, ix, getTile(layer.ids[ix]));
         rl::rlSetTexture(0);
 
     } else {
-        // formula for camera view box:
-        // const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE});
+        // drawing all the tiles
+
+        // Calculate which tiles are visible to the camera
         const s32 viewWidthHalfTiles = WINDOW_WIDTH_GAME / PIXELS_PER_TILE / 2 + 1;
         const s32 viewHeightHalfTiles = WINDOW_HEIGHT_GAME / PIXELS_PER_TILE / 2 + 1;
 
@@ -200,19 +200,48 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const s32 minY = std::max(0, cameraTileY - viewHeightHalfTiles);
         const s32 maxY = std::min(heightTiles, cameraTileY + viewHeightHalfTiles + 1);
 
+        // group identical tiles so we can cache the complicated stuff
         rl::rlSetTexture(ctx.atlas.getTexture().id);
-        for (s32 x = minX; x < maxX; x++) {
-            for (s32 y = minY; y < maxY; y++) {
-                const s32 ix = widthTiles * y + x;
-                const TileInfo tile = getTile(layer.ids[ix]);
-
-                if (tile.gid == 0) {
-                    continue;  // empty tile
-                }
-
-                drawTile(x, y, ix, tile);
+        u32 lastMask = -1;
+        TileInfo tInfo;
+        const TileRenderInfo* renderInfo;
+        rl::Vector2 src;
+        rl::Vector3 metaFlags;
+        std::vector<TileInstance>& tiles = S_TILE_BATCH[layerEntity];
+        const u64 nTiles = tiles.size();
+        for (u64 i = 0; i < nTiles; ++i) {
+            TileInstance tile = tiles[i];
+            if (tile.x < minX || tile.x >= maxX || tile.y < minY || tile.y >= maxY) {
+                continue;
             }
+            if (tile.tileMask != lastMask) {
+                lastMask = tile.tileMask;
+                tInfo = getTile(tile.tileMask);
+
+                // using a dense map here (a vector of pairs) because it's much faster than std::unordered_map
+                renderInfo = &spriteCache.get(tInfo.gid);
+                src = rl::Vector2{
+                    renderInfo->sprite.atlasPosition.x,
+                    renderInfo->sprite.atlasPosition.y,
+                };
+                metaFlags =
+                    GetTileMetaFlags(renderInfo->sprite, eCtx.colorBuf.depth, renderInfo->isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y);
+                // i could cache some stuff from DrawTileHDR here and inline the function in this loop, but profiling only showed a 2% speedup which
+                // isn't worth the mess
+            }
+
+            const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + eCtx.transform.position;
+            rl::Rectangle dst = rl::Rectangle{
+                worldPosition.x * VIRTUAL_SCREEN_RATIO,
+                -worldPosition.y * VIRTUAL_SCREEN_RATIO,
+                tileSize.x,
+                tileSize.y,
+            };
+
+            DrawTileHDR(invTexDims.x, invTexDims.y, src, dst, origin, renderInfo->orient.first + eCtx.transform.rotation,
+                        renderInfo->sprite.color.asRL(), metaFlags, renderInfo->orient.second == Facing::Left);
         }
+
         rl::rlSetTexture(0);
     }
 }
@@ -228,9 +257,10 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         if (tml.isYSorted) {
             buildYsortList(entity, tml);
-            for (const auto& renderInfo : S_YSORT_RENDERINFO_LUT[entity]) {
-                // TODO addSorted method?
-                queue.add(renderInfo);
+            const auto& sortedTiles = S_YSORT_RENDERINFO_LUT[entity];
+            const u64 nTiles = sortedTiles.size();
+            for (u64 i = 0; i < nTiles; ++i) {
+                queue.add(sortedTiles[i]);
             }
         } else {
             queue.add(gfx::EntityPreRenderInfo{
@@ -249,14 +279,18 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
     // caching these values once. Thousands of calls to shared_ptr_access really add up
     const s32 widthTiles = layer.tilemap->widthTiles;
     const s32 heightTiles = layer.tilemap->heightTiles;
+    mDrawQueue.clear();
     for (s32 x = 0; x < widthTiles; x++) {
         for (s32 y = 0; y < heightTiles; y++) {
             const s32 ix = widthTiles * y + x;
-            const TileInfo tile = getTile(layer.ids[ix]);
+            const u32 tileMask = layer.ids[ix];
+            const TileInfo tile = getTile(tileMask);
 
             if (tile.gid == 0) {
                 continue;  // empty tile
             }
+
+            mDrawQueue.emplace_back(tileMask, x, y);
 
             if (!layer.tilemap->spriteCache.contains(tile.gid)) {
                 const auto sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
@@ -269,12 +303,18 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
             }
         }
     }
+
+    // have to cache the sort because it's very slow
+    std::sort(mDrawQueue.begin(), mDrawQueue.end(),
+              [](const TileInstance& tile1, const TileInstance& tile2) -> bool { return tile1.tileMask < tile2.tileMask; });
+    S_TILE_BATCH[e] = mDrawQueue;
 }
 
 void TileRenderSystem::onRemove(ecs::Entity e) {
     // erase from cache
     S_YSORT_RENDERINFO_LUT.erase(e);
     S_YSORT_COORD_LUT.erase(e);
+    S_TILE_BATCH.erase(e);
 }
 
 std::pair<f32, Facing> getOrientation(TileInfo tile) {
@@ -324,9 +364,12 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
 
-    for (s32 x = 0; x < tml.tilemap->widthTiles; x++) {
-        for (s32 y = 0; y < tml.tilemap->heightTiles; y++) {
-            const s32 ix = tml.tilemap->widthTiles * y + x;
+    // caching these values once. Thousands of calls to shared_ptr_access really add up
+    const s32 widthTiles = tml.tilemap->widthTiles;
+    const s32 heightTiles = tml.tilemap->heightTiles;
+    for (s32 x = 0; x < widthTiles; x++) {
+        for (s32 y = 0; y < heightTiles; y++) {
+            const s32 ix = widthTiles * y + x;
             const TileInfo tile = getTile(tml.ids[ix]);
 
             if (tile.gid == 0) {

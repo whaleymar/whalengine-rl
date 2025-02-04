@@ -33,8 +33,8 @@ public:
     Vector2i getClosestPointTo(Vector2i point) const;
     HitInfo collide(const AABB& other) const;
 
-    // NOT used by Shape, but is used by Collider and Renderer
-    // inlining to speed up renderer
+    // NOT used by Shape, but is used by Collider and Renderer.
+    // Inlining to speed up renderer.
     inline bool isOverlapping(const AABB& other) const {
         const auto delta = other.mCenter - mCenter;
         const auto overlap = mHalf + other.mHalf;
