@@ -40,7 +40,7 @@ struct DrawMetaData {
 
 struct EntityRenderInfo {
     Transform transform;
-    f32 bottom;
+    s32 bottom;
     ecs::Entity entity;
     const ecs::IRender* piRender;
     DrawMetaData colorBuf = {};
