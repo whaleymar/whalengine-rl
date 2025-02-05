@@ -39,12 +39,13 @@ struct DrawMetaData {
 };
 
 struct EntityRenderInfo {
-    f32 bottom;
     Transform transform;
-    const ecs::IRender* piRender;
+    f32 bottom;
     ecs::Entity entity;
+    const ecs::IRender* piRender;
     DrawMetaData colorBuf = {};
     s32 internal;
+    rl::Shader shader;
 };
 
 struct EntityPreRenderInfo {
@@ -59,6 +60,7 @@ struct EntityPreRenderInfo {
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;
+    rl::Shader shader = rl::Shader{.id = 0xffffffff};  // -1 maps to the default sprite shader
 };
 
 class RenderQueue {

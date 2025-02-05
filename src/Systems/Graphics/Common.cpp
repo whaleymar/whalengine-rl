@@ -64,27 +64,7 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
 
 bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
     if (mCameraViewBox.isOverlapping(renderInfo.boundingBox)) {
-        const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
-                                    renderInfo.entity.has<BlocksLight>() :
-                                    (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
-        if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar ||
-            renderInfo.transform.depth == Depth::UIClose) {
-            mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
-                                  gfx::DrawMetaData{
-                                      .depth = static_cast<u8>(renderInfo.transform.depth),
-                                      .isOccluder = isOccluder,
-                                      .isUI = true,
-                                  },
-                                  renderInfo.internal);
-        } else {
-            mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
-                                      gfx::DrawMetaData{
-                                          .depth = static_cast<u8>(renderInfo.transform.depth),
-                                          .isOccluder = isOccluder,
-                                          .isUI = false,
-                                      },
-                                      renderInfo.internal);
-        }
+        addPrecalculated(renderInfo);
         return true;
     }
     return false;
@@ -95,21 +75,21 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
                                 renderInfo.entity.has<BlocksLight>() :
                                 (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
     if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar || renderInfo.transform.depth == Depth::UIClose) {
-        mUIQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
+        mUIQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                               gfx::DrawMetaData{
                                   .depth = static_cast<u8>(renderInfo.transform.depth),
                                   .isOccluder = isOccluder,
                                   .isUI = true,
                               },
-                              renderInfo.internal);
+                              renderInfo.internal, renderInfo.shader);
     } else {
-        mNormalQueue.emplace_back(renderInfo.boundingBox.bottom(), renderInfo.transform, mpIRender, renderInfo.entity,
+        mNormalQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                   gfx::DrawMetaData{
                                       .depth = static_cast<u8>(renderInfo.transform.depth),
                                       .isOccluder = isOccluder,
                                       .isUI = false,
                                   },
-                                  renderInfo.internal);
+                                  renderInfo.internal, renderInfo.shader);
     }
 }
 

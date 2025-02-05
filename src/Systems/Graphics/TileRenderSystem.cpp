@@ -26,6 +26,7 @@ static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ec
 /*
 
 - tiles don't move independently of their TileMapLayer
+- tile IDs can't be swapped once added to this system (can be circumvented if I add a cache invalidation mechanism, or by deactivating/reactivating)
 
 */
 
@@ -144,14 +145,13 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
         // note: overlays will be slow for Y sorted layers
-        auto shader = ShaderManager::get(Shaders::Overlay);
-        rl::BeginShaderMode(shader);
-        auto overlayLoc = rl::GetShaderLocation(shader, "_Overlay");
+        // TODO this shader needs to write depth info
+        auto overlayLoc = rl::GetShaderLocation(eCtx.shader, "_Overlay");
         const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
-        rl::SetShaderValueTexture(shader, overlayLoc, overlay);
-        auto scaleLoc = rl::GetShaderLocation(shader, "_Scale");
+        rl::SetShaderValueTexture(eCtx.shader, overlayLoc, overlay);
+        auto scaleLoc = rl::GetShaderLocation(eCtx.shader, "_Scale");
         rl::Vector2 scale = (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL();
-        rl::SetShaderValue(shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
+        rl::SetShaderValue(eCtx.shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
@@ -263,11 +263,13 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                 queue.add(sortedTiles[i]);
             }
         } else {
+            // occlusion calced at draw time, pass No so we don't do extra work
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
                 .transform = trans,
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
+                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff},
             });
         }
     }
@@ -387,6 +389,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 .entity = e,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
+                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff},
             };
             S_YSORT_RENDERINFO_LUT[e].push_back(ri);
 
