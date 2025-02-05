@@ -55,11 +55,6 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     if (line.segmentCycleTime > 0.0) {
         f32 offsetT = std::fmod(Time.getElapsed(), line.segmentCycleTime) / line.segmentCycleTime;
         current += (segmentStep + gapStep) * offsetT;
-        // if (!System::isPaused()) {
-        //     print("Time:", Time.getElapsed());
-        //     print("offsetT:", offsetT);
-        //     print("");
-        // }
     }
 
     while (true) {
@@ -83,7 +78,7 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto line = entity.get<DrawStraightLine>();
-        const auto trans = entity.get<Transform>();
+        const auto& trans = entity.get<Transform>();
         const LinePoints points = getRotatedPoints(trans.position, trans, line);
 
         queue.add(gfx::EntityPreRenderInfo{
