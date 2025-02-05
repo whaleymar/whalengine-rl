@@ -369,9 +369,9 @@ static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRende
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        return entity1.bottom > entity2.bottom;
+        return entity1.bottom == entity2.bottom ? entity1.shader.id < entity2.shader.id : entity1.bottom > entity2.bottom;
     } else {
-        return false;  // doesn't really matter
+        return entity1.shader.id < entity2.shader.id;
     }
 }
 
