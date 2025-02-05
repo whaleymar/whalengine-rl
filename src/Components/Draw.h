@@ -74,6 +74,11 @@ struct DrawStraightLine {
     s32 length;
     Color color = Colors::White;
     f32 thickness = 1.0;
+
+    // dotted line params:
+    s32 segmentLength = 0;       // 0 == draw as single line segment
+    s32 segmentGapLength = 0;    // 0 == draw as single line segment
+    f32 segmentCycleTime = 0.0;  // For animating a dotted line's movement. In Seconds.
     bool isRotateAboutCenter = false;
 };
 
