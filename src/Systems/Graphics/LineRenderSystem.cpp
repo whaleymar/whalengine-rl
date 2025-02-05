@@ -6,6 +6,8 @@
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
+#include "Sys/System.h"
+#include "Util/MathUtil.h"
 
 namespace whal {
 
@@ -32,10 +34,50 @@ static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStrai
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
     const LinePoints points = getRotatedPoints(eCtx.transform.position, eCtx.entity.get<Transform>(), line);
-    const rl::Vector2 p1 = worldToRenderCoords(points.p1).asRL();
-    const rl::Vector2 p2 = worldToRenderCoords(points.p2).asRL();
+    const Vector2f p1 = worldToRenderCoords(points.p1);
+    const Vector2f p2 = worldToRenderCoords(points.p2);
 
-    gfx::DrawLineHDR(p1, p2, line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
+    const f32 len = (p2 - p1).len();
+    if (math::isNearZero(len, 0.01)) {
+        return;
+    }
+
+    if (line.segmentLength == 0 || line.segmentGapLength == 0) {
+        // draw as single segment
+        gfx::DrawLineHDR(p1.asRL(), p2.asRL(), line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
+        return;
+    }
+
+    const Vector2f norm = (p2 - p1) / len;
+    const Vector2f segmentStep = norm * static_cast<f32>(line.segmentLength) * VIRTUAL_SCREEN_RATIO;
+    const Vector2f gapStep = norm * static_cast<f32>(line.segmentGapLength) * VIRTUAL_SCREEN_RATIO;
+    Vector2f current = p1;
+    if (line.segmentCycleTime > 0.0) {
+        f32 offsetT = std::fmod(Time.getElapsed(), line.segmentCycleTime) / line.segmentCycleTime;
+        current += (segmentStep + gapStep) * offsetT;
+        // if (!System::isPaused()) {
+        //     print("Time:", Time.getElapsed());
+        //     print("offsetT:", offsetT);
+        //     print("");
+        // }
+    }
+
+    while (true) {
+        // check if we're past p2
+        if (math::sign(p2.x - p1.x) != math::sign(p2.x - current.x) || math::sign(p2.y - p1.y) != math::sign(p2.y - current.y)) {
+            return;
+        }
+
+        Vector2f next = current + segmentStep;
+        if (math::sign(p2.x - p1.x) != math::sign(p2.x - next.x) || math::sign(p2.y - p1.y) != math::sign(p2.y - next.y)) {
+            // don't draw beyond p2
+            gfx::DrawLineHDR(current.asRL(), p2.asRL(), line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
+            return;
+        }
+
+        gfx::DrawLineHDR(current.asRL(), next.asRL(), line.thickness * VIRTUAL_SCREEN_RATIO, line.color, eCtx.colorBuf);
+        current += segmentStep + gapStep;
+    }
 }
 
 void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
