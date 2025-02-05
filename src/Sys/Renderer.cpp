@@ -221,7 +221,7 @@ void Renderer::render() {
     // 1. IRender and IRenderLight systems are drawn
     drawEntities(renderContext);  // drawn to TextureID::Staging
 
-    // camera drawn at different resolution, so gotta change camera stuff
+    // lights drawn at different resolution, so gotta change camera stuff
     gfx::RenderContext lightRenderContext = renderContext;
     lightRenderContext.camera.target = (renderContext.cameraPosition * Vector2f(1, -1)).asRL();
     lightRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
@@ -311,11 +311,17 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     const rl::Shader defaultShader = ShaderManager::get(Shaders::Default);
+    u32 lastShaderId = 0;
     for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
-        // Make sure we're using the default shader before each entity is drawn.
-        // Shader swaps only happen if the new shader isn't the active one.
-        // So this should be free on average.
-        BeginShaderMode(defaultShader);
+        if (renderInfo.shader.id != lastShaderId) {
+            if (renderInfo.shader.id == 0xffffffff) {
+                // -1 maps to default sprite shader
+                rl::BeginShaderMode(defaultShader);
+            } else {
+                rl::BeginShaderMode(renderInfo.shader);
+            }
+            lastShaderId = renderInfo.shader.id;
+        }
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
     rl::EndMode2D();
