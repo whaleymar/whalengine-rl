@@ -71,7 +71,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto draw = entity.get<DrawText>();
-        const auto trans = entity.get<Transform>();
+        const auto& trans = entity.get<Transform>();
 
         const auto bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
                                                  Box(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
