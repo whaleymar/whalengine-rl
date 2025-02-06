@@ -2,6 +2,7 @@
 
 #include "CorradeOptional.h"
 
+#include <vector>
 #include "Util/Types.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -33,12 +34,7 @@ class AudioPlayer;
 
 class AudioClip {
 public:
-    AudioClip() = default;
-    AudioClip(const char* path);
-    ~AudioClip();
-
-    AudioClip(const AudioClip&) = delete;
-    void operator=(const AudioClip&) = delete;
+    static Expected<AudioClip> from(const char* path);
 
     Corrade::Containers::Optional<Error> load(const char* path);
     void unload();
@@ -74,6 +70,8 @@ public:
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
     void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
+    void playClip(const std::string& clipname, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
+    void playMenuClip(const std::string& clipname, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
 
     void stopMusic();
     void stopClips();
@@ -108,7 +106,28 @@ public:
 
     void setListenerPosition(Vector2i worldPosition);
 
+    // AudioClip Registry methods:
+    // AudioClips can be registered with the AudioPlayer and played with "AudioPlayer.play(name)"
+
+    // clip should be loaded
+    void registerClip(const char* name, AudioClip clip);
+    void unregisterClip(const char* name);
+
+    // returns matching clip if name found in registry, or an invalid clip if none is found
+    AudioClip getClip(const char* name);
+
+    // unloads all clips in registry
+    void clearClipRegistry();
+
 private:
+    struct RegisteredClip {
+        std::string name;
+        AudioClip clip;
+
+        bool operator==(const RegisteredClip& other) const { return name == other.name; }
+        bool operator==(const std::string& other) const { return name == other; }
+    };
+
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 
@@ -132,6 +151,7 @@ private:
     std::vector<Sound> mMenuSounds;
     bool mIsClipsPaused = false;
 #endif
+    std::vector<RegisteredClip> mClipRegistry;
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS
     s32 mNumClipChannels = 0;

@@ -52,12 +52,14 @@ constexpr f32 ATTEN_DIST_MAX = 200;
 constexpr f32 DIST_UNITS = FPIXELS_PER_TILE;
 #endif
 
-AudioClip::AudioClip(const char* path) {
-    load(path);
-}
-
-AudioClip::~AudioClip() {
-    unload();
+Expected<AudioClip> AudioClip::from(const char* path) {
+    AudioClip clip;
+    auto errOpt = clip.load(path);
+    if (errOpt) {
+        return *errOpt;
+    } else {
+        return clip;
+    }
 }
 
 void AudioClip::unload() {
@@ -80,7 +82,7 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     if (result != FMOD_OK) {
         mSound = nullptr;
         auto err = FMOD_ErrorString(result);
-        return Error(sprint("Error loading clip:", path, "\nGot error:", err));
+        return Error(sprint("Error loading clip:", path, "\nFMOD error:", err));
     }
 #else
     mSound = rl::LoadSound(path);
@@ -315,6 +317,14 @@ void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter,
     rl::PlaySound(clip.get());
     mMenuSounds.push_back(clip.get());
 #endif
+}
+
+void AudioPlayer::playClip(const std::string& clipname, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
+    playClip(getClip(clipname.c_str()), volume, filter, isLooping, position);
+}
+
+void AudioPlayer::playMenuClip(const std::string& clipname, f32 volume, Filter filter, bool isLooping) {
+    playMenuClip(getClip(clipname.c_str()), volume, filter, isLooping);
 }
 
 #ifndef __EMSCRIPTEN__
@@ -672,5 +682,40 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel)
     }
 }
 #endif
+
+void AudioPlayer::registerClip(const char* name, AudioClip clip) {
+    assert(clip.isValid() && "Cannot register invalid clip");
+
+    // not bothering to check for duplicates (skill issue)
+    mClipRegistry.push_back({name, clip});
+}
+
+void AudioPlayer::unregisterClip(const char* name) {
+    auto it = ecs::whal_find(mClipRegistry.begin(), mClipRegistry.end(), name);
+    if (it == mClipRegistry.end()) {
+        return;
+    }
+    mClipRegistry.erase(it);
+}
+
+AudioClip AudioPlayer::getClip(const char* name) {
+    auto it = ecs::whal_find(mClipRegistry.begin(), mClipRegistry.end(), name);
+    if (it == mClipRegistry.end()) {
+#ifndef NDEBUG
+        print("[AudioPlayer::getClip]: no clip with name", name, "found");
+#endif
+        return AudioClip();
+    }
+
+    return it->clip;
+}
+
+void AudioPlayer::clearClipRegistry() {
+    for (auto& [name, clip] : mClipRegistry) {
+        clip.unload();
+    }
+
+    mClipRegistry.clear();
+}
 
 }  // namespace whal
