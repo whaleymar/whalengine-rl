@@ -10,9 +10,8 @@ ACTIVELY WORKING ON:
 - Want to create more world materials in game
 
 ## Components (some of these are duplicates of other tasks)
-- dashed line
 - parallax factor
-- Many components have an `offset` vector which can be replaced with a child entity. Not entirely sure if I want to do that for everything.
+- Many components have an `offset` vector which can be replaced with a child entity. I'll need to handle this in loadImpls and create a new entity when there's an offset. This might break some EntityFactory code.
     - collider (probably keep this one)
     - trigger 
     - particle emitter
@@ -70,7 +69,6 @@ ACTIVELY WORKING ON:
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - cache entity positions from previous frame, remove and re-insert entities whose positions changed
-- calling BeginShaderMode for every draw miiiight be bad actually. Seems like it's actually drawing a batch most times
 
 ## Misc
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
@@ -80,6 +78,10 @@ ACTIVELY WORKING ON:
     - e.g. parent is inactive, child is "active", but parent's state overrides this so child is inactive 
     - e.g. parent is active, child is "inactive", so child is inactive 
     - e.g. parent is active, child is "active", so child is active
+    - *example use case*: level object that is inactive until some event happens. 
+        - Currently I am making portals invisible + an empty layer mask + a CustomUpdate that checks the enemy count every frame & changes the values when it "activates"
+        - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
+        - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
