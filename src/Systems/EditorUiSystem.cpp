@@ -206,7 +206,7 @@ void EditorUiSystem::drawWorld() {
         dstPosition *= VIRTUAL_SCREEN_RATIO_STRETCH;
         size *= VIRTUAL_SCREEN_RATIO_STRETCH;
 
-        DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), 2.0f, color.asLDR());
+        DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), 1.0f, color.asLDR());
     };
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
@@ -219,7 +219,7 @@ void EditorUiSystem::drawWorld() {
         }
 
         // trans.draw(); // also hard-coded for render window size
-        drawAABB(AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::Green);
+        drawAABB(AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::White);
     }
 }
 
