@@ -21,7 +21,6 @@ class DSP;
 #else
 
 #include <raylib.h>
-#include <vector>
 
 #endif
 
@@ -147,8 +146,8 @@ private:
     FMOD::DSP* mLowpassFilter = nullptr;
 #else
     rl::Music mMusic;
-    std::vector<Sound> mClipSounds;
-    std::vector<Sound> mMenuSounds;
+    std::vector<rl::Sound> mClipSounds;
+    std::vector<rl::Sound> mMenuSounds;
     bool mIsClipsPaused = false;
 #endif
     std::vector<RegisteredClip> mClipRegistry;

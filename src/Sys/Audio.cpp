@@ -37,6 +37,8 @@ void ProcessAudio(void* buffer, unsigned int frames) {
     averageVolume[399] = average;  // Adding last average value
 }
 
+#include "ECS.h"
+
 #endif
 
 #include "Util/Print.h"
@@ -86,7 +88,7 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     }
 #else
     mSound = rl::LoadSound(path);
-    if (!rl::IsSoundReady(mSound)) {
+    if (!rl::IsSoundValid(mSound)) {
         mIsValid = false;
         return Error(sprint("Error loading audio clip: ", path));
     }
@@ -205,14 +207,14 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
 #else
 
     mMusic = rl::LoadMusicStream(path);
-    if (!rl::IsMusicReady(mMusic)) {
+    if (!rl::IsMusicValid(mMusic)) {
         print("couldn't load music stream: ", path);
         return;
     }
 
     // looping? prob have to use seek() in update() TODO
 
-    rl::SetMusicVolume(mMusic, mMasterVolume * mMusicVolume * volume * mIsMusicMuted ? 0.0 : 1.0);
+    rl::SetMusicVolume(mMusic, mIsMusicMuted ? 0.0 : mMasterVolume * mMusicVolume * volume * mIsMusicMuted);
     rl::PlayMusicStream(mMusic);
 
 #endif
@@ -301,7 +303,7 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
     FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
     playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
 #else
-    rl::SetSoundVolume(clip.get(), mSfxVolume * mMasterVolume * volume * isSfxMuted() ? 0.0 : 1.0);
+    rl::SetSoundVolume(clip.get(), isSfxMuted() ? 0.0 : mSfxVolume * mMasterVolume * volume);
     rl::PlaySound(clip.get());
     mClipSounds.push_back(clip.get());
 #endif
@@ -313,7 +315,7 @@ void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter,
 #ifndef __EMSCRIPTEN__
     playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
 #else
-    rl::SetSoundVolume(clip.get(), mSfxVolume * mMasterVolume * volume * isSfxMuted() ? 0.0 : 1.0);
+    rl::SetSoundVolume(clip.get(), isSfxMuted() ? 0.0 : mSfxVolume * mMasterVolume * volume);
     rl::PlaySound(clip.get());
     mMenuSounds.push_back(clip.get());
 #endif
@@ -531,7 +533,7 @@ void AudioPlayer::setIsMusicMuted(bool isMuted) {
         if (isMuted) {
             rl::SetMusicVolume(mMusic, 0.0f);
         } else {
-            rl::SetMusicVolume(mMusic, mVolume);
+            rl::SetMusicVolume(mMusic, mMusicVolume);
         }
     }
 #endif

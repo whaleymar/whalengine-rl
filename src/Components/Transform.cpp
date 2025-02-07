@@ -11,6 +11,7 @@
 namespace whal {
 
 static Vector2f _getRotatedPosition(Vector2f position, Vector2f scale, Vector2f pivotOffset, f32 rotationDegrees, f32 floatHeight) {
+    scale = scale.absolute();
     if (rotationDegrees == 0.0f || pivotOffset.isZero()) {
         return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + pivotOffset * (Vector2f::ONE - scale);
     }
@@ -247,18 +248,18 @@ void Transform::setFacing(Facing dir, ecs::Entity self) {
 }
 
 Vector2f Transform::getRotatedPosition() const {
-    return _getRotatedPosition(position, scale.absolute(), pivotOffset, rotation, floatHeight);
+    return _getRotatedPosition(position, scale, pivotOffset, rotation, floatHeight);
 }
 
 Vector2i Transform::getRotatedPositionInt() const {
-    return _getRotatedPosition(positionPx.as<f32>(), scale.absolute(), pivotOffset, rotation, floatHeight).round();
+    return _getRotatedPosition(positionPx.as<f32>(), scale, pivotOffset, rotation, floatHeight).round();
 }
 
 Vector2f Transform::apply(Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
-        return position + relOffset + scaleAdjustment;
+        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + relOffset + scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -269,8 +270,9 @@ Vector2f Transform::apply(Vector2f relOffset) const {
 Vector2i Transform::apply(Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
-        return positionPx + relOffset + scaleAdjustment;
+        const auto scaleAndFloatAdjustment =
+            (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT)).round();
+        return positionPx + relOffset + scaleAndFloatAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -282,7 +284,7 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
-        return transformedPosition - relOffset - scaleAdjustment;
+        return transformedPosition - Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) - relOffset - scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -294,8 +296,9 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
 Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
-        return transformedPosition - relOffset - scaleAdjustment;
+        const auto scaleAndFloatAdjustment =
+            (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT)).round();
+        return transformedPosition - relOffset - scaleAndFloatAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -312,7 +315,7 @@ std::string Transform::saveImpl(ecs::Entity entity) {
 // Draws the root position + transformed root, according to the rotation + scale + pivot
 void Transform::draw() const {
     gfx::DrawPixel(worldToRenderCoords(position), Colors::Red);
-    auto unrounded = _getRotatedPosition(position, scale.absolute(), pivotOffset, rotation, 0.0f);
+    auto unrounded = _getRotatedPosition(position, scale, pivotOffset, rotation, 0.0f);
     gfx::DrawPixel(worldToRenderCoords(unrounded), Colors::Green);
 }
 #endif

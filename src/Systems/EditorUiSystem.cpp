@@ -239,6 +239,7 @@ static void componentEditor(ecs::Entity entity) {
             if (updated.second) {
                 if constexpr (std::is_same_v<T, Transform>) {
                     // special setter
+                    updated.first.isManuallyMoved = true;
                     entity.get<Transform>().set(updated.first, entity);
                 } else {
                     entity.set(updated.first);
