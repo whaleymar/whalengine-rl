@@ -18,7 +18,7 @@ Expected<void> saveFile(const std::string& filePath, const std::string& data) {
     if (!outFile) {
         return Error(whal_format("Failed to open file: {}", filePath));
     }
-    outFile << data;
+    outFile << data << std::endl;
     if (!outFile) {
         return Error(whal_format("Failed to write to file: {}", filePath));
     }

@@ -51,7 +51,7 @@ ACTIVELY WORKING ON:
     - could stop using lambdas and exclusively use named free functions. Then I can serialize the function signature
 
 ## Map 
-- put tiled project in game's root directory so paths are easier to work with
+- put tiled project in game's `data` directory so paths are easier to work with
     - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?
 - respawn map objects
 - refactor the Scene/Level hierarchy to use entities
