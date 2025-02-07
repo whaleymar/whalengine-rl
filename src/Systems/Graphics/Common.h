@@ -60,7 +60,7 @@ struct EntityPreRenderInfo {
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;
-    rl::Shader shader = rl::Shader{.id = 0xffffffff};  // -1 maps to the default sprite shader
+    rl::Shader shader = rl::Shader{.id = 0xffffffff, .locs = nullptr};  // -1 maps to the default sprite shader
 };
 
 class RenderQueue {

@@ -136,6 +136,8 @@ static std::pair<T, bool> imguiRenderStruct(T thing, const std::string& prefix =
     }
 }
 
+#ifndef NDEBUG
+
 template <typename Dtype>
     requires IsPrimitive<Dtype>
 static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, const std::string& ignoreFieldsWithPrefix, bool& isChange) {
@@ -261,5 +263,7 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
         print("unhandled fundamental type: ", type_of<Dtype>());
     }
 }
+
+#endif
 
 }  // namespace whal
