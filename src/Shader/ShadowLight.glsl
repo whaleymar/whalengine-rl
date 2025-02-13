@@ -52,8 +52,6 @@ vec3 getLighting(vec2 p, vec2 lp) {
 
     vec2 samplePixel = p;
     vec2 deltaStart = lp - p;
-    // vec2 step = (lp-p)/float(STEPS);
-    vec2 step = normalize(lp - p) / float(STEPS);
     vec2 rayDir = normalize(lp - p);
 
     vec3 wallVal = vec3(0.);

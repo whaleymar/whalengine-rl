@@ -69,6 +69,7 @@ ACTIVELY WORKING ON:
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - cache entity positions from previous frame, remove and re-insert entities whose positions changed
+- Don't store Transform in EntityRenderInfo. Would make the struct much smaller. Render systems which alter the transform value can be tweaked using something like child entities (i think only the DropShadowRenderSystem does this)
 
 ## Misc
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
