@@ -162,24 +162,21 @@ MultiTexture MultiTexture::create() {
     // For WebGL, MRT targets need to be the same format and size
     // TODO make same format. Combine everything into one 16 bit texture. First 8 bits of each channel for OcclusionColor. Then red channel's 8 bits
     // for Occlusion depth, green channel's 8 bits for All depth
-    const auto hdrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
-    const auto ldrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+    const auto format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
 
-    mt.tex = LoadRenderTextureFormat(width, height, hdrFormat);
+    mt.tex = LoadRenderTextureFormat(width, height, format);
 
     rl::rlEnableFramebuffer(mt.tex.id);
 
     // Load additional buffers
-    mt.depth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
-    mt.occlusionColor = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
-    mt.occlusionDepth = rlLoadTexture(nullptr, width, height, ldrFormat, 1);
+    mt.depth = rl::rlLoadTexture(nullptr, width, height, format, 1);
+    mt.occlusionColor = rl::rlLoadTexture(nullptr, width, height, format, 1);
 
     // Activate and attach the buffers
     rl::rlActiveDrawBuffers(4);
-    rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rl::rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rl::rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    rl::rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
     // RESEARCH add another buffer so opengl can do depth testing? could save some frames
 
     // Automatically calls rlDisableFramebuffer()
@@ -195,7 +192,6 @@ void MultiTexture::release() {
         // rl::rlUnloadTexture(tex.texture.id);
         rl::rlUnloadTexture(depth);
         rl::rlUnloadTexture(occlusionColor);
-        rl::rlUnloadTexture(occlusionDepth);
         // rl::rlUnloadFramebuffer(tex.id);
         rl::UnloadRenderTexture(tex);
         tex.id = 0;
@@ -218,17 +214,7 @@ rl::Texture MultiTexture::getDepth() const {
         .width = WINDOW_WIDTH_RENDER,
         .height = WINDOW_HEIGHT_RENDER,
         .mipmaps = 1,
-        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-    };
-}
-
-rl::Texture MultiTexture::getOcclusionDepth() const {
-    return rl::Texture{
-        .id = occlusionDepth,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
-        .mipmaps = 1,
-        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+        .format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
     };
 }
 
@@ -248,8 +234,7 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
     {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, true},
     {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
     {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::OcclusionDepth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::AllDepth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
     {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
     {TextureID::DistanceField, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
 };

@@ -1,8 +1,7 @@
 #version 330
 layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 AllDepth;
+layout(location = 1) out vec4 Depth;
 layout(location = 2) out vec4 OcclColor;
-layout(location = 3) out vec4 OcclDepth;
 
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
@@ -26,7 +25,7 @@ void main() {
     if (isMask > 0.) {
         vec4 maskColor = texture(texture0, maskTexCoord);
         if (isMaskBlendAdditive > 0.) {
-            texelColor = texelColor + texelColor * maskColor;
+            texelColor = vec4((texelColor + texelColor * maskColor).xyz, texelColor.a);
         } else {
             texelColor *= maskColor;
         }
@@ -41,15 +40,12 @@ void main() {
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0
     const float scalar = 20.0;
+    Depth = vec4(0.);
     if (isOccluder > 0.5) {
-        OcclDepth = vec4(fragDepth * scalar, 0., 0., texelColor.a);
-    } else {
-        OcclDepth = vec4(0.);
+        Depth = vec4(0., fragDepth * scalar, 0., texelColor.a);
     }
     if (isUI < 0.5) {
-        AllDepth = vec4(fragDepth * scalar, 0., 0., texelColor.a);
-    } else {
-        AllDepth = vec4(0., 0., 0., 0.0);
+        Depth = vec4(fragDepth * scalar, Depth.g, 0., texelColor.a);
     }
 
     OcclColor = FragColor * vec4(isOccluder);
