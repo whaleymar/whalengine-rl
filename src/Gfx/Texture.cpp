@@ -221,6 +221,7 @@ rl::Texture MultiTexture::getDepth() const {
 enum class WindowSize {
     Game,
     Render,
+    GlobalRange,
 };
 
 struct RenderTextureInfo {
@@ -237,6 +238,7 @@ static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
     {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
     {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
     {TextureID::DistanceField, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::NewOccluderColor, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, false},
 };
 
 TextureManager::TextureManager() {
@@ -405,11 +407,21 @@ const rl::Texture2D& TextureManager::_getTexture(const std::string& name) {
     return mTextures[getTextureIndex(name)];
 }
 
+inline Vector2i getWindowSize(WindowSize size) {
+    switch (size) {
+    case WindowSize::Render:
+        return {WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER};
+    case WindowSize::Game:
+        return {WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME};
+    case WindowSize::GlobalRange:
+        return {WINDOW_WIDTH_GAME * 3, WINDOW_HEIGHT_GAME * 3};
+    }
+}
+
 void TextureManager::_loadRenderTextures() {
     for (auto rtInfo : S_RENDER_TEX_INFO) {
         auto format = rtInfo.isHDR ? rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        Vector2i size =
-            rtInfo.size == WindowSize::Render ? Vector2i(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER) : Vector2i(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+        Vector2i size = getWindowSize(rtInfo.size);
         rl::RenderTexture2D renderTexture = rl::LoadRenderTextureFormat(size.x, size.y, format);
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;

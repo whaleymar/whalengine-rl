@@ -41,7 +41,8 @@ enum class TextureID {
     Main,
     Lighting,
     OcclusionColor,
-    Depth,
+    Depth,             // depth for everything on red, for occluders on green
+    NewOccluderColor,  // larger texture that stores occluder color in an area larger than the camera
     Bloom,
     DistanceField,
     _COUNT_DO_NOT_USE_ME,

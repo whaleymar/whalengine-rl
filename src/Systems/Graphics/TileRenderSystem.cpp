@@ -209,6 +209,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         rl::Vector3 metaFlags;
         std::vector<TileInstance>& tiles = S_TILE_BATCH[layerEntity];
         const u64 nTiles = tiles.size();
+        bool skipUntilNext = false;
         for (u64 i = 0; i < nTiles; ++i) {
             TileInstance tile = tiles[i];
             if (tile.x < minX || tile.x >= maxX || tile.y < minY || tile.y >= maxY) {
@@ -216,10 +217,15 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             }
             if (tile.tileMask != lastMask) {
                 lastMask = tile.tileMask;
+                skipUntilNext = false;
                 tInfo = getTile(tile.tileMask);
 
                 // using a dense map here (a vector of pairs) because it's much faster than std::unordered_map
                 renderInfo = &spriteCache.get(tInfo.gid);
+                if (ctx.isOccludersOnly && !renderInfo->isOccluder) {
+                    skipUntilNext = true;
+                    continue;
+                }
                 src = rl::Vector2{
                     renderInfo->sprite.atlasPosition.x,
                     renderInfo->sprite.atlasPosition.y,
@@ -228,6 +234,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                     GetTileMetaFlags(renderInfo->sprite, eCtx.colorBuf.depth, renderInfo->isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y);
                 // i could cache some stuff from DrawTileHDR here and inline the function in this loop, but profiling only showed a 2% speedup which
                 // isn't worth the mess
+            } else if (skipUntilNext) {
+                continue;
             }
 
             const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + eCtx.transform.position;
@@ -263,12 +271,12 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                 queue.add(sortedTiles[i]);
             }
         } else {
-            // occlusion calced at draw time, pass No so we don't do extra work
+            // occlusion calced at draw time. Pass MaybeInChildren so RenderQueue knows.
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
                 .transform = trans,
                 .entity = entity,
-                .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
+                .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::MaybeInChildren,
                 .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
             });
         }
@@ -365,6 +373,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
     const Transform parentTrans = e.get<Transform>();
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
+    const stl::Map<s32, TileRenderInfo>& spriteCache = tml.tilemap->spriteCache;
 
     // caching these values once. Thousands of calls to shared_ptr_access really add up
     const s32 widthTiles = tml.tilemap->widthTiles;
@@ -381,13 +390,12 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
             S_YSORT_COORD_LUT[e].push_back(Vector2i(x, y));
             Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position;
 
-            // Value of IsOccluder can be Yes or No; doesn't matter because it's calculated at draw time.
-            // The important part is that it's not Unchecked because the RenderQueue will waste time checking.
             const auto ri = gfx::EntityPreRenderInfo{
                 .boundingBox = AABB(worldPosition.round(), halflen),
                 .transform = parentTrans,
                 .entity = e,
-                .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
+                .isOccluder =
+                    spriteCache.get(tile.gid).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
                 .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
             };

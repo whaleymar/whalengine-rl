@@ -63,17 +63,62 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
 }
 
 bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
+    bool isDraw = false;
     if (mCameraViewBox.isOverlapping(renderInfo.boundingBox)) {
-        addPrecalculated(renderInfo);
-        return true;
+        bool isOccluder = addPrecalculated(renderInfo);
+        isDraw = true;
+
+        if ((isOccluder || renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::MaybeInChildren) &&
+            mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
+            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+                                        gfx::DrawMetaData{
+                                            .depth = static_cast<u8>(renderInfo.transform.depth),
+                                            .isOccluder = true,
+                                            .isUI = true,
+                                        },
+                                        renderInfo.internal, renderInfo.shader);
+        }
+    } else if (mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
+        bool isOccluder;
+        switch (renderInfo.isOccluder) {
+        case EntityPreRenderInfo::IsOccluder::Unchecked:
+            isOccluder = renderInfo.entity.has<BlocksLight>();
+            break;
+        case EntityPreRenderInfo::IsOccluder::Yes:
+        case EntityPreRenderInfo::IsOccluder::MaybeInChildren:
+            isOccluder = true;
+            break;
+        case EntityPreRenderInfo::IsOccluder::No:
+            isOccluder = false;
+            break;
+        }
+        if (isOccluder) {
+            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+                                        gfx::DrawMetaData{
+                                            .depth = static_cast<u8>(renderInfo.transform.depth),
+                                            .isOccluder = true,
+                                            .isUI = true,
+                                        },
+                                        renderInfo.internal, renderInfo.shader);
+        }
     }
-    return false;
+    return isDraw;
 }
 
-void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
-    const bool isOccluder = renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Unchecked ?
-                                renderInfo.entity.has<BlocksLight>() :
-                                (renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::Yes ? true : false);
+bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
+    bool isOccluder;
+    switch (renderInfo.isOccluder) {
+    case EntityPreRenderInfo::IsOccluder::Unchecked:
+        isOccluder = renderInfo.entity.has<BlocksLight>();
+        break;
+    case EntityPreRenderInfo::IsOccluder::Yes:
+        isOccluder = true;
+        break;
+    case EntityPreRenderInfo::IsOccluder::MaybeInChildren:
+    case EntityPreRenderInfo::IsOccluder::No:
+        isOccluder = false;
+        break;
+    }
     if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar || renderInfo.transform.depth == Depth::UIClose) {
         mUIQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                               gfx::DrawMetaData{
@@ -91,6 +136,7 @@ void RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
                                   },
                                   renderInfo.internal, renderInfo.shader);
     }
+    return isOccluder;
 }
 
 void clampToPixelGrid(RaylibDrawParams& params) {
@@ -110,6 +156,27 @@ RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize) {
         .rect = rl::Rectangle{screenPosition.x, screenPosition.y, size.x, size.y},
         .origin = rl::Vector2{origin.x, origin.y},
     };
+}
+
+Vector2f getGISector(s32 sector) {
+    // clang-format off
+    switch (sector) {
+        case 0: return {0,0};
+        case 1: return {FWINDOW_WIDTH_GAME, 0};
+        case 2: return {FWINDOW_WIDTH_GAME * 2, 0};
+        case 3: return {FWINDOW_WIDTH_GAME * 2, FWINDOW_HEIGHT_GAME};
+        case 4: return {FWINDOW_WIDTH_GAME * 2, FWINDOW_HEIGHT_GAME * 2};
+        case 5: return {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME * 2};
+        case 6: return {0, FWINDOW_HEIGHT_GAME * 2};
+        case 7: return {0, FWINDOW_HEIGHT_GAME};
+        case 8: return {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
+        default: return {0,0};
+    }
+    // clang-format on
+}
+
+Vector2f getGISectorOffset(s32 sector) {
+    return (getGISector(sector) - getGISector(8)) * Vector2f(1, -1);
 }
 
 }  // namespace whal::gfx
