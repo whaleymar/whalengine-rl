@@ -41,8 +41,7 @@ enum class TextureID {
     Main,
     Lighting,
     OcclusionColor,
-    OcclusionDepth,
-    AllDepth,
+    Depth,
     Bloom,
     DistanceField,
     _COUNT_DO_NOT_USE_ME,
@@ -51,8 +50,7 @@ enum class TextureID {
 struct MultiTexture {
     rl::RenderTexture tex;
     u32 occlusionColor;
-    u32 depth;           // stores depth for everything on red channel
-    u32 occlusionDepth;  // stores depth for occluders on red channel
+    u32 depth;  // stores depth for everything on red channel and occluders on green channel
 
     static MultiTexture create();
     void release();

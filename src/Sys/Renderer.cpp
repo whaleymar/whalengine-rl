@@ -272,11 +272,9 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
     const auto mt = Renderer::getStagingTex();
     const auto depthTex = mt.getDepth();
-    const auto occlDepthTex = mt.getOcclusionDepth();
     const auto colorTex = mt.getOcclusionColor();
 
-    const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::AllDepth);
-    const auto targetOcclDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
+    const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
     const auto targetColorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
@@ -284,11 +282,6 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx) const {
     rl::BeginTextureMode(targetDepthTex);
     rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(depthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
-
-    rl::BeginTextureMode(targetOcclDepthTex);
-    rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(occlDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
     rl::BeginTextureMode(targetColorTex);

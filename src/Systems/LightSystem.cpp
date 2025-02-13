@@ -143,8 +143,7 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
-    const auto depthTex = TextureManager::getRenderTexture(TextureID::AllDepth).texture;
-    const auto occlDepthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto depthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
     const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
@@ -169,7 +168,6 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
-        rl::SetShaderValueTexture(shader, mOcclDepthBufUniform, occlDepthTex);
         rl::SetShaderValueTexture(shader, mDistanceFieldUniform, distanceFieldTex);
 
         gfx::DrawRenderTextureHDR(colorTex, light.color);

@@ -19,7 +19,7 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     rl::RenderTexture currentInput = tmpOutput;
     rl::RenderTexture currentOutput = dst;
 
-    // number of passed should be log base 2 of our largest dimension
+    // number of passes should be log base 2 of our largest dimension
     const s32 nPasses = std::ceil(std::log2(static_cast<f32>(std::max(src.texture.width, src.texture.height))));
 
     Vector2f floatResolutionInv(1.0f / static_cast<f32>(src.texture.width), 1.0f / static_cast<f32>(src.texture.height));

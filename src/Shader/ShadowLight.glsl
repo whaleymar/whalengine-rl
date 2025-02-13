@@ -17,7 +17,6 @@ uniform vec2 lp1;
 uniform float radiusPixels;
 uniform float lightDepth;
 uniform sampler2D depthBuf;
-uniform sampler2D occlDepthBuf;
 uniform sampler2D _DistanceField;
 
 // Output fragment color
@@ -31,7 +30,7 @@ const vec3 wallColor = vec3(0.0);
 const float pi = 3.1415926;
 
 bool isWall(vec2 p) {
-    float depth = texture(occlDepthBuf, p).r;
+    float depth = texture(depthBuf, p).g;
     return lightDepth <= depth;
 }
 
@@ -51,20 +50,20 @@ vec4 getWallColor(vec2 p) {
 vec3 getLighting(vec2 p, vec2 lp) {
     const float minOcclusionAlpha = 0.99;
 
-	vec2 samplePixel = p;
+    vec2 samplePixel = p;
     vec2 deltaStart = lp - p;
-	// vec2 step = (lp-p)/float(STEPS);
+    // vec2 step = (lp-p)/float(STEPS);
     vec2 step = normalize(lp - p) / float(STEPS);
     vec2 rayDir = normalize(lp - p);
 
     vec3 wallVal = vec3(0.);
     vec3 airVal = vec3(1.0);
 
-	for (int i = 0 ; i < STEPS; i++) {
+    for (int i = 0; i < STEPS; i++) {
         // get distance to closest occluder from SDF. use that as step size.
         float dist = texture(_DistanceField, samplePixel).r;
         vec2 nextStep = rayDir * vec2(dist);
-		samplePixel += nextStep;
+        samplePixel += nextStep;
 
         if (isOutOfBounds(samplePixel)) {
             return airVal;
@@ -86,19 +85,19 @@ vec3 getLighting(vec2 p, vec2 lp) {
                 airVal = mix(airVal, wallCol.rgb, wallCol.a);
             }
         }
-	}
-	
-	return airVal;
+    }
+
+    return airVal;
 }
 
-// p = pixel position 
+// p = pixel position
 // lp = light position
-vec3 blendLighting(const vec2 p, vec2 lp) {	
-	vec2 r;
-	vec3 c = vec3(0.,0.,0.);
-    const float recip = 1./float(LIGHTPASSES);
-	
-    const float step = 2./float(LIGHTPASSES);
+vec3 blendLighting(const vec2 p, vec2 lp) {
+    vec2 r;
+    vec3 c = vec3(0., 0., 0.);
+    const float recip = 1. / float(LIGHTPASSES);
+
+    const float step = 2. / float(LIGHTPASSES);
     float valX = -1.;
     float valY = -1.;
 
@@ -107,26 +106,26 @@ vec3 blendLighting(const vec2 p, vec2 lp) {
     const float BIAS = 0.;
     const float t_denom = 1. / float(LIGHTPASSES);
     float t = 0.0;
-	for (int i = 0; i < LIGHTPASSES; i++) {
+    for (int i = 0; i < LIGHTPASSES; i++) {
         r = vec2(cos(2. * t * pi), sin(2. * t * pi)) * SCALAR;
-		c += getLighting(p,lp+r) * recip;
+        c += getLighting(p, lp + r) * recip;
         valX += step;
         valY += step;
         t += t_denom;
-	}
-	
-	return c;
+    }
+
+    return c;
 }
 
-// p = pixel position 
+// p = pixel position
 // lp = light position
 // this does one pass instead of adding some offsets to the lighting pass and then averaging the light values
 // sacrifices soft shadows, but is much faster
-vec3 blendLightingSimple(const vec2 p, vec2 lp) {	
+vec3 blendLightingSimple(const vec2 p, vec2 lp) {
     vec3 c = vec3(0., 0., 0.);
     c += getLighting(p, lp);
-	
-	return c;
+
+    return c;
 }
 
 vec3 processLight(vec2 p, vec2 lightPos) {
@@ -136,7 +135,7 @@ vec3 processLight(vec2 p, vec2 lightPos) {
         return vec3(0.);
     }
 
-    // check if we are behind something else 
+    // check if we are behind something else
     vec3 light;
 
     // Because I'm doing an `else`, anything behind a wall but in front (depth-wise) of light gets lit, but I kinda like how it looks
@@ -153,7 +152,7 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     // vec3 light = vec3(1.); // point light without shadows
 
     // This makes sure the pixel is lit less based on distance from light.
-    float fraction = pixelDistance/radiusPixels;
+    float fraction = pixelDistance / radiusPixels;
     float weight = mix(0., 1., sqrt(fraction));
     light = mix(light, vec3(0.), weight);
     return light;

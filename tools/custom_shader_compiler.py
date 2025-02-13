@@ -15,6 +15,7 @@ Here are the extensions which are the same as Godot's shader language:
 
 These extensions are not in Godot's shader language:
 1) The `#use mrt` macro can be used to enable Multiple Render Targets in the compiled fragment shader.
+2) #ifdebug, #else, and #endif guards for debug/release code differences
 
 """
 
