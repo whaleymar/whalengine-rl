@@ -52,12 +52,14 @@ struct MultiTexture {
     rl::RenderTexture tex;
     u32 occlusionColor;
     u32 depth;  // stores depth for everything on red channel and occluders on green channel
+    s32 width;
+    s32 height;
+    rl::PixelFormat format;
 
-    static MultiTexture create();
+    static MultiTexture create(s32 width, s32 height, rl::PixelFormat format);
     void release();
     rl::Texture getOcclusionColor() const;
     rl::Texture getDepth() const;
-    rl::Texture getOcclusionDepth() const;
 };
 
 class TextureManager {

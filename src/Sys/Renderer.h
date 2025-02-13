@@ -117,7 +117,7 @@ private:
     void buildRenderQueue(Vector2i cameraPosition);
     void drawEntities(gfx::RenderContext ctx);
     void drawLights(gfx::RenderContext ctx);
-    void scaleDepthBuffers(gfx::RenderContext ctx, rl::RenderTexture updatedSector) const;
+    void scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const;
     void buildDistanceField() const;
     void drawUI(const gfx::RenderContext ctx) const;
 
@@ -132,6 +132,7 @@ private:
     std::vector<RTInfo> mUsedRTs;
 
     MultiTexture mStagingTexture;
+    MultiTexture mGIOccluderTexture;
 
     std::vector<UniformVariant> mUniformQueue;
 
