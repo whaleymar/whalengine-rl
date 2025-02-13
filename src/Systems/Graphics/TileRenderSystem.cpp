@@ -269,7 +269,7 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                 .transform = trans,
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
-                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff},
+                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
             });
         }
     }
@@ -389,7 +389,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 .entity = e,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
-                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff},
+                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
             };
             S_YSORT_RENDERINFO_LUT[e].push_back(ri);
 

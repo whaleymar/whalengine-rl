@@ -158,6 +158,10 @@ MultiTexture MultiTexture::create() {
     MultiTexture mt;
     const s32 width = WINDOW_WIDTH_RENDER;
     const s32 height = WINDOW_HEIGHT_RENDER;
+
+    // For WebGL, MRT targets need to be the same format and size
+    // TODO make same format. Combine everything into one 16 bit texture. First 8 bits of each channel for OcclusionColor. Then red channel's 8 bits
+    // for Occlusion depth, green channel's 8 bits for All depth
     const auto hdrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
     const auto ldrFormat = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
@@ -176,6 +180,7 @@ MultiTexture MultiTexture::create() {
     rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
     rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
     rlFramebufferAttach(mt.tex.id, mt.occlusionDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
+    // RESEARCH add another buffer so opengl can do depth testing? could save some frames
 
     // Automatically calls rlDisableFramebuffer()
     if (!rl::rlFramebufferComplete(mt.tex.id)) {
