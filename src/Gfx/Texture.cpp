@@ -154,18 +154,15 @@ Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgrou
     return texture;
 }
 
-MultiTexture MultiTexture::create() {
-    MultiTexture mt;
-    const s32 width = WINDOW_WIDTH_RENDER;
-    const s32 height = WINDOW_HEIGHT_RENDER;
+MultiTexture MultiTexture::create(s32 width, s32 height, rl::PixelFormat format) {
+    MultiTexture mt{
+        .width = width,
+        .height = height,
+        .format = format,
+    };
 
     // For WebGL, MRT targets need to be the same format and size
-    // TODO make same format. Combine everything into one 16 bit texture. First 8 bits of each channel for OcclusionColor. Then red channel's 8 bits
-    // for Occlusion depth, green channel's 8 bits for All depth
-    const auto format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
-
     mt.tex = LoadRenderTextureFormat(width, height, format);
-
     rl::rlEnableFramebuffer(mt.tex.id);
 
     // Load additional buffers
@@ -201,20 +198,20 @@ void MultiTexture::release() {
 rl::Texture MultiTexture::getOcclusionColor() const {
     return rl::Texture{
         .id = occlusionColor,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
+        .width = width,
+        .height = height,
         .mipmaps = 1,
-        .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+        .format = format,
     };
 }
 
 rl::Texture MultiTexture::getDepth() const {
     return rl::Texture{
         .id = depth,
-        .width = WINDOW_WIDTH_RENDER,
-        .height = WINDOW_HEIGHT_RENDER,
+        .width = width,
+        .height = height,
         .mipmaps = 1,
-        .format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
+        .format = format,
     };
 }
 

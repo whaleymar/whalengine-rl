@@ -60,7 +60,8 @@ Renderer::Renderer() {
 }
 
 void Renderer::init() {
-    mStagingTexture = MultiTexture::create();
+    mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
+    mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 }
 
 void Renderer::update() {
@@ -268,7 +269,7 @@ void Renderer::render() {
 #endif
 }
 
-void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::RenderTexture updatedSector) const {
+void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
     const auto depthTex = mStagingTexture.getDepth();
     const auto colorTex = mStagingTexture.getOcclusionColor();
@@ -297,12 +298,12 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::RenderTexture updat
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
     rl::BeginBlendMode(rl::BLEND_CUSTOM);
     rl::DrawRectangle(centerLoc.x, centerLoc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(targetColorTex.texture, srcRectGame, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
+    rl::DrawTexturePro(targetDepthTex.texture, srcRectGame, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
                        rl::Vector2{0, 0}, 0, rl::WHITE);
 
     Vector2f loc = gfx::getGISector(Time.getFrame() % 8);
     rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(updatedSector.texture, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
+    rl::DrawTexturePro(updatedSector, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
                        rl::WHITE);
     rl::EndBlendMode();
     rl::EndTextureMode();
@@ -338,7 +339,6 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::EndMode2D();
     rl::EndTextureMode();
 
-    auto tmp = getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     // adjust the camera and virtual ratio to work with a game-resolution camera
     f32 prevVirtualRatio = VIRTUAL_SCREEN_RATIO;
     VIRTUAL_SCREEN_RATIO = 1.0f;  // HACK
@@ -348,7 +348,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     gameRenderContext.camera.target = (gameRenderContext.cameraPosition * Vector2f(1, -1)).asRL();
     gameRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
     gameRenderContext.isOccludersOnly = true;
-    rl::BeginTextureMode(tmp);
+    rl::BeginTextureMode(mGIOccluderTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(gameRenderContext.camera);
     for (const auto& renderInfo : mRenderQueue.mOccluderQueue) {
@@ -366,8 +366,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::EndMode2D();
     rl::EndTextureMode();
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
-    scaleDepthBuffers(renderContext, tmp);
-    releaseTemporaryRT(tmp);
+    scaleDepthBuffers(renderContext, mGIOccluderTexture.getDepth());
     buildDistanceField();
 }
 
@@ -514,7 +513,7 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
     cascadeWindowChanges(parentSize, windowPosition);
 
     mStagingTexture.release();
-    mStagingTexture = MultiTexture::create();
+    mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     TextureManager::instance().reloadRenderTextures();
     mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
     Event.emit<evt::WindowResize>(Vector2f(FWINDOW_WIDTH_RENDER / oldSize.x, FWINDOW_HEIGHT_RENDER / oldSize.y));
