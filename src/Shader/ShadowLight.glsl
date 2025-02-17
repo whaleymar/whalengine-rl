@@ -12,6 +12,7 @@ uniform vec4 colDiffuse;
 // mine:
 uniform float iTime;
 uniform vec2 iResolution;
+uniform vec2 _DistanceFieldSize; // also the size of `depthBuf`
 
 uniform vec2 lp1;
 uniform float radiusPixels;
@@ -35,7 +36,9 @@ bool isWall(vec2 p) {
 }
 
 bool isBehindSomething(vec2 p) {
-    float depth = texture(depthBuf, p).r;
+    vec2 dfSizeRatio = iResolution / _DistanceFieldSize;
+    vec2 samplePixelSDF = p * dfSizeRatio + dfSizeRatio;
+    float depth = texture(depthBuf, samplePixelSDF).r;
     return lightDepth < depth;
 }
 
@@ -50,7 +53,10 @@ vec4 getWallColor(vec2 p) {
 vec3 getLighting(vec2 p, vec2 lp) {
     const float minOcclusionAlpha = 0.99;
 
+    vec2 dfSizeRatio = iResolution / _DistanceFieldSize;
+    vec2 dfSizeRatioInv = vec2(1.) / dfSizeRatio;
     vec2 samplePixel = p;
+    vec2 samplePixelSDF = p * dfSizeRatio + dfSizeRatio;
     vec2 deltaStart = lp - p;
     vec2 rayDir = normalize(lp - p);
 
@@ -59,11 +65,12 @@ vec3 getLighting(vec2 p, vec2 lp) {
 
     for (int i = 0; i < STEPS; i++) {
         // get distance to closest occluder from SDF. use that as step size.
-        float dist = texture(_DistanceField, samplePixel).r;
+        float dist = texture(_DistanceField, samplePixelSDF).r;
         vec2 nextStep = rayDir * vec2(dist);
-        samplePixel += nextStep;
+        samplePixelSDF += nextStep;
+        samplePixel += nextStep * dfSizeRatioInv;
 
-        if (isOutOfBounds(samplePixel)) {
+        if (isOutOfBounds(samplePixelSDF)) {
             return airVal;
         }
 
@@ -74,14 +81,15 @@ vec3 getLighting(vec2 p, vec2 lp) {
         }
 
         // isWall checks depth conditions
-        if (dist < hitEpsilon && isWall(samplePixel)) {
+        if (dist < hitEpsilon && isWall(samplePixelSDF)) {
             // check for translucency
-            vec4 wallCol = getWallColor(samplePixel);
-            if (wallCol.a >= minOcclusionAlpha) {
-                return wallVal * airVal;
-            } else {
-                airVal = mix(airVal, wallCol.rgb, wallCol.a);
-            }
+            // vec4 wallCol = getWallColor(samplePixel);
+            // if (wallCol.a >= minOcclusionAlpha) {
+            //     return wallVal * airVal;
+            // } else {
+            //     airVal = mix(airVal, wallCol.rgb, wallCol.a);
+            // }
+            return wallVal * airVal;
         }
     }
 

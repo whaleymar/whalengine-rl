@@ -225,17 +225,18 @@ struct RenderTextureInfo {
     TextureID id;
     WindowSize size;
     rl::TextureFilter filter;
+    rl::TextureWrap wrap;
     bool isHDR;
 };
 
 static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
-    {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, true},
-    {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
-    {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, true},
-    {TextureID::DistanceField, WindowSize::Game, rl::TEXTURE_FILTER_POINT, false},
-    {TextureID::NewOccluderColor, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, false},
+    {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, true},
+    {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_REPEAT, true},
+    {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, false},
+    {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, false},
+    {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_CLAMP, true},
+    {TextureID::DistanceField, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, true},
+    {TextureID::NewOccluderDepth, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, true},
 };
 
 TextureManager::TextureManager() {
@@ -424,6 +425,10 @@ void TextureManager::_loadRenderTextures() {
         S_RENDER_TEXTURES[ix] = renderTexture;
         setIsRenderTextureUsed(ix);
         rl::SetTextureFilter(renderTexture.texture, rtInfo.filter);
+
+        if (rtInfo.wrap != rl::TEXTURE_WRAP_REPEAT) {
+            rl::SetTextureWrap(renderTexture.texture, rtInfo.wrap);
+        }
     }
 }
 

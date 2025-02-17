@@ -2,7 +2,6 @@
 
 ACTIVELY WORKING ON:
 - Godot 4.x Shader Language -> GLSL Transpiler
-- Monobehavior Component
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -10,7 +9,6 @@ ACTIVELY WORKING ON:
 - Want to create more world materials in game
 
 ## Components (some of these are duplicates of other tasks)
-- parallax factor
 - Many components have an `offset` vector which can be replaced with a child entity. I'll need to handle this in loadImpls and create a new entity when there's an offset. This might break some EntityFactory code.
     - collider (probably keep this one)
     - trigger 
@@ -69,7 +67,7 @@ ACTIVELY WORKING ON:
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
     - delay would be minimal. Only affects newly created/deleted entities + entites which just walked in front/behind something
 - cache entity positions from previous frame, remove and re-insert entities whose positions changed
-- Don't store Transform in EntityRenderInfo. Would make the struct much smaller. Render systems which alter the transform value can be tweaked using something like child entities (i think only the DropShadowRenderSystem does this)
+- Don't store Transform by value in EntityRenderInfo (use pointer/reference). Would make the struct much smaller. Render systems which alter the transform value can be tweaked using something like child entities (i think only the DropShadowRenderSystem does this)
 
 ## Misc
 - rich text support: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/StyledText.html
@@ -83,6 +81,10 @@ ACTIVELY WORKING ON:
         - Currently I am making portals invisible + an empty layer mask + a CustomUpdate that checks the enemy count every frame & changes the values when it "activates"
         - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
         - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
+
+## Audio
+- FMOD: switch to FMOD's C API. Required for Windows since MSVC uses different name mangling than the real compilers.
+- Follow documentation to get web builds working!
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
