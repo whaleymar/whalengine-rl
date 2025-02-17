@@ -35,8 +35,6 @@ private:
     bool mIsValid = false;
 };
 
-// RESEARCH other LayerXYZs I might want to do in the future:
-// - Outline
 enum class TextureID {
     Main,
     Lighting,
@@ -53,17 +51,13 @@ enum class TextureID {
 // I'd be drawing to fewer render target.
 struct MultiTexture {
     rl::RenderTexture tex;
-    u32 occlusionColor;
-    u32 depth;      // stores depth for everything on red channel
-    u32 occlDepth;  // stores depth for light occluders on red channel. Cannot be same texture as depth due to depth test.
+    u32 depth;  // stores depth for everything on red channel
     s32 width;
     s32 height;
     rl::PixelFormat format;
 
     static MultiTexture create(s32 width, s32 height, rl::PixelFormat format);
     void release();
-    rl::Texture getOcclusionColor() const;
-    rl::Texture getOcclusionDepth() const;
     rl::Texture getDepth() const;
 };
 

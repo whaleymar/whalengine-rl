@@ -15,9 +15,9 @@ rl::Vector3 DrawMetaData::asRL() const {
     u32 packed = 0;
     packed |= static_cast<u32>(depth);
 
-    if (isOccluder) {
-        packed |= (1 << 8);
-    }
+    // if (isOccluder) {
+    //     packed |= (1 << 8);
+    // }
 
     if (isUI) {
         packed |= (1 << 9);
@@ -31,9 +31,9 @@ rl::Vector3 DrawMetaData::asRL() const {
 rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const {
     u32 packed = static_cast<u32>(depth);
 
-    if (isOccluder) {
-        packed |= (1 << 8);
-    }
+    // if (isOccluder) {
+    //     packed |= (1 << 8);
+    // }
 
     if (isUI) {
         packed |= (1 << 9);
@@ -67,8 +67,18 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         bool isOccluder = addPrecalculated(renderInfo);
         isDraw = true;
 
-        if ((isOccluder || renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::MaybeInChildren) &&
-            mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
+        bool isOccluderMaybe = isOccluder || renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::MaybeInChildren;
+        if (isOccluderMaybe) {
+            mOccluderQueueCamera.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+                                              gfx::DrawMetaData{
+                                                  .depth = static_cast<u8>(renderInfo.transform.depth),
+                                                  .isOccluder = true,
+                                                  .isUI = true,
+                                              },
+                                              renderInfo.internal, renderInfo.shader);
+        }
+
+        if (isOccluderMaybe && mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
             mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
                                             .depth = static_cast<u8>(renderInfo.transform.depth),
@@ -136,6 +146,13 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
                                   renderInfo.internal, renderInfo.shader);
     }
     return isOccluder;
+}
+
+void RenderQueue::clear() {
+    mNormalQueue.clear();
+    mUIQueue.clear();
+    mOccluderQueue.clear();
+    mOccluderQueueCamera.clear();
 }
 
 void clampToPixelGrid(RaylibDrawParams& params) {
