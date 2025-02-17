@@ -167,15 +167,11 @@ MultiTexture MultiTexture::create(s32 width, s32 height, rl::PixelFormat format)
 
     // Load additional buffers
     mt.depth = rl::rlLoadTexture(nullptr, width, height, format, 1);
-    mt.occlusionColor = rl::rlLoadTexture(nullptr, width, height, format, 1);
-    mt.occlDepth = rl::rlLoadTexture(nullptr, width, height, format, 1);
 
     // Activate and attach the buffers
-    rl::rlActiveDrawBuffers(4);
+    rl::rlActiveDrawBuffers(2);
     rl::rlFramebufferAttach(mt.tex.id, mt.tex.texture.id, rl::RL_ATTACHMENT_COLOR_CHANNEL0, rl::RL_ATTACHMENT_TEXTURE2D, 0);
     rl::rlFramebufferAttach(mt.tex.id, mt.depth, rl::RL_ATTACHMENT_COLOR_CHANNEL1, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rl::rlFramebufferAttach(mt.tex.id, mt.occlusionColor, rl::RL_ATTACHMENT_COLOR_CHANNEL2, rl::RL_ATTACHMENT_TEXTURE2D, 0);
-    rl::rlFramebufferAttach(mt.tex.id, mt.occlDepth, rl::RL_ATTACHMENT_COLOR_CHANNEL3, rl::RL_ATTACHMENT_TEXTURE2D, 0);
     // RESEARCH add another buffer so opengl can do depth testing? could save some frames
 
     // Automatically calls rlDisableFramebuffer()
@@ -190,32 +186,10 @@ void MultiTexture::release() {
     if (tex.id > 0) {
         // rl::rlUnloadTexture(tex.texture.id);
         rl::rlUnloadTexture(depth);
-        rl::rlUnloadTexture(occlusionColor);
-        rl::rlUnloadTexture(occlDepth);
         // rl::rlUnloadFramebuffer(tex.id);
         rl::UnloadRenderTexture(tex);
         tex.id = 0;
     }
-}
-
-rl::Texture MultiTexture::getOcclusionColor() const {
-    return rl::Texture{
-        .id = occlusionColor,
-        .width = width,
-        .height = height,
-        .mipmaps = 1,
-        .format = format,
-    };
-}
-
-rl::Texture MultiTexture::getOcclusionDepth() const {
-    return rl::Texture{
-        .id = occlDepth,
-        .width = width,
-        .height = height,
-        .mipmaps = 1,
-        .format = format,
-    };
 }
 
 rl::Texture MultiTexture::getDepth() const {

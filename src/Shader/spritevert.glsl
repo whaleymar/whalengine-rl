@@ -12,7 +12,7 @@ uniform mat4 mvp;
 out vec2 fragTexCoord;
 out vec4 fragColor;
 out float fragDepth;
-out float isOccluder;
+// out float isOccluder;
 out float isUI;
 out float isMask;
 out vec2 maskTexCoord;
@@ -35,11 +35,11 @@ void main()
 
     // Extract flags
     // 9th bit
-    if ((intData & 0x100u) != 0u) {
-        isOccluder = 1.0;
-    } else {
-        isOccluder = 0.0;
-    }
+    // if ((intData & 0x100u) != 0u) {
+    //     isOccluder = 1.0;
+    // } else {
+    //     isOccluder = 0.0;
+    // }
 
     // 10th bit
     if ((intData & 0x200u) != 0u) {

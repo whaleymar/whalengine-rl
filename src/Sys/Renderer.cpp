@@ -277,25 +277,17 @@ void Renderer::render() {
 #endif
 }
 
-void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const {
+void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepthView) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
-    const auto occlusionDepthTex = mStagingTexture.getOcclusionDepth();
     const auto allDepthTex = mStagingTexture.getDepth();
-    const auto colorTex = mStagingTexture.getOcclusionColor();
 
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
-    const auto targetColorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
     rl::BeginTextureMode(targetDepthTex);
     rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(allDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
-
-    rl::BeginTextureMode(targetColorTex);
-    rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(colorTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
     // Render to larger occlusion color buf
@@ -307,13 +299,17 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
     rl::BeginBlendMode(rl::BLEND_CUSTOM);
     rl::DrawRectangle(centerLoc.x, centerLoc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(occlusionDepthTex, srcRect, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
+
+    // draw camera sector
+    Vector2f loc = gfx::getGISector(8);
+    // rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
+    rl::DrawTexturePro(cameraDepthView, srcRectGame, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
                        rl::Vector2{0, 0}, 0, rl::WHITE);
 
-    Vector2f loc = gfx::getGISector(Time.getFrame() % 8);
+    loc = gfx::getGISector(Time.getFrame() % 8);
     rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(updatedSector, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
-                       rl::WHITE);
+    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
+                       rl::Vector2{0, 0}, 0, rl::WHITE);
     rl::EndBlendMode();
     rl::EndTextureMode();
 }
@@ -352,30 +348,54 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     f32 prevVirtualRatio = VIRTUAL_SCREEN_RATIO;
     VIRTUAL_SCREEN_RATIO = 1.0f;  // HACK
     gfx::RenderContext gameRenderContext = renderContext;
-    Vector2f offset = gfx::getGISectorOffset(Time.getFrame() % 8);
-    gameRenderContext.cameraPosition += offset;
-    gameRenderContext.camera.target = (gameRenderContext.cameraPosition * Vector2f(1, -1)).asRL();
     gameRenderContext.camera.offset = rl::Vector2(WINDOW_WIDTH_GAME / 2, WINDOW_HEIGHT_GAME / 2);
     gameRenderContext.isOccludersOnly = true;
-    rl::BeginTextureMode(mGIOccluderTexture.tex);
-    rl::ClearBackground(Colors::ClearRL);
-    rl::BeginMode2D(gameRenderContext.camera);
-    for (const auto& renderInfo : mRenderQueue.mOccluderQueue) {
-        if (renderInfo.shader.id != lastShaderId) {
-            if (renderInfo.shader.id == 0xffffffff) {
-                // -1 maps to default sprite shader
-                rl::BeginShaderMode(defaultShader);
-            } else {
-                rl::BeginShaderMode(renderInfo.shader);
+
+    auto renderOccluders = [&](s32 sector, const std::vector<gfx::EntityRenderInfo>& queue) {
+        Vector2f offset = gfx::getGISectorOffset(sector);
+        gameRenderContext.cameraPosition = renderContext.cameraPosition + offset;
+        gameRenderContext.camera.target = (gameRenderContext.cameraPosition * Vector2f(1, -1)).asRL();
+        rl::BeginTextureMode(mGIOccluderTexture.tex);
+        rl::ClearBackground(Colors::ClearRL);
+        rl::BeginMode2D(gameRenderContext.camera);
+        for (const auto& renderInfo : queue) {
+            if (renderInfo.shader.id != lastShaderId) {
+                if (renderInfo.shader.id == 0xffffffff) {
+                    // -1 maps to default sprite shader
+                    rl::BeginShaderMode(defaultShader);
+                } else {
+                    rl::BeginShaderMode(renderInfo.shader);
+                }
+                lastShaderId = renderInfo.shader.id;
             }
-            lastShaderId = renderInfo.shader.id;
+            renderInfo.piRender->draw(renderInfo, gameRenderContext);
         }
-        renderInfo.piRender->draw(renderInfo, gameRenderContext);
-    }
-    rl::EndMode2D();
+        rl::EndMode2D();
+        rl::EndTextureMode();
+    };
+    renderOccluders(8, mRenderQueue.mOccluderQueueCamera);
+
+    // COPY CAMERA'S COLOR AND DEPTH BUFFERS FOR LATER
+    const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
+    const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+
+    rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
+    rl::ClearBackground(Colors::ClearRL);
+    rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
+
+    auto tmp = getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+    rl::BeginTextureMode(tmp);
+    rl::ClearBackground(Colors::ClearRL);
+    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
+
+    renderOccluders(Time.getFrame() % 8, mRenderQueue.mOccluderQueue);
+
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
-    scaleDepthBuffers(renderContext, mGIOccluderTexture.getOcclusionDepth());
+    scaleDepthBuffers(renderContext, tmp.texture);
+    releaseTemporaryRT(tmp);
+
     buildDistanceField();
 }
 
@@ -440,6 +460,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     std::sort(mRenderQueue.mNormalQueue.begin(), mRenderQueue.mNormalQueue.end(), isBelow);
     std::sort(mRenderQueue.mUIQueue.begin(), mRenderQueue.mUIQueue.end(), isBelow);
     std::sort(mRenderQueue.mOccluderQueue.begin(), mRenderQueue.mOccluderQueue.end(), isBelow);
+    std::sort(mRenderQueue.mOccluderQueueCamera.begin(), mRenderQueue.mOccluderQueueCamera.end(), isBelow);
 }
 
 void Renderer::queueUniform(UniformVariant uniform) {

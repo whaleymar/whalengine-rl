@@ -97,12 +97,12 @@ static void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 sourc
 }
 
 // slightly faster version of DrawMetaData::asRL
-rl::Vector3 GetTileMetaFlags(const Sprite& sprite, u8 depth, bool isOccluder, bool isUI, f32 invTexWidth, f32 invTexHeight) {
+rl::Vector3 GetTileMetaFlags(const Sprite& sprite, u8 depth, bool isUI, f32 invTexWidth, f32 invTexHeight) {
     u32 packed = static_cast<u32>(depth);
 
-    if (isOccluder) {
-        packed |= (1 << 8);
-    }
+    // if (isOccluder) {
+    //     packed |= (1 << 8);
+    // }
 
     if (isUI) {
         packed |= (1 << 9);
@@ -180,7 +180,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
         DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform.rotation,
                     renderInfo.sprite.color.asRL(),
-                    GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, renderInfo.isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
+                    GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
                     renderInfo.orient.second == Facing::Left);
         rl::rlSetTexture(0);
 
@@ -229,8 +229,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                     renderInfo->sprite.atlasPosition.x,
                     renderInfo->sprite.atlasPosition.y,
                 };
-                metaFlags =
-                    GetTileMetaFlags(renderInfo->sprite, eCtx.colorBuf.depth, renderInfo->isOccluder, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y);
+                metaFlags = GetTileMetaFlags(renderInfo->sprite, eCtx.colorBuf.depth, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y);
                 // i could cache some stuff from DrawTileHDR here and inline the function in this loop, but profiling only showed a 2% speedup which
                 // isn't worth the mess
             } else if (skipUntilNext) {

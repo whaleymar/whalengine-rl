@@ -80,16 +80,13 @@ public:
     void setViewBox(const AABB& viewBox) { mCameraViewBox = viewBox; }
     void setGIViewBox(const AABB& viewBox) { mGlobalIlluminationViewBox = viewBox; }
     void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
-    void clear() {
-        mNormalQueue.clear();
-        mUIQueue.clear();
-        mOccluderQueue.clear();
-    }
+    void clear();
 
 private:
     std::vector<EntityRenderInfo> mNormalQueue;
-    std::vector<EntityRenderInfo> mUIQueue;        // UI separate so it's not affected by lighting
-    std::vector<EntityRenderInfo> mOccluderQueue;  // occluders which aren't visible to the camera
+    std::vector<EntityRenderInfo> mUIQueue;              // UI separate so it's not affected by lighting
+    std::vector<EntityRenderInfo> mOccluderQueue;        // occluders which aren't visible to the camera
+    std::vector<EntityRenderInfo> mOccluderQueueCamera;  // occluders which ARE visible to the camera
 
     // draw state:
     ecs::IRender* mpIRender;
