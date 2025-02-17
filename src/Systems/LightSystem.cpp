@@ -137,6 +137,7 @@ void ShadowLightSystem::onEvent(evt::ShaderReload) {
     mDepthBufUniform = rl::GetShaderLocation(shader, "depthBuf");
     mDistanceFieldUniform = rl::GetShaderLocation(shader, "_DistanceField");
     mDistanceFieldSizeUniform = rl::GetShaderLocation(shader, "_DistanceFieldSize");
+    mAllDepthBufUniform = rl::GetShaderLocation(shader, "_AllDepth");
 }
 
 void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
@@ -144,8 +145,8 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
-    // const auto depthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
-    const auto depthTex = TextureManager::getRenderTexture(TextureID::NewOccluderDepth).texture;
+    const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
+    const auto allDepthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
     const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
@@ -170,11 +171,11 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
 
-        // these will be constant for all draw calls. I should see what happens if I don't update them every call. TODO
         rl::Vector2 dfSize = rl::Vector2(distanceFieldTex.width, distanceFieldTex.height);
         rl::SetShaderValue(shader, mDistanceFieldSizeUniform, &dfSize, rl::SHADER_UNIFORM_VEC2);
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
         rl::SetShaderValueTexture(shader, mDistanceFieldUniform, distanceFieldTex);
+        rl::SetShaderValueTexture(shader, mAllDepthBufUniform, allDepthTex);
 
         gfx::DrawRenderTextureHDR(colorTex, light.color);
         rl::EndShaderMode();

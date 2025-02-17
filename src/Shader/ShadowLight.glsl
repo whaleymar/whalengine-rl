@@ -19,11 +19,12 @@ uniform float radiusPixels;
 uniform float lightDepth;
 uniform sampler2D depthBuf;
 uniform sampler2D _DistanceField;
+uniform sampler2D _AllDepth;
 
 // Output fragment color
 out vec4 finalColor;
 
-const int STEPS = 32;
+const int STEPS = 64;
 const int LIGHTPASSES = 10;
 const float hitEpsilon = 0.005;
 
@@ -31,14 +32,12 @@ const vec3 wallColor = vec3(0.0);
 const float pi = 3.1415926;
 
 bool isWall(vec2 p) {
-    float depth = texture(depthBuf, p).g;
+    float depth = texture(depthBuf, p).r;
     return lightDepth <= depth;
 }
 
 bool isBehindSomething(vec2 p) {
-    vec2 dfSizeRatio = iResolution / _DistanceFieldSize;
-    vec2 samplePixelSDF = p * dfSizeRatio + dfSizeRatio;
-    float depth = texture(depthBuf, samplePixelSDF).r;
+    float depth = texture(_AllDepth, p).r;
     return lightDepth < depth;
 }
 
@@ -55,6 +54,7 @@ vec3 getLighting(vec2 p, vec2 lp) {
 
     vec2 dfSizeRatio = iResolution / _DistanceFieldSize;
     vec2 dfSizeRatioInv = vec2(1.) / dfSizeRatio;
+    float distScalar = (dfSizeRatioInv.x + dfSizeRatioInv.y) / 2.;
     vec2 samplePixel = p;
     vec2 samplePixelSDF = p * dfSizeRatio + dfSizeRatio;
     vec2 deltaStart = lp - p;
@@ -81,7 +81,8 @@ vec3 getLighting(vec2 p, vec2 lp) {
         }
 
         // isWall checks depth conditions
-        if (dist < hitEpsilon && isWall(samplePixelSDF)) {
+        // if ((dist * distScalar) < hitEpsilon && isWall(samplePixelSDF)) {
+        if ((dist * distScalar) < hitEpsilon) {
             // check for translucency
             // vec4 wallCol = getWallColor(samplePixel);
             // if (wallCol.a >= minOcclusionAlpha) {
@@ -93,6 +94,10 @@ vec3 getLighting(vec2 p, vec2 lp) {
         }
     }
 
+    // We never hit a wall but never reached the light either.
+    // This is almost always because the point is surrounded by walls and every step size is tiny.
+    // This can happen for points in a narrow corridor, or when a light is near a wall (for the points along that same wall).
+    // For the latter case, best to assume it's not in shadow. For the former, the only thing I can do is increase the number of ray steps.
     return airVal;
 }
 

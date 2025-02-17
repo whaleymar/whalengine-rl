@@ -145,7 +145,6 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
         // note: overlays will be slow for Y sorted layers
-        // TODO this shader needs to write depth info
         auto overlayLoc = rl::GetShaderLocation(eCtx.shader, "_Overlay");
         const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
         rl::SetShaderValueTexture(eCtx.shader, overlayLoc, overlay);

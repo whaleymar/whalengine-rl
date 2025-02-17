@@ -41,17 +41,21 @@ enum class TextureID {
     Main,
     Lighting,
     OcclusionColor,
-    Depth,             // depth for everything on red, for occluders on green
-    NewOccluderDepth,  // larger texture that stores occluder depth in an area larger than the camera
+    Depth,           // depth for everything on red
+    OcclusionDepth,  // larger texture that stores occluder depth in an area larger than the camera
     Bloom,
     DistanceField,
     _COUNT_DO_NOT_USE_ME,
 };
 
+// RESEARCH: may want to eliminate the occlusion color/depth textures entirely. I already have code which isolates + renders occluders that are off
+// screen. It might be faster to just run that for everything on screen as well & use the color/depth results from that. It *might* be faster because
+// I'd be drawing to fewer render target.
 struct MultiTexture {
     rl::RenderTexture tex;
     u32 occlusionColor;
-    u32 depth;  // stores depth for everything on red channel and occluders on green channel
+    u32 depth;      // stores depth for everything on red channel
+    u32 occlDepth;  // stores depth for light occluders on red channel. Cannot be same texture as depth due to depth test.
     s32 width;
     s32 height;
     rl::PixelFormat format;
@@ -59,6 +63,7 @@ struct MultiTexture {
     static MultiTexture create(s32 width, s32 height, rl::PixelFormat format);
     void release();
     rl::Texture getOcclusionColor() const;
+    rl::Texture getOcclusionDepth() const;
     rl::Texture getDepth() const;
 };
 
