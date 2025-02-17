@@ -36,11 +36,6 @@ ACTIVELY WORKING ON:
     - toggle which shaders are used in the camera's pipeline
     - search for entity by name, inspect in editor
 
-## Triggers 
-- consolidate with colliders like unity. Makes a lot less work :) 
-    - would need to finally add non-aabb shapes to collider though
-    - i'm thinking QuadTree stays exactly the same (AABB only) and there's an extra isOverlapping step that non-aabb shapes have to do post-query
-
 ## Save data
 - figure out how to serialize callbacks (like onDeath component, Lifetime::onDeath, Collider::onCollisionEnter, Trigger::xyz)
     - could integrate lua scripting and write the callbacks using those
@@ -94,7 +89,6 @@ ACTIVELY WORKING ON:
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 
 ## Bugs 
-- lights are brighter after selecting `Restart`
 - quad bleeding -- can only be fixed by adding padding between sprites in sprite atlas
 - hot reloading texture atlas is broken? at least when refreshing animation frame times
 
@@ -105,10 +99,3 @@ things i might want to (re)consider in the future -- ctrl+f for "RESEARCH"
 
 ## Other:
 - should use 3rd party lib for Expected cause my impl sucks
-
-Random note: how to save texture to image:
-```cpp
-auto filename = "TEST.png";
-Image img = LoadImageFromTexture(tex.texture);
-ExportImage(img, filename);
-```

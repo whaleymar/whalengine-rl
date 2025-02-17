@@ -279,7 +279,8 @@ void Renderer::render() {
 
 void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
-    const auto depthTex = mStagingTexture.getDepth();
+    const auto occlusionDepthTex = mStagingTexture.getOcclusionDepth();
+    const auto allDepthTex = mStagingTexture.getDepth();
     const auto colorTex = mStagingTexture.getOcclusionColor();
 
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
@@ -289,7 +290,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
 
     rl::BeginTextureMode(targetDepthTex);
     rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(depthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::DrawTexturePro(allDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
     rl::BeginTextureMode(targetColorTex);
@@ -300,13 +301,13 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
     // Render to larger occlusion color buf
     // clear the center sector and draw the occlusion stuff visible to the camera
     const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
-    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::NewOccluderDepth);
+    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     rl::BeginTextureMode(globalOccl);
     Vector2f centerLoc = gfx::getGISector(8);
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
     rl::BeginBlendMode(rl::BLEND_CUSTOM);
     rl::DrawRectangle(centerLoc.x, centerLoc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(targetDepthTex.texture, srcRectGame, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
+    rl::DrawTexturePro(occlusionDepthTex, srcRect, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
                        rl::Vector2{0, 0}, 0, rl::WHITE);
 
     Vector2f loc = gfx::getGISector(Time.getFrame() % 8);
@@ -319,7 +320,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
 
 void Renderer::buildDistanceField() const {
     static DistanceField dfShader;
-    const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::NewOccluderDepth);
+    const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
     dfShader.process(occlSrc, dfDst);
 }
@@ -374,7 +375,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::EndMode2D();
     rl::EndTextureMode();
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
-    scaleDepthBuffers(renderContext, mGIOccluderTexture.getDepth());
+    scaleDepthBuffers(renderContext, mGIOccluderTexture.getOcclusionDepth());
     buildDistanceField();
 }
 

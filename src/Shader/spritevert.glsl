@@ -1,11 +1,8 @@
 #version 330
 
-// Input vertex attributes
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
-// in vec2 vertexTexCoord2;
 in vec3 vertexNormal;
-// in vec4 vertexTangent;
 in vec4 vertexColor;
 
 // Input uniform values

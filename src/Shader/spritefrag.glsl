@@ -2,6 +2,7 @@
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 Depth;
 layout(location = 2) out vec4 OcclColor;
+layout(location = 3) out vec4 OcclDepth;
 
 // Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
@@ -40,12 +41,9 @@ void main() {
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0
     const float scalar = 20.0;
-    Depth = vec4(0.);
-    if (isOccluder > 0.5) {
-        Depth = vec4(0., fragDepth * scalar, 0., texelColor.a);
-    }
+    OcclDepth = vec4(fragDepth * scalar, 0., 0., texelColor.a * isOccluder);
     if (isUI < 0.5) {
-        Depth = vec4(fragDepth * scalar, Depth.g, 0., texelColor.a);
+        Depth = vec4(fragDepth * scalar, 0., 0., texelColor.a);
     }
 
     OcclColor = FragColor * vec4(isOccluder);
