@@ -21,15 +21,12 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
 
     // number of passes should be log base 2 of our largest dimension
     const s32 nPasses = std::ceil(std::log2(static_cast<f32>(std::max(src.texture.width, src.texture.height))));
-
     Vector2f floatResolutionInv(1.0f / static_cast<f32>(src.texture.width), 1.0f / static_cast<f32>(src.texture.height));
 
     Graphics.fixedShaderMode(mJumpFlood.get());
     for (s32 i = 1; i < nPasses; i++) {
-        // draw
         const f32 offset = std::pow(2, static_cast<f32>(nPasses - i - 1));
-        const Vector2f offsetVec = floatResolutionInv * offset;
-        mJumpFlood.setVector2("_Offset", offsetVec);
+        mJumpFlood.setVector2("_Offset", floatResolutionInv * offset);
         Graphics.blit(currentInput, currentOutput);
 
         // swap
@@ -52,5 +49,14 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     // release temporary texture
     Graphics.releaseTemporaryRT(tmpOutput);
 }
+
+#ifndef NDEBUG
+void DistanceField::draw() {
+    // ImGui::Begin("DistanceField");
+    // ImGui::SliderInt("N Flood Passes", &N_PASSES, 1, std::ceil(std::log2(960.0f)));
+    // ImGui::Checkbox("Show UV", &SHOW_UV);
+    // ImGui::End();
+}
+#endif
 
 }  // namespace whal

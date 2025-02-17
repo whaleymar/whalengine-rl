@@ -115,10 +115,11 @@ void Renderer::update() {
     }
 }
 
-rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelFormat format, rl::TextureFilter filter) {
+rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelFormat format, rl::TextureFilter filter, rl::TextureWrap wrap) {
     // iterate backwards, since the most recently used stuff is in the back
     for (s32 i = static_cast<s32>(mAvailableRTs.size()) - 1; i >= 0; --i) {
         auto& it = mAvailableRTs[i];
+        // if the filter/wrap don't match that's fine, we can just change it
         if (it.rt.texture.width == width && it.rt.texture.height == height && it.rt.texture.format == format) {
             // move this to mUsedRTs and return it
             auto result = mAvailableRTs[i];
@@ -126,6 +127,10 @@ rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelForma
             if (result.filter != filter) {
                 result.filter = filter;
                 rl::SetTextureFilter(result.rt.texture, filter);
+            }
+            if (result.wrap != wrap) {
+                result.wrap = wrap;
+                rl::SetTextureWrap(result.rt.texture, wrap);
             }
             mUsedRTs.push_back(result);
             return result.rt;
@@ -135,12 +140,15 @@ rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelForma
     // Nothing was found, create a new RenderTexture
     rl::RenderTexture rt = rl::LoadRenderTextureFormat(width, height, format);
     rl::SetTextureFilter(rt.texture, filter);
-    mUsedRTs.push_back({.rt = rt, .filter = filter});
+    if (wrap != rl::TEXTURE_WRAP_REPEAT) {
+        rl::SetTextureWrap(rt.texture, wrap);
+    }
+    mUsedRTs.push_back({.rt = rt, .filter = filter, .wrap = wrap});
     return rt;
 }
 
-rl::RenderTexture Renderer::getTemporaryRT(rl::Texture reference, rl::TextureFilter filter) {
-    return getTemporaryRT(reference.width, reference.height, static_cast<rl::PixelFormat>(reference.format), filter);
+rl::RenderTexture Renderer::getTemporaryRT(rl::Texture reference, rl::TextureFilter filter, rl::TextureWrap wrap) {
+    return getTemporaryRT(reference.width, reference.height, static_cast<rl::PixelFormat>(reference.format), filter, wrap);
 }
 
 void Renderer::releaseTemporaryRT(rl::RenderTexture rt) {
@@ -292,7 +300,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
     // Render to larger occlusion color buf
     // clear the center sector and draw the occlusion stuff visible to the camera
     const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
-    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::NewOccluderColor);
+    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::NewOccluderDepth);
     rl::BeginTextureMode(globalOccl);
     Vector2f centerLoc = gfx::getGISector(8);
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
@@ -311,7 +319,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSect
 
 void Renderer::buildDistanceField() const {
     static DistanceField dfShader;
-    const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionColor);
+    const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::NewOccluderDepth);
     const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
     dfShader.process(occlSrc, dfDst);
 }

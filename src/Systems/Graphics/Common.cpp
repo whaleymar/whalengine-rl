@@ -42,7 +42,6 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
     f32 maskOffsetUVX = 0.0f;
     f32 maskOffsetUVY = 0.0f;
     if (!sprite.maskPosRelative.isZero()) {
-        // might want to set a flag in the CBI? Idk i guess i can just check if these values are zero
         maskOffsetUVX = sprite.maskPosRelative.x / textureDims.x;  // x offset
         maskOffsetUVY = sprite.maskPosRelative.y / textureDims.y;  // y offset
 

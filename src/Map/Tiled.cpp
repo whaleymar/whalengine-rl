@@ -177,9 +177,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     map->heightTiles = readInt(*data, "height");
     map->tileSize = readInt(*data, "tilewidth");
 
-    // std::string sdata = data->dump();
-    // print(sdata);
-
     for (const auto& tileset : (*data)["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
@@ -187,8 +184,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         TileSet tset = loadTileset(fileName, firstgid);
         map->tilesets.push_back(tset);
     }
-    // print("AGAIN:");
-    // print(sdata);
 
     for (const auto& layer : (*data)["layers"]) {
         bool isVisible = readBool(layer, "visible");

@@ -54,6 +54,7 @@ class Renderer {
     struct RTInfo {
         rl::RenderTexture rt;
         rl::TextureFilter filter;  // store filter so it's only changed when necessary
+        rl::TextureWrap wrap;
         s32 unusedFrames = 0;
     };
 
@@ -69,10 +70,11 @@ public:
     // Temporary Render Textures are convenient and stay cached for a few frames. You should manually release them
     // when you're done using them so another process can use it. Otherwise, they will be released at the end of the frame.
     rl::RenderTexture getTemporaryRT(s32 width, s32 height, rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
-                                     rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT);
+                                     rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT, rl::TextureWrap wrap = rl::TEXTURE_WRAP_CLAMP);
 
     // Gets a temporary Render Texture with width, height, and format matching the given texture
-    rl::RenderTexture getTemporaryRT(rl::Texture reference, rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT);
+    rl::RenderTexture getTemporaryRT(rl::Texture reference, rl::TextureFilter filter = rl::TEXTURE_FILTER_POINT,
+                                     rl::TextureWrap wrap = rl::TEXTURE_WRAP_CLAMP);
 
     // Release a temporary Render Texture. Call in reverse allocation order for best performance.
     void releaseTemporaryRT(rl::RenderTexture rt);

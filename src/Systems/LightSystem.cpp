@@ -130,12 +130,13 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
 }
 
 void ShadowLightSystem::onEvent(evt::ShaderReload) {
-    mLightPosUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lp1");
-    mRadiusUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "radiusPixels");
-    mLightDepthUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
-    mDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "depthBuf");
-    mOcclDepthBufUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlDepthBuf");
-    mDistanceFieldUniform = rl::GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "_DistanceField");
+    auto shader = ShaderManager::get(Shaders::ShadowLight);
+    mLightPosUniform = rl::GetShaderLocation(shader, "lp1");
+    mRadiusUniform = rl::GetShaderLocation(shader, "radiusPixels");
+    mLightDepthUniform = rl::GetShaderLocation(shader, "lightDepth");
+    mDepthBufUniform = rl::GetShaderLocation(shader, "depthBuf");
+    mDistanceFieldUniform = rl::GetShaderLocation(shader, "_DistanceField");
+    mDistanceFieldSizeUniform = rl::GetShaderLocation(shader, "_DistanceFieldSize");
 }
 
 void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
@@ -143,7 +144,8 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
     const auto shader = ShaderManager::get(Shaders::ShadowLight);
-    const auto depthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
+    // const auto depthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
+    const auto depthTex = TextureManager::getRenderTexture(TextureID::NewOccluderDepth).texture;
     const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor);
 
@@ -167,6 +169,10 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         rl::SetShaderValue(shader, mLightPosUniform, &screenPosRL, rl::SHADER_UNIFORM_VEC2);
         rl::SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, rl::SHADER_UNIFORM_FLOAT);
         rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
+
+        // these will be constant for all draw calls. I should see what happens if I don't update them every call. TODO
+        rl::Vector2 dfSize = rl::Vector2(distanceFieldTex.width, distanceFieldTex.height);
+        rl::SetShaderValue(shader, mDistanceFieldSizeUniform, &dfSize, rl::SHADER_UNIFORM_VEC2);
         rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
         rl::SetShaderValueTexture(shader, mDistanceFieldUniform, distanceFieldTex);
 

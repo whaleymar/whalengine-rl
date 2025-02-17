@@ -7,6 +7,9 @@ class DistanceField : public IShaderProcess {
 public:
     DistanceField();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
+#ifndef NDEBUG
+    void draw() override;
+#endif
 
 private:
     Shader mUvMask;
