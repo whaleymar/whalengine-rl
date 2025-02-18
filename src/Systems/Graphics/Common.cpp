@@ -71,7 +71,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         if (isOccluderMaybe) {
             mOccluderQueueCamera.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                               gfx::DrawMetaData{
-                                                  .depth = static_cast<u8>(renderInfo.transform.depth),
+                                                  .depth = static_cast<u8>(renderInfo.transform->depth),
                                                   .isOccluder = true,
                                                   .isUI = true,
                                               },
@@ -81,7 +81,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         if (isOccluderMaybe && mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
             mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
-                                            .depth = static_cast<u8>(renderInfo.transform.depth),
+                                            .depth = static_cast<u8>(renderInfo.transform->depth),
                                             .isOccluder = true,
                                             .isUI = true,
                                         },
@@ -104,7 +104,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         if (isOccluder) {
             mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
-                                            .depth = static_cast<u8>(renderInfo.transform.depth),
+                                            .depth = static_cast<u8>(renderInfo.transform->depth),
                                             .isOccluder = true,
                                             .isUI = true,
                                         },
@@ -128,10 +128,10 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
         isOccluder = false;
         break;
     }
-    if (renderInfo.transform.depth == Depth::Debug || renderInfo.transform.depth == Depth::UIFar || renderInfo.transform.depth == Depth::UIClose) {
+    if (renderInfo.transform->depth == Depth::Debug || renderInfo.transform->depth == Depth::UIFar || renderInfo.transform->depth == Depth::UIClose) {
         mUIQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                               gfx::DrawMetaData{
-                                  .depth = static_cast<u8>(renderInfo.transform.depth),
+                                  .depth = static_cast<u8>(renderInfo.transform->depth),
                                   .isOccluder = isOccluder,
                                   .isUI = true,
                               },
@@ -139,7 +139,7 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
     } else {
         mNormalQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
                                   gfx::DrawMetaData{
-                                      .depth = static_cast<u8>(renderInfo.transform.depth),
+                                      .depth = static_cast<u8>(renderInfo.transform->depth),
                                       .isOccluder = isOccluder,
                                       .isUI = false,
                                   },

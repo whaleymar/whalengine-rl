@@ -13,9 +13,9 @@ void RectangleRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::R
     const DrawRect rect = eCtx.entity.get<DrawRect>();
 
     const auto frameSize = rect.frameSize.as<f32>();
-    const gfx::RaylibDrawParams params = gfx::getDrawParams(eCtx.transform, frameSize);
+    const gfx::RaylibDrawParams params = gfx::getDrawParams(*eCtx.transform, frameSize);
 
-    gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.transform.rotation, rect.color, eCtx.colorBuf);
+    gfx::DrawRectangleHDR(params.rect, params.origin, eCtx.transform->rotation, rect.color, eCtx.colorBuf);
 }
 
 void RectangleRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
@@ -27,7 +27,7 @@ void RectangleRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
-            .transform = trans,
+            .transform = &trans,
             .entity = entity,
         });
     }

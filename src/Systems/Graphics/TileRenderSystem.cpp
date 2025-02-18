@@ -136,7 +136,7 @@ rl::Vector3 GetTileMetaFlags(const Sprite& sprite, u8 depth, bool isUI, f32 invT
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     ecs::Entity layerEntity = eCtx.entity;
     const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
-    const Vector2f tileSize = (Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform.scale).absolute();
+    const Vector2f tileSize = (Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform->scale).absolute();
     const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
 
     // caching these values once. Thousands of calls to shared_ptr_access really add up
@@ -174,7 +174,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             renderInfo.sprite.atlasPosition.y,
         };
 
-        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + eCtx.transform.position;
+        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + eCtx.transform->position;
 
         const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
@@ -183,7 +183,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             tileSize.y,
         };
 
-        DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform.rotation,
+        DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform->rotation,
                     renderInfo.sprite.color.asRL(),
                     GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
                     renderInfo.orient.second == Facing::Left);
@@ -197,8 +197,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const s32 viewHeightHalfTiles = WINDOW_HEIGHT_GAME / PIXELS_PER_TILE / 2 + 1;
 
         // these can be outside of the range ((0, widthTiles), (0, heightTiles))
-        const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - eCtx.transform.position.x) / PIXELS_PER_TILE;
-        const s32 cameraTileY = static_cast<s32>(eCtx.transform.position.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
+        const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - eCtx.transform->position.x) / PIXELS_PER_TILE;
+        const s32 cameraTileY = static_cast<s32>(eCtx.transform->position.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
         const s32 minX = std::max(0, cameraTileX - viewWidthHalfTiles);
         const s32 maxX = std::min(widthTiles, cameraTileX + viewWidthHalfTiles + 1);
         const s32 minY = std::max(0, cameraTileY - viewHeightHalfTiles);
@@ -241,7 +241,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                 continue;
             }
 
-            const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + eCtx.transform.position;
+            const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + eCtx.transform->position;
             rl::Rectangle dst = rl::Rectangle{
                 worldPosition.x * VIRTUAL_SCREEN_RATIO,
                 -worldPosition.y * VIRTUAL_SCREEN_RATIO,
@@ -249,7 +249,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                 tileSize.y,
             };
 
-            DrawTileHDR(invTexDims.x, invTexDims.y, src, dst, origin, renderInfo->orient.first + eCtx.transform.rotation,
+            DrawTileHDR(invTexDims.x, invTexDims.y, src, dst, origin, renderInfo->orient.first + eCtx.transform->rotation,
                         renderInfo->sprite.color.asRL(), metaFlags, renderInfo->orient.second == Facing::Left);
         }
 
@@ -268,16 +268,21 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         if (tml.isYSorted) {
             buildYsortList(entity, tml);
-            const auto& sortedTiles = S_YSORT_RENDERINFO_LUT[entity];
+            std::vector<gfx::EntityPreRenderInfo>& sortedTiles = S_YSORT_RENDERINFO_LUT[entity];
             const u64 nTiles = sortedTiles.size();
+            // RESEARCH could be faster if I do what non-ysorted layers do during draw & get the tile bounds that are on screen and pass those to the
+            // renderqueue directly. Would save hundreds of AABB lookups. Would need to make sure addPrecalculated adds to the occluder queue too.
             for (u64 i = 0; i < nTiles; ++i) {
-                queue.add(sortedTiles[i]);
+                // override cached transform
+                gfx::EntityPreRenderInfo& renderInfo = sortedTiles[i];
+                renderInfo.transform = &trans;
+                queue.add(renderInfo);
             }
         } else {
             // occlusion calced at draw time. Pass MaybeInChildren so RenderQueue knows.
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
-                .transform = trans,
+                .transform = &trans,
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::MaybeInChildren,
                 .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
@@ -373,7 +378,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
 
     S_YSORT_COORD_LUT[e] = {};
     S_YSORT_RENDERINFO_LUT[e] = {};
-    const Transform parentTrans = e.get<Transform>();
+    const Transform& parentTrans = e.get<Transform>();
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
     const stl::Map<s32, TileRenderInfo>& spriteCache = tml.tilemap->spriteCache;
@@ -395,7 +400,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
 
             const auto ri = gfx::EntityPreRenderInfo{
                 .boundingBox = AABB(worldPosition.round(), halflen),
-                .transform = parentTrans,
+                .transform = &parentTrans,
                 .entity = e,
                 .isOccluder =
                     spriteCache.get(tile.gid).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,

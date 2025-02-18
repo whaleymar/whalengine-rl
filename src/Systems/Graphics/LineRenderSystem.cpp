@@ -33,7 +33,7 @@ static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStrai
 
 void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     const auto line = eCtx.entity.get<DrawStraightLine>();
-    const LinePoints points = getRotatedPoints(eCtx.transform.position, eCtx.entity.get<Transform>(), line);
+    const LinePoints points = getRotatedPoints(eCtx.transform->position, eCtx.entity.get<Transform>(), line);
     const Vector2f p1 = worldToRenderCoords(points.p1);
     const Vector2f p2 = worldToRenderCoords(points.p2);
 
@@ -83,7 +83,7 @@ void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>()),
-            .transform = trans,
+            .transform = &trans,
             .entity = entity,
         });
     }
