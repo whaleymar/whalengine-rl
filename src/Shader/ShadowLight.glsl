@@ -1,19 +1,14 @@
 #version 330
 
-// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
-// Input uniform values
-// default:
 uniform sampler2D texture0; // occlusion color texture
 uniform vec4 colDiffuse;
 
-// mine:
 uniform float iTime;
 uniform vec2 iResolution;
 uniform vec2 _DistanceFieldSize; // also the size of `depthBuf`
-
 uniform vec2 lp1;
 uniform float radiusPixels;
 uniform float lightDepth;
@@ -56,7 +51,8 @@ vec3 getLighting(vec2 p, vec2 lp) {
     vec2 dfSizeRatioInv = vec2(1.) / dfSizeRatio;
     float distScalar = (dfSizeRatioInv.x + dfSizeRatioInv.y) / 2.;
     vec2 samplePixel = p;
-    vec2 samplePixelSDF = p * dfSizeRatio + dfSizeRatio;
+    vec2 bias = (_DistanceFieldSize - iResolution) * 0.5 / _DistanceFieldSize; // distance from distance field origin to camera view origin (in screen coords)
+    vec2 samplePixelSDF = p * dfSizeRatio + bias;
     vec2 deltaStart = lp - p;
     vec2 rayDir = normalize(lp - p);
 
@@ -83,6 +79,7 @@ vec3 getLighting(vec2 p, vec2 lp) {
         // isWall checks depth conditions
         // if ((dist * distScalar) < hitEpsilon && isWall(samplePixelSDF)) {
         if ((dist * distScalar) < hitEpsilon) {
+            // if (isWall(samplePixelSDF)) {
             // check for translucency
             // vec4 wallCol = getWallColor(samplePixel);
             // if (wallCol.a >= minOcclusionAlpha) {

@@ -110,5 +110,8 @@ Vector2f getGISector(s32 sector);
 // returns the sector's offset from the center sector in *world* coordinates (012 -> positive Y)
 Vector2f getGISectorOffset(s32 sector);
 
+Vector2f getGISectorSize(s32 sector);
+Vector2f getGISectorPadding();
+
 }  // namespace gfx
 }  // namespace whal

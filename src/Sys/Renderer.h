@@ -17,6 +17,7 @@ void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IS
 }  // namespace gfx
 
 struct System;
+class DistanceField;
 
 struct UniformVariant {
     enum class UniformType {
@@ -115,6 +116,7 @@ private:
     void operator=(const Renderer&) = delete;
     void init();    // called after OpenGL context established
     void update();  // called once per frame
+    void end();     // called by System::end
 
     void buildRenderQueue(Vector2i cameraPosition);
     void drawEntities(gfx::RenderContext ctx);
@@ -135,6 +137,8 @@ private:
 
     MultiTexture mStagingTexture;
     MultiTexture mGIOccluderTexture;
+
+    DistanceField* mDistanceField;
 
     std::vector<UniformVariant> mUniformQueue;
 

@@ -61,7 +61,14 @@ Renderer::Renderer() {
 
 void Renderer::init() {
     mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
+    // Vector2i giSectorSize = gfx::getGISectorSize().as<s32>();
+    // mGIOccluderTexture = MultiTexture::create(giSectorSize.x, giSectorSize.y, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    mDistanceField = new DistanceField();
+}
+
+void Renderer::end() {
+    delete mDistanceField;
 }
 
 void Renderer::update() {
@@ -282,8 +289,8 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepth
     const auto allDepthTex = mStagingTexture.getDepth();
 
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
-    const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
-    const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+    rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
+    rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
     rl::BeginTextureMode(targetDepthTex);
     rl::ClearBackground(Colors::ClearRL);
@@ -295,30 +302,36 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepth
     const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
     rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     rl::BeginTextureMode(globalOccl);
-    Vector2f centerLoc = gfx::getGISector(8);
+    Vector2f loc = gfx::getGISector(8);
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
     rl::BeginBlendMode(rl::BLEND_CUSTOM);
-    rl::DrawRectangle(centerLoc.x, centerLoc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
+    rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
 
     // draw camera sector
-    Vector2f loc = gfx::getGISector(8);
-    // rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(cameraDepthView, srcRectGame, rl::Rectangle{centerLoc.x, centerLoc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
-                       rl::Vector2{0, 0}, 0, rl::WHITE);
+    rl::DrawTexturePro(cameraDepthView, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
+                       rl::WHITE);
 
-    loc = gfx::getGISector(Time.getFrame() % 8);
-    rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME},
-                       rl::Vector2{0, 0}, 0, rl::WHITE);
+    s32 sector = Time.getFrame() % 8;
+    // s32 sector = DBG_SECTOR;
+    loc = gfx::getGISector(sector);
+
+    const Vector2f sectorSize = gfx::getGISectorSize(sector);
+    rl::DrawRectangle(loc.x, loc.y, sectorSize.x, sectorSize.y, Colors::ClearRL);
+
+    // Slight issues for:
+    // Sector 2 (bottom half is drawn but shouldn't be)
+    // 6 (right half is drawn but should not be)
+    // but it still looks fine.
+    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, 0.0, FWINDOW_WIDTH_GAME, -FWINDOW_HEIGHT_GAME),
+                       rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0, rl::WHITE);
     rl::EndBlendMode();
     rl::EndTextureMode();
 }
 
 void Renderer::buildDistanceField() const {
-    static DistanceField dfShader;
     const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
-    dfShader.process(occlSrc, dfDst);
+    mDistanceField->process(occlSrc, dfDst);
 }
 
 // this does what the old Mega-GraphicsSystem used to do.
@@ -391,6 +404,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::EndTextureMode();
 
     renderOccluders(Time.getFrame() % 8, mRenderQueue.mOccluderQueue);
+    // renderOccluders(DBG_SECTOR, mRenderQueue.mOccluderQueue);
 
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
     scaleDepthBuffers(renderContext, tmp.texture);
@@ -450,7 +464,12 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition) {
     // Configure camera view box for culling
     const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE / 2, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE / 2});
     mRenderQueue.setViewBox(cameraViewBox);
-    mRenderQueue.setGIViewBox(AABB(cameraPosition + gfx::getGISectorOffset(Time.getFrame() % 8).as<s32>(), cameraViewBox.getHalf()));
+    s32 sector = Time.getFrame() % 8;
+    // s32 sector = DBG_SECTOR;
+    // removing the divide by 2 bc idfk
+    // Vector2i giSectorSize = gfx::getGISectorSize(sector).as<s32>() / 2 + Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
+    Vector2i giSectorSize = gfx::getGISectorSize(sector).as<s32>() + Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
+    mRenderQueue.setGIViewBox(AABB(cameraPosition + gfx::getGISectorOffset(sector).as<s32>(), giSectorSize));
 
     for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
         mRenderQueue.setActiveRenderer(renderSystem.pIRender);

@@ -11,7 +11,9 @@
 #include "Physics/Box.h"
 
 #include "Settings.h"
+#include "Sys/System.h"
 #include "Util/CameraUtil.h"
+#include "raylib.h"
 #include "rlgl.h"
 
 namespace whal {
@@ -151,6 +153,9 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         auto scaleLoc = rl::GetShaderLocation(eCtx.shader, "_Scale");
         rl::Vector2 scale = (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL();
         rl::SetShaderValue(eCtx.shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
+        auto timeLoc = rl::GetShaderLocation(eCtx.shader, "_Time");
+        f32 time = Time.getElapsed();
+        rl::SetShaderValue(eCtx.shader, timeLoc, &time, rl::SHADER_UNIFORM_FLOAT);
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));

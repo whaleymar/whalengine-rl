@@ -176,16 +176,17 @@ RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize) {
 
 Vector2f getGISector(s32 sector) {
     // clang-format off
+    auto const size = getGISectorPadding();
     switch (sector) {
         case 0: return {0,0};
-        case 1: return {FWINDOW_WIDTH_GAME, 0};
-        case 2: return {FWINDOW_WIDTH_GAME * 2, 0};
-        case 3: return {FWINDOW_WIDTH_GAME * 2, FWINDOW_HEIGHT_GAME};
-        case 4: return {FWINDOW_WIDTH_GAME * 2, FWINDOW_HEIGHT_GAME * 2};
-        case 5: return {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME * 2};
-        case 6: return {0, FWINDOW_HEIGHT_GAME * 2};
-        case 7: return {0, FWINDOW_HEIGHT_GAME};
-        case 8: return {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
+        case 1: return {size.x, 0};
+        case 2: return {size.x + FWINDOW_WIDTH_GAME , 0};
+        case 3: return {size.x + FWINDOW_WIDTH_GAME , size.y};
+        case 4: return {size.x + FWINDOW_WIDTH_GAME , size.y + FWINDOW_HEIGHT_GAME };
+        case 5: return {size.x, size.y + FWINDOW_HEIGHT_GAME};
+        case 6: return {0, size.y + FWINDOW_HEIGHT_GAME};
+        case 7: return {0, size.y};
+        case 8: return {size.x, size.y};
         default: return {0,0};
     }
     // clang-format on
@@ -193,6 +194,29 @@ Vector2f getGISector(s32 sector) {
 
 Vector2f getGISectorOffset(s32 sector) {
     return (getGISector(sector) - getGISector(8)) * Vector2f(1, -1);
+}
+
+Vector2f getGISectorSize(s32 sector) {
+    // clang-format off
+    Vector2f viewSize = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
+    Vector2f padSize = getGISectorPadding();
+    switch (sector) {
+        case 0: return padSize;
+        case 1: return {viewSize.x, padSize.y};
+        case 2: return  padSize;
+        case 3: return {padSize.x, viewSize.y};
+        case 4: return  padSize;
+        case 5: return {viewSize.x, padSize.y};
+        case 6: return padSize;
+        case 7: return {padSize.x, viewSize.y};
+        case 8: return viewSize;
+        default: return padSize;
+    }
+    // clang-format on
+}
+
+Vector2f getGISectorPadding() {
+    return {FWINDOW_WIDTH_GAME / 2.0f, FWINDOW_HEIGHT_GAME / 2.0f};
 }
 
 }  // namespace whal::gfx

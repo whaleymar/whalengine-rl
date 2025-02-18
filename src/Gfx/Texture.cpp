@@ -399,7 +399,7 @@ inline Vector2i getWindowSize(WindowSize size) {
     case WindowSize::Game:
         return {WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME};
     case WindowSize::GlobalRange:
-        return {WINDOW_WIDTH_GAME * 3, WINDOW_HEIGHT_GAME * 3};
+        return {WINDOW_WIDTH_GAME * 2, WINDOW_HEIGHT_GAME * 2};
     }
 }
 
