@@ -3,9 +3,13 @@
 #include <cmath>
 #include "Gfx/RaylibUtil.h"
 #include "Sys/System.h"
+#include "imgui.h"
 #include "raylib.h"
 
 namespace whal {
+
+static int N_PASSES = 10;
+static bool SHOW_UV = false;
 
 DistanceField::DistanceField()
     : mUvMask("", "whalengine/src/Shader/UVMask.glsl"), mJumpFlood("", "whalengine/src/Shader/JumpFloodUV.glsl"),
@@ -25,6 +29,9 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
 
     Graphics.fixedShaderMode(mJumpFlood.get());
     for (s32 i = 1; i < nPasses; i++) {
+        if (i >= N_PASSES) {
+            break;
+        }
         const f32 offset = std::pow(2, static_cast<f32>(nPasses - i - 1));
         mJumpFlood.setVector2("_Offset", floatResolutionInv * offset);
         Graphics.blit(currentInput, currentOutput);
@@ -44,7 +51,11 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     }
 
     // convert Jump-Flooded UV field into distance field:
-    Graphics.blit(tmpOutput, dst, mDistanceField.get());
+    if (SHOW_UV) {
+        Graphics.blit(tmpOutput, dst);
+    } else {
+        Graphics.blit(tmpOutput, dst, mDistanceField.get());
+    }
 
     // release temporary texture
     Graphics.releaseTemporaryRT(tmpOutput);
@@ -52,10 +63,10 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
 
 #ifndef NDEBUG
 void DistanceField::draw() {
-    // ImGui::Begin("DistanceField");
-    // ImGui::SliderInt("N Flood Passes", &N_PASSES, 1, std::ceil(std::log2(960.0f)));
-    // ImGui::Checkbox("Show UV", &SHOW_UV);
-    // ImGui::End();
+    ImGui::Begin("DistanceField");
+    ImGui::SliderInt("N Flood Passes", &N_PASSES, 1, std::ceil(std::log2(960.0f)));
+    ImGui::Checkbox("Show UV", &SHOW_UV);
+    ImGui::End();
 }
 #endif
 

@@ -164,6 +164,7 @@ void System::end() {
     Audio.end();
     ShaderManager::instance().unloadAll();
     World.clear();
+    Graphics.end();
     S_IS_STARTED = false;
 }
 
