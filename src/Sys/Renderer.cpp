@@ -446,8 +446,8 @@ void Renderer::drawUI(const gfx::RenderContext ctx) const {
 }
 
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
-    if (entity1.transform.depth != entity2.transform.depth) {
-        return entity1.transform.depth < entity2.transform.depth;
+    if (entity1.transform->depth != entity2.transform->depth) {
+        return entity1.transform->depth < entity2.transform->depth;
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {

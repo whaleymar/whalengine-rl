@@ -41,7 +41,7 @@ struct DrawMetaData {
 };
 
 struct EntityRenderInfo {
-    Transform transform;
+    const Transform* transform;
     s32 bottom;
     ecs::Entity entity;
     const ecs::IRender* piRender;
@@ -59,7 +59,7 @@ struct EntityPreRenderInfo {
     };
 
     AABB boundingBox;
-    Transform transform;
+    const Transform* transform;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;

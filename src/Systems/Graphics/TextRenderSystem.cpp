@@ -31,7 +31,7 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const Color tint = Colors::White;  // PARAM
 
     const DrawText draw = eCtx.entity.get<DrawText>();
-    const auto& trans = eCtx.transform;
+    const Transform& trans = *eCtx.transform;
 
     // rotation pivot correction
     Vector2f pivotOffsetScreen = trans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
@@ -78,7 +78,7 @@ void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
-            .transform = trans,
+            .transform = &trans,
             .entity = entity,
         });
     }
