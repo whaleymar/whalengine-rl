@@ -33,21 +33,40 @@ static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ec
 */
 
 // slightly optimized version of DrawSpriteHDR
-static void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 source, rl::Rectangle dest, rl::Vector2 origin, float rotation,
-                        rl::Vector4 hdrColor, rl::Vector3 packedCBI, bool flipX) {
-    rl::Vector2 topLeft;
-    rl::Vector2 topRight;
-    rl::Vector2 bottomLeft;
-    rl::Vector2 bottomRight;
-
+static inline void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 source, rl::Rectangle dest, rl::Vector2 origin, float rotation,
+                               rl::Vector4 hdrColor, rl::Vector3 packedCBI, float z, bool flipX) {
     // Only calculate rotation if needed
     if (rotation == 0.0f) {
-        float x = dest.x - origin.x;
-        float y = dest.y - origin.y;
-        topLeft = (rl::Vector2){x, y};
-        topRight = (rl::Vector2){x + dest.width, y};
-        bottomLeft = (rl::Vector2){x, y + dest.height};
-        bottomRight = (rl::Vector2){x + dest.width, y + dest.height};
+        rl::rlBegin(RL_QUADS);
+        rl::rlCheckQuadBatch();
+
+        rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+        rl::rlSetNormals(packedCBI);
+
+        const float texLeft = flipX ? (source.x + FPIXELS_PER_TILE) * invTexWidth : source.x * invTexWidth;
+        const float texRight = flipX ? source.x * invTexWidth : (source.x + FPIXELS_PER_TILE) * invTexWidth;
+        const float texTop = source.y * invTexHeight;
+        const float texBottom = (source.y + FPIXELS_PER_TILE) * invTexHeight;
+        const float x = dest.x - origin.x;
+        const float y = dest.y - origin.y;
+
+        // Top-left corner for texture and quad
+        rl::rlTexCoord2f(texLeft, texTop);
+        rl::rlVertex2fNoBatchCheck((float[]){x, y, z});
+
+        // Bottom-left corner for texture and quad
+        rl::rlTexCoord2f(texLeft, texBottom);
+        rl::rlVertex2fNoBatchCheck((float[]){x, y + dest.height, z});
+
+        // Bottom-right corner for texture and quad
+        rl::rlTexCoord2f(texRight, texBottom);
+        rl::rlVertex2fNoBatchCheck((float[]){x + dest.width, y + dest.height, z});
+
+        // Top-right corner for texture and quad
+        rl::rlTexCoord2f(texRight, texTop);
+        rl::rlVertex2fNoBatchCheck((float[]){x + dest.width, y, z});
+
+        // rl::rlEnd(); // just increments depth
     } else {
         float sinRotation = sinf(rotation * DEG2RAD);
         float cosRotation = cosf(rotation * DEG2RAD);
@@ -55,6 +74,11 @@ static void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 sourc
         float y = dest.y;
         float dx = -origin.x;
         float dy = -origin.y;
+
+        rl::Vector2 topLeft;
+        rl::Vector2 topRight;
+        rl::Vector2 bottomLeft;
+        rl::Vector2 bottomRight;
 
         topLeft.x = x + dx * cosRotation - dy * sinRotation;
         topLeft.y = y + dx * sinRotation + dy * cosRotation;
@@ -67,35 +91,34 @@ static void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 sourc
 
         bottomRight.x = x + (dx + dest.width) * cosRotation - (dy + dest.height) * sinRotation;
         bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
+        rl::rlBegin(RL_QUADS);
+
+        rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+        rl::rlSetNormals(packedCBI);
+
+        const float texLeft = flipX ? (source.x + FPIXELS_PER_TILE) * invTexWidth : source.x * invTexWidth;
+        const float texRight = flipX ? source.x * invTexWidth : (source.x + FPIXELS_PER_TILE) * invTexWidth;
+        const float texTop = source.y * invTexHeight;
+        const float texBottom = (source.y + FPIXELS_PER_TILE) * invTexHeight;
+
+        // Top-left corner for texture and quad
+        rl::rlTexCoord2f(texLeft, texTop);
+        rl::rlVertex2f(topLeft.x, topLeft.y);
+
+        // Bottom-left corner for texture and quad
+        rl::rlTexCoord2f(texLeft, texBottom);
+        rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
+
+        // Bottom-right corner for texture and quad
+        rl::rlTexCoord2f(texRight, texBottom);
+        rl::rlVertex2f(bottomRight.x, bottomRight.y);
+
+        // Top-right corner for texture and quad
+        rl::rlTexCoord2f(texRight, texTop);
+        rl::rlVertex2f(topRight.x, topRight.y);
+
+        rl::rlEnd();
     }
-
-    rl::rlBegin(RL_QUADS);
-
-    rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
-    rl::rlSetNormals(packedCBI);
-
-    const float texLeft = flipX ? (source.x + FPIXELS_PER_TILE) * invTexWidth : source.x * invTexWidth;
-    const float texRight = flipX ? source.x * invTexWidth : (source.x + FPIXELS_PER_TILE) * invTexWidth;
-    const float texTop = source.y * invTexHeight;
-    const float texBottom = (source.y + FPIXELS_PER_TILE) * invTexHeight;
-
-    // Top-left corner for texture and quad
-    rl::rlTexCoord2f(texLeft, texTop);
-    rl::rlVertex2f(topLeft.x, topLeft.y);
-
-    // Bottom-left corner for texture and quad
-    rl::rlTexCoord2f(texLeft, texBottom);
-    rl::rlVertex2f(bottomLeft.x, bottomLeft.y);
-
-    // Bottom-right corner for texture and quad
-    rl::rlTexCoord2f(texRight, texBottom);
-    rl::rlVertex2f(bottomRight.x, bottomRight.y);
-
-    // Top-right corner for texture and quad
-    rl::rlTexCoord2f(texRight, texTop);
-    rl::rlVertex2f(topRight.x, topRight.y);
-
-    rl::rlEnd();
 }
 
 // slightly faster version of DrawMetaData::asRL
@@ -185,7 +208,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
         DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform->rotation,
                     renderInfo.sprite.color.asRL(),
-                    GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y),
+                    GetTileMetaFlags(renderInfo.sprite, eCtx.colorBuf.depth, eCtx.colorBuf.isUI, invTexDims.x, invTexDims.y), rl::rlGetCurrentDepth(),
                     renderInfo.orient.second == Facing::Left);
         rl::rlSetTexture(0);
 
@@ -213,6 +236,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         rl::Vector3 metaFlags;
         std::vector<TileInstance>& tiles = S_TILE_BATCH[layerEntity];
         const u64 nTiles = tiles.size();
+        const f32 z = rl::rlGetCurrentDepth();
         bool skipUntilNext = false;
         for (u64 i = 0; i < nTiles; ++i) {
             TileInstance tile = tiles[i];
@@ -250,11 +274,13 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             };
 
             DrawTileHDR(invTexDims.x, invTexDims.y, src, dst, origin, renderInfo->orient.first + eCtx.transform->rotation,
-                        renderInfo->sprite.color.asRL(), metaFlags, renderInfo->orient.second == Facing::Left);
+                        renderInfo->sprite.color.asRL(), metaFlags, z, renderInfo->orient.second == Facing::Left);
         }
 
         rl::rlSetTexture(0);
     }
+
+    rl::rlEnd();
 }
 
 void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
