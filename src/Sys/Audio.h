@@ -7,22 +7,12 @@
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
-#ifndef __EMSCRIPTEN__
-namespace FMOD {
-
-class System;
-class Sound;
-class Channel;
-class ChannelGroup;
-class ChannelControl;
-class DSP;
-
-}  // namespace FMOD
-#else
-
-#include <raylib.h>
-
-#endif
+typedef struct FMOD_SYSTEM FMOD_SYSTEM;
+typedef struct FMOD_SOUND FMOD_SOUND;
+typedef struct FMOD_CHANNEL FMOD_CHANNEL;
+typedef struct FMOD_CHANNELGROUP FMOD_CHANNELGROUP;
+typedef struct FMOD_CHANNELCONTROL FMOD_CHANNELCONTROL;
+typedef struct FMOD_DSP FMOD_DSP;
 
 namespace whal {
 
@@ -38,21 +28,11 @@ public:
     Corrade::Containers::Optional<Error> load(const char* path);
     void unload();
 
-#ifndef __EMSCRIPTEN__
     bool isValid() const { return mSound != nullptr; }
-    FMOD::Sound* get() const { return mSound; }
-#else
-    bool isValid() const { return mIsValid; }
-    rl::Sound get() const { return mSound; }
-#endif
+    FMOD_SOUND* get() const { return mSound; }
 
 private:
-#ifndef __EMSCRIPTEN__
-    FMOD::Sound* mSound = nullptr;
-#else
-    rl::Sound mSound;
-    bool mIsValid = false;
-#endif
+    FMOD_SOUND* mSound = nullptr;
 };
 
 class AudioPlayer {
@@ -130,26 +110,20 @@ private:
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 
-#ifndef __EMSCRIPTEN__
-    FMOD::System* getSystem() const;
-    void playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
+    FMOD_SYSTEM* getSystem() const;
+    void playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
                              bool isInGroup = true);
 
-    void setChannelFilter(Filter filter, FMOD::ChannelControl* channel);
-    Expected<FMOD::DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
-    FMOD::Sound* mMusic = nullptr;
-    FMOD::ChannelGroup* mClipChannelGroup = nullptr;
-    FMOD::Channel* mClipChannelPool[MAX_CHANNELS];
-    FMOD::Channel* mMusicChannel = nullptr;
-    FMOD::Channel* mMenuChannel = nullptr;
-    FMOD::System* mSystem = nullptr;
-    FMOD::DSP* mLowpassFilter = nullptr;
-#else
-    rl::Music mMusic;
-    std::vector<rl::Sound> mClipSounds;
-    std::vector<rl::Sound> mMenuSounds;
-    bool mIsClipsPaused = false;
-#endif
+    void setChannelFilter(Filter filter, FMOD_CHANNEL* channel);
+    void setChannelFilter(Filter filter, FMOD_CHANNELGROUP* channelGroup);
+    Expected<FMOD_DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
+    FMOD_SOUND* mMusic = nullptr;
+    FMOD_CHANNELGROUP* mClipChannelGroup = nullptr;
+    FMOD_CHANNEL* mClipChannelPool[MAX_CHANNELS];
+    FMOD_CHANNEL* mMusicChannel = nullptr;
+    FMOD_CHANNEL* mMenuChannel = nullptr;
+    FMOD_SYSTEM* mSystem = nullptr;
+    FMOD_DSP* mLowpassFilter = nullptr;
     std::vector<RegisteredClip> mClipRegistry;
     s32 mMaxChannelCount = 0;
     s32 mNumMiscChannels = 2;  // MAKE SURE TO UPDATE THIS WITH MANUALLY MANAGED CHANNELS

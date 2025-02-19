@@ -1,8 +1,6 @@
 #include "Audio.h"
 
-#ifndef __EMSCRIPTEN__
-
-#include <fmod.hpp>
+#include <fmod.h>
 #include <fmod_errors.h>
 #include "fmod_common.h"
 #include "fmod_dsp_effects.h"
@@ -10,49 +8,16 @@
 #include "Settings.h"
 #include "System.h"
 
-#else
-
-#include <raylib.h>  // can remove, is in header
-
-static const float EXPONENT = 1.0f;        // Audio exponentiation value
-static float averageVolume[400] = {0.0f};  // Average volume history
-void ProcessAudio(void* buffer, unsigned int frames) {
-    float* samples = (float*)buffer;  // Samples internally stored as <float>s
-    float average = 0.0f;             // Temporary average volume
-
-    for (unsigned int frame = 0; frame < frames; frame++) {
-        float *left = &samples[frame * 2 + 0], *right = &samples[frame * 2 + 1];
-
-        *left = powf(fabsf(*left), EXPONENT) * ((*left < 0.0f) ? -1.0f : 1.0f);
-        *right = powf(fabsf(*right), EXPONENT) * ((*right < 0.0f) ? -1.0f : 1.0f);
-
-        average += fabsf(*left) / frames;  // accumulating average volume
-        average += fabsf(*right) / frames;
-    }
-
-    // Moving history to the left
-    for (int i = 0; i < 399; i++)
-        averageVolume[i] = averageVolume[i + 1];
-
-    averageVolume[399] = average;  // Adding last average value
-}
-
-#include "ECS.h"
-
-#endif
-
 #include "Util/Print.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
 
-#ifndef __EMSCRIPTEN__
 static const char* CHANNEL_GROUP_NAME_CLIPS = "Clips";
 constexpr f32 ATTEN_DIST_MIN = 30;
 constexpr f32 ATTEN_DIST_MAX = 200;
 constexpr f32 DIST_UNITS = FPIXELS_PER_TILE;
-#endif
 
 Expected<AudioClip> AudioClip::from(const char* path) {
     AudioClip clip;
@@ -66,81 +31,54 @@ Expected<AudioClip> AudioClip::from(const char* path) {
 
 void AudioClip::unload() {
     if (isValid()) {
-#ifndef __EMSCRIPTEN__
-        mSound->release();
+        FMOD_Sound_Release(mSound);
         mSound = nullptr;
-#else
-        rl::UnloadSound(mSound);
-        mIsValid = false;
-#endif
     }
 }
 
 Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     unload();
-#ifndef __EMSCRIPTEN__
-    auto result = Audio.getSystem()->createSound(path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
-                                                 &mSound);  // looping on by default bc documentation recommends it
+    auto result = FMOD_System_CreateSound(Audio.getSystem(), path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
+                                          &mSound);  // looping on by default bc documentation recommends it
     if (result != FMOD_OK) {
         mSound = nullptr;
         auto err = FMOD_ErrorString(result);
         return Error(sprint("Error loading clip:", path, "\nFMOD error:", err));
     }
-#else
-    mSound = rl::LoadSound(path);
-    if (!rl::IsSoundValid(mSound)) {
-        mIsValid = false;
-        return Error(sprint("Error loading audio clip: ", path));
-    }
-    mIsValid = true;
-
-#endif
     return NULLOPT;
 }
 
 Corrade::Containers::Optional<Error> AudioPlayer::init() {
-#ifndef __EMSCRIPTEN__
     // Init System
-    auto result = FMOD::System_Create(&mSystem);
+    FMOD_RESULT result = FMOD_System_Create(&mSystem, FMOD_VERSION);
     if (result != FMOD_OK) {
         return Error(sprint("Got bad result for System_Create:", FMOD_ErrorString(result)));
     }
     auto outputSettings = FMOD_OUTPUTTYPE_AUTODETECT;
-    result = mSystem->init(MAX_CHANNELS, FMOD_INIT_NORMAL, &outputSettings);
+    result = FMOD_System_Init(mSystem, MAX_CHANNELS, FMOD_INIT_NORMAL, &outputSettings);
     if (result != FMOD_OK) {
         return Error(sprint("Got bad result for mSystem->init:", FMOD_ErrorString(result)));
     }
     mIsValid = true;
 
     // Init Clip Channel Pool
-    mSystem->getSoftwareChannels(&mMaxChannelCount);
+    FMOD_System_GetSoftwareChannels(mSystem, &mMaxChannelCount);
     print("AudioPlayer has", mMaxChannelCount, "channels");
     if (mMaxChannelCount > MAX_CHANNELS) {
         mMaxChannelCount = MAX_CHANNELS;
     }
     mNumClipChannels = mMaxChannelCount - mNumMiscChannels;
-    mSystem->createChannelGroup(CHANNEL_GROUP_NAME_CLIPS, &mClipChannelGroup);
+    FMOD_System_CreateChannelGroup(mSystem, CHANNEL_GROUP_NAME_CLIPS, &mClipChannelGroup);
     for (s32 i = 0; i < mNumClipChannels; i++) {
         mClipChannelPool[i] = nullptr;
     }
 
     s32 nListeners;
-    mSystem->get3DNumListeners(&nListeners);
+    FMOD_System_Get3DNumListeners(mSystem, &nListeners);
     if (nListeners != 1) {
-        mSystem->set3DNumListeners(1);
+        FMOD_System_Set3DNumListeners(mSystem, 1);
     }
-    mSystem->set3DSettings(0.0f, DIST_UNITS, 1.0f);
-
-#else
-
-    rl::InitAudioDevice();
-    if (!rl::IsAudioDeviceReady()) {
-        return Error("Audio device not ready");
-    }
-    rl::AttachAudioMixedProcessor(ProcessAudio);
-    mIsValid = true;
-
-#endif
+    FMOD_System_Set3DSettings(mSystem, 0.0f, DIST_UNITS, 1.0f);
 
     return NULLOPT;
 }
@@ -149,16 +87,13 @@ AudioPlayer::AudioPlayer() {}
 
 void AudioPlayer::end() {
     if (mIsValid) {
-#ifndef __EMSCRIPTEN__
         if (mLowpassFilter != nullptr) {
-            mLowpassFilter->release();
+            FMOD_DSP_Release(mLowpassFilter);
+            mLowpassFilter = nullptr;
         }
-        mSystem->close();
-        mSystem->release();
-#else
-        rl::DetachAudioMixedProcessor(ProcessAudio);
-        rl::CloseAudioDevice();
-#endif
+        FMOD_System_Close(mSystem);
+        FMOD_System_Release(mSystem);
+        mSystem = nullptr;
     }
 }
 
@@ -169,116 +104,77 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
 
     stopMusic();
 
-#ifndef __EMSCRIPTEN__
-    auto result = mSystem->createStream(path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
+    auto result = FMOD_System_CreateStream(mSystem, path, FMOD_LOOP_NORMAL, nullptr, &mMusic);
     if (result != FMOD_OK) {
         print("couldn't load music stream:", path, "\nGot error:", FMOD_ErrorString(result));
         return;
     }
 
     if (isLooping) {
-        mMusicChannel->setLoopCount(-1);
-        mMusicChannel->setMode(FMOD_LOOP_NORMAL);
+        FMOD_Channel_SetLoopCount(mMusicChannel, -1);
+        FMOD_Channel_SetMode(mMusicChannel, FMOD_LOOP_NORMAL);
     } else {
-        mMusic->setMode(FMOD_LOOP_OFF);
-        mMusicChannel->setMode(FMOD_LOOP_OFF);
+        FMOD_Sound_SetMode(mMusic, FMOD_LOOP_OFF);
+        FMOD_Channel_SetMode(mMusicChannel, FMOD_LOOP_OFF);
     }
 
     // initialize paused, set effects, then unpause
-    mSystem->playSound(mMusic, nullptr, true, &mMusicChannel);
-    mMusicChannel->setVolume(mMasterVolume * mMusicVolume * volume);
-    mMusicChannel->setMute(mIsMusicMuted);
+
+    FMOD_System_PlaySound(mSystem, mMusic, nullptr, true, &mMusicChannel);
+    FMOD_Channel_SetVolume(mMusicChannel, mMasterVolume * mMusicVolume * volume);
+    FMOD_Channel_SetMute(mMusicChannel, mIsMusicMuted);
     setFilterMusic(filter);
-    mMusicChannel->setPaused(false);
+    FMOD_Channel_SetPaused(mMusicChannel, false);
 
     if (position != nullptr) {
         // 1 = 100% 3D, 0 = 100% 2D
-        mMusicChannel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
-        mMusicChannel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
+        FMOD_Channel_Set3DLevel(mMusicChannel, 0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
+        FMOD_Channel_Set3DMinMaxDistance(mMusicChannel, ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
         FMOD_VECTOR vec = FMOD_VECTOR(position->x, position->y, 0);
-        result = mMusicChannel->set3DAttributes(&vec, nullptr);
+        result = FMOD_Channel_Set3DAttributes(mMusicChannel, &vec, nullptr);
         if (result != FMOD_OK) {
             print("Got error setting channel position: ", FMOD_ErrorString(result));
         }
     } else {
-        mMusicChannel->set3DLevel(0.0);
+        FMOD_Channel_Set3DLevel(mMusicChannel, 0.0);
     }
-
-#else
-
-    mMusic = rl::LoadMusicStream(path);
-    if (!rl::IsMusicValid(mMusic)) {
-        print("couldn't load music stream: ", path);
-        return;
-    }
-
-    // looping? prob have to use seek() in update() TODO
-
-    rl::SetMusicVolume(mMusic, mIsMusicMuted ? 0.0 : mMasterVolume * mMusicVolume * volume * mIsMusicMuted);
-    rl::PlayMusicStream(mMusic);
-
-#endif
 
     mIsPlayingMusic = true;
 }
 
 void AudioPlayer::update() {
-#ifndef __EMSCRIPTEN__
     // update music
     if (mIsPlayingMusic || mIsPlayingChannels) {
-        mSystem->update();
+        FMOD_System_Update(mSystem);
     }
 
     if (mIsPlayingMusic) {
-        mMusicChannel->isPlaying(&mIsPlayingMusic);
+        FMOD_BOOL isPlaying;
+        FMOD_Channel_IsPlaying(mMusicChannel, &isPlaying);
+        mIsPlayingMusic = isPlaying;
     } else if (mMusic != nullptr) {
         stopMusic();
     }
 
     if (mIsPlayingChannels) {
         bool isPlayingAnyClip = false;
-        bool isPlaying = false;
+        FMOD_BOOL isPlaying = false;
         for (s32 i = 0; i < mNumClipChannels; i++) {
-            FMOD::Channel* channel = mClipChannelPool[i];
+            FMOD_CHANNEL* channel = mClipChannelPool[i];
             if (channel == nullptr) {
                 continue;
             }
-            channel->isPlaying(&isPlaying);
+            FMOD_Channel_IsPlaying(channel, &isPlaying);
             isPlayingAnyClip = isPlayingAnyClip || isPlaying;
 
             if (!isPlaying) {
-                channel->stop();
+                FMOD_Channel_Stop(channel);
                 mClipChannelPool[i] = nullptr;
             }
         }
 
         mIsPlayingChannels = isPlayingAnyClip;
     }
-
-#else
-    if (mIsPlayingMusic) {
-        rl::UpdateMusicStream(mMusic);
-        if (!rl::IsMusicStreamPlaying(mMusic)) {
-            stopMusic();
-        }
-    }
-    if (!mIsClipsPaused) {
-        std::vector<rl::Sound> clipsNew;
-        for (auto sound : mClipSounds) {
-            if (rl::IsSoundPlaying(sound)) {
-                clipsNew.push_back(sound);
-            }
-        }
-        mClipSounds = std::move(clipsNew);
-    }
-    std::vector<rl::Sound> clipsNew;
-    for (auto sound : mMenuSounds) {
-        if (rl::IsSoundPlaying(sound)) {
-            clipsNew.push_back(sound);
-        }
-    }
-    mMenuSounds = std::move(clipsNew);
-#endif
 }
 
 // plays an audio clip. Can pass in desired volume scale between 0-1. Default 1
@@ -287,7 +183,6 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
         return;
     }
 
-#ifndef __EMSCRIPTEN__
     s32 channelIx = -1;
     for (s32 i = 0; i < mNumClipChannels; i++) {
         if (mClipChannelPool[i] == nullptr) {
@@ -300,25 +195,15 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
         return;
     }
 
-    FMOD::Channel** pChannel = &mClipChannelPool[channelIx];
+    FMOD_CHANNEL** pChannel = &mClipChannelPool[channelIx];
     playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
-#else
-    rl::SetSoundVolume(clip.get(), isSfxMuted() ? 0.0 : mSfxVolume * mMasterVolume * volume);
-    rl::PlaySound(clip.get());
-    mClipSounds.push_back(clip.get());
-#endif
 }
+
 void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
     if (!clip.isValid()) {
         return;
     }
-#ifndef __EMSCRIPTEN__
     playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
-#else
-    rl::SetSoundVolume(clip.get(), isSfxMuted() ? 0.0 : mSfxVolume * mMasterVolume * volume);
-    rl::PlaySound(clip.get());
-    mMenuSounds.push_back(clip.get());
-#endif
 }
 
 void AudioPlayer::playClip(const std::string& clipname, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
@@ -329,93 +214,72 @@ void AudioPlayer::playMenuClip(const std::string& clipname, f32 volume, Filter f
     playMenuClip(getClip(clipname.c_str()), volume, filter, isLooping);
 }
 
-#ifndef __EMSCRIPTEN__
-FMOD::System* AudioPlayer::getSystem() const {
+FMOD_SYSTEM* AudioPlayer::getSystem() const {
     return mSystem;
 }
 
-void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD::Channel* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
+void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
                                       bool isInGroup) {
     if (isLooping) {
         // -1 -> loop forever
         // 0 -> don't loop
         // 1 -> loop once
-        channel->setLoopCount(-1);  // RESEARCH channels also have a setMode function which takes a looping param
+        FMOD_Channel_SetLoopCount(channel, -1);  // RESEARCH channels also have a setMode function which takes a looping param
 
     } else {
-        clip.get()->setMode(FMOD_LOOP_OFF);  // on by default
-        channel->setLoopCount(0);
+        FMOD_Sound_SetMode(clip.get(), FMOD_LOOP_OFF);  // on by default
+        FMOD_Channel_SetLoopCount(channel, 0);
     }
 
-    FMOD::ChannelGroup* group = nullptr;
+    FMOD_CHANNELGROUP* group = nullptr;
     if (isInGroup) {
         group = mClipChannelGroup;
     }
 
     // initialize paused, apply affects, then unpause
-    mSystem->playSound(clip.get(), group, true, &channel);
-    channel->setVolume(mMasterVolume * mSfxVolume * volume);
-    channel->setMute(isSfxMuted());
+    FMOD_System_PlaySound(mSystem, clip.get(), group, true, &channel);
+    FMOD_Channel_SetVolume(channel, mMasterVolume * mSfxVolume * volume);
+    FMOD_Channel_SetMute(channel, isSfxMuted());
     setChannelFilter(filter, channel);
-    channel->setPaused(false);
+    FMOD_Channel_SetPaused(channel, false);
 
     if (position != nullptr) {
         // 1 = 100% 3D, 0 = 100% 2D
-        channel->set3DLevel(0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
-        channel->set3DMinMaxDistance(ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
+        FMOD_Channel_Set3DLevel(channel, 0.75);                                     // mix of 2D and 3D sound. Only 3D sounds kinda weird IMO
+        FMOD_Channel_Set3DMinMaxDistance(channel, ATTEN_DIST_MIN, ATTEN_DIST_MAX);  // I probably want to set this per sound, not channel
         FMOD_VECTOR vec = FMOD_VECTOR(position->x, position->y, 0);
-        auto result = channel->set3DAttributes(&vec, nullptr);
+        auto result = FMOD_Channel_Set3DAttributes(channel, &vec, nullptr);
         if (result != FMOD_OK) {
             print("Got error setting channel position: ", FMOD_ErrorString(result));
         }
     } else {
-        channel->set3DLevel(0.0);
+        FMOD_Channel_Set3DLevel(channel, 0.0);
     }
 
     mIsPlayingChannels = true;
 }
-#endif
 
 void AudioPlayer::stopMusic() {
-    print("stopping music");
-#ifndef __EMSCRIPTEN__
     if (mIsPlayingMusic) {
-        mMusicChannel->stop();
+        FMOD_Channel_Stop(mMusicChannel);
     }
     if (mMusic) {
-        mMusic->release();
+        FMOD_Sound_Release(mMusic);
         mMusic = nullptr;
     }
-#else
-    if (mIsPlayingMusic) {
-        rl::UnloadMusicStream(mMusic);
-    }
-#endif
     mIsPlayingMusic = false;
 }
 
 void AudioPlayer::stopClips() {
-#ifndef __EMSCRIPTEN__
     if (!mIsPlayingChannels) {
         return;
     }
 
-    mClipChannelGroup->stop();
+    FMOD_ChannelGroup_Stop(mClipChannelGroup);
 
     for (s32 i = 0; i < mNumClipChannels; i++) {
         mClipChannelPool[i] = nullptr;
     }
-#else
-
-    for (auto sound : mClipSounds) {
-        rl::StopSound(sound);
-    }
-
-    for (auto sound : mMenuSounds) {
-        rl::StopSound(sound);
-    }
-
-#endif
 }
 
 void AudioPlayer::stopAll() {
@@ -437,15 +301,9 @@ void AudioPlayer::setMusicVolume(f32 volume) {
     mMusicVolume = volume;
     volume *= mMasterVolume;
 
-#ifndef __EMSCRIPTEN__
     if (mMusicChannel != nullptr && mIsPlayingMusic) {
-        mMusicChannel->setVolume(volume);
+        FMOD_Channel_SetVolume(mMusicChannel, volume);
     }
-#else
-    if (mIsPlayingMusic && IsMusicStreamPlaying(mMusic)) {
-        rl::SetMusicVolume(mMusic, volume);
-    }
-#endif
 }
 
 void AudioPlayer::setSfxVolume(f32 volume) {
@@ -461,21 +319,17 @@ void AudioPlayer::setSfxVolume(f32 volume) {
     const f32 multiplier = volume / mSfxVolume;
     mSfxVolume = volume;
 
-#ifndef __EMSCRIPTEN__
     // update volume of all channels
     // use the ratio of the old volume to the new one to make sure relative clip volumes are preserved
     for (s32 i = 0; i < mNumClipChannels; i++) {
         if (mClipChannelPool[i] != nullptr) {
             f32 currentVolume;
-            auto result = mClipChannelPool[i]->getVolume(&currentVolume);
+            auto result = FMOD_Channel_GetVolume(mClipChannelPool[i], &currentVolume);
             if (result == FMOD_OK) {
-                mClipChannelPool[i]->setVolume(currentVolume * multiplier);
+                FMOD_Channel_SetVolume(mClipChannelPool[i], currentVolume * multiplier);
             }
         }
     }
-#else
-    // TODO
-#endif
 }
 
 void AudioPlayer::setMasterVolume(f32 volume) {
@@ -496,21 +350,17 @@ void AudioPlayer::setMasterVolume(f32 volume) {
 
     // update sfx volume. Same method as setSfxVolume, adjusting by a multiplier
 
-#ifndef __EMSCRIPTEN__
     // update volume of all channels
     // use the ratio of the old volume to the new one to make sure relative clip volumes are preserved
     for (s32 i = 0; i < mNumClipChannels; i++) {
         if (mClipChannelPool[i] != nullptr) {
             f32 currentVolume;
-            auto result = mClipChannelPool[i]->getVolume(&currentVolume);
+            auto result = FMOD_Channel_GetVolume(mClipChannelPool[i], &currentVolume);
             if (result == FMOD_OK) {
-                mClipChannelPool[i]->setVolume(currentVolume * multiplier);
+                FMOD_Channel_SetVolume(mClipChannelPool[i], currentVolume * multiplier);
             }
         }
     }
-#else
-    // TODO
-#endif
 }
 
 void AudioPlayer::setIsMuted(bool isMuted) {
@@ -524,19 +374,9 @@ void AudioPlayer::setIsMusicMuted(bool isMuted) {
     }
 
     mIsMusicMuted = isMuted;
-#ifndef __EMSCRIPTEN__
     if (mMusicChannel != nullptr) {
-        mMusicChannel->setMute(isMuted);
+        FMOD_Channel_SetMute(mMusicChannel, isMuted);
     }
-#else
-    if (mIsPlayingMusic) {
-        if (isMuted) {
-            rl::SetMusicVolume(mMusic, 0.0f);
-        } else {
-            rl::SetMusicVolume(mMusic, mMusicVolume);
-        }
-    }
-#endif
 }
 
 void AudioPlayer::setIsSfxMuted(bool isMuted) {
@@ -545,72 +385,39 @@ void AudioPlayer::setIsSfxMuted(bool isMuted) {
     }
     mIsSfxMuted = isMuted;
 
-#ifndef __EMSCRIPTEN__
     for (s32 i = 0; i < mNumClipChannels; i++) {
         if (mClipChannelPool[i] != nullptr) {
-            mClipChannelPool[i]->setMute(isMuted);
+            FMOD_Channel_SetMute(mClipChannelPool[i], isMuted);
         }
     }
-#else
-    // TODO
-#endif
 }
 
 void AudioPlayer::setListenerPosition(Vector2i worldPosition) {
-#ifndef __EMSCRIPTEN__
     FMOD_VECTOR position = FMOD_VECTOR(worldPosition.x, worldPosition.y, 0);
-    auto result = mSystem->set3DListenerAttributes(0, &position, nullptr, nullptr, nullptr);
+    auto result = FMOD_System_Set3DListenerAttributes(mSystem, 0, &position, nullptr, nullptr, nullptr);
     if (result != FMOD_OK) {
         print("Error setting AudioListener position: ", FMOD_ErrorString(result));
     }
-#endif
 }
 
 bool AudioPlayer::isMusicPaused() const {
-#ifndef __EMSCRIPTEN__
-    bool isPaused = false;
-    mMusicChannel->getPaused(&isPaused);
+    FMOD_BOOL isPaused = false;
+    FMOD_Channel_GetPaused(mMusicChannel, &isPaused);
     return isPaused;
-#else
-    return mIsPlayingMusic && !rl::IsMusicStreamPlaying(mMusic);
-#endif
 }
 
 bool AudioPlayer::isClipsPaused() const {
-#ifndef __EMSCRIPTEN__
-    bool isPaused = false;
-    mClipChannelGroup->getPaused(&isPaused);
+    FMOD_BOOL isPaused = false;
+    FMOD_ChannelGroup_GetPaused(mClipChannelGroup, &isPaused);
     return isPaused;
-#else
-    return mIsClipsPaused;
-#endif
 }
 
 void AudioPlayer::pauseMusic(bool pause) {
-#ifndef __EMSCRIPTEN__
-    mMusicChannel->setPaused(pause);
-#else
-    if (pause) {
-        rl::PauseMusicStream(mMusic);
-    } else {
-        rl::ResumeMusicStream(mMusic);
-    }
-#endif
+    FMOD_Channel_SetPaused(mMusicChannel, pause);
 }
 
 void AudioPlayer::pauseClips(bool pause) {
-#ifndef __EMSCRIPTEN__
-    mClipChannelGroup->setPaused(pause);
-#else
-    for (auto sound : mClipSounds) {
-        if (pause) {
-            rl::PauseSound(sound);
-        } else {
-            rl::ResumeSound(sound);
-        }
-    }
-    mIsClipsPaused = pause;
-#endif
+    FMOD_ChannelGroup_SetPaused(mClipChannelGroup, pause);
 }
 
 void AudioPlayer::pauseAll(bool pause) {
@@ -619,35 +426,30 @@ void AudioPlayer::pauseAll(bool pause) {
 }
 
 void AudioPlayer::setFilterMusic(Filter filter) {
-#ifndef __EMSCRIPTEN__
     setChannelFilter(filter, mMusicChannel);
     mMusicFilter = filter;
-#endif
 }
 
 void AudioPlayer::setFilterClips(Filter filter) {
-#ifndef __EMSCRIPTEN__
     setChannelFilter(filter, mClipChannelGroup);
     mClipsFilter = filter;
-#endif
 }
 
-#ifndef __EMSCRIPTEN__
 // needs to be free'd with dsp->release();
-Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) {
-    FMOD::DSP* dsp;
-    auto result = mSystem->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &dsp);
+Expected<FMOD_DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) {
+    FMOD_DSP* dsp;
+    auto result = FMOD_System_CreateDSPByType(mSystem, FMOD_DSP_TYPE_LOWPASS, &dsp);
     if (result != FMOD_OK) {
         auto err = FMOD_ErrorString(result);
         return Error(sprint("Got error creating DSP:", err));
     }
 
-    result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
+    result = FMOD_DSP_SetParameterFloat(dsp, FMOD_DSP_LOWPASS_CUTOFF, cutoff);
     if (result != FMOD_OK) {
         return Error(sprint("Got error assigning lowpass cutoff:", FMOD_ErrorString(result)));
     }
 
-    result = dsp->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, resonance);
+    result = FMOD_DSP_SetParameterFloat(dsp, FMOD_DSP_LOWPASS_RESONANCE, resonance);
     if (result != FMOD_OK) {
         return Error(sprint("Got error assigning lowpass resonance:", FMOD_ErrorString(result)));
     }
@@ -655,8 +457,8 @@ Expected<FMOD::DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance)
     return dsp;
 }
 
-void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel) {
-    FMOD::DSP* dsp = nullptr;
+void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNEL* channel) {
+    FMOD_DSP* dsp = nullptr;
     switch (filter) {
     case Filter::None:
         break;
@@ -675,15 +477,43 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD::ChannelControl* channel)
     }
 
     if (dsp != nullptr) {
-        channel->addDSP(0, dsp);  // TODO hard coded index
+        FMOD_Channel_AddDSP(channel, 0, dsp);  // TODO hard coded index
     } else {
-        channel->getDSP(0, &dsp);
+        FMOD_Channel_GetDSP(channel, 0, &dsp);
         if (dsp != nullptr) {
-            channel->removeDSP(dsp);
+            FMOD_Channel_RemoveDSP(channel, dsp);
         }
     }
 }
-#endif
+
+void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNELGROUP* channelGroup) {
+    FMOD_DSP* dsp = nullptr;
+    switch (filter) {
+    case Filter::None:
+        break;
+    case Filter::LowPass:
+        if (mLowpassFilter == nullptr) {
+            auto eDSP = createLowPassFilter();
+            if (eDSP.isExpected()) {
+                dsp = eDSP.value();
+                mLowpassFilter = dsp;
+            } else {
+                print("got error creating low pass filter: ", eDSP.error());
+            }
+        } else {
+            dsp = mLowpassFilter;
+        }
+    }
+
+    if (dsp != nullptr) {
+        FMOD_ChannelGroup_AddDSP(channelGroup, 0, dsp);  // TODO hard coded index
+    } else {
+        FMOD_ChannelGroup_GetDSP(channelGroup, 0, &dsp);
+        if (dsp != nullptr) {
+            FMOD_ChannelGroup_RemoveDSP(channelGroup, dsp);
+        }
+    }
+}
 
 void AudioPlayer::registerClip(const char* name, AudioClip clip) {
     assert(clip.isValid() && "Cannot register invalid clip");
