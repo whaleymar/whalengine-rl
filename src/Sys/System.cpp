@@ -113,12 +113,18 @@ bool System::isQuit() {
 }
 
 void System::Update() {
-    // Engine Update
-    Input.update();
-    Time.update();
-    Schedule.tick(Time.dt());
-    Audio.update();
-    World.update();
+// Engine Update
+#ifndef NDEBUG
+    if (!EDITOR_FRAME_ADVANCE || EDITOR_FRAME_DO_NEXT) {
+#endif
+        Input.update();
+        Time.update();
+        Schedule.tick(Time.dt());
+        Audio.update();
+        World.update();
+#ifndef NDEBUG
+    }  // EDITOR_FRAME_ADVANCE
+#endif
 
     // Game update
     S_UPDATE_FUNCTION();

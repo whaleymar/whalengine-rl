@@ -207,7 +207,16 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             });
 
             // this loads chunk size and other metadata:
-            layerEntity.get<Transform>().depth = loadTileLayerInfo(layer, layerEntity, layerEntity.get<TileMapLayer>());
+            Transform& trans = layerEntity.get<Transform>();
+            TileMapLayer& layerComponent = layerEntity.get<TileMapLayer>();
+            trans.depth = loadTileLayerInfo(layer, layerEntity, layerComponent);
+            if (layerComponent.zOffset != 0) {
+                // if there's a Z offset (e.g. this layer has some height in the 3rd dimension), then move its actual position down and make it
+                // "Float" so it's still rendered in the correct spot
+                f32 positionOffset = static_cast<f32>(layerComponent.zOffset) * FPIXELS_PER_TILE;
+                trans.translate(Vector2f(0, -positionOffset), layerEntity);
+                trans.setFloatHeight(positionOffset / FLOAT_HEIGHT_MULT, layerEntity);
+            }
             createTileMapLayerEntities(layerEntity, level);
 
             // proof of concept for a fun little stage transition:
@@ -270,6 +279,7 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
             tryRead(value, "Depth", &layerDepth);
             tryRead(value, "chunkSize", &layer.chunkSize);
             tryRead(value, "isYSorted", &layer.isYSorted);
+            tryRead(value, "zOffset", &layer.zOffset);
 
             std::string overlayPath;
             if (tryRead(value, "overlayPath", &overlayPath)) {

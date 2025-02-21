@@ -27,9 +27,13 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const auto sprite = entity.get<Sprite>();
         const auto& trans = entity.get<Transform>();
+        // for Y sorting purposes I want floatHeight to be ignored
+        Transform transNoFloat = trans;
+        transNoFloat.floatHeight = 0.0f;
         const auto bb = trans.rotation == 0.0f ?
-                            AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
-                            Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
+                            AABB(transNoFloat, sprite.frameSize.as<s32>() / 2, Vector2i()) :
+                            Box(transNoFloat.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, transNoFloat.rotation).getBoundingAABB();
+        // TODO do this on other render systems^
 
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,

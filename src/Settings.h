@@ -23,7 +23,9 @@
 
 #ifndef NDEBUG
 extern bool EDITOR_MODE;
-extern bool EDITOR_SUSPEND;
+extern bool EDITOR_SUSPEND;        // pauses everything except rendering
+extern bool EDITOR_FRAME_ADVANCE;  // pauses everything in System::update except for calling Game::update
+extern bool EDITOR_FRAME_DO_NEXT;
 extern bool VIEW_COLLIDERS_MODE;
 #endif
 

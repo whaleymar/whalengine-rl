@@ -61,8 +61,6 @@ Renderer::Renderer() {
 
 void Renderer::init() {
     mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
-    // Vector2i giSectorSize = gfx::getGISectorSize().as<s32>();
-    // mGIOccluderTexture = MultiTexture::create(giSectorSize.x, giSectorSize.y, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     mDistanceField = new DistanceField();
 }
@@ -405,10 +403,10 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
-    rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
-    rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
+    // rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
+    // rl::ClearBackground(Colors::ClearRL);
+    // rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    // rl::EndTextureMode();
 
     auto tmp = getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     rl::BeginTextureMode(tmp);
@@ -418,6 +416,12 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
 
     renderOccluders(Time.getFrame() % 8, mRenderQueue.mOccluderQueue);
     // renderOccluders(DBG_SECTOR, mRenderQueue.mOccluderQueue);
+
+    // TEMP TESTING
+    rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
+    rl::ClearBackground(Colors::ClearRL);
+    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
 
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
     scaleDepthBuffers(renderContext, tmp.texture);
