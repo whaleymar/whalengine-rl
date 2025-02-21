@@ -9,7 +9,7 @@
 #include "Physics/HitInfo.h"
 #include "Util/MathUtil.h"
 
-#ifdef NDEBUG
+#ifndef NDEBUG
 #include "Gfx/Color.h"
 #include "Settings.h"
 #endif
