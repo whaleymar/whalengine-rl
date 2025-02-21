@@ -19,6 +19,7 @@ uniform sampler2D _AllDepth;
 // Output fragment color
 out vec4 finalColor;
 
+#ifndef PLATFORM_WEB
 const int STEPS = 64;
 const int LIGHTPASSES = 10;
 const float hitEpsilon = 0.005;
@@ -165,6 +166,27 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     light = mix(light, vec3(0.), weight);
     return light;
 }
+
+#else // ifndef PLATFORM_WEB
+
+// just do a point light bc we don't have a SDF
+vec3 processLight(vec2 p, vec2 lightPos) {
+    // doing this effectively makes the light color the ambient, since the light rendertex is multiplied
+    float pixelDistance = length(iResolution * p - iResolution * lightPos);
+    if (pixelDistance > radiusPixels) {
+        return vec3(0.);
+    }
+
+    vec3 light = vec3(1.);
+
+    // This makes sure the pixel is lit less based on distance from light.
+    float fraction = pixelDistance / radiusPixels;
+    float weight = mix(0., 1., sqrt(fraction));
+    light = mix(light, vec3(0.), weight);
+    return light;
+}
+
+#endif
 
 void main() {
     finalColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;

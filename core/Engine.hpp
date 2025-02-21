@@ -11,6 +11,7 @@
 // WEB BUILD STUFF
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
 #endif
 // /WEB
 
@@ -34,7 +35,9 @@ extern "C" whal::IGame* CreateGame();
 extern "C" void DestroyGame(whal::IGame* game);
 #endif
 
+#if defined(DYNLIB)
 static std::string runCommandWithOutput(const std::string& command, int* exitCode);
+#endif
 
 class GameHandler {
 public:
@@ -275,6 +278,8 @@ public:
 #ifdef __EMSCRIPTEN__
         EM_ASM(FS.mkdir('/work'); FS.mount(IDBFS, {}, '/work'); FS.syncfs(true, function(err) { assert(!err); }););
         mGameHandler.EngineSleep(1);
+        // note: need to register callbacks *before* setting main loop
+        emscripten_set_visibilitychange_callback(nullptr, false, _EngineVisibilityChangeCallback);
         emscripten_set_main_loop(mGameHandler.EngineUpdate, 0,
                                  1);  // arg1: tells browser to control FPS. arg2: tells browser to simulate infinite loop for us
 #else
@@ -351,6 +356,7 @@ private:
     IGame* mGame;
 };
 
+#if defined(DYNLIB)
 // Function to execute a command and capture its output
 std::string runCommandWithOutput(const std::string& command, int* exitCode) {
     std::array<char, 128> buffer;
@@ -371,5 +377,6 @@ std::string runCommandWithOutput(const std::string& command, int* exitCode) {
 
     return result;
 }
+#endif
 
 }  // namespace whal

@@ -5,10 +5,8 @@ in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
 
-// Input uniform values
 uniform mat4 mvp;
 
-// Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
 out vec4 fragColor;
 out float fragDepth;
@@ -19,55 +17,46 @@ out vec2 maskTexCoord;
 out float isSilhouette;
 out float isMaskBlendAdditive;
 
-// NOTE: Add here your custom variables
+#ifdef PLATFORM_WEB
+float extractBit(int value, int bitPos) {
+    return 0.;
+}
+#else
+float extractBit(uint intData, int bitPosition) {
+    uint bitPos = 0x1u << (uint(bitPosition) - 1u);
+    if ((intData & bitPos) != 0u) {
+        return 1.0;
+    } else {
+        return 0.0;
+    }
+}
+#endif
 
-void main()
-{
+void main() {
     // Send vertex attributes to fragment shader
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
 
+    #ifdef PLATFORM_WEB
+    // nothing is working :(
+    int bitData = int(floor(vertexNormal.r + 0.5));
+    fragDepth = 0.;
+
+    #else
     // Write the color buffer data
-    uint intData = floatBitsToUint(vertexNormal.r);
+    uint bitData = floatBitsToUint(vertexNormal.r);
 
     // Extract the depth (first 8 bits) and normalize
-    fragDepth = float(intData & 0xFFu) / 255.0;
+    fragDepth = float(bitData & 0xFFu) / 255.0;
+
+    #endif
 
     // Extract flags
-    // 9th bit
-    // if ((intData & 0x100u) != 0u) {
-    //     isOccluder = 1.0;
-    // } else {
-    //     isOccluder = 0.0;
-    // }
-
-    // 10th bit
-    if ((intData & 0x200u) != 0u) {
-        isUI = 1.0;
-    } else {
-        isUI = 0.0;
-    }
-
-    // 11th bit
-    if ((intData & 0x400u) != 0u) {
-        isMask = 1.0;
-    } else {
-        isMask = 0.0;
-    }
-
-    // 12th bit
-    if ((intData & 0x800u) != 0u) {
-        isSilhouette = 1.0;
-    } else {
-        isSilhouette = 0.0;
-    }
-
-    // 13th bit
-    if ((intData & 0x1000u) != 0u) {
-        isMaskBlendAdditive = 1.0;
-    } else {
-        isMaskBlendAdditive = 0.0;
-    }
+    // isOccluder = extractBit(bitData, 9);
+    isUI = extractBit(bitData, 10);
+    isMask = extractBit(bitData, 11);
+    isSilhouette = extractBit(bitData, 12);
+    isMaskBlendAdditive = extractBit(bitData, 13);
 
     maskTexCoord = vertexNormal.gb + vertexTexCoord;
 

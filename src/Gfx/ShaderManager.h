@@ -12,7 +12,6 @@ enum class Shaders : s16 {
     Default = 0,
     PointLight,
     BoxLight,
-    // Quantize,
     ToneMap,
     ShadowLight,
     Blur,

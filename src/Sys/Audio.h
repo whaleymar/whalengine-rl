@@ -46,6 +46,9 @@ public:
     Corrade::Containers::Optional<Error> init();
     void end();
 
+    void disable();  // stops all music and sfx, saving their current state.
+    void enable();   // restores the previous audio state from before `disable` was called. E.g. if sfx was paused then it will still be paused.
+
     void playMusic(const char* path, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = true, Vector2i* position = nullptr);
     void playClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false, Vector2i* position = nullptr);
     void playMenuClip(const AudioClip& clip, f32 volume = 1.0, Filter filter = Filter::None, bool isLooping = false);
@@ -107,6 +110,11 @@ private:
         bool operator==(const std::string& other) const { return name == other; }
     };
 
+    struct DisabledState {
+        bool isMusicPaused = false;
+        bool isSfxPaused = false;
+    };
+
     AudioPlayer(const AudioPlayer&) = delete;
     void operator=(const AudioPlayer&) = delete;
 
@@ -138,6 +146,7 @@ private:
     bool mIsPlayingChannels = false;
     bool mIsMusicMuted = false;
     bool mIsSfxMuted = false;
+    DisabledState mDisabledState;
 };
 
 }  // namespace whal

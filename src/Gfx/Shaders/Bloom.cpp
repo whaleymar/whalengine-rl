@@ -35,14 +35,14 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     // downscale
     Graphics.fixedShaderMode(mBlur.get());
 
-    Graphics.blit(bloomTex, halfRes);
-    Graphics.blit(halfRes, quarterRes);
-    Graphics.blit(quarterRes, eightRes);
+    _blurPass(bloomTex, halfRes);
+    _blurPass(halfRes, quarterRes);
+    _blurPass(quarterRes, eightRes);
 
     // upscale
-    Graphics.blit(eightRes, quarterRes);
-    Graphics.blit(quarterRes, halfRes);
-    Graphics.blit(halfRes, bloomTex);
+    _blurPass(eightRes, quarterRes);
+    _blurPass(quarterRes, halfRes);
+    _blurPass(halfRes, bloomTex);
 
     Graphics.endFixedShaderMode();
 
@@ -69,5 +69,14 @@ void Bloom::draw() {
     ImGui::End();
 }
 #endif
+
+// this will go somewhere else once I have a framework for built-in uniforms
+void Bloom::_blurPass(rl::RenderTexture src, rl::RenderTexture dst) {
+// GLSL ES 2.0 doesn't have the textureSize function
+#ifdef __EMSCRIPTEN__
+    mBlur.setVector2("_TextureSize", Vector2f(src.texture.width, src.texture.height));
+#endif
+    Graphics.blit(src, dst);
+}
 
 }  // namespace whal

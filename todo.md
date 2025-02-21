@@ -19,6 +19,7 @@ ACTIVELY WORKING ON:
 - need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
     - Float component works for this, but needs to be applied to tiles too for interaction to look correct
 - animate the TileMapLayer overlay texture
+- use the balatro sfx pattern for loading shaders -> at startup load every in a dedicated 'shaders' folder into memory and allow them to be queried globally with a string key instead of an enum 
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight

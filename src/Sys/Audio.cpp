@@ -97,6 +97,23 @@ void AudioPlayer::end() {
     }
 }
 
+void AudioPlayer::disable() {
+    mDisabledState = {
+        .isMusicPaused = isMusicPaused(),
+        .isSfxPaused = isClipsPaused(),
+    };
+    pauseAll(true);
+}
+
+void AudioPlayer::enable() {
+    if (!mDisabledState.isMusicPaused) {
+        pauseMusic(false);
+    }
+    if (!mDisabledState.isSfxPaused) {
+        pauseClips(false);
+    }
+}
+
 void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
     if (!mIsValid) {
         return;

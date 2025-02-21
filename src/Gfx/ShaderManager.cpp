@@ -4,12 +4,11 @@
 #include <cassert>
 #include <cstring>
 #include <raylib.h>
+#include "Gfx/ShaderTranspiler.h"
 #include "Settings.h"
 #include "Sys/System.h"
 
-#ifdef __EMSCRIPTEN__
 #include "Util/Print.h"
-#endif
 
 namespace whal {
 
@@ -85,33 +84,25 @@ void ShaderManager::loadShaders() {
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
+    ShaderTranspiler shaderTranspiler;
 
     for (size_t i = 0; i < len; i++) {
-        // dynamic allocation
-
-#ifdef __EMSCRIPTEN__
-        std::string vertexPath = shaderInfo[i].vertexPath ? std::string(shaderInfo[i].vertexPath) + ".web" : "";
-        std::string fragPath = shaderInfo[i].fragPath ? std::string(shaderInfo[i].fragPath) + ".web" : "";
-        const char* cVertexPath = vertexPath.empty() ? NULL : vertexPath.c_str();
-        const char* cFragPath = fragPath.empty() ? NULL : fragPath.c_str();
-        rl::Shader shader = rl::LoadShader(cVertexPath, cFragPath);
-        if (cFragPath) {
-            print("Loaded Shader: ", cFragPath);
+        Expected<rl::Shader> eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        if (!eShader.isExpected()) {
+            print(eShader.error());
+            continue;
         }
-#else
-        rl::Shader shader = rl::LoadShader(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
-#endif
         s32 ix = static_cast<s32>(shaderInfo[i].shaderEnum);
-        S_SHADERS[ix] = shader;
+        S_SHADERS[ix] = *eShader;
         setIsUsed(ix);
 
         S_UNIFORMS[ix].uniformFlags = shaderInfo[i].uniformFlags;
 
         if (S_UNIFORMS[ix].isSet(Uniforms::TimeStamp)) {
-            S_UNIFORMS[ix].iTime = rl::GetShaderLocation(shader, "iTime");
+            S_UNIFORMS[ix].iTime = rl::GetShaderLocation(*eShader, "iTime");
         }
         if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
-            S_UNIFORMS[ix].iResolution = rl::GetShaderLocation(shader, "iResolution");
+            S_UNIFORMS[ix].iResolution = rl::GetShaderLocation(*eShader, "iResolution");
         }
     }
 }

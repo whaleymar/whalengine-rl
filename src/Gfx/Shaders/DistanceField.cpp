@@ -3,8 +3,11 @@
 #include <cmath>
 #include "Gfx/RaylibUtil.h"
 #include "Sys/System.h"
-#include "imgui.h"
 #include "raylib.h"
+
+#ifndef NDEBUG
+#include "imgui.h"
+#endif
 
 namespace whal {
 

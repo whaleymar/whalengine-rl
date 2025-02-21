@@ -3,6 +3,7 @@
 
 #include "Components/Collider.h"
 #include "ECS.h"
+#include "Util/MathUtil.h"
 #include "json.hpp"
 
 #include "Settings.h"
@@ -273,8 +274,19 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
             std::string overlayPath;
             if (tryRead(value, "overlayPath", &overlayPath)) {
                 if (isExist(overlayPath.c_str())) {
-                    TextureManager::instance().loadAndRegister(overlayPath, overlayPath);
-                    layer.overlayTex = std::move(overlayPath);
+                    auto errOpt = TextureManager::instance().loadAndRegister(overlayPath, overlayPath);
+                    if (!errOpt) {
+#ifdef __EMSCRIPTEN__
+                        // GLES 2.0 only allows texture wrapping on power-of-two textures.
+                        // Until I write some code to emulate that behavior, I will disable this feature on web builds for NPOT textures.
+                        rl::Texture tex = TextureManager::getTexture(overlayPath);
+                        if (math::isPowerOfTwo(tex.width) && math::isPowerOfTwo(tex.height)) {
+                            layer.overlayTex = std::move(overlayPath);
+                        }
+#else
+                        layer.overlayTex = std::move(overlayPath);
+#endif
+                    }
                 }
             }
 
@@ -557,6 +569,7 @@ static TiledDataType getDtype(const std::string& name) {
         return TiledDataType::Class;
     }
     DBG_ASSERT(false, whal_format("unrecognized property type: {}", name));
+    return TiledDataType::Int;
 }
 
 // parses all the data types in a project

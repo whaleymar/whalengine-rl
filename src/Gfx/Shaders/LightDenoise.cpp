@@ -6,15 +6,6 @@
 
 namespace whal {
 
-// #ifndef NDEBUG
-// static bool isPowerOfTwo(s32 n) {
-//     return (n & (n - 1)) == 0;
-// }
-// static bool isMultipleOf(s32 bigger, s32 smaller) {
-//     return bigger % smaller == 0;
-// }
-// #endif
-
 LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {}
 
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
@@ -22,13 +13,6 @@ LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {
 
 void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mDenoise.isValid());
-    // assert(isPowerOfTwo(dst.texture.width / src.texture.width) && isPowerOfTwo(dst.texture.height / src.texture.height) &&
-    //        "dst must be bigger than src by a power of 2");
-    // assert(isMultipleOf(dst.texture.width, src.texture.width) && isMultipleOf(dst.texture.height, src.texture.height) &&
-    //        "dst's dimensions must be an integer multiple of src's");
-    // assert((dst.texture.width / src.texture.width) == (dst.texture.height / src.texture.height) && "src and dst must have same width:height
-    // ratios");
-
     mDenoise.setVector2("iResolution", rl::Vector2(src.texture.width, src.texture.height));
 
     // rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_BILINEAR);

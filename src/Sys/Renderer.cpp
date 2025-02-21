@@ -105,8 +105,21 @@ void Renderer::update() {
     // Clear used list
     mUsedRTs.clear();
 
-    // If the OS window was resized, we need to update the global screen size variables
+// If the OS window was resized, we need to update the global screen size variables
+#ifdef __EMSCRIPTEN__
+    static bool isFirstPass = true;
+    static bool wasFullScreen = false;
+    bool isFullScreen = rl::IsWindowFullscreen();
+    // IsWindowResized never returns true on web
+    if (isFirstPass || WINDOW_WIDTH_OS != rl::GetRenderWidth() || WINDOW_HEIGHT_OS != rl::GetRenderHeight() || isFullScreen != wasFullScreen) {
+        isFirstPass = false;
+        wasFullScreen = isFullScreen;
+        // extra little hack to make sure the window is always in the right spot
+        rl::SetWindowSize(rl::GetRenderWidth(), rl::GetRenderHeight());
+        rl::SetWindowPosition(rl::GetWindowPosition().x, rl::GetWindowPosition().y);
+#else
     if (rl::IsWindowResized()) {
+#endif
         Vector2i newWindowSize(rl::GetRenderWidth(), rl::GetRenderHeight());
         if (newWindowSize.x == 0 || newWindowSize.y == 0) {
             // happens sometimes when fullscreening
