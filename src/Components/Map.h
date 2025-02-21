@@ -15,6 +15,7 @@ struct TileMapLayer {
     std::vector<bool> collisionMask;
     std::string overlayTex = "";
     s32 chunkSize = 16;
+    s32 zOffset = 0;
     bool isYSorted = false;
 };
 

@@ -182,6 +182,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
+    Vector2f layerPosition = eCtx.transform->position + Vector2f(0, eCtx.transform->floatHeight * FLOAT_HEIGHT_MULT);
+    // Vector2f layerPosition = eCtx.transform->position;
 
     if (layer.isYSorted) {
         // just drawing one tile
@@ -197,7 +199,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             renderInfo.sprite.atlasPosition.y,
         };
 
-        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + eCtx.transform->position;
+        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + layerPosition;
 
         const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
@@ -220,8 +222,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const s32 viewHeightHalfTiles = WINDOW_HEIGHT_GAME / PIXELS_PER_TILE / 2 + 1;
 
         // these can be outside of the range ((0, widthTiles), (0, heightTiles))
-        const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - eCtx.transform->position.x) / PIXELS_PER_TILE;
-        const s32 cameraTileY = static_cast<s32>(eCtx.transform->position.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
+        const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - layerPosition.x) / PIXELS_PER_TILE;
+        const s32 cameraTileY = static_cast<s32>(layerPosition.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
         const s32 minX = std::max(0, cameraTileX - viewWidthHalfTiles);
         const s32 maxX = std::min(widthTiles, cameraTileX + viewWidthHalfTiles + 1);
         const s32 minY = std::max(0, cameraTileY - viewHeightHalfTiles);
@@ -265,7 +267,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
                 continue;
             }
 
-            const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + eCtx.transform->position;
+            const Vector2f worldPosition = Vector2f(tile.x * PIXELS_PER_TILE, -tile.y * PIXELS_PER_TILE) + layerPosition;
             rl::Rectangle dst = rl::Rectangle{
                 worldPosition.x * VIRTUAL_SCREEN_RATIO,
                 -worldPosition.y * VIRTUAL_SCREEN_RATIO,
