@@ -162,7 +162,7 @@ MultiTexture MultiTexture::create(s32 width, s32 height, rl::PixelFormat format)
     };
 
     // For WebGL, MRT targets need to be the same format and size
-    mt.tex = LoadRenderTextureFormat(width, height, format);
+    mt.tex = rl::LoadRenderTextureFormat(width, height, format);
     rl::rlEnableFramebuffer(mt.tex.id);
 
     // Load additional buffers

@@ -27,8 +27,6 @@ ACTIVELY WORKING ON:
 - shadows do NOT play well with a moving camera
 
 ## Web 
-- getting mouse position does not work (may be fixed w/ raylib 5.5)
-- need to update a lot of shaders 
 
 ## Debug tools 
 - imgui integration
@@ -78,15 +76,11 @@ ACTIVELY WORKING ON:
         - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
         - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
 
-## Audio
-- FMOD: switch to FMOD's C API. Required for Windows since MSVC uses different name mangling than the real compilers.
-- Follow documentation to get web builds working!
-
 ## Misc (low priority)
 - ECS parallelization (low priority)
 - make physics simulation run at 60 fps even if framerate is higher
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
-- Get web and windows builds working again
+- Get windows builds working again
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
 
 ## Bugs 
