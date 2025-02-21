@@ -23,7 +23,7 @@ vec3 Sample(vec2 uv) {
 
 vec3 SampleBox(vec2 uv, float delta) {
     #ifndef PLATFORM_WEB
-    _TextureSize = vec2(textureSize(texture0, 0).xy);
+    vec2 _TextureSize = vec2(textureSize(texture0, 0).xy);
     #endif
     vec2 _MainTex_TexelSize = 1. / _TextureSize;
     vec2 offset1 = _MainTex_TexelSize * vec2(-delta, delta);
