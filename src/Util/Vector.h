@@ -18,12 +18,12 @@ struct Vector2 {
     Vector2(const Vector2<T>& other) = default;
     Vector2(rl::Vector2 rlVec) : x(rlVec.x), y(rlVec.y) {}
 
-    static inline const Vector2<T> UP{0, 1};
-    static inline const Vector2<T> DOWN{0, -1};
-    static inline const Vector2<T> LEFT{-1, 0};
-    static inline const Vector2<T> RIGHT{1, 0};
-    static inline const Vector2<T> ZERO{0, 0};
-    static inline const Vector2<T> ONE{1, 1};
+    static const Vector2<T> UP;
+    static const Vector2<T> DOWN;
+    static const Vector2<T> LEFT;
+    static const Vector2<T> RIGHT;
+    static const Vector2<T> ZERO;
+    static const Vector2<T> ONE;
 
     inline Vector2<T>& operator=(const Vector2<T>& other) {
         x = other.x;
@@ -118,17 +118,22 @@ struct Vector2 {
         const f32 ynew = originX * sin + originY * cos;
 
         // translate point back:
-        return Vector2<T>{xnew + about.x, ynew + about.y};
+        return Vector2<T>(xnew + about.x, ynew + about.y);
     }
 
     // Returns angle of vector.
     // Inputs do not need to be normalized
-    inline f32 angle(Vector2<f32> reference = Vector2<f32>::RIGHT, const bool clockwise = false) const {
-        const Vector2<f32> vec = std::is_same_v<T, f32> ? norm() : as<f32>().norm();
+    inline f32 angle(Vector2<T> reference = Vector2<T>::RIGHT, const bool clockwise = false) const {
+        Vector2<f32> vec;
+        if constexpr (std::is_same_v<T, f32>) {
+            vec = norm();
+        } else {
+            vec = as<f32>().norm();
+        }
         reference = reference.norm();
 
-        const f32 dot = vec.dot(reference);
-        const f32 det = vec.det(reference);
+        const f32 dot = vec.dot(reference.as<f32>());
+        const f32 det = vec.det(reference.as<f32>());
         const f32 mult = clockwise ? 1.0f : -1.0f;
         const f32 angleRadians = mult * std::atan2(det, dot);
         const f32 angleDegrees = angleRadians * math::RAD_TO_DEG;
@@ -144,21 +149,21 @@ struct Vector2 {
     // Only recommended for float specialization.
     inline static Vector2<T> fromAngle(f32 angle) {
         const f32 radians = angle * DEG2RAD;
-        return {math::cos(radians), math::sin(radians)};
+        return Vector2<T>(math::cos(radians), math::sin(radians));
     }
 
     // Returns unit vector for given angle.
     // Only recommended for float specialization.
     inline static Vector2<T> fromAngleFast(f32 angle) {
         const f32 radians = angle * DEG2RAD;
-        return {math::fast_cos(radians), math::fast_sin(radians)};
+        return Vector2<T>(math::fast_cos(radians), math::fast_sin(radians));
     }
 
     inline Vector2<T> lerp(const Vector2<T> other, const f32 t) const {
-        if constexpr (std::is_same_v<T, f32>) {
+        if constexpr (std::is_same_v<T, f32> || std::is_same_v<T, f64>) {
             return {math::lerp(x, other.x, t), math::lerp(y, other.y, t)};
         } else {
-            return as<f32>().lerp(other.as<f32>(), t).round();
+            return as<f32>().lerp(other.as<f32>(), t).round().template as<T>();
         }
     }
 
@@ -175,6 +180,27 @@ struct Vector2 {
 
 template <typename T>
 std::ostream& operator<<(std::ostream& out, Vector2<T> const& self);
+
+#define DECL_VECTOR_STATICS(type)                                                                                                                    \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::UP;                                                                                                           \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::DOWN;                                                                                                         \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::LEFT;                                                                                                         \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::RIGHT;                                                                                                        \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::ZERO;                                                                                                         \
+    template <>                                                                                                                                      \
+    const Vector2<type> Vector2<type>::ONE;
+
+DECL_VECTOR_STATICS(s8)
+DECL_VECTOR_STATICS(s16)
+DECL_VECTOR_STATICS(s32)
+DECL_VECTOR_STATICS(s64)
+DECL_VECTOR_STATICS(f32)
+DECL_VECTOR_STATICS(f64)
 
 typedef Vector2<f32> Vector2f;
 typedef Vector2<s32> Vector2i;
