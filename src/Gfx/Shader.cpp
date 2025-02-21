@@ -1,19 +1,22 @@
 #include "Shader.h"
 
 #include "Events/Events.h"
+#include "ShaderTranspiler.h"
 #include "raylib.h"
 
 namespace whal {
 
-static rl::Shader load(const std::string& vspath, const std::string& fspath) {
+static Expected<rl::Shader> load(const std::string& vspath, const std::string& fspath) {
+    ShaderTranspiler shaderTranspiler;
     const char* vsfinal = vspath == "" ? 0 : vspath.c_str();
     const char* fsfinal = fspath == "" ? 0 : fspath.c_str();
-    return rl::LoadShader(vsfinal, fsfinal);
+    return shaderTranspiler.loadAndCompile(vsfinal, fsfinal);
 }
 
 Shader::Shader(const char* vsPath, const char* fsPath) : mVertPath(vsPath), mFragPath(fsPath) {
-    mHandle = load(mVertPath, mFragPath);
-    if (rl::IsShaderValid(mHandle)) {
+    Expected<rl::Shader> eShader = load(mVertPath, mFragPath);
+    if (eShader.isExpected()) {
+        mHandle = *eShader;
         mIsReady = true;
     } else {
         mIsReady = false;
@@ -30,8 +33,9 @@ void Shader::onEvent(evt::ShaderReload) {
     if (mIsReady) {
         rl::UnloadShader(mHandle);
     }
-    mHandle = load(mVertPath, mFragPath);
-    if (rl::IsShaderValid(mHandle)) {
+    Expected<rl::Shader> eShader = load(mVertPath, mFragPath);
+    if (eShader.isExpected()) {
+        mHandle = *eShader;
         mIsReady = true;
     } else {
         mIsReady = false;

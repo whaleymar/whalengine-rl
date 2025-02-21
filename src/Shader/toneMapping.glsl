@@ -1,4 +1,4 @@
-#version 330 
+#version 330
 
 // Input HDR color texture
 uniform sampler2D texture0; // hdrTexture
@@ -10,13 +10,13 @@ in vec2 fragTexCoord;
 // Final output color
 out vec4 finalColor;
 
-// REFERENCE 
+// REFERENCE
 // https://64.github.io/tonemapping/
 
 const float exposure = 1.0; // unused
 
 float luminance(vec3 v) {
-    return dot(v, vec3(0.2126f, 0.7152f, 0.0722f));
+    return dot(v, vec3(0.2126, 0.7152, 0.0722));
 }
 
 vec3 change_luminance(vec3 c_in, float l_out) {
@@ -48,15 +48,15 @@ vec3 reinhard(vec3 hdrColor) {
 }
 
 vec3 reinhard_extended(vec3 v, float max_white) {
-    vec3 numerator = v * (1.0f + (v / vec3(max_white * max_white)));
-    return numerator / (1.0f + v);
+    vec3 numerator = v * (1.0 + (v / vec3(max_white * max_white)));
+    return numerator / (1.0 + v);
 }
 
 // operates on luminance instead of color channels. Looks better IMO
 vec3 reinhard_extended_luminance(vec3 v, float max_white_l) {
     float l_old = luminance(v);
-    float numerator = l_old * (1.0f + (l_old / (max_white_l * max_white_l)));
-    float l_new = numerator / (1.0f + l_old);
+    float numerator = l_old * (1.0 + (l_old / (max_white_l * max_white_l)));
+    float l_new = numerator / (1.0 + l_old);
     return change_luminance(v, l_new);
 }
 

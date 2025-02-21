@@ -98,4 +98,9 @@ void _EngineSetEditorMode(bool);
 bool _EngineIsEditorSuspend();
 void _EngineSetEditorSuspend(bool);
 #endif
+
+#ifdef __EMSCRIPTEN__
+typedef struct EmscriptenVisibilityChangeEvent EmscriptenVisibilityChangeEvent;
+bool _EngineVisibilityChangeCallback(int eventType, const EmscriptenVisibilityChangeEvent* event, void* userData);
+#endif
 }

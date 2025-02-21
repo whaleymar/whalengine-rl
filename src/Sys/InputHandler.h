@@ -151,7 +151,7 @@ public:
     void enable(rl::GamepadButton button) const;
     void enable(whal::GamepadAxis axis) const;
 
-    void stop() const;    // disables all inputs. can only be undone by `enable`
+    void stop() const;    // disables all inputs. can only be undone by `resume`
     void resume() const;  // if `stop` was called previously, this will resume inputs
 
     InputCode getLastInput(bool isJustPressed = false) const;

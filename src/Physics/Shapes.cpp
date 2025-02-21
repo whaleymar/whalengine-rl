@@ -6,10 +6,13 @@
 #include <raylib.h>
 
 #include "Components/Transform.h"
-#include "Gfx/Color.h"
 #include "Physics/HitInfo.h"
-#include "Settings.h"
 #include "Util/MathUtil.h"
+
+#ifdef NDEBUG
+#include "Gfx/Color.h"
+#include "Settings.h"
+#endif
 
 namespace whal {
 
@@ -196,14 +199,14 @@ Shape::Shape(AABB aabb) : mAABB(aabb), mShape(ShapeTag::AABB) {}
 Shape::Shape(Circle circle) : mCircle(circle), mShape(ShapeTag::Circle) {}
 
 Shape::Shape(const Shape& other) {
-    std::memcpy(this, &other, sizeof(other));
+    std::memcpy((void*)this, (void*)&other, sizeof(other));
 }
 
 Shape& Shape::operator=(const Shape& other) {
     if (this == &other) {
         return *this;
     }
-    std::memcpy(this, &other, sizeof(other));
+    std::memcpy((void*)this, (void*)&other, sizeof(other));
     return *this;
 }
 

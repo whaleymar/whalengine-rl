@@ -89,4 +89,8 @@ f32 getAngleDiff(f32 angle1, f32 angle2);
 
 f32 gammaToLinear(f32 gamma);
 
+inline bool isPowerOfTwo(s32 n) {
+    return n != 0 && ((n & (n - 1)) == 0);
+}
+
 }  // namespace math

@@ -7,6 +7,9 @@
 #include "Settings.h"
 #include "Util/Print.h"
 #include "raylib.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten/html5.h>
+#endif
 
 namespace whal {
 
@@ -103,6 +106,9 @@ void System::quit() {
 }
 
 bool System::isQuit() {
+#ifdef __EMSCRIPTEN__
+    rl::CloseWindow();  // doesn't do anything
+#endif
     return S_IS_QUIT;
 }
 
@@ -285,5 +291,18 @@ void _EngineSetEditorSuspend(bool isOn) {
     } else {
         whal::System::setEnginePaused(false);
     }
+}
+#endif
+
+#ifdef __EMSCRIPTEN__
+// https://emscripten.org/docs/api_reference/html5.h.html#id68
+bool _EngineVisibilityChangeCallback(int eventType, const EmscriptenVisibilityChangeEvent* event, void* userData) {
+    bool isTabActive = !event->hidden;
+    if (isTabActive) {
+        whal::Audio.enable();
+    } else {
+        whal::Audio.disable();
+    }
+    return true;  // true to indicate event was consumed by event handler
 }
 #endif
