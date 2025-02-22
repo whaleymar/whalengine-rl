@@ -22,6 +22,7 @@ struct RaylibDrawParams {
 
 struct RenderContext {
     Vector2f cameraPosition;
+    Vector2i cameraViewHalf;
     rl::Camera2D camera;
     const TextureAtlas& atlas;
     ecs::Entity cameraEntity;
@@ -42,7 +43,7 @@ struct DrawMetaData {
 
 struct EntityRenderInfo {
     const Transform* transform;
-    s32 bottom;
+    s32 ysortPosition;
     ecs::Entity entity;
     const ecs::IRender* piRender;
     DrawMetaData colorBuf = {};
@@ -60,6 +61,7 @@ struct EntityPreRenderInfo {
 
     AABB boundingBox;
     const Transform* transform;
+    s32 ysortPosition;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;
@@ -111,7 +113,8 @@ Vector2f getGISector(s32 sector);
 Vector2f getGISectorOffset(s32 sector);
 
 Vector2f getGISectorSize(s32 sector);
-Vector2f getGISectorPadding();
+Vector2f getGIPadding();
+AABB getGIViewBox(Vector2i cameraPosition, s32 sector);  // gets camera view box for sector
 
 }  // namespace gfx
 }  // namespace whal

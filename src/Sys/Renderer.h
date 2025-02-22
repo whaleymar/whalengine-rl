@@ -118,7 +118,7 @@ private:
     void update();  // called once per frame
     void end();     // called by System::end
 
-    void buildRenderQueue(Vector2i cameraPosition);
+    void buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf);
     void drawEntities(gfx::RenderContext ctx);
     void drawLights(gfx::RenderContext ctx);
     void scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const;

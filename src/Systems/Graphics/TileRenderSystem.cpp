@@ -33,6 +33,9 @@ static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ec
 */
 
 // slightly optimized version of DrawSpriteHDR
+// RESEARCH another optimization I could do (if I move this whole function into rlgl.h) is to batch all 4 vertices together and move them with a
+// single memcpy.
+//      Moving this to rlgl means I'd have to re-convert `source` to an rl::Rectangle and pass the tile dims as an argument.
 static inline void DrawTileHDR(float invTexWidth, float invTexHeight, rl::Vector2 source, rl::Rectangle dest, rl::Vector2 origin, float rotation,
                                rl::Vector4 hdrColor, rl::Vector3 packedCBI, float z, bool flipX) {
     // Only calculate rotation if needed
@@ -183,7 +186,6 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
     Vector2f layerPosition = eCtx.transform->position + Vector2f(0, eCtx.transform->floatHeight * FLOAT_HEIGHT_MULT);
-    // Vector2f layerPosition = eCtx.transform->position;
 
     if (layer.isYSorted) {
         // just drawing one tile
@@ -218,16 +220,16 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         // drawing all the tiles
 
         // Calculate which tiles are visible to the camera
-        const s32 viewWidthHalfTiles = WINDOW_WIDTH_GAME / PIXELS_PER_TILE / 2 + 1;
-        const s32 viewHeightHalfTiles = WINDOW_HEIGHT_GAME / PIXELS_PER_TILE / 2 + 1;
+        const Vector2i viewHalfTiles = Vector2i(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME) / PIXELS_PER_TILE / 2 + 1;
+        // const Vector2i viewHalfTiles = ctx.cameraViewHalf / PIXELS_PER_TILE;
 
         // these can be outside of the range ((0, widthTiles), (0, heightTiles))
         const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - layerPosition.x) / PIXELS_PER_TILE;
         const s32 cameraTileY = static_cast<s32>(layerPosition.y - ctx.cameraPosition.y) / PIXELS_PER_TILE;
-        const s32 minX = std::max(0, cameraTileX - viewWidthHalfTiles);
-        const s32 maxX = std::min(widthTiles, cameraTileX + viewWidthHalfTiles + 1);
-        const s32 minY = std::max(0, cameraTileY - viewHeightHalfTiles);
-        const s32 maxY = std::min(heightTiles, cameraTileY + viewHeightHalfTiles + 1);
+        const s32 minX = std::max(0, cameraTileX - viewHalfTiles.x);
+        const s32 maxX = std::min(widthTiles, cameraTileX + viewHalfTiles.x + 1);
+        const s32 minY = std::max(0, cameraTileY - viewHalfTiles.y);
+        const s32 maxY = std::min(heightTiles, cameraTileY + viewHalfTiles.y + 1);
 
         // group identical tiles so we can cache the complicated stuff
         rl::rlSetTexture(ctx.atlas.getTexture().id);
@@ -290,10 +292,6 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const auto& trans = entity.get<Transform>();
         const auto& tml = entity.get<TileMapLayer>();
 
-        const Vector2i half = tml.sizeTiles * Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
-        const Vector2i center = trans.positionPx + half * Vector2i(1, -1);
-        const auto bb = AABB(center, half);
-
         if (tml.isYSorted) {
             buildYsortList(entity, tml);
             std::vector<gfx::EntityPreRenderInfo>& sortedTiles = S_YSORT_RENDERINFO_LUT[entity];
@@ -307,10 +305,14 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                 queue.add(renderInfo);
             }
         } else {
+            const Vector2i half = tml.sizeTiles * Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
+            const Vector2i center = trans.positionPx + half * Vector2i(1, -1) + Vector2i(0, trans.floatHeight * FLOAT_HEIGHT_MULT);
+            const auto bb = AABB(center, half);
             // occlusion calced at draw time. Pass MaybeInChildren so RenderQueue knows.
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
                 .transform = &trans,
+                .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::MaybeInChildren,
                 .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
@@ -424,11 +426,14 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
             }
 
             S_YSORT_COORD_LUT[e].push_back(Vector2i(x, y));
-            Vector2f worldPosition = Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position;
+            Vector2f worldPosition =
+                Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position + Vector2f(0, parentTrans.floatHeight * FLOAT_HEIGHT_MULT);
+            const AABB bb = AABB(worldPosition.round(), halflen);
 
             const auto ri = gfx::EntityPreRenderInfo{
-                .boundingBox = AABB(worldPosition.round(), halflen),
+                .boundingBox = bb,
                 .transform = &parentTrans,
+                .ysortPosition = bb.bottom() - static_cast<s32>(parentTrans.floatHeight * FLOAT_HEIGHT_MULT),
                 .entity = e,
                 .isOccluder =
                     spriteCache.get(tile.gid).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,

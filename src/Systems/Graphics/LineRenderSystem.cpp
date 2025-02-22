@@ -77,13 +77,15 @@ void LineRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
 void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
-        const auto line = entity.get<DrawStraightLine>();
-        const auto& trans = entity.get<Transform>();
+        const DrawStraightLine& line = entity.get<DrawStraightLine>();
+        const Transform& trans = entity.get<Transform>();
         const LinePoints points = getRotatedPoints(trans.position, trans, line);
+        const AABB bb = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>());
 
         queue.add(gfx::EntityPreRenderInfo{
-            .boundingBox = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>()),
+            .boundingBox = bb,
             .transform = &trans,
+            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
             .entity = entity,
         });
     }

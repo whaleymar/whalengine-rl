@@ -234,6 +234,7 @@ gfx::RenderContext Renderer::getRenderContext(bool useUnstretchedRenderWindow) c
 
     return gfx::RenderContext{
         .cameraPosition = cameraPosition,
+        .cameraViewHalf = {(WINDOW_WIDTH_GAME + PIXELS_PER_TILE) / 2, (WINDOW_HEIGHT_GAME + PIXELS_PER_TILE) / 2},
         .camera = worldCamera,
         .atlas = TextureManager::getAtlas(TEXNAME_SPRITE),
         .cameraEntity = cameraEntity,
@@ -243,7 +244,7 @@ gfx::RenderContext Renderer::getRenderContext(bool useUnstretchedRenderWindow) c
 void Renderer::render() {
     // 0. Create render context and build the render queue.
     const gfx::RenderContext renderContext = getRenderContext();
-    buildRenderQueue(renderContext.cameraPosition.round());
+    buildRenderQueue(renderContext.cameraPosition.round(), renderContext.cameraViewHalf);
 
     // 1. IRender and IRenderLight systems are drawn
     drawEntities(renderContext);  // drawn to TextureID::Staging
@@ -295,50 +296,6 @@ void Renderer::render() {
 #endif
 }
 
-void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepthView) const {
-    // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
-    const auto allDepthTex = mStagingTexture.getDepth();
-
-    const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
-    rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
-    rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
-
-    rl::BeginTextureMode(targetDepthTex);
-    rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(allDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
-
-    // Render to larger occlusion color buf
-    // clear the center sector and draw the occlusion stuff visible to the camera
-    const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
-    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
-    rl::BeginTextureMode(globalOccl);
-    Vector2f loc = gfx::getGISector(8);
-    rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
-    rl::BeginBlendMode(rl::BLEND_CUSTOM);
-    rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
-
-    // draw camera sector
-    rl::DrawTexturePro(cameraDepthView, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
-                       rl::WHITE);
-
-    s32 sector = Time.getFrame() % 8;
-    // s32 sector = DBG_SECTOR;
-    loc = gfx::getGISector(sector);
-
-    const Vector2f sectorSize = gfx::getGISectorSize(sector);
-    rl::DrawRectangle(loc.x, loc.y, sectorSize.x, sectorSize.y, Colors::ClearRL);
-
-    // Slight issues for:
-    // Sector 2 (bottom half is drawn but shouldn't be)
-    // 6 (right half is drawn but should not be)
-    // but it still looks fine.
-    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, 0.0, FWINDOW_WIDTH_GAME, -FWINDOW_HEIGHT_GAME),
-                       rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0, rl::WHITE);
-    rl::EndBlendMode();
-    rl::EndTextureMode();
-}
-
 void Renderer::buildDistanceField() const {
     const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
@@ -377,8 +334,16 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
 
     auto renderOccluders = [&](s32 sector, const std::vector<gfx::EntityRenderInfo>& queue) {
         Vector2f offset = gfx::getGISectorOffset(sector);
-        gameRenderContext.cameraPosition = renderContext.cameraPosition + offset;
-        gameRenderContext.camera.target = (gameRenderContext.cameraPosition * Vector2f(1, -1)).asRL();
+        // gameRenderContext.cameraPosition =
+        Vector2f renderCameraPosition = renderContext.cameraPosition + offset;
+        gameRenderContext.camera.target = (renderCameraPosition * Vector2f(1, -1)).asRL();
+        const AABB giViewBox = gfx::getGIViewBox(renderCameraPosition.round(), sector);
+
+        // TODO non-ysorted tilemap layers are drawing outside of their sector bounds but I can't figure out the math :(
+        gameRenderContext.cameraPosition = renderCameraPosition;
+        // gameRenderContext.cameraPosition = giViewBox.getPosition().as<f32>();
+        gameRenderContext.cameraViewHalf = giViewBox.getHalf();
+
         rl::BeginTextureMode(mGIOccluderTexture.tex);
         rl::ClearBackground(Colors::ClearRL);
         rl::BeginMode2D(gameRenderContext.camera);
@@ -414,13 +379,17 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     rl::EndTextureMode();
 
-    renderOccluders(Time.getFrame() % 8, mRenderQueue.mOccluderQueue);
-    // renderOccluders(DBG_SECTOR, mRenderQueue.mOccluderQueue);
+    s32 sector = Time.getFrame() % 8;
+    renderOccluders(sector, mRenderQueue.mOccluderQueue);
 
     // TEMP TESTING
     rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
-    rl::ClearBackground(Colors::ClearRL);
+    rl::ClearBackground(rl::WHITE);
     rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    // looking at cropped draw:
+    // auto sectorSize = gfx::getGISectorSize(sector);
+    // rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
+    //                    rl::Rectangle{0, 0, sectorSize.x, sectorSize.y}, rl::Vector2{0, 0}, 0, rl::WHITE);
     rl::EndTextureMode();
 
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
@@ -454,6 +423,47 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     Graphics.releaseTemporaryRT(lightTex);
 }
 
+void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepthView) const {
+    // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
+    const auto allDepthTex = mStagingTexture.getDepth();
+
+    const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
+    rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
+    rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
+
+    rl::BeginTextureMode(targetDepthTex);
+    rl::ClearBackground(Colors::ClearRL);
+    rl::DrawTexturePro(allDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::EndTextureMode();
+
+    // Render to larger occlusion color buf
+    // clear the center sector and draw the occlusion stuff visible to the camera
+    const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
+    rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
+    rl::BeginTextureMode(globalOccl);
+    Vector2f loc = gfx::getGISector(8);
+    rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
+    rl::BeginBlendMode(rl::BLEND_CUSTOM);
+    rl::DrawRectangle(loc.x, loc.y, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, Colors::ClearRL);
+
+    // draw camera sector
+    rl::DrawTexturePro(cameraDepthView, srcRectGame, rl::Rectangle{loc.x, loc.y, FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}, rl::Vector2{0, 0}, 0,
+                       rl::WHITE);
+
+    s32 sector = Time.getFrame() % 8;
+    loc = gfx::getGISector(sector);
+
+    const Vector2f sectorSize = gfx::getGISectorSize(sector);
+    // clear this sector:
+    rl::DrawRectangle(loc.x, loc.y, sectorSize.x, sectorSize.y, Colors::ClearRL);
+
+    // draw updated sector
+    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
+                       rl::Rectangle{loc.x, loc.y, sectorSize.x, sectorSize.y}, rl::Vector2{0, 0}, 0, rl::WHITE);
+    rl::EndBlendMode();
+    rl::EndTextureMode();
+}
+
 void Renderer::drawUI(const gfx::RenderContext ctx) const {
     rl::BeginMode2D(ctx.camera);
     for (auto renderInfo : mRenderQueue.mUIQueue) {
@@ -468,25 +478,21 @@ static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRende
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        return entity1.bottom == entity2.bottom ? entity1.shader.id < entity2.shader.id : entity1.bottom > entity2.bottom;
+        return entity1.ysortPosition == entity2.ysortPosition ? entity1.shader.id < entity2.shader.id : entity1.ysortPosition > entity2.ysortPosition;
     } else {
         return entity1.shader.id < entity2.shader.id;
     }
 }
 
-void Renderer::buildRenderQueue(Vector2i cameraPosition) {
-    // .clear() doesn't affect capacity
+void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf) {
     mRenderQueue.clear();
 
-    // Configure camera view box for culling
-    const AABB cameraViewBox(cameraPosition, {WINDOW_WIDTH_GAME / 2 + PIXELS_PER_TILE / 2, WINDOW_HEIGHT_GAME / 2 + PIXELS_PER_TILE / 2});
+    // Configure camera view boxes for culling
+    const AABB cameraViewBox(cameraPosition, cameraViewHalf);
     mRenderQueue.setViewBox(cameraViewBox);
-    s32 sector = Time.getFrame() % 8;
-    // s32 sector = DBG_SECTOR;
-    // removing the divide by 2 bc idfk
-    // Vector2i giSectorSize = gfx::getGISectorSize(sector).as<s32>() / 2 + Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
-    Vector2i giSectorSize = gfx::getGISectorSize(sector).as<s32>() + Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
-    mRenderQueue.setGIViewBox(AABB(cameraPosition + gfx::getGISectorOffset(sector).as<s32>(), giSectorSize));
+
+    s32 giSector = Time.getFrame() % 8;
+    mRenderQueue.setGIViewBox(gfx::getGIViewBox(cameraPosition, giSector));
 
     for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
         mRenderQueue.setActiveRenderer(renderSystem.pIRender);
