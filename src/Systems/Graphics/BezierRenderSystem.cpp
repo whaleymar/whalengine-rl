@@ -19,12 +19,15 @@ void BezierRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
 
 void BezierRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
-        const auto line = entity.get<DrawBezierQuad>();
+        const DrawBezierQuad& line = entity.get<DrawBezierQuad>();
         const Transform& trans = entity.get<Transform>();
+        const AABB bb = AABB::fromPoints(trans.positionPx, trans.positionPx + line.controlPointOffset, trans.positionPx + line.endPointOffset);
 
+        // for Y sorting purposes I want floatHeight to be ignored
         queue.add(gfx::EntityPreRenderInfo{
-            .boundingBox = AABB::fromPoints(trans.positionPx, trans.positionPx + line.controlPointOffset, trans.positionPx + line.endPointOffset),
+            .boundingBox = bb,
             .transform = &trans,
+            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
             .entity = entity,
         });
     }

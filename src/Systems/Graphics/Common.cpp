@@ -69,7 +69,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
 
         bool isOccluderMaybe = isOccluder || renderInfo.isOccluder == EntityPreRenderInfo::IsOccluder::MaybeInChildren;
         if (isOccluderMaybe) {
-            mOccluderQueueCamera.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+            mOccluderQueueCamera.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                               gfx::DrawMetaData{
                                                   .depth = static_cast<u8>(renderInfo.transform->depth),
                                                   .isOccluder = true,
@@ -79,7 +79,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
         }
 
         if (isOccluderMaybe && mGlobalIlluminationViewBox.isOverlapping(renderInfo.boundingBox)) {
-            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
                                             .depth = static_cast<u8>(renderInfo.transform->depth),
                                             .isOccluder = true,
@@ -102,7 +102,7 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
             break;
         }
         if (isOccluder) {
-            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+            mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
                                             .depth = static_cast<u8>(renderInfo.transform->depth),
                                             .isOccluder = true,
@@ -129,7 +129,7 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
         break;
     }
     if (renderInfo.transform->depth == Depth::Debug || renderInfo.transform->depth == Depth::UIFar || renderInfo.transform->depth == Depth::UIClose) {
-        mUIQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+        mUIQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                               gfx::DrawMetaData{
                                   .depth = static_cast<u8>(renderInfo.transform->depth),
                                   .isOccluder = isOccluder,
@@ -137,7 +137,7 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
                               },
                               renderInfo.internal, renderInfo.shader);
     } else {
-        mNormalQueue.emplace_back(renderInfo.transform, renderInfo.boundingBox.bottom(), renderInfo.entity, mpIRender,
+        mNormalQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                   gfx::DrawMetaData{
                                       .depth = static_cast<u8>(renderInfo.transform->depth),
                                       .isOccluder = isOccluder,
@@ -176,7 +176,7 @@ RaylibDrawParams getDrawParams(const Transform& transform, Vector2f frameSize) {
 
 Vector2f getGISector(s32 sector) {
     // clang-format off
-    auto const size = getGISectorPadding();
+    auto const size = getGIPadding();
     switch (sector) {
         case 0: return {0,0};
         case 1: return {size.x, 0};
@@ -199,7 +199,7 @@ Vector2f getGISectorOffset(s32 sector) {
 Vector2f getGISectorSize(s32 sector) {
     // clang-format off
     Vector2f viewSize = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
-    Vector2f padSize = getGISectorPadding();
+    Vector2f padSize = getGIPadding();
     switch (sector) {
         case 0: return padSize;
         case 1: return {viewSize.x, padSize.y};
@@ -215,8 +215,22 @@ Vector2f getGISectorSize(s32 sector) {
     // clang-format on
 }
 
-Vector2f getGISectorPadding() {
+Vector2f getGIPadding() {
     return {FWINDOW_WIDTH_GAME / 2.0f, FWINDOW_HEIGHT_GAME / 2.0f};
+}
+
+AABB getGIViewBox(Vector2i cameraPosition, s32 sector) {
+    Vector2i giSectorTopLeft =
+        Vector2i(cameraPosition.x - WINDOW_WIDTH_GAME / 2, cameraPosition.y + WINDOW_HEIGHT_GAME / 2) + gfx::getGISectorOffset(sector).as<s32>();
+    Vector2i giSectorSizeHalf = gfx::getGISectorSize(sector).as<s32>() / 2;
+    Vector2i giSectorCenter = giSectorTopLeft + giSectorSizeHalf * Vector2i(1, -1);
+    Vector2i giSectorSize = giSectorSizeHalf + Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE);
+    if (EDITOR_FRAME_DO_NEXT) {
+        print("GI sector", sector, "\n\tsize:", gfx::getGISectorSize(sector), "\n\ttop left:", giSectorTopLeft, "\n\tcenter:", giSectorCenter,
+              "\n\thalf:", giSectorSize);
+        print("");
+    }
+    return AABB(giSectorCenter, giSectorSize);
 }
 
 }  // namespace whal::gfx

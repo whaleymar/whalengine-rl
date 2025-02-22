@@ -7,6 +7,7 @@
 #include "Gfx/Texture.h"
 #include "Physics/Box.h"
 
+#include "Settings.h"
 #include "rlgl.h"
 
 namespace whal {
@@ -25,19 +26,17 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
 
 void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
-        const auto sprite = entity.get<Sprite>();
-        const auto& trans = entity.get<Transform>();
-        // for Y sorting purposes I want floatHeight to be ignored
-        Transform transNoFloat = trans;
-        transNoFloat.floatHeight = 0.0f;
-        const auto bb = trans.rotation == 0.0f ?
-                            AABB(transNoFloat, sprite.frameSize.as<s32>() / 2, Vector2i()) :
-                            Box(transNoFloat.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, transNoFloat.rotation).getBoundingAABB();
-        // TODO do this on other render systems^
+        const Sprite& sprite = entity.get<Sprite>();
+        const Transform& trans = entity.get<Transform>();
+        const AABB bb = trans.rotation == 0.0f ?
+                            AABB(trans, sprite.frameSize.as<s32>() / 2, Vector2i()) :
+                            Box(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
+        // for Y sorting purposes I want floatHeight to be ignored
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
             .transform = &trans,
+            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
             .entity = entity,
         });
     }
