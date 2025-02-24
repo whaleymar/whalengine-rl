@@ -25,11 +25,6 @@ void onChildEntityCreated(ecs::Entity child, ecs::Entity parent) {
     Transform trans;
     Transform& pTrans = parent.get<Transform>();
     trans.setParent(pTrans, child);
-
-    // NOTE: commented because trans.getRotatedPosition() includes floatHeight and propagates it to
-    // child entities' *positions*. So if we add float height then we're double adding the parent's floating amount.
-    /*trans.floatHeight = pTrans.floatHeight;*/
-
     child.add(trans);
 }
 

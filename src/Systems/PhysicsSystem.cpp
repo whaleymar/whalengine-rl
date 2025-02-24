@@ -81,13 +81,13 @@ static void syncColliders(const std::unordered_map<ecs::EntityID, ecs::Entity>& 
         auto& collider = entity.get<Collider>();
         if (isManuallyMoved) {
             // Sync collider position without checking collision
-            if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
+            if (collider.getShape().getPosition() != trans.apply2D(collider.getOffset())) {
                 ColliderSystem::updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
             }
 
         } else {
             // Move collider within physics engine
-            const Vector2i targetColliderPosition = trans.apply(collider.getOffset());
+            const Vector2i targetColliderPosition = trans.apply2D(collider.getOffset());
             if (collider.getShape().getPosition() != targetColliderPosition) {
                 const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
 
@@ -160,7 +160,7 @@ void PhysicsSystem::update() {
             }
         } else {
             // for top-down games, anything with a RigidBody has its Y velocity converted to the Z axis
-            if (!rbOpt) {
+            if (!rbOpt && !entity.has<Particle>()) {
                 if (entity.has<Collider>()) {
                     entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
                     allColliderEntities.push_back(entity);
@@ -181,7 +181,9 @@ void PhysicsSystem::update() {
                 if (!math::isNearZero(move.y, 0.001)) {
                     f32 newFloatHeight = move.y + trans.floatHeight;
                     if (newFloatHeight <= 0.0f) {
-                        rbOpt->isGrounded = true;
+                        if (rbOpt) {
+                            rbOpt->isGrounded = true;
+                        }
                         newFloatHeight = 0.0f;
                         if (vel.stable.y < 0.0f) {
                             vel.stable.y = 0.0f;
@@ -206,7 +208,7 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!rbOpt->isGrounded) {
+            if (!rbOpt->isGrounded && rbOpt->gravityMultiplier > 0.0f) {
                 if (jumpControlOpt) {
                     auto& jumpControl = entity.get<Jumper>();
                     if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {

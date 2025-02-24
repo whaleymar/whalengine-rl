@@ -6,6 +6,7 @@
 #include "Entities/Particle.h"
 #include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
+#include "Settings.h"
 #include "Sys/System.h"
 #include "Util/MathUtil.h"
 #include "Util/Vector.h"
@@ -34,7 +35,7 @@ void ParticleEmitterSystem::update() {
             continue;
         }
 
-        const AABB spawnZone(trans, emitter.aabbHalf, Vector2i());
+        const AABB spawnZone(trans, emitter.aabbHalf);
         const s32 spawnOffsetX = (std::roundf((f32)spawnZone.getHalf().x * locationSampleX));
         const s32 spawnOffsetY = (std::roundf((f32)spawnZone.getHalf().y * locationSampleY));
 
@@ -84,8 +85,15 @@ void ParticleEmitterSystem::update() {
                 continue;
             }
             particle.orphan();
-            Transform& particleTrans = particle.get<Transform>();
-            particleTrans = TransformBuilder(particleTrans).position(spawnLocation.as<f32>()).height(trans.floatHeight).depth(trans.depth).build();
+            if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
+                // add some random float value
+                s32 floatToAdd = Rng.range(0, PIXELS_PER_TILE);
+                spawnLocation.y -= floatToAdd;
+                particle.set(
+                    TransformBuilder(trans).position(spawnLocation.as<f32>()).height(trans.floatHeight + static_cast<f32>(floatToAdd)).build());
+            } else {
+                particle.set(TransformBuilder(trans).position(spawnLocation.as<f32>()).build());
+            }
             addParticleComponents(particle, MaterialData::get(emitter.material), emitter.lifetimeMultiplier);
 
             particle.add(Velocity::from(velocity));

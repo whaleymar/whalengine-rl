@@ -152,13 +152,28 @@ struct Transform {
     Vector2f getRotatedPosition() const;
     Vector2i getRotatedPositionInt() const;
 
+    // ignores the Z axis (floatHeight)
+    Vector2f getRotatedPosition2D() const;
+    // ignores the Z axis (floatHeight)
+    Vector2i getRotatedPositionInt2D() const;
+
     // Get an offset's transformed position
     Vector2f apply(Vector2f relOffset) const;
     Vector2i apply(Vector2i relOffset) const;
 
+    // ignores the Z axis (floatHeight)
+    Vector2f apply2D(Vector2f relOffset) const;
+    // ignores the Z axis (floatHeight)
+    Vector2i apply2D(Vector2i relOffset) const;
+
     // Calculate this Transform's root position using an offset's transformed position
     Vector2f applyInverse(Vector2f transformedPosition, Vector2f relOffset) const;
     Vector2i applyInverse(Vector2i transformedPosition, Vector2i relOffset) const;
+
+    // ignores the Z axis (floatHeight)
+    Vector2f apply2DInverse(Vector2f transformedPosition, Vector2f relOffset) const;
+    // ignores the Z axis (floatHeight)
+    Vector2i apply2DInverse(Vector2i transformedPosition, Vector2i relOffset) const;
 
     static std::string saveImpl(ecs::Entity entity);
 
