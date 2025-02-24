@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "Gfx/Coordinates.h"
 #include "Util/Vector.h"
 #include "raylib.h"
 
@@ -68,6 +67,10 @@ public:
     s32 getActiveGamepad() const { return mActiveGamepad; }
     GamepadType getGamepadType() const { return mGamepadType; }
     bool isUsingGamepad() const;
+    void setIsOffscreenMouseAllowed(bool b) { mIsOffscreenMouseInputAllowed = b; }
+
+    // returns true if a mouse input this frame should count. Based on whether the mouse is on screen and if offscreen mouse input is allowed.
+    bool isMouseInputValid() const { return mIsOffscreenMouseInputAllowed || mIsMouseOnScreen; }
 
     Vector2i getMouseScreen() const { return mMouseScreenPosition; }
     Vector2i getMouseWindow() const { return mMouseWindowPosition; }
@@ -172,6 +175,8 @@ private:
     GamepadType mGamepadType = GamepadType::Unknown;
     InputCode mLastInput = 0;             // the last input received
     InputCode mLastInputJustPressed = 0;  // last input received, or 0 if nothing was pressed this frame
+    bool mIsOffscreenMouseInputAllowed = false;
+    bool mIsMouseOnScreen = true;
 };
 
 }  // namespace whal

@@ -24,6 +24,7 @@ struct MaterialData;
 
 ecs::Entity createParticle(Vector2<s32> worldPosition, WorldMaterial material, Depth depth = Depth::Level, f32 lifetimeMultiplier = 1.0);
 ecs::Entity createParticle(Vector2<s32> worldPosition, const MaterialData& material, Depth depth = Depth::Level, f32 lifetimeMultiplier = 1.0);
+void addParticleComponents(ecs::Entity entity, const MaterialData& material, f32 lifetimeMultiplier = 1.0f);
 
 void particleBurst(Transform transform, Direction direction, WorldMaterial material, s32 count = 1, Depth depth = Depth::Level,
                    f32 lifetimeMultiplier = 1.0, f32 minSpeed = 5.0, f32 maxSpeed = 20.0);

@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Events/Events.h"
+#include "Gfx/Coordinates.h"
 #include "Settings.h"
 #include "System.h"
 #include "Util/Print.h"
@@ -169,6 +170,12 @@ GamepadType GamepadFromString(const std::string& name) {
 void InputHandler::update() {
     mMouseScreenPosition = Vector2i(rl::GetMousePosition()) - Vector2i(WINDOW_POS_OS_X, WINDOW_POS_OS_Y);
     mMouseWindowPosition = Vector2i(rl::GetMousePosition());
+
+    if (mMouseScreenPosition.x > WINDOW_WIDTH_STRETCH || mMouseScreenPosition.y > WINDOW_HEIGHT_STRETCH) {
+        mIsMouseOnScreen = false;
+    } else {
+        mIsMouseOnScreen = true;
+    }
 
     if (S_IS_STOPPED) {
         return;
@@ -349,7 +356,7 @@ bool InputHandler::isPressed(InputCode code, f32 deadzone) const {
         return rl::IsKeyPressed(static_cast<rl::KeyboardKey>(code));
     } else if (code < MOUSE_ENUM_OFFSET) {
         // mouse button
-        return rl::IsMouseButtonPressed(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET));
+        return isMouseInputValid() && rl::IsMouseButtonPressed(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET));
     } else if (code < GAMEPAD_ENUM_OFFSET) {
         // gamepad button
         return rl::IsGamepadButtonPressed(mActiveGamepad, static_cast<rl::GamepadButton>(code - MOUSE_ENUM_OFFSET));
@@ -366,7 +373,7 @@ bool InputHandler::isPressed(rl::KeyboardKey key) const {
 }
 
 bool InputHandler::isPressed(rl::MouseButton button) const {
-    return rl::IsMouseButtonPressed(button);
+    return isMouseInputValid() && rl::IsMouseButtonPressed(button);
 }
 
 bool InputHandler::isPressed(rl::GamepadButton button) const {
@@ -391,7 +398,7 @@ bool InputHandler::isReleased(InputCode code, f32 deadzone) const {
         return rl::IsKeyReleased(static_cast<rl::KeyboardKey>(code));
     } else if (code < MOUSE_ENUM_OFFSET) {
         // mouse button
-        return rl::IsMouseButtonReleased(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET));
+        return isMouseInputValid() && rl::IsMouseButtonReleased(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET));
     } else if (code < GAMEPAD_ENUM_OFFSET) {
         // gamepad button
         return rl::IsGamepadButtonReleased(mActiveGamepad, static_cast<rl::GamepadButton>(code - MOUSE_ENUM_OFFSET));
@@ -408,7 +415,7 @@ bool InputHandler::isReleased(rl::KeyboardKey key) const {
 }
 
 bool InputHandler::isReleased(rl::MouseButton button) const {
-    return rl::IsMouseButtonReleased(button);
+    return isMouseInputValid() && rl::IsMouseButtonReleased(button);
 }
 
 bool InputHandler::isReleased(rl::GamepadButton button) const {
@@ -452,7 +459,7 @@ bool InputHandler::isHeld(rl::KeyboardKey key) const {
 }
 
 bool InputHandler::isHeld(rl::MouseButton button) const {
-    return rl::IsMouseButtonDown(button) && !rl::IsMouseButtonPressed(button);
+    return isMouseInputValid() && rl::IsMouseButtonDown(button) && !rl::IsMouseButtonPressed(button);
 }
 
 bool InputHandler::isHeld(rl::GamepadButton button) const {
@@ -501,7 +508,7 @@ f32 InputHandler::getStrength(InputCode code, f32 deadzone) const {
         return rl::IsKeyPressed(static_cast<rl::KeyboardKey>(code)) ? 1 : 0;
     } else if (code < MOUSE_ENUM_OFFSET) {
         // mouse button
-        return rl::IsMouseButtonPressed(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET)) ? 1 : 0;
+        return isMouseInputValid() && rl::IsMouseButtonPressed(static_cast<rl::MouseButton>(code - KEYBOARD_ENUM_OFFSET)) ? 1 : 0;
     } else if (code < GAMEPAD_ENUM_OFFSET) {
         // gamepad button
         return rl::IsGamepadButtonPressed(mActiveGamepad, static_cast<rl::GamepadButton>(code - MOUSE_ENUM_OFFSET)) ? 1 : 0;

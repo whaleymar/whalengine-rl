@@ -5,6 +5,7 @@
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Shapes.h"
+#include "Settings.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Components/Collider.h"
@@ -118,7 +119,7 @@ void PhysicsSystem::update() {
             dt = Time.dt();
         }
 
-        const RigidBody* rbOpt = entity.tryGet<RigidBody>();
+        RigidBody* rbOpt = entity.tryGet<RigidBody>();
         Vector2f frictionMultiplier = {1, 1};
         if (rbOpt) {
             frictionMultiplier = rbOpt->frictionMultiplier;
@@ -150,21 +151,53 @@ void PhysicsSystem::update() {
 
         // ----------------------------------------------------------------
         // UPDATE POSITION
-        if (entity.has<Collider>()) {
-            entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
-            allColliderEntities.push_back(entity);
+        if constexpr (WORLD_TYPE == WorldType2D::SideScroller) {
+            if (entity.has<Collider>()) {
+                entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
+                allColliderEntities.push_back(entity);
+            } else {
+                trans.translate(move, entity);
+            }
         } else {
-            trans.translate(move, entity);
+            // for top-down games, anything with a RigidBody has its Y velocity converted to the Z axis
+            if (!rbOpt) {
+                if (entity.has<Collider>()) {
+                    entity.get<Collider>().move(move, nullptr, bool(rbOpt), false, false, bool(rbOpt));
+                    allColliderEntities.push_back(entity);
+                } else {
+                    trans.translate(move, entity);
+                }
+            } else {
+                Vector2f moveXOnly = {move.x, 0.0f};
+                Collider* colliderOpt = entity.tryGet<Collider>();
+
+                if (colliderOpt) {
+                    colliderOpt->move(moveXOnly, nullptr, bool(rbOpt), false, false, bool(rbOpt));
+                    allColliderEntities.push_back(entity);
+                } else {
+                    trans.translate(moveXOnly, entity);
+                }
+
+                if (!math::isNearZero(move.y, 0.001)) {
+                    f32 newFloatHeight = move.y + trans.floatHeight;
+                    if (newFloatHeight <= 0.0f) {
+                        rbOpt->isGrounded = true;
+                        newFloatHeight = 0.0f;
+                        if (vel.stable.y < 0.0f) {
+                            vel.stable.y = 0.0f;
+                        }
+                    }
+                    trans.setFloatHeight(newFloatHeight, entity);
+                }
+            }
         }
-        // ----------------------------------------------------------------
 
         // ----------------------------------------------------------------
         // UPDATE VELOCITY
         if (rbOpt) {
-            auto& rb = entity.get<RigidBody>();
             // friction
             if (vel.stable.x) {
-                if (rb.isGrounded) {
+                if (rbOpt->isGrounded) {
                     applyFriction(vel.stable, frictionStepGround);
                 } else {
                     applyFriction(vel.stable, frictionStepAir);
@@ -173,7 +206,7 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!rb.isGrounded) {
+            if (!rbOpt->isGrounded) {
                 if (jumpControlOpt) {
                     auto& jumpControl = entity.get<Jumper>();
                     if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
@@ -181,12 +214,12 @@ void PhysicsSystem::update() {
                         // a little lower than 0 while applying reduced gravity
                         jumpControl.isJumping = false;
                     }
-                    applyGravity(vel, dt, rb.gravityMultiplier, jumpControl.isJumping);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, jumpControl.isJumping);
                 } else {
-                    applyGravity(vel, dt, rb.gravityMultiplier, false);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, false);
                 }
 
-                rb.isLanding = false;
+                rbOpt->isLanding = false;
             }
         }
 

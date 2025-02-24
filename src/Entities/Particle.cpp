@@ -25,8 +25,6 @@ ecs::Entity createParticle(Vector2i worldPosition, WorldMaterial material, Depth
 }
 
 ecs::Entity createParticle(Vector2i worldPosition, const MaterialData& materialData, Depth depth, f32 lifetimeMultiplier) {
-    const Color color = materialData.getColor();
-
     auto particle = World.entity(false);
     if (!particle.isValid()) {
         return particle;
@@ -36,10 +34,17 @@ ecs::Entity createParticle(Vector2i worldPosition, const MaterialData& materialD
     Transform trans = Transform::world(worldPosition);
     trans.depth = depth;
     particle.set(trans);
+    addParticleComponents(particle, materialData, lifetimeMultiplier);
+
+    return particle;
+}
+
+void addParticleComponents(ecs::Entity particle, const MaterialData& materialData, f32 lifetimeMultiplier) {
     particle.add(Name("particle"));
     particle.add<Particle>();
     particle.add<Velocity>();
 
+    const Color color = materialData.getColor();
     if (materialData.particleShape == DrawTag::Line) {
         particle.add(DrawStraightLine{
             .length = 3,
@@ -52,8 +57,6 @@ ecs::Entity createParticle(Vector2i worldPosition, const MaterialData& materialD
         particle.add(DrawRect::create(color, Vector2i(1, 1)));
         materialData.addComponents<DrawRect>(particle, 1, color, lifetimeMultiplier);
     }
-
-    return particle;
 }
 
 void particleBurst(Transform transform, Direction direction, WorldMaterial material, s32 count, Depth depth, f32 lifetimeMultiplier, f32 minSpeed,

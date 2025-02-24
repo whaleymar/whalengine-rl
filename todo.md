@@ -24,7 +24,8 @@ ACTIVELY WORKING ON:
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
     - consolidate pointlight and shadowlight
-- shadows do NOT play well with a moving camera
+- shadows do NOT play well with a moving camera (due to pixel clamping)
+- when shadowlight entity is floating, should do a raycast to ensure the lighting isn't appearing on the other side of walls
 
 ## Web 
 
