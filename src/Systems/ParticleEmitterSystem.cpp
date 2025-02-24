@@ -4,6 +4,7 @@
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
 #include "Entities/Particle.h"
+#include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
 #include "Sys/System.h"
 #include "Util/MathUtil.h"
@@ -73,12 +74,22 @@ void ParticleEmitterSystem::update() {
 
         spawnLocation += emitter.offset;
         for (s32 i = 0; i < nParticles; i++) {
-            auto particle = createParticle(spawnLocation, emitter.material, emitter.depth, emitter.lifetimeMultiplier);
+            /*auto particle = createParticle(spawnLocation, emitter.material, emitter.depth, emitter.lifetimeMultiplier);*/
+            // RESEARCH: i am not passing the emitter component's depth on to the particle anymore.
+            // It inherits depth from the emitter now. I think I want that?
+
+            // Create particle as child of emitter so it inherits its transform. Then orphan afterwards.
+            ecs::Entity particle = entity.createChild(false);
             if (!particle.isValid()) {
                 continue;
             }
+            particle.orphan();
+            Transform& particleTrans = particle.get<Transform>();
+            particleTrans = TransformBuilder(particleTrans).position(spawnLocation.as<f32>()).height(trans.floatHeight).depth(trans.depth).build();
+            addParticleComponents(particle, MaterialData::get(emitter.material), emitter.lifetimeMultiplier);
 
             particle.add(Velocity::from(velocity));
+            particle.activate();
         }
     }
 }

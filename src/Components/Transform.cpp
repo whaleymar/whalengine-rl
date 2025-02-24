@@ -90,6 +90,7 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     positionPx = position.round();
     scale = parentTrans.scale * _localScale;
     rotation = parentTrans.rotation + _localRotation;
+    /*floatHeight = parentTrans.floatHeight;*/  // omitting because localFloatHeight is not a thing
     isDirty = true;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {

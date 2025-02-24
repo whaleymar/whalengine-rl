@@ -47,9 +47,9 @@ static AABB getUiBox(ecs::Entity entity) {
         const Sprite& sprite = entity.get<Sprite>();
         Vector2i customSize = sprite.getFrame().size / 2;
         customSize = (customSize.as<f32>() * VIRTUAL_SCREEN_RATIO_STRETCH).round();
-        return getUiBox(entity.get<Transform>().position, customSize);
+        return getUiBox(entity.get<Transform>().getRotatedPosition(), customSize);
     } else {
-        return getUiBox(entity.get<Transform>().position);
+        return getUiBox(entity.get<Transform>().getRotatedPosition());
     }
 }
 
