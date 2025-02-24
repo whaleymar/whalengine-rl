@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "ECS.h"
 #include "Traits.h"
 #include "TypeName.h"

@@ -19,7 +19,7 @@ namespace whal {
 AABB::AABB(Vector2i center, Vector2i half) : mCenter(center), mHalf(half) {}
 
 // note: mHalf is not scaled with the transform, but mCenter's location does. mHalf should eventually scale, but it requires some effort
-AABB::AABB(Transform transform, Vector2i half, Vector2i offset) : mCenter(transform.apply(offset)), mHalf(half) {}
+AABB::AABB(Transform transform, Vector2i half, Vector2i offset) : mCenter(transform.apply2D(offset)), mHalf(half) {}
 
 AABB AABB::fromPoints(Vector2i p1, Vector2i p2) {
     Vector2i min;
@@ -61,7 +61,7 @@ void AABB::setPosition(Vector2i center) {
 }
 
 void AABB::setPosition(Transform transform, Vector2i relativeOffset) {
-    mCenter = transform.apply(relativeOffset);
+    mCenter = transform.apply2D(relativeOffset);
 }
 
 bool AABB::contains(const AABB& other) const {
@@ -139,14 +139,14 @@ Vector2i AABB::getClosestPointTo(Vector2i point) const {
 
 Circle::Circle(Vector2i center, s32 radius) : mCenter(center), mRadius(radius) {}
 
-Circle::Circle(Transform transform, s32 radius, Vector2i offset) : mCenter(transform.apply(offset)), mRadius(radius) {}
+Circle::Circle(Transform transform, s32 radius, Vector2i offset) : mCenter(transform.apply2D(offset)), mRadius(radius) {}
 
 void Circle::setPosition(Vector2i center) {
     mCenter = center;
 }
 
 void Circle::setPosition(Transform transform, Vector2i offset) {
-    mCenter = transform.apply(offset);
+    mCenter = transform.apply2D(offset);
 }
 
 #ifndef NDEBUG

@@ -82,7 +82,7 @@ void Collider::setEntity(ecs::Entity entity) {
 void Collider::updateEntityPosition() {
     Transform& trans = mSelf.get<Transform>();
     auto const shape = getShape();
-    Vector2i newPosition = trans.applyInverse(shape.getPosition(), getOffset());
+    Vector2i newPosition = trans.apply2DInverse(shape.getPosition(), getOffset());
 
     // include remainder so movement looks smooth
     trans.setPosition(newPosition.as<f32>() + getRemainder(), mSelf);
