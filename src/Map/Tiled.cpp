@@ -3,7 +3,6 @@
 
 #include "Components/Collider.h"
 #include "ECS.h"
-#include "Util/MathUtil.h"
 #include "json.hpp"
 
 #include "Settings.h"
@@ -136,8 +135,10 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             ecs::Entity e = layerEntity.createChild(false);
 
             // level transform inherited from parent
-            e.get<Transform>().translate(Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE), e);
-            const Vector2i mapPosition = Vector2i(x * PIXELS_PER_TILE, y * PIXELS_PER_TILE);
+            // if the layer has a z offset I'll remove the floatHeight and restore the old Y coordinate, because colliders ignore floatHeight (and for
+            // non-visual components it really shouldn't matter)
+            e.get<Transform>().translate(Vector2f(x, -y + layer.zOffset) * FPIXELS_PER_TILE, e);
+            const Vector2i mapPosition = Vector2i(x, y) * PIXELS_PER_TILE;
             const EntityMapData mapData = {
                 .position = mapPosition,
                 .size = {PIXELS_PER_TILE, PIXELS_PER_TILE},

@@ -151,6 +151,31 @@ vec3 processLight(vec2 p, vec2 lightPos) {
     if (isBehindSomething(p)) {
         // return vec3(0.);
         light = vec3(1.0);
+        // EXPERIMENT walk towards light & decrease light every time there's something in the way
+        // RESULT: looks interesting, but I would like the light to walk "up" more to sell the top down look. Also darkens the player
+        //         I think this effect would be must better if I just added normals to my sprites
+
+        // const int fg_steps = 8;
+        // float denom = float(fg_steps) * 1.5;
+        // vec2 rayDir = normalize(lightPos - p) / iResolution;
+        // vec2 curP = p;
+        // vec2 deltaStart = lightPos - p;
+        // for (int i = 0; i < fg_steps; i++) {
+        //     curP += rayDir;
+        //
+        //     // check if we passed the light
+        //     vec2 deltaNow = lightPos - curP;
+        //     if (sign(deltaStart.x) != sign(deltaNow.x) && sign(deltaStart.y) != sign(deltaNow.y)) {
+        //         light = vec3(0.33);
+        //         break;
+        //     }
+        //
+        //     if (isBehindSomething(curP)) {
+        //         light -= (vec3(1.0) / denom);
+        //     } else {
+        //         break;
+        //     }
+        // }
     } else {
         light = blendLighting(p, lightPos);
     }

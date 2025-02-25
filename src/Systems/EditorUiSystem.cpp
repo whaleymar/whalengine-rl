@@ -219,7 +219,7 @@ void EditorUiSystem::drawWorld() {
         }
 
         // trans.draw(); // also hard-coded for render window size
-        drawAABB(AABB(trans, getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::White);
+        drawAABB(AABB(trans.apply(Vector2i::ZERO), getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::White);
     }
 }
 
