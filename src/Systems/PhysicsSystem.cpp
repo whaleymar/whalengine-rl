@@ -4,6 +4,7 @@
 
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
+#include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
 #include "Systems/ColliderSystem.h"
@@ -182,7 +183,14 @@ void PhysicsSystem::update() {
                     f32 newFloatHeight = move.y + trans.floatHeight;
                     if (newFloatHeight <= 0.0f) {
                         if (rbOpt) {
-                            rbOpt->isGrounded = true;
+                            // if the RB was not grounded last frame & there is a collider & the Y velocity is more than 1px/sec, then bounce using
+                            // the collider material
+                            if (!rbOpt->isGrounded && colliderOpt && !math::isNearZero(vel.stable.y, 0.5)) {
+                                f32 bounce = MaterialData::get(colliderOpt->getMaterial()).bounciness;
+                                vel.stable.y *= -1.0f * bounce;
+                            } else {
+                                rbOpt->isGrounded = true;
+                            }
                         }
                         newFloatHeight = 0.0f;
                         if (vel.stable.y < 0.0f) {
