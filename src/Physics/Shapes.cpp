@@ -85,7 +85,7 @@ void AABB::draw(Color color) const {
     size *= VIRTUAL_SCREEN_RATIO;
     f32 thickness = std::max(1.0f, 0.5f * VIRTUAL_SCREEN_RATIO);
 
-    DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), thickness, color.asLDR());
+    rl::DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), thickness, color.asLDR());
 }
 #endif
 
