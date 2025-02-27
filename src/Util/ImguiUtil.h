@@ -25,7 +25,7 @@ private:
 class IRenderDebug {
 public:
     virtual ~IRenderDebug();
-    virtual void draw() = 0;
+    virtual void drawDebug() = 0;
 
 protected:
     IRenderDebug();

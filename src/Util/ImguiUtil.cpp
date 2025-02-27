@@ -8,7 +8,7 @@ namespace whal {
 
 void ImguiMgr::draw() {
     for (IRenderDebug* pObj : instance().mObjs) {
-        pObj->draw();
+        pObj->drawDebug();
     }
 }
 

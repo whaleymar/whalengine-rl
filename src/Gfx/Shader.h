@@ -60,7 +60,7 @@ public:
     virtual void process(rl::RenderTexture source, rl::RenderTexture destination) = 0;
     virtual ~IShaderProcess() {}
 #ifndef NDEBUG
-    void draw() override {}
+    void drawDebug() override {}
 #endif
 };
 
