@@ -8,7 +8,7 @@ public:
     DistanceField();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 #ifndef NDEBUG
-    void draw() override;
+    void drawDebug() override;
 #endif
 
 private:

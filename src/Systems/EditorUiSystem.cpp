@@ -364,7 +364,7 @@ void EditorUiSystem::drawHierarchy(ecs::Entity entity) {
 }
 
 // needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
-void EditorUiSystem::draw() {
+void EditorUiSystem::drawDebug() {
     ImGui::Begin("Inspector");
     for (ecs::Entity entity : mClickedEntities) {
         ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE), "%s:", getEntityName(entity).c_str());
