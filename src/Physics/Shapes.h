@@ -36,9 +36,11 @@ public:
     // NOT used by Shape, but is used by Collider and Renderer.
     // Inlining to speed up renderer.
     inline bool isOverlapping(const AABB& other) const {
-        const auto delta = other.mCenter - mCenter;
-        const auto overlap = mHalf + other.mHalf;
-        return overlap.x > abs(delta.x) && overlap.y > abs(delta.y);
+        // const auto delta = other.mCenter - mCenter;
+        // const auto overlap = mHalf + other.mHalf;
+        // return overlap.x > abs(delta.x) && overlap.y > abs(delta.y);
+        return (mHalf.x + other.mHalf.x) > math::abs(other.mCenter.x - mCenter.x) &&
+               (mHalf.y + other.mHalf.y) > math::abs(other.mCenter.y - mCenter.y);
     }
 
     bool contains(const AABB& other) const;

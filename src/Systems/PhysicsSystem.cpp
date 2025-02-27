@@ -173,7 +173,7 @@ void PhysicsSystem::update() {
                 Collider* colliderOpt = entity.tryGet<Collider>();
 
                 if (colliderOpt) {
-                    colliderOpt->move(moveXOnly, nullptr, bool(rbOpt), false, false, bool(rbOpt));
+                    colliderOpt->move(moveXOnly, nullptr);
                     allColliderEntities.push_back(entity);
                 } else {
                     trans.translate(moveXOnly, entity);
@@ -181,11 +181,12 @@ void PhysicsSystem::update() {
 
                 if (!math::isNearZero(move.y, 0.001)) {
                     f32 newFloatHeight = move.y + trans.floatHeight;
-                    if (newFloatHeight <= 0.0f) {
+                    // don't ground or zero y vel for things that float upward
+                    if (newFloatHeight <= 0.0f && (!rbOpt || rbOpt->gravityMultiplier > 0.0f)) {
                         if (rbOpt) {
                             // if the RB was not grounded last frame & there is a collider & the Y velocity is more than 1px/sec, then bounce using
                             // the collider material
-                            if (!rbOpt->isGrounded && colliderOpt && !math::isNearZero(vel.stable.y, 0.5)) {
+                            if (!rbOpt->isGrounded && colliderOpt && !math::isNearZero(vel.stable.y, 1.0)) {
                                 f32 bounce = MaterialData::get(colliderOpt->getMaterial()).bounciness;
                                 vel.stable.y *= -1.0f * bounce;
                             } else {
@@ -216,7 +217,7 @@ void PhysicsSystem::update() {
             }
 
             // gravity
-            if (!rbOpt->isGrounded && rbOpt->gravityMultiplier > 0.0f) {
+            if (!rbOpt->isGrounded) {
                 if (jumpControlOpt) {
                     auto& jumpControl = entity.get<Jumper>();
                     if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
