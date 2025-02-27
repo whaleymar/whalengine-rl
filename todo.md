@@ -2,7 +2,6 @@
 
 ACTIVELY WORKING ON:
 
-
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
 - editing globals like physics gravity/friction values from game -> put in Settings.cpp
@@ -75,6 +74,7 @@ ACTIVELY WORKING ON:
         - Currently I am making portals invisible + an empty layer mask + a CustomUpdate that checks the enemy count every frame & changes the values when it "activates"
         - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
         - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
+- Sfx pitch modulation
 
 ## Misc (low priority)
 - ECS parallelization (low priority)

@@ -23,41 +23,49 @@ Color MaterialData::getColor() const {
     return Color::lerp(colorRange[0], colorRange[1], Rng.uniform());
 }
 
-static const MaterialData S_MATERIAL_DIRT = {.name = "Dirt",
-                                             .id = WorldMaterial::Dirt,
-                                             .colorRange = {Colors::DarkBrown, Colors::Brown},
-                                             .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                             .bounciness = 0.0,
-                                             .gravityCoef = -0.5,
-                                             .frictionCoefs = {0.0, 0.0},
-                                             .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_DIRT = {
+    .name = "Dirt",
+    .id = WorldMaterial::Dirt,
+    .colorRange = {Colors::DarkBrown, Colors::Brown},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = -0.5,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+};
 
-static const MaterialData S_MATERIAL_ROCK = {.name = "Rock",
-                                             .id = WorldMaterial::Rock,
-                                             .colorRange = {Colors::DarkGray, Colors::Gray},
-                                             .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
-                                             .bounciness = 0.0,
-                                             .gravityCoef = 1.0,
-                                             .frictionCoefs = {1.0, 1.0},
-                                             .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+static const MaterialData S_MATERIAL_ROCK = {
+    .name = "Rock",
+    .id = WorldMaterial::Rock,
+    .colorRange = {Colors::DarkGray, Colors::Gray},
+    .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {1.0, 1.0},
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+};
 
-static const MaterialData S_MATERIAL_SOFT = {.name = "Soft",
-                                             .id = WorldMaterial::Soft,
-                                             .colorRange = {Colors::Beige, Colors::White},
-                                             .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                             .bounciness = 0.0,
-                                             .gravityCoef = 1.0,
-                                             .frictionCoefs = {0.0, 0.0},
-                                             .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_SOFT = {
+    .name = "Soft",
+    .id = WorldMaterial::Soft,
+    .colorRange = {Colors::Beige, Colors::White},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+};
 
-static const MaterialData S_MATERIAL_WOOD = {.name = "Wood",
-                                             .id = WorldMaterial::Wood,
-                                             .colorRange = {Colors::DarkBrown, Colors::Beige},
-                                             .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
-                                             .bounciness = 0.25,
-                                             .gravityCoef = 1.0,
-                                             .frictionCoefs = {1.0, 1.0},
-                                             .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+static const MaterialData S_MATERIAL_WOOD = {
+    .name = "Wood",
+    .id = WorldMaterial::Wood,
+    .colorRange = {Colors::DarkBrown, Colors::Beige},
+    .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
+    .bounciness = 0.25,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {1.0, 1.0},
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+};
 
 static const MaterialData S_MATERIAL_GRASS = {
     .name = "Grass",
@@ -73,33 +81,38 @@ static const MaterialData S_MATERIAL_GRASS = {
     .maxRotationsPerSec = 2.0f,
 };
 
-static const MaterialData S_MATERIAL_WATER = {.name = "Water",
-                                              .id = WorldMaterial::Water,
-                                              .colorRange = {Colors::DarkBlue, Colors::LightBlue},
-                                              .flags = MaterialData::Liquid | MaterialData::Collision | MaterialData::RigidBodyFlag |
-                                                       MaterialData::DecayTime | MaterialData::FadeOutFlag,
-                                              .bounciness = 0.0,
-                                              .gravityCoef = 1.0,
-                                              .frictionCoefs = {1.0, 1.0},
-                                              .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_WATER = {
+    .name = "Water",
+    .id = WorldMaterial::Water,
+    .colorRange = {Colors::DarkBlue, Colors::LightBlue},
+    .flags = MaterialData::Liquid | MaterialData::Collision | MaterialData::RigidBodyFlag | MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {1.0, 1.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+};
 
-static const MaterialData S_MATERIAL_METAL = {.name = "Metal",
-                                              .id = WorldMaterial::Metal,
-                                              .colorRange = {Colors::DarkGray, Colors::Gray},
-                                              .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
-                                              .bounciness = 0.0,
-                                              .gravityCoef = 1.0,
-                                              .frictionCoefs = {1.0, 1.0},
-                                              .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()}};
+static const MaterialData S_MATERIAL_METAL = {
+    .name = "Metal",
+    .id = WorldMaterial::Metal,
+    .colorRange = {Colors::DarkGray, Colors::Gray},
+    .flags = MaterialData::DecaySpeed | MaterialData::Collision | MaterialData::RigidBodyFlag,
+    .bounciness = 0.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {1.0, 1.0},
+    .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
+};
 
-static const MaterialData S_MATERIAL_RUBBER = {.name = "Rubber",
-                                               .id = WorldMaterial::Rubber,
-                                               .colorRange = {Colors::DarkGray, Colors::Black},
-                                               .flags = MaterialData::DecayTime | MaterialData::Collision | MaterialData::RigidBodyFlag,
-                                               .bounciness = 1.0,
-                                               .gravityCoef = 1.0,
-                                               .frictionCoefs = {1.0, 1.0},
-                                               .decayParams = {.decayTime = MaterialData::DecayTimeParams()}};
+static const MaterialData S_MATERIAL_RUBBER = {
+    .name = "Rubber",
+    .id = WorldMaterial::Rubber,
+    .colorRange = {Colors::DarkGray, Colors::Black},
+    .flags = MaterialData::DecayTime | MaterialData::Collision | MaterialData::RigidBodyFlag,
+    .bounciness = 1.0,
+    .gravityCoef = 1.0,
+    .frictionCoefs = {1.0, 1.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+};
 
 static const MaterialData S_MATERIAL_DUST = {
     .name = "Dust",
@@ -136,7 +149,7 @@ static const MaterialData S_MATERIAL_EMBER = {
     .flags = MaterialData::Light | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
     .bounciness = 0.7,
     .gravityCoef = 1.0,
-    .frictionCoefs = {0.25, 0.0},
+    .frictionCoefs = {0.25, 0.02},
     .fadeColor = Color(Colors::Orange.r, Colors::Orange.g, Colors::Orange.b, 0.25),
     .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
     .brightness = 1.5,
@@ -149,7 +162,7 @@ static const MaterialData S_MATERIAL_POISON = {
     .flags = MaterialData::Light | MaterialData::DecaySpeed | MaterialData::FadeOutFlag | MaterialData::RigidBodyFlag | MaterialData::Collision,
     .bounciness = 0.7,
     .gravityCoef = 1.0,
-    .frictionCoefs = {0.25, 0.0},
+    .frictionCoefs = {0.25, 0.02},
     .decayParams = {.decaySpeed = MaterialData::DecaySpeedParams()},
     .brightness = 2.0,
 };
