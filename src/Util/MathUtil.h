@@ -60,7 +60,8 @@ inline s32 remainder(s32 numerator, s32 divisor) {
 // inline Number auto lerp(Number auto n1, Number auto n2, f32 t) {
 // return (1-t) * n1 + t * n2;
 inline f32 lerp(const f32 n1, const f32 n2, const f32 t) {
-    return std::lerp(n1, n2, math::clamp(t, 0.0f, 1.0f));
+    // return std::lerp(n1, n2, math::clamp(t, 0.0f, 1.0f));
+    return std::lerp(n1, n2, t);
 }
 
 inline f32 approach(const f32 val, const f32 target, const f32 move) {

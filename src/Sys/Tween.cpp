@@ -30,9 +30,12 @@ void TweenManager::update() {
                                          if (!isStarted) {
                                              pTween->init();
                                          }
-                                         const f32 dt = System::isPaused() && !pTween->isSet(TweenParams::IgnorePause) ? 0.0f :
-                                                        pTween->isSet(TweenParams::IgnoreSlowdown)                     ? Time.getUnmodified() :
-                                                                                                                         Time.dt();
+                                         f32 dt;
+                                         if (System::isPaused()) {
+                                             dt = pTween->isSet(TweenParams::IgnorePause) ? Time.getUnmodified() : 0.0f;
+                                         } else {
+                                             dt = pTween->isSet(TweenParams::IgnoreSlowdown) ? Time.getUnmodified() : Time.dt();
+                                         }
 #ifndef NDEBUG
                                          if (!EDITOR_SUSPEND) {
                                              pTween->tick(dt);
