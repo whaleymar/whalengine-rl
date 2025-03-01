@@ -1,8 +1,8 @@
-#include "imgui_internal.h"
 #ifndef NDEBUG
 #include "ImguiUtil.h"
 #include "MathUtil.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 
 namespace whal {
 

@@ -34,7 +34,7 @@ public:
     virtual bool isCancelled() const = 0;
     virtual ecs::Entity getEntity() const = 0;
     virtual void kill() = 0;
-    virtual bool isSet(TweenParams::Flags flag) = 0;
+    virtual bool isSet(TweenParams::Flags flag) const = 0;
 
 private:
     virtual bool isDelayCondition() = 0;
@@ -132,6 +132,8 @@ public:
         return *this;
     }
 
+    const Tween<T>* get() const { return mTween.get(); }
+
 private:
     std::shared_ptr<Tween<T>> mTween;
 };
@@ -144,10 +146,11 @@ public:
     friend JobScheduler;
 
     template <typename T>
-    using ValueGetter = T& (*)(ecs::Entity);
+    using ValueGetter = std::type_identity_t<std::function<T&(ecs::Entity)>>;
+    // using ValueGetter = T& (*)(ecs::Entity);
 
     template <typename T>
-    using ValueSetter = void (*)(const T&, ecs::Entity);
+    using ValueSetter = std::type_identity_t<std::function<void(const T&, ecs::Entity)>>;
 
     // called automatically
     void onEntityKilled(ecs::Entity e);
@@ -182,23 +185,16 @@ public:
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mSetter(setter), mEntity(entity) {}
 
-    Tween(T target, f32 duration, std::type_identity_t<std::function<T&(ecs::Entity)>> const& getter, ecs::Entity entity)
-        : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
-
-    Tween(T target, f32 duration, std::type_identity_t<std::function<T&(ecs::Entity)>> const& getter,
-          std::type_identity_t<std::function<void(const T&, ecs::Entity)>> const& setter, ecs::Entity entity)
-        : mDuration(duration), mTweenValue(target), mGetter(getter), mSetter(setter), mEntity(entity) {}
-
     ~Tween() = default;
 
     f32 getProgress() const { return (mElapsedTime - mDelay) / mDuration; }
-    T getValue() const { return ease(mStartValue, mEndValue, getProgress(), mEaseFunc); }
+    T getValue() const { return ease(mStartValue, mEndValue, math::clamp(getProgress(), 0.0f, 1.0f), mEaseFunc); }
     f32 getDuration() const { return mDuration; }
 
     // for casting (not rounding)
     template <typename NewType>
     NewType getValueAs() const {
-        return ease(static_cast<NewType>(mStartValue), static_cast<NewType>(mEndValue), getProgress(), mEaseFunc);
+        return ease(static_cast<NewType>(mStartValue), static_cast<NewType>(mEndValue), math::clamp(getProgress(), 0.0f, 1.0f), mEaseFunc);
     }
 
     ecs::Entity getEntity() const override { return mEntity; }
@@ -206,6 +202,7 @@ public:
     bool isDone() const override { return mIsDone; }
     bool isCancelled() const override { return mIsCancelled; }
     void kill() override { mIsCancelled = true; }
+    bool isSet(TweenParams::Flags flag) const override { return (mFlags & flag) > 0; }
 
 private:
     void tick(f32 dt) override {
@@ -275,7 +272,6 @@ private:
     }
 
     void setLoops(s32 n = 0) { mNumLoops = n; }
-    bool isSet(TweenParams::Flags flag) override { return (mFlags & flag) > 0; }
     void resetFlag(TweenParams::Flags flag) { mFlags = (mFlags & ~flag); }
     void setFlag(TweenParams::Flags flag) { mFlags = (mFlags | flag); }
 

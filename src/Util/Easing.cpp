@@ -420,22 +420,25 @@ static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 };  // namespace bounce
 
 namespace back {
+// I should implement custom tween funcs
+static const float OVERSHOOT = 1.15f;
+// static const float OVERSHOOT = 1.70158f; // what Godot uses
 static real_t in(real_t t, real_t b, real_t c, real_t d) {
-    float s = 1.70158f;
+    float s = OVERSHOOT;
     t /= d;
 
     return c * t * t * ((s + 1) * t - s) + b;
 }
 
 static real_t out(real_t t, real_t b, real_t c, real_t d) {
-    float s = 1.70158f;
+    float s = OVERSHOOT;
     t = t / d - 1;
 
     return c * (t * t * ((s + 1) * t + s) + 1) + b;
 }
 
 static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-    float s = 1.70158f * 1.525f;
+    float s = OVERSHOOT * 1.525f;
     t /= d / 2;
 
     if (t < 1) {
