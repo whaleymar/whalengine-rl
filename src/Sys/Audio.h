@@ -120,7 +120,7 @@ private:
 
     FMOD_SYSTEM* getSystem() const;
     void playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
-                             bool isInGroup = true);
+                             f32 maxPitchShift, bool isInGroup = true);
 
     void setChannelFilter(Filter filter, FMOD_CHANNEL* channel);
     void setChannelFilter(Filter filter, FMOD_CHANNELGROUP* channelGroup);

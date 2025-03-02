@@ -213,14 +213,14 @@ void AudioPlayer::playClip(const AudioClip& clip, f32 volume, Filter filter, boo
     }
 
     FMOD_CHANNEL** pChannel = &mClipChannelPool[channelIx];
-    playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position);
+    playClipWithChannel(clip, *pChannel, volume, filter, isLooping, position, 0.1);
 }
 
 void AudioPlayer::playMenuClip(const AudioClip& clip, f32 volume, Filter filter, bool isLooping) {
     if (!clip.isValid()) {
         return;
     }
-    playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, false);
+    playClipWithChannel(clip, mMenuChannel, volume, filter, isLooping, nullptr, 0.0, false);
 }
 
 void AudioPlayer::playClip(const std::string& clipname, f32 volume, Filter filter, bool isLooping, Vector2i* position) {
@@ -236,7 +236,7 @@ FMOD_SYSTEM* AudioPlayer::getSystem() const {
 }
 
 void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
-                                      bool isInGroup) {
+                                      f32 maxPitchShift, bool isInGroup) {
     if (isLooping) {
         // -1 -> loop forever
         // 0 -> don't loop
@@ -258,6 +258,7 @@ void AudioPlayer::playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* chann
     FMOD_Channel_SetVolume(channel, mMasterVolume * mSfxVolume * volume);
     FMOD_Channel_SetMute(channel, isSfxMuted());
     setChannelFilter(filter, channel);
+    FMOD_Channel_SetPitch(channel, Rng.range(1.0f - maxPitchShift, 1.0f + maxPitchShift));
     FMOD_Channel_SetPaused(channel, false);
 
     if (position != nullptr) {
