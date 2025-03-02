@@ -140,6 +140,7 @@ bool System::IsValid() {
 void System::resetManagers() {
     Time.mFrame = 0;
     Time.mTimeElapsed = 0.0f;
+    Time.mTimeElapsedUnmodified = 0.0f;
     Time.mTimeMultiplier = 1.0f;
 
     Schedule.clear();

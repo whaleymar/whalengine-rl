@@ -38,7 +38,7 @@ static void ActivateShader(Shaders shaderEnum) {
     rl::BeginShaderMode(shader);
 
     if (uniforms.isSet(Uniforms::TimeStamp)) {
-        const f32 iTime = Time.getElapsed();
+        const f32 iTime = Time.getElapsedUnmodified();
         rl::SetShaderValue(shader, uniforms.iTime, &iTime, rl::SHADER_UNIFORM_FLOAT);
     }
 
@@ -80,7 +80,7 @@ void ShaderManager::loadShaders() {
         {Shaders::BlurLowRes, 0, "whalengine/src/Shader/blur.glsl", Uniforms::VirtualResolution},
         {Shaders::LightPassThru, 0, "whalengine/src/Shader/lightpassthrough.glsl"},
         {Shaders::Overlay, "whalengine/src/Shader/TileOverlayVert.glsl", "whalengine/src/Shader/TileOverlay.glsl"},
-        {Shaders::Test, 0, "whalengine/src/Shader/test.glsl"},
+        {Shaders::Test, 0, "whalengine/src/Shader/test.glsl", Uniforms::Resolution | Uniforms::TimeStamp},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
