@@ -17,6 +17,7 @@ void TimeManager::update() {
     mDeltatimeUnmodified = frameTime > MAX_FRAME_TIME ? MAX_FRAME_TIME : frameTime;
     mDeltatime = mDeltatimeUnmodified * mTimeMultiplier;
     mTimeElapsed += mDeltatime;
+    mTimeElapsedUnmodified += mDeltatimeUnmodified;
 
     mFrame++;
     if (mFrame != FPS_TARGET) {
