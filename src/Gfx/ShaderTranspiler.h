@@ -15,8 +15,11 @@ class ShaderTranspiler {
 public:
     ShaderTranspiler();
 
-    Expected<rl::Shader> loadAndCompile(const char* vertexShaderPath, const char* fragmentShaderCode);
+    Expected<rl::Shader> loadAndCompile(const char* vertexShaderPath, const char* fragmentShaderPath);
+    Expected<rl::Shader> loadAndCompile(const char* unifiedShaderPath);
     Expected<rl::Shader> compile(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
+    Expected<rl::Shader> compile(const std::string& unifiedShaderCode);
+    Expected<std::pair<std::string, std::string>> transpileUnifiedShader(const std::string& unifiedShaderCode);
 
 private:
     std::string preprocess(const std::string& code) const;

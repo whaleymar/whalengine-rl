@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Expected.h"
 #include "Util/Types.h"
 
 namespace rl {
@@ -51,5 +52,14 @@ private:
 
     u32 mUsageMask = 0;
 };
+
+// class Shader;
+//
+// class ShaderManager2 {
+// public:
+//     static Expected<void> loadShaders();
+//
+//     Shader& get(const std::string& name) const;
+// };
 
 }  // namespace whal

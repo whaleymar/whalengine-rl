@@ -256,15 +256,15 @@ void InputHandler::update() {
 
 void InputHandler::updateGamepadState() {
     // check gamepads? idk what im doing
-    for (s32 i = 0; i < 4; i++) {
-        if (rl::IsGamepadAvailable(i)) {
-            if (mActiveGamepad != i) {
-                print("Setting gamepad to", rl::GetGamepadName(i));
-                Input.setActiveGamepad(i);
-            }
-            break;
-        }
-    }
+    // for (s32 i = 0; i < 4; i++) {
+    //     if (rl::IsGamepadAvailable(i)) {
+    //         if (mActiveGamepad != i) {
+    //             print("Setting gamepad to", rl::GetGamepadName(i));
+    //             Input.setActiveGamepad(i);
+    //         }
+    //         break;
+    //     }
+    // }
 
     // Most OSes will send gamepad input to the window even if it isn't focused (unlike keyboard/mouse inputs)
     if (!isUsingGamepad() || !rl::IsWindowFocused()) {

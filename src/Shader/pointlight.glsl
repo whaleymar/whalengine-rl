@@ -1,19 +1,13 @@
 #version 330
 
-// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
-// Input uniform values
-// default:
 uniform sampler2D texture0; // occlusion color texture
-uniform vec4 colDiffuse;
-// mine:
 uniform vec2 lightpos;
 // uniform float lightDepth;
 // uniform sampler2D occlusionDepthTex;
 
-// Output fragment color
 out vec4 finalColor;
 
 // bool isWall(vec2 p) {
@@ -33,8 +27,8 @@ vec4 getLighting() {
 
     float intensity = 1. - distance;
 
-    // zero if outside 
-    intensity = intensity * step(0.5, intensity); 
+    // zero if outside
+    intensity = intensity * step(0.5, intensity);
     intensity = clamp((intensity - 0.5) * 2., 0., 1.);
 
     return vec4(fragColor * intensity);
@@ -45,8 +39,8 @@ vec4 getLighting() {
     // } else {
     //     float intensity = 1. - distance + 0.1;
     //
-    //     // zero if outside 
-    //     intensity = intensity * step(0.5, intensity); 
+    //     // zero if outside
+    //     intensity = intensity * step(0.5, intensity);
     //     intensity = (intensity - 0.5) * 2.;
     //
     //     return vec4(fragColor * intensity);
@@ -58,7 +52,7 @@ void main() {
     // I'm thinking I keep this as-is and add a switch to shadowLight if I want it to behave like a point light
 
     // if (isWall(fragTexCoord)) {
-        // finalColor = vec4(0.);
+    // finalColor = vec4(0.);
     // } else {
     finalColor = getLighting();
     // }

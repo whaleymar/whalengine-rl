@@ -2,7 +2,6 @@
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 Depth;
 
-// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in float fragDepth;
