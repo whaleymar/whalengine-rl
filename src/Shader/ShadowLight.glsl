@@ -16,7 +16,6 @@ uniform sampler2D depthBuf;
 uniform sampler2D _DistanceField;
 uniform sampler2D _AllDepth;
 
-// Output fragment color
 out vec4 finalColor;
 
 #ifndef PLATFORM_WEB

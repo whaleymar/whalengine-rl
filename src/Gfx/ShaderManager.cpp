@@ -87,7 +87,13 @@ void ShaderManager::loadShaders() {
     ShaderTranspiler shaderTranspiler;
 
     for (size_t i = 0; i < len; i++) {
-        Expected<rl::Shader> eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        // TESTING
+        Expected<rl::Shader> eShader;
+        if (i == 0) {
+            eShader = shaderTranspiler.loadAndCompile("whalengine/src/Shader/DefaultSprite.glsl");
+        } else {
+            eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
+        }
         if (!eShader.isExpected()) {
             print(eShader.error());
             continue;
