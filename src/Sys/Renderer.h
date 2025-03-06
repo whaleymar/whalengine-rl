@@ -20,7 +20,7 @@ struct System;
 class DistanceField;
 
 struct UniformVariant {
-    enum class UniformType {
+    enum UniformType {
         Float,
         Vec2,
         Vec3,
@@ -43,7 +43,7 @@ struct UniformVariant {
         s32 uniVec2i[2];
         s32 uniVec3i[3];
         s32 uniVec4i[4];
-        rl::Texture uniTex;
+        u32 uniTex;
     } val;
 
     s32 uniformLoc;

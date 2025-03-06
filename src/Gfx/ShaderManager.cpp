@@ -76,7 +76,7 @@ void ShaderManager::loadShaders() {
         {Shaders::ShadowLight, "whalengine/src/Shader/ShadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
         // {Shaders::Blur, "whalengine/src/Shader/Blur.glsl", Uniforms::Resolution},
         // {Shaders::BlurLowRes, "whalengine/src/Shader/Blur.glsl", Uniforms::VirtualResolution},
-        {Shaders::LightPassThru, "whalengine/src/Shader/LightPassThrough.glsl"},
+        // {Shaders::LightPassThru, "whalengine/src/Shader/LightPassThrough.glsl"},
         {Shaders::Overlay, "whalengine/src/Shader/TileOverlay.glsl"},
         {Shaders::Test, "whalengine/src/Shader/Test.glsl", Uniforms::Resolution | Uniforms::TimeStamp},
     };

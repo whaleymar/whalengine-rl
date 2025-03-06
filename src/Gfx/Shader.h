@@ -12,6 +12,7 @@
 
 namespace whal {
 
+// TODO remove IListen from here. Only the ShaderManager should worry about reloads
 class Shader : public IListen<evt::ShaderReload, true> {
 public:
     struct Uniform {
@@ -24,6 +25,8 @@ public:
 
     void onEvent(evt::ShaderReload) override;
 
+    // TODO implement uniform caching. Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached
+    // value. Only send the value to Renderer if it's different than the cached val.
     void setFloat(const char* name, f32 value);
     void setInt(const char* name, s32 value);
     void setTexture(const char* name, rl::Texture value);

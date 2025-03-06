@@ -66,7 +66,7 @@ void Shader::setFloat(const char* name, f32 value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Float,
+        .tag = UniformVariant::Float,
         .val = {.uniFloat = value},
         .uniformLoc = loc,
     });
@@ -76,7 +76,7 @@ void Shader::setInt(const char* name, s32 value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Int,
+        .tag = UniformVariant::Int,
         .val = {.uniInt = value},
         .uniformLoc = loc,
     });
@@ -86,8 +86,8 @@ void Shader::setTexture(const char* name, rl::Texture value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Texture,
-        .val = {.uniTex = value},
+        .tag = UniformVariant::Texture,
+        .val = {.uniTex = value.id},
         .uniformLoc = loc,
     });
 }
@@ -96,7 +96,7 @@ void Shader::setVector2(const char* name, rl::Vector2 value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Vec2,
+        .tag = UniformVariant::Vec2,
         .val = {.uniVec2 = value},
         .uniformLoc = loc,
     });
@@ -106,7 +106,7 @@ void Shader::setVector2(const char* name, Vector2f value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Vec2,
+        .tag = UniformVariant::Vec2,
         .val = {.uniVec2 = value.asRL()},
         .uniformLoc = loc,
     });
@@ -116,7 +116,7 @@ void Shader::setVector3(const char* name, rl::Vector3 value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Vec3,
+        .tag = UniformVariant::Vec3,
         .val = {.uniVec3 = value},
         .uniformLoc = loc,
     });
@@ -126,7 +126,7 @@ void Shader::setVector4(const char* name, rl::Vector4 value) {
     s32 loc = tryNameToId(name);
     // assert(handle != -1);
     Graphics.queueUniform(UniformVariant{
-        .tag = UniformVariant::UniformType::Vec4,
+        .tag = UniformVariant::Vec4,
         .val = {.uniVec4 = value},
         .uniformLoc = loc,
     });
