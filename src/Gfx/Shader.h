@@ -19,7 +19,7 @@ public:
         s32 handle;
     };
 
-    Shader(const char* vsPath, const char* fsPath);
+    Shader(const char* unifiedShaderPath);
     virtual ~Shader();
 
     void onEvent(evt::ShaderReload) override;
@@ -42,8 +42,7 @@ public:
     rl::Shader get() const { return mHandle; }
 
 protected:
-    std::string mVertPath;
-    std::string mFragPath;
+    std::string mShaderPath;
     rl::Shader mHandle;
     std::vector<Uniform> mNameToId;
     bool mIsReady;

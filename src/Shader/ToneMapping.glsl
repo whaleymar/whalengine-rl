@@ -1,13 +1,8 @@
-#version 330
-
-// Input HDR color texture
 uniform sampler2D texture0; // hdrTexture
 // Exposure level for tone mapping
 // uniform float exposure;
 
-// Texture coordinates
-in vec2 fragTexCoord;
-// Final output color
+varying vec2 fragTexCoord;
 out vec4 finalColor;
 
 // REFERENCE
@@ -60,7 +55,7 @@ vec3 reinhard_extended_luminance(vec3 v, float max_white_l) {
     return change_luminance(v, l_new);
 }
 
-void main() {
+void fragment() {
     // Sample the HDR texture
     vec3 hdrColor = texture(texture0, fragTexCoord).rgb;
 

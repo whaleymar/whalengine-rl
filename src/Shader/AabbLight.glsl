@@ -1,22 +1,13 @@
-#version 330
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
-// Input vertex attributes (from vertex shader)
-in vec2 fragTexCoord;
-in vec4 fragColor;
-
-// Input uniform values
-// default:
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
-// mine:
 uniform vec2 lightpos;
 uniform vec2 lighthalflen;
 uniform float lightradius;
 uniform vec2 iResolution;
-// uniform float lightDepth;
-// uniform sampler2D occlusionDepthTex;
 
-// Output fragment color
 out vec4 finalColor;
 
 // bool isWall(vec2 p) {
@@ -56,7 +47,7 @@ vec4 getLighting() {
     return fragColor * intensity;
 }
 
-void main() {
+void fragment() {
     // check if behind an occluder
     // if (isWall(fragTexCoord)) {
     // finalColor = vec4(0.);

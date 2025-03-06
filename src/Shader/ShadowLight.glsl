@@ -1,7 +1,5 @@
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 uniform sampler2D texture0; // occlusion color texture
 uniform vec4 colDiffuse;
@@ -212,6 +210,6 @@ vec3 processLight(vec2 p, vec2 lightPos) {
 
 #endif
 
-void main() {
+void fragment() {
     finalColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;
 }

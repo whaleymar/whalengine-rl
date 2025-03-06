@@ -1,7 +1,5 @@
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 uniform sampler2D texture0;
 #ifdef PLATFORM_WEB
@@ -36,7 +34,7 @@ vec3 SampleBox(vec2 uv, float delta) {
 return sample * 0.25 ;
 }
 
-void main() {
+void fragment() {
     const float delta = 1.;
     finalColor = vec4(SampleBox(fragTexCoord, delta), 1.0);
 }

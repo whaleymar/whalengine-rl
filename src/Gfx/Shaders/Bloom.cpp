@@ -12,7 +12,7 @@
 
 namespace whal {
 
-Bloom::Bloom() : mThresh("", "whalengine/src/Shader/threshold.glsl"), mBlur("", "whalengine/src/Shader/BoxBlur.glsl") {
+Bloom::Bloom() : mThresh("whalengine/src/Shader/Threshold.glsl"), mBlur("whalengine/src/Shader/BoxBlur.glsl") {
     threshold = 1.2;
     softThreshold = 0.5;
     // intensity = 0.5;

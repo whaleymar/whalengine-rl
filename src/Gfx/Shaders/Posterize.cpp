@@ -6,7 +6,7 @@
 
 namespace whal {
 
-Posterize::Posterize() : mPosterize("", "whalengine/src/Shader/quantize.glsl") {
+Posterize::Posterize() : mPosterize("whalengine/src/Shader/Quantize.glsl") {
     auto err = TextureManager::instance().loadAndRegister(PALETTE_TEXTURE_PATH, TEXNAME_PALETTE);
     if (err) {
         print(*err);
