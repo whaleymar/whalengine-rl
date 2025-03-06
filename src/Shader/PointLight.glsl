@@ -1,7 +1,5 @@
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 uniform sampler2D texture0; // occlusion color texture
 uniform vec2 lightpos;
@@ -47,7 +45,7 @@ vec4 getLighting() {
     // }
 }
 
-void main() {
+void fragment() {
     // Checking the occlusion texture doesn't work because fragTexCoord is not actually the screen coord, but the uv of the light (because I'm drawing it as a rect)
     // I'm thinking I keep this as-is and add a switch to shadowLight if I want it to behave like a point light
 

@@ -4,21 +4,27 @@
 #include "ShaderTranspiler.h"
 #include "raylib.h"
 
+#ifndef NDEBUG
+#include "Util/Print.h"
+#endif
+
 namespace whal {
 
-static Expected<rl::Shader> load(const std::string& vspath, const std::string& fspath) {
+static Expected<rl::Shader> load(const std::string& path) {
     ShaderTranspiler shaderTranspiler;
-    const char* vsfinal = vspath == "" ? 0 : vspath.c_str();
-    const char* fsfinal = fspath == "" ? 0 : fspath.c_str();
-    return shaderTranspiler.loadAndCompile(vsfinal, fsfinal);
+    const char* finalPath = path == "" ? 0 : path.c_str();
+    return shaderTranspiler.loadAndCompile(finalPath);
 }
 
-Shader::Shader(const char* vsPath, const char* fsPath) : mVertPath(vsPath), mFragPath(fsPath) {
-    Expected<rl::Shader> eShader = load(mVertPath, mFragPath);
+Shader::Shader(const char* unifiedShaderPath) : mShaderPath(unifiedShaderPath) {
+    Expected<rl::Shader> eShader = load(mShaderPath);
     if (eShader.isExpected()) {
         mHandle = *eShader;
         mIsReady = true;
     } else {
+#ifndef NDEBUG
+        print(eShader.error());
+#endif
         mIsReady = false;
     }
 }
@@ -33,11 +39,14 @@ void Shader::onEvent(evt::ShaderReload) {
     if (mIsReady) {
         rl::UnloadShader(mHandle);
     }
-    Expected<rl::Shader> eShader = load(mVertPath, mFragPath);
+    Expected<rl::Shader> eShader = load(mShaderPath);
     if (eShader.isExpected()) {
         mHandle = *eShader;
         mIsReady = true;
     } else {
+#ifndef NDEBUG
+        print(eShader.error());
+#endif
         mIsReady = false;
         return;
     }

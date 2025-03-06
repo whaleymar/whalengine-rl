@@ -155,7 +155,14 @@ Expected<rl::Shader> ShaderTranspiler::loadAndCompile(const char* unifiedShaderP
         return code.error();
     }
 
-    return compile(code.value());
+    auto eShader = compile(code.value());
+    if (!eShader.isExpected()) {
+        std::stringstream ss;
+        ss << "Error compiling `" << unifiedShaderPath << "`:\n" << eShader.error();
+        return Error(ss.str());
+    } else {
+        return eShader;
+    }
 }
 
 Expected<rl::Shader> ShaderTranspiler::compile(const string& vertCode, const string& fragCode) {
@@ -187,8 +194,8 @@ Expected<rl::Shader> ShaderTranspiler::compile(const string& vertCode, const str
     return Error("Invalid shader. Check raylib logging for details.");
 }
 
-Expected<rl::Shader> ShaderTranspiler::compile(const string& unified) {
-    Expected<std::pair<string, string>> shaders = transpileUnifiedShader(unified);
+Expected<rl::Shader> ShaderTranspiler::compile(const string& unifiedCode) {
+    Expected<std::pair<string, string>> shaders = transpileUnifiedShader(unifiedCode);
     if (!shaders.isExpected()) {
         return shaders.error();
     }
@@ -221,6 +228,7 @@ struct CompileState {
     Expected<void> parseVarying(const string& line);
     Expected<void> parseUniform(const string& line);
     Expected<void> parseConstant(const string& line);
+    Expected<void> parseMutable(const string& line);
     Expected<void> parseStruct(const string& line);
     Expected<void> parseFunc(const string& line);
 
@@ -302,6 +310,12 @@ string ShaderTranspiler::preprocess(const string& code) const {
     return result.str();
 }
 
+static const char* SHADER_TYPENAMES[] = {
+    "void",   "int",    "float",  "bool",   "uint",   "double", "vec2",  "vec3",  "vec4",  "bvec2",  "bvec3",  "bvec4",
+    "ivec2",  "ivec3",  "ivec4",  "uvec2",  "uvec3",  "uvec4",  "dvec2", "dvec3", "dvec4", "mat2x2", "mat2x3", "mat2x4",
+    "mat3x2", "mat3x3", "mat3x4", "mat4x2", "mat4x3", "mat4x4", "mat2",  "mat3",  "mat4",  "struct",
+};
+
 Expected<void> CompileState::parseGlobalLine(const string& line) {
     if (line.starts_with('#')) {
         return parseMacro(line);
@@ -316,18 +330,17 @@ Expected<void> CompileState::parseGlobalLine(const string& line) {
     } else if (line.starts_with("varying")) {
         return parseVarying(line);
     } else {
+        for (const char* typeName : SHADER_TYPENAMES) {
+            if (line.starts_with(typeName)) {
+                return parseMutable(line);
+            }
+        }
         // ignore line
     }
     return Expected<void>();
 }
 
 Expected<void> CompileState::parse(const string& code) {
-    static const char* SHADER_TYPENAMES[] = {
-        "void",   "int",    "float",  "bool",   "uint",   "double", "vec2",  "vec3",  "vec4",  "bvec2",  "bvec3",  "bvec4",
-        "ivec2",  "ivec3",  "ivec4",  "uvec2",  "uvec3",  "uvec4",  "dvec2", "dvec3", "dvec4", "mat2x2", "mat2x3", "mat2x4",
-        "mat3x2", "mat3x3", "mat3x4", "mat4x2", "mat4x3", "mat4x4", "mat2",  "mat3",  "mat4",  "struct",
-    };
-
     s32 lineNo = 1;
     u64 len = code.length();
 
@@ -498,6 +511,22 @@ Expected<void> CompileState::parseConstant(const string& line) {
     string name = strip(splitAndGet(strip(line.substr(0, eqIx)), ' ', 2));
     if (name.length() == 0) {
         return Error("Error parsing constant declaration: " + line);
+    }
+    // allConstants[name] = line;
+    vert.code << line << std::endl;
+    frag.code << line << std::endl;
+    return Expected<void>();
+}
+
+Expected<void> CompileState::parseMutable(const string& line) {
+    u64 eqIx = line.find('=');
+    if (eqIx == line.npos) {
+        return Error("Definition of global must assign a value");
+    }
+
+    string name = strip(splitAndGet(strip(line.substr(0, eqIx)), ' ', 1));
+    if (name.length() == 0) {
+        return Error("Error parsing global declaration: " + line);
     }
     // allConstants[name] = line;
     vert.code << line << std::endl;

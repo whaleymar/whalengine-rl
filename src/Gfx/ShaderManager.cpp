@@ -64,23 +64,21 @@ ScopedShader::~ScopedShader() {
 void ShaderManager::loadShaders() {
     struct ShaderInfo {
         Shaders shaderEnum;
-        const char* vertexPath;
-        const char* fragPath;
+        const char* path;
         u32 uniformFlags = Uniforms::None;
     };
 
     static const ShaderInfo shaderInfo[] = {
-        {Shaders::Default, "whalengine/src/Shader/spritevert.glsl", "whalengine/src/Shader/spritefrag.glsl"},
-        {Shaders::PointLight, 0, "whalengine/src/Shader/pointlight.glsl"},
-        {Shaders::BoxLight, 0, "whalengine/src/Shader/aabblight.glsl", Uniforms::VirtualResolution},
-        // {Shaders::Quantize, 0, "whalengine/src/Shader/quantize.glsl"},
-        {Shaders::ToneMap, 0, "whalengine/src/Shader/toneMapping.glsl"},
-        {Shaders::ShadowLight, 0, "whalengine/src/Shader/ShadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
-        {Shaders::Blur, 0, "whalengine/src/Shader/blur.glsl", Uniforms::Resolution},
-        {Shaders::BlurLowRes, 0, "whalengine/src/Shader/blur.glsl", Uniforms::VirtualResolution},
-        {Shaders::LightPassThru, 0, "whalengine/src/Shader/lightpassthrough.glsl"},
-        {Shaders::Overlay, "whalengine/src/Shader/TileOverlayVert.glsl", "whalengine/src/Shader/TileOverlay.glsl"},
-        {Shaders::Test, 0, "whalengine/src/Shader/test.glsl", Uniforms::Resolution | Uniforms::TimeStamp},
+        {Shaders::Default, "whalengine/src/Shader/DefaultSprite.glsl"},
+        {Shaders::PointLight, "whalengine/src/Shader/PointLight.glsl"},
+        {Shaders::BoxLight, "whalengine/src/Shader/AabbLight.glsl", Uniforms::VirtualResolution},
+        {Shaders::ToneMap, "whalengine/src/Shader/ToneMapping.glsl"},
+        {Shaders::ShadowLight, "whalengine/src/Shader/ShadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
+        // {Shaders::Blur, "whalengine/src/Shader/Blur.glsl", Uniforms::Resolution},
+        // {Shaders::BlurLowRes, "whalengine/src/Shader/Blur.glsl", Uniforms::VirtualResolution},
+        {Shaders::LightPassThru, "whalengine/src/Shader/LightPassThrough.glsl"},
+        {Shaders::Overlay, "whalengine/src/Shader/TileOverlay.glsl"},
+        {Shaders::Test, "whalengine/src/Shader/Test.glsl", Uniforms::Resolution | Uniforms::TimeStamp},
     };
 
     constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
@@ -88,12 +86,7 @@ void ShaderManager::loadShaders() {
 
     for (size_t i = 0; i < len; i++) {
         // TESTING
-        Expected<rl::Shader> eShader;
-        if (i == 0) {
-            eShader = shaderTranspiler.loadAndCompile("whalengine/src/Shader/DefaultSprite.glsl");
-        } else {
-            eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].vertexPath, shaderInfo[i].fragPath);
-        }
+        Expected<rl::Shader> eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].path);
         if (!eShader.isExpected()) {
             print(eShader.error());
             continue;

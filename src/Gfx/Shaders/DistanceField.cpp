@@ -15,8 +15,8 @@ static int N_PASSES = 10;
 static bool SHOW_UV = false;
 
 DistanceField::DistanceField()
-    : mUvMask("", "whalengine/src/Shader/UVMask.glsl"), mJumpFlood("", "whalengine/src/Shader/JumpFloodUV.glsl"),
-      mDistanceField("", "whalengine/src/Shader/DistanceField.glsl") {}
+    : mUvMask("whalengine/src/Shader/UVMask.glsl"), mJumpFlood("whalengine/src/Shader/JumpFloodUV.glsl"),
+      mDistanceField("whalengine/src/Shader/DistanceField.glsl") {}
 
 void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     assert(mJumpFlood.isValid() && src.texture.width == dst.texture.width && src.texture.height == dst.texture.height);

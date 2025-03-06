@@ -6,7 +6,7 @@
 
 namespace whal {
 
-LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/blur.glsl") {}
+LightDenoise::LightDenoise() : mDenoise("whalengine/src/Shader/Blur.glsl") {}
 
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
 // LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/lightpassthrough.glsl") {}

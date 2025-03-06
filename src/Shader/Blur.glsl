@@ -1,7 +1,5 @@
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
+varying vec2 fragTexCoord;
+varying vec4 fragColor;
 
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
@@ -14,7 +12,7 @@ float normpdf(in float x, in float sigma)
     return 0.39894 * exp(-0.5 * x * x / (sigma * sigma)) / sigma;
 }
 
-void main() {
+void fragment() {
     vec3 c = texture(texture0, fragTexCoord).rgb;
 
     // can't make this a uniform because it needs to be const...
