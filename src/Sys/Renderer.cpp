@@ -514,6 +514,8 @@ void Renderer::setUniforms(rl::Shader shader) {
         return;
     }
 
+    // enable shader once (instead of doing it per-uniform like default raylib)
+    rl::rlEnableShader(shader.id);
     for (auto uniform : mUniformQueue) {
         uniform.set(shader);
     }
@@ -652,32 +654,32 @@ void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition
 
 void UniformVariant::set(rl::Shader handle) const {
     switch (tag) {
-    case UniformType::Float:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniFloat, rl::SHADER_UNIFORM_FLOAT);
+    case Float:
+        rl::rlSetUniform(uniformLoc, &val, rl::SHADER_UNIFORM_FLOAT, 1);
         break;
-    case UniformType::Vec2:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec2, rl::SHADER_UNIFORM_VEC2);
+    case Vec2:
+        rl::rlSetUniform(uniformLoc, &val, rl::SHADER_UNIFORM_VEC2, 1);
         break;
-    case UniformType::Vec3:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec3, rl::SHADER_UNIFORM_VEC3);
+    case Vec3:
+        rl::rlSetUniform(uniformLoc, &val.uniVec3, rl::SHADER_UNIFORM_VEC3, 1);
         break;
-    case UniformType::Vec4:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec4, rl::SHADER_UNIFORM_VEC4);
+    case Vec4:
+        rl::rlSetUniform(uniformLoc, &val.uniVec4, rl::SHADER_UNIFORM_VEC4, 1);
         break;
-    case UniformType::Int:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniInt, rl::SHADER_UNIFORM_INT);
+    case Int:
+        rl::rlSetUniform(uniformLoc, &val.uniInt, rl::SHADER_UNIFORM_INT, 1);
         break;
-    case UniformType::Vec2i:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec2i, rl::SHADER_UNIFORM_IVEC2);
+    case Vec2i:
+        rl::rlSetUniform(uniformLoc, &val.uniVec2i, rl::SHADER_UNIFORM_IVEC2, 1);
         break;
-    case UniformType::Vec3i:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec3i, rl::SHADER_UNIFORM_IVEC3);
+    case Vec3i:
+        rl::rlSetUniform(uniformLoc, &val.uniVec3i, rl::SHADER_UNIFORM_IVEC3, 1);
         break;
-    case UniformType::Vec4i:
-        rl::SetShaderValue(handle, uniformLoc, &val.uniVec4i, rl::SHADER_UNIFORM_IVEC4);
+    case Vec4i:
+        rl::rlSetUniform(uniformLoc, &val.uniVec4i, rl::SHADER_UNIFORM_IVEC4, 1);
         break;
-    case UniformType::Texture:
-        rl::SetShaderValueTexture(handle, uniformLoc, val.uniTex);
+    case Texture:
+        rl::rlSetUniformSampler(uniformLoc, val.uniTex);
         break;
     }
 }
