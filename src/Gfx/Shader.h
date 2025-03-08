@@ -1,8 +1,7 @@
 #pragma once
 
+#include <string>
 #include <vector>
-#include "Events/Events.h"
-#include "Sys/IListen.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
 
@@ -12,18 +11,22 @@
 
 namespace whal {
 
-// TODO remove IListen from here. Only the ShaderManager should worry about reloads
-class Shader : public IListen<evt::ShaderReload, true> {
+class ShaderMgr;
+
+class Shader {
 public:
     struct Uniform {
         std::string key;
         s32 handle;
     };
 
-    Shader(const char* unifiedShaderPath);
+    friend class ShaderMgr;
+
+    Shader(Shader&& other);
     virtual ~Shader();
 
-    void onEvent(evt::ShaderReload) override;
+    void bind();    // binds shader and uniforms
+    void unbind();  // issues draw call
 
     // TODO implement uniform caching. Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached
     // value. Only send the value to Renderer if it's different than the cached val.
@@ -49,6 +52,11 @@ protected:
     rl::Shader mHandle;
     std::vector<Uniform> mNameToId;
     bool mIsReady;
+
+private:
+    // Only ShaderMgr can construct Shaders
+    Shader(const char* unifiedShaderPath);
+    Shader(rl::Shader loadedShader, const char* unifiedShaderPath);
 };
 
 class IShaderProcess

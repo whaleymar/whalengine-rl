@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Sys/System.h"
 #include "raylib.h"
 
@@ -12,31 +13,31 @@
 namespace whal {
 
 static int N_PASSES = 10;
-static bool SHOW_UV = false;
 
-DistanceField::DistanceField()
-    : mUvMask("whalengine/src/Shader/UVMask.glsl"), mJumpFlood("whalengine/src/Shader/JumpFloodUV.glsl"),
-      mDistanceField("whalengine/src/Shader/DistanceField.glsl") {}
+DistanceField::DistanceField() {}
 
 void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
-    assert(mJumpFlood.isValid() && src.texture.width == dst.texture.width && src.texture.height == dst.texture.height);
-
-    auto tmpOutput = Graphics.getTemporaryRT(dst.texture);
-    Graphics.blit(src, tmpOutput, mUvMask.get());
-    rl::RenderTexture currentInput = tmpOutput;
-    rl::RenderTexture currentOutput = dst;
+    // rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16;
+    rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+    auto tmpOutput1 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);
+    auto tmpOutput2 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);
+    Shader& shUvMask = ShaderMgr::get("UVMask");
+    Graphics.blit(src, tmpOutput1, shUvMask.get());
+    rl::RenderTexture currentInput = tmpOutput1;
+    rl::RenderTexture currentOutput = tmpOutput2;
 
     // number of passes should be log base 2 of our largest dimension
     const s32 nPasses = std::ceil(std::log2(static_cast<f32>(std::max(src.texture.width, src.texture.height))));
     Vector2f floatResolutionInv(1.0f / static_cast<f32>(src.texture.width), 1.0f / static_cast<f32>(src.texture.height));
 
-    Graphics.fixedShaderMode(mJumpFlood.get());
+    Shader& shJumpFlood = ShaderMgr::get("JumpFloodUV");
+    Graphics.fixedShaderMode(shJumpFlood.get());
     for (s32 i = 1; i < nPasses; i++) {
         if (i >= N_PASSES) {
             break;
         }
         const f32 offset = std::pow(2, static_cast<f32>(nPasses - i - 1));
-        mJumpFlood.setVector2("_Offset", floatResolutionInv * offset);
+        shJumpFlood.setVector2("_Offset", floatResolutionInv * offset);
         Graphics.blit(currentInput, currentOutput);
 
         // swap
@@ -47,28 +48,19 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
     }
     Graphics.endFixedShaderMode();
 
-    // make sure latest draw is to tmpOutput
-    // (if currentOutput is tmpOutput.id, then we just drew to dst)
-    if (currentOutput.id == tmpOutput.id) {
-        Graphics.blit(currentInput, currentOutput);
-    }
-
-    // convert Jump-Flooded UV field into distance field:
-    if (SHOW_UV) {
-        Graphics.blit(tmpOutput, dst);
-    } else {
-        Graphics.blit(tmpOutput, dst, mDistanceField.get());
-    }
+    // convert Jump-Flooded UV field into distance field
+    Shader& shDistanceField = ShaderMgr::get("DistanceField");
+    Graphics.blit(currentInput, dst, shDistanceField.get());
 
     // release temporary texture
-    Graphics.releaseTemporaryRT(tmpOutput);
+    Graphics.releaseTemporaryRT(tmpOutput1);
+    Graphics.releaseTemporaryRT(tmpOutput2);
 }
 
 #ifndef NDEBUG
 void DistanceField::drawDebug() {
     ImGui::Begin("DistanceField");
     ImGui::SliderInt("N Flood Passes", &N_PASSES, 1, std::ceil(std::log2(960.0f)));
-    ImGui::Checkbox("Show UV", &SHOW_UV);
     ImGui::End();
 }
 #endif

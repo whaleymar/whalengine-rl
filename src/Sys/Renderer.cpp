@@ -63,6 +63,15 @@ void Renderer::init() {
     mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     mDistanceField = new DistanceField();
+
+    globalUniformRegister("_Time", UniformVariant{
+                                       .tag = UniformVariant::Float,
+                                       .val = {.uniFloat = 0.0f},
+                                   });
+    globalUniformRegister("_GameResolution", UniformVariant{
+                                                 .tag = UniformVariant::Vec2,
+                                                 .val = {.uniVec2 = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}},
+                                             });
 }
 
 void Renderer::end() {
@@ -131,6 +140,9 @@ void Renderer::update() {
         WINDOW_WIDTH_DOCK = WINDOW_WIDTH_OS;
         WINDOW_HEIGHT_DOCK = WINDOW_HEIGHT_OS;
     }
+
+    // update global uniforms that the Renderer owns
+    globalUniformSetFloat("_Time", Time.getElapsed());
 }
 
 rl::RenderTexture Renderer::getTemporaryRT(s32 width, s32 height, rl::PixelFormat format, rl::TextureFilter filter, rl::TextureWrap wrap) {
@@ -302,23 +314,22 @@ void Renderer::buildDistanceField() const {
     mDistanceField->process(occlSrc, dfDst);
 }
 
-// this does what the old Mega-GraphicsSystem used to do.
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
     rl::BeginTextureMode(mStagingTexture.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
-    const rl::Shader defaultShader = ShaderManager::get(Shaders::Default);
-    u32 lastShaderId = 0;
+    const Shader* defaultShader = &ShaderMgr::get("DefaultSprite");
+    const Shader* lastShader = nullptr;
+    rl::BeginShaderMode(defaultShader->get());
     for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
-        if (renderInfo.shader.id != lastShaderId) {
-            if (renderInfo.shader.id == 0xffffffff) {
-                // -1 maps to default sprite shader
-                rl::BeginShaderMode(defaultShader);
+        if (renderInfo.shader != lastShader) {
+            if (renderInfo.shader == nullptr) {
+                rl::BeginShaderMode(defaultShader->get());
             } else {
-                rl::BeginShaderMode(renderInfo.shader);
+                rl::BeginShaderMode(renderInfo.shader->get());
             }
-            lastShaderId = renderInfo.shader.id;
+            lastShader = renderInfo.shader;
         }
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
@@ -347,15 +358,15 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
         rl::BeginTextureMode(mGIOccluderTexture.tex);
         rl::ClearBackground(Colors::ClearRL);
         rl::BeginMode2D(gameRenderContext.camera);
+        rl::BeginShaderMode(defaultShader->get());
         for (const auto& renderInfo : queue) {
-            if (renderInfo.shader.id != lastShaderId) {
-                if (renderInfo.shader.id == 0xffffffff) {
-                    // -1 maps to default sprite shader
-                    rl::BeginShaderMode(defaultShader);
+            if (renderInfo.shader != lastShader) {
+                if (renderInfo.shader == nullptr) {
+                    rl::BeginShaderMode(defaultShader->get());
                 } else {
-                    rl::BeginShaderMode(renderInfo.shader);
+                    rl::BeginShaderMode(renderInfo.shader->get());
                 }
-                lastShaderId = renderInfo.shader.id;
+                lastShader = renderInfo.shader == defaultShader ? nullptr : renderInfo.shader;
             }
             renderInfo.piRender->draw(renderInfo, gameRenderContext);
         }
@@ -478,9 +489,9 @@ static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRende
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        return entity1.ysortPosition == entity2.ysortPosition ? entity1.shader.id < entity2.shader.id : entity1.ysortPosition > entity2.ysortPosition;
+        return entity1.ysortPosition == entity2.ysortPosition ? entity1.shader < entity2.shader : entity1.ysortPosition > entity2.ysortPosition;
     } else {
-        return entity1.shader.id < entity2.shader.id;
+        return entity1.shader < entity2.shader;
     }
 }
 
@@ -505,22 +516,27 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf
     std::sort(mRenderQueue.mOccluderQueueCamera.begin(), mRenderQueue.mOccluderQueueCamera.end(), isBelow);
 }
 
-void Renderer::queueUniform(UniformVariant uniform) {
+void Renderer::queueUniform(ShaderUniform uniform) {
     mUniformQueue.push_back(uniform);
 }
 
 void Renderer::setUniforms(rl::Shader shader) {
+    // enable shader once (instead of doing it per-uniform like default raylib)
+    // I think I still want this line to run even if all values are cached so the correct shader is bound
+    rl::rlEnableShader(shader.id);
+
+    globalUniformBindAll(shader);
+
     if (mUniformQueue.size() == 0) {
         return;
     }
 
-    // enable shader once (instead of doing it per-uniform like default raylib)
-    rl::rlEnableShader(shader.id);
     for (auto uniform : mUniformQueue) {
-        uniform.set(shader);
+        uniform.value.set(shader, uniform.loc);
     }
 
     // if FixedShaderMode is activated and IsPersistUniforms is set, queue should stay the same. Clear otherwise.
+    // RESEARCH is persisting the uniform queue necessary? Won't they stay constant?
     if (!(mIsFixedShaderMode && mIsPersistUniforms)) {
         mUniformQueue.clear();
     }
@@ -652,7 +668,88 @@ void Renderer::cascadeWindowChanges(Vector2i parentSize, Vector2i windowPosition
     }
 }
 
-void UniformVariant::set(rl::Shader handle) const {
+void Renderer::globalUniformRegister(const std::string& name, UniformVariant initialValue) {
+    assert(!mGlobalUniformNameToIndex.contains(name) && "Global uniform is already registered");
+    u64 ix = mGlobalUniforms.size();
+    mGlobalUniformNameToIndex[name] = ix;
+    mGlobalUniforms.push_back(initialValue);
+}
+
+void Renderer::globalUniformSubscribe(const std::string& name, const Shader& shader) {
+    assert(mGlobalUniformNameToIndex.contains(name) && "Global uniform was not registered!");
+    u64 uniformIx = mGlobalUniformNameToIndex[name];
+
+    // get the location of this uniform in the shader and add it as a subscriber
+    s32 loc = rl::GetShaderLocation(shader.get(), name.c_str());
+    assert(loc != -1 && "Global uniform not found in shader");
+
+    u32 shaderId = shader.get().id;
+    GlobalUniformTracker tracker = GlobalUniformTracker{
+        .index = uniformIx,
+        .uniformLoc = loc,
+    };
+    auto it = mGlobalUniformSubscribers.find(shaderId);
+    if (it == mGlobalUniformSubscribers.end()) {
+        mGlobalUniformSubscribers.insert({shaderId, {tracker}});
+    } else {
+        it->second.push_back(tracker);
+    }
+}
+
+void Renderer::globalUniformBindAll(rl::Shader shader) {
+    // RESEARCH figure out a way to not update uniforms that haven't changed
+    auto it = mGlobalUniformSubscribers.find(shader.id);
+    if (it == mGlobalUniformSubscribers.end()) {
+        return;  // not subscribed to any global values
+    }
+    for (GlobalUniformTracker tracker : it->second) {
+        mGlobalUniforms[tracker.index].set(shader, tracker.uniformLoc);
+    }
+}
+
+void Renderer::globalUniformSetFloat(const std::string& name, f32 val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniFloat = val;
+}
+
+void Renderer::globalUniformSetInt(const std::string& name, s32 val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniInt = val;
+}
+
+void Renderer::globalUniformSetTexture(const std::string& name, rl::Texture val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniTex = val.id;
+}
+
+void Renderer::globalUniformSetVec2(const std::string& name, Vector2f val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniVec2 = val.asRL();
+}
+
+void Renderer::globalUniformSetVec2(const std::string& name, rl::Vector2 val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniVec2 = val;
+}
+
+void Renderer::globalUniformSetVec3(const std::string& name, rl::Vector3 val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniVec3 = val;
+}
+
+void Renderer::globalUniformSetVec4(const std::string& name, rl::Vector4 val) {
+    auto it = mGlobalUniformNameToIndex.find(name);
+    assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
+    mGlobalUniforms[it->second].val.uniVec4 = val;
+}
+
+void UniformVariant::set(rl::Shader handle, s32 uniformLoc) const {
     switch (tag) {
     case Float:
         rl::rlSetUniform(uniformLoc, &val, rl::SHADER_UNIFORM_FLOAT, 1);

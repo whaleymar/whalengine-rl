@@ -46,9 +46,12 @@ struct UniformVariant {
         u32 uniTex;
     } val;
 
-    s32 uniformLoc;
+    void set(rl::Shader handle, s32 uniformLoc) const;
+};
 
-    void set(rl::Shader handle) const;
+struct ShaderUniform {
+    UniformVariant value;
+    s32 loc;
 };
 
 class Renderer {
@@ -57,6 +60,11 @@ class Renderer {
         rl::TextureFilter filter;  // store filter so it's only changed when necessary
         rl::TextureWrap wrap;
         s32 unusedFrames = 0;
+    };
+
+    struct GlobalUniformTracker {
+        u64 index;
+        s32 uniformLoc;
     };
 
 public:
@@ -91,7 +99,7 @@ public:
     // Alternatively, `setUniforms` can set them manually.
     // Note: queuing is necessary because setUniformValueTexture *MUST* be called after BeginTextureMode
     // Setting other uniforms beforehand works, but isn't best practice. Better to queue them all.
-    void queueUniform(UniformVariant uniform);
+    void queueUniform(ShaderUniform uniform);
 
     // Set the queued uniform values.
     void setUniforms(rl::Shader shader);
@@ -110,6 +118,27 @@ public:
     void updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vector2i renderPosition = Vector2i(-1, -1));
 
     void toggleFullscreen();
+
+    /////////////////////
+    // Global Uniforms //
+    /////////////////////
+
+    // Creates a uniform which is globally accessible by all shaders. This should run before shaders are compiled.
+    // If a shader is compiled and it wants an unregistered uniform, the compilation will fail.
+    void globalUniformRegister(const std::string& name, UniformVariant initialValue);
+
+    void globalUniformSubscribe(const std::string& name, const Shader& shader);
+
+    void globalUniformBindAll(rl::Shader shader);
+
+    // Set the value of a uniform
+    void globalUniformSetFloat(const std::string& name, f32 val);
+    void globalUniformSetInt(const std::string& name, s32 val);
+    void globalUniformSetTexture(const std::string& name, rl::Texture val);
+    void globalUniformSetVec2(const std::string& name, Vector2f val);
+    void globalUniformSetVec2(const std::string& name, rl::Vector2 val);
+    void globalUniformSetVec3(const std::string& name, rl::Vector3 val);
+    void globalUniformSetVec4(const std::string& name, rl::Vector4 val);
 
 private:
     Renderer(const Renderer&) = delete;
@@ -140,11 +169,21 @@ private:
 
     DistanceField* mDistanceField;
 
-    std::vector<UniformVariant> mUniformQueue;
+    std::vector<ShaderUniform> mUniformQueue;
 
     rl::Shader mFixedShader;
     Vector2i mPrevWindowSizeBeforeFullscreen;
     Vector2i mPrevWindowPosBeforeFullscreen;
+
+    /////////////////////
+    // Global Uniforms //
+    /////////////////////
+
+    // maps a shader's ID to a list of tuples containing the uniform location, and an index into mGlobalUniforms
+    std::unordered_map<u32, std::vector<GlobalUniformTracker>> mGlobalUniformSubscribers;
+    std::unordered_map<std::string, u64> mGlobalUniformNameToIndex;
+    std::vector<UniformVariant> mGlobalUniforms;
+
     bool mIsFixedShaderMode = false;
     bool mIsPersistUniforms = false;
 };

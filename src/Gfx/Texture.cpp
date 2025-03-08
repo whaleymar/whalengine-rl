@@ -10,6 +10,7 @@
 
 #include "Components/Animator.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/Shader.h"
 #include "Map/AnimationFactory.h"
 #include "Settings.h"
 
@@ -213,17 +214,17 @@ struct RenderTextureInfo {
     WindowSize size;
     rl::TextureFilter filter;
     rl::TextureWrap wrap;
-    bool isHDR;
+    rl::PixelFormat format;
 };
 
 static const RenderTextureInfo S_RENDER_TEX_INFO[] = {
-    {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, true},
-    {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_REPEAT, true},
-    {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, false},
-    {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, false},
-    {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_CLAMP, true},
-    {TextureID::DistanceField, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, true},
-    {TextureID::OcclusionDepth, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, true},
+    {TextureID::Main, WindowSize::Render, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16},
+    {TextureID::Lighting, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_REPEAT, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16},
+    {TextureID::OcclusionColor, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8},
+    {TextureID::Depth, WindowSize::Game, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_REPEAT, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8},
+    {TextureID::Bloom, WindowSize::Render, rl::TEXTURE_FILTER_BILINEAR, rl::TEXTURE_WRAP_CLAMP, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16},
+    {TextureID::DistanceField, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, rl::PIXELFORMAT_UNCOMPRESSED_R16},
+    {TextureID::OcclusionDepth, WindowSize::GlobalRange, rl::TEXTURE_FILTER_POINT, rl::TEXTURE_WRAP_CLAMP, rl::PIXELFORMAT_UNCOMPRESSED_R16},
 };
 
 TextureManager::TextureManager() {
@@ -272,8 +273,8 @@ void TextureManager::_setTargetTexture() {
     rl::RenderTexture rt = getRenderTexture(static_cast<TextureID>(selection));
     rl::RenderTexture mainTex = getRenderTexture(TextureID::Main);
 
-    if (S_RENDER_TEX_INFO[selection].isHDR) {
-        Graphics.blit(rt, mainTex, ShaderManager::get(Shaders::ToneMap));
+    if (S_RENDER_TEX_INFO[selection].format == rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16) {
+        Graphics.blit(rt, mainTex, ShaderMgr::get("ToneMap").get());
     } else {
         Graphics.blit(rt, mainTex);
     }
@@ -405,9 +406,8 @@ inline Vector2i getWindowSize(WindowSize size) {
 
 void TextureManager::_loadRenderTextures() {
     for (auto rtInfo : S_RENDER_TEX_INFO) {
-        auto format = rtInfo.isHDR ? rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
         Vector2i size = getWindowSize(rtInfo.size);
-        rl::RenderTexture2D renderTexture = rl::LoadRenderTextureFormat(size.x, size.y, format);
+        rl::RenderTexture2D renderTexture = rl::LoadRenderTextureFormat(size.x, size.y, rtInfo.format);
         s32 ix = static_cast<s32>(rtInfo.id);
         S_RENDER_TEXTURES[ix] = renderTexture;
         setIsRenderTextureUsed(ix);

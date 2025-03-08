@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Expected.h"
-#include "Util/Types.h"
 
 namespace rl {
 typedef struct Shader Shader;
@@ -9,57 +8,28 @@ typedef struct Shader Shader;
 
 namespace whal {
 
-enum class Shaders : s16 {
-    Default = 0,
-    PointLight,
-    BoxLight,
-    ToneMap,
-    ShadowLight,
-    Blur,
-    BlurLowRes,
-    LightPassThru,
-    Pixelate,
-    Overlay,
-    Test,
-    _Count_DO_NOT_USE_ME
-};
+class Shader;
 
-class ScopedShader {
+class ShaderMgr {
 public:
-    ScopedShader(rl::Shader shader, bool isActivated = false);
-    ~ScopedShader();
-};
-
-class ShaderManager {
-public:
-    static ShaderManager& instance() {
-        static ShaderManager instance_;
+    static ShaderMgr& instance() {
+        static ShaderMgr instance_;
         return instance_;
     }
 
-    static rl::Shader get(Shaders shaderEnum);
-    static void activate(Shaders shaderEnum);
-    static ScopedShader activateScoped(Shaders shaderEnum);
+    static Expected<void> loadShaders();
+    static void unloadShaders();
+    static void reloadShaders();
 
-    void loadShaders();
-    void unloadAll();
-    void reloadShaders();
+    // query string is the file name (without extension)
+    static Shader& get(const std::string& name);
 
 private:
-    rl::Shader _get(Shaders shaderEnum) const;
-    void setIsUsed(s32 index);
-    bool getIsUsed(s32 index) const;
+    ShaderMgr() = default;
+    ShaderMgr(const ShaderMgr&) = delete;
+    void operator=(const ShaderMgr&) = delete;
 
-    u32 mUsageMask = 0;
+    static Expected<void> loadShaderDir(const char* path);
 };
-
-// class Shader;
-//
-// class ShaderManager2 {
-// public:
-//     static Expected<void> loadShaders();
-//
-//     Shader& get(const std::string& name) const;
-// };
 
 }  // namespace whal

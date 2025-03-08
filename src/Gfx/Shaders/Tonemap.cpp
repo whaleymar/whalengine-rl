@@ -1,15 +1,16 @@
 #include "Tonemap.h"
 
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
+#include "Sys/System.h"
 #include "raylib.h"
 
 namespace whal {
 
-Tonemap::Tonemap() : mToneMap("whalengine/src/Shader/ToneMapping.glsl") {}
+Tonemap::Tonemap() {}
 
 void Tonemap::process(rl::RenderTexture src, rl::RenderTexture dst) {
-    assert(mToneMap.isValid());
-    Graphics.blit(src, dst, mToneMap.get());
+    Graphics.blit(src, dst, ShaderMgr::get("ToneMap").get());
 }
 
 }  // namespace whal

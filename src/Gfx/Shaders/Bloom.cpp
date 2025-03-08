@@ -1,6 +1,7 @@
 #include "Bloom.h"
 
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Sys/System.h"
 #include "Util/MathUtil.h"
@@ -12,15 +13,13 @@
 
 namespace whal {
 
-Bloom::Bloom() : mThresh("whalengine/src/Shader/Threshold.glsl"), mBlur("whalengine/src/Shader/BoxBlur.glsl") {
+Bloom::Bloom() {
     threshold = 1.2;
     softThreshold = 0.5;
     // intensity = 0.5;
 }
 
 void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
-    assert(mThresh.isValid() && mBlur.isValid());
-
     rl::RenderTexture bloomTex = TextureManager::getRenderTexture(TextureID::Bloom);
     auto fmt = static_cast<rl::PixelFormat>(src.texture.format);
     auto filter = rl::TEXTURE_FILTER_BILINEAR;
@@ -28,12 +27,15 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     rl::RenderTexture quarterRes = Graphics.getTemporaryRT(src.texture.width / 4, src.texture.height / 4, fmt, filter);
     rl::RenderTexture eightRes = Graphics.getTemporaryRT(src.texture.width / 8, src.texture.height / 8, fmt, filter);
 
-    mThresh.setFloat("_Threshold", threshold);
-    mThresh.setFloat("_SoftThreshold", softThreshold);
-    Graphics.blit(src, bloomTex, mThresh.get());
+    Shader& shThreshold = ShaderMgr::get("Threshold");
+    Shader& shBlur = ShaderMgr::get("BoxBlur");
+
+    shThreshold.setFloat("_Threshold", threshold);
+    shThreshold.setFloat("_SoftThreshold", softThreshold);
+    Graphics.blit(src, bloomTex, shThreshold.get());
 
     // downscale
-    Graphics.fixedShaderMode(mBlur.get());
+    Graphics.fixedShaderMode(shBlur.get());
 
     _blurPass(bloomTex, halfRes);
     _blurPass(halfRes, quarterRes);

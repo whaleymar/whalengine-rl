@@ -15,10 +15,9 @@ ACTIVELY WORKING ON:
     - lights
 
 ## Gfx 
-- need some sort of "root" Y sorting position that overrides actual position - like for particles that start below a column and float above it -- should look like they are consistently in front of or behind it
-    - Float component works for this, but needs to be applied to tiles too for interaction to look correct
 - animate the TileMapLayer overlay texture
-- use the balatro sfx pattern for loading shaders -> at startup load every in a dedicated 'shaders' folder into memory and allow them to be queried globally with a string key instead of an enum 
+- shader uniform caching
+- shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -48,6 +47,7 @@ ACTIVELY WORKING ON:
 - respawn map objects
 - refactor the Scene/Level hierarchy to use entities
     - (maybe) keep scenes as is, but levels could be entities
+- Animated tile support
 
 ## Camera 
 - follow a spline whose points are defined in the level.

@@ -12,6 +12,7 @@
 #include "Gfx/Color.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/Shader.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
@@ -25,15 +26,11 @@ namespace whal {
 
 const Color COLOR_AMBIENT = Colors::Black;
 
-void PointLightSystem::onEvent(evt::ShaderReload) {
-    mPositionUniform = GetShaderLocation(ShaderManager::get(Shaders::PointLight), "position");
-    // mLightDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "lightDepth");
-    // mOcclusionDepthUniform = GetShaderLocation(ShaderManager::get(Shaders::ShadowLight), "occlusionDepthTex");
-}
+// RESEARCH may want to put intensity as a param in each light component
 
 void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
-    rl::Shader shader = ShaderManager::get(Shaders::PointLight);
-    ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::PointLight);
+    Shader& shader = ShaderMgr::get("PointLight");
+    shader.bind();
 
     // const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
     const auto colorTex = TextureManager::getRenderTexture(TextureID::OcclusionColor).texture;
@@ -47,47 +44,32 @@ void PointLightSystem::draw(const gfx::RenderContext& ctx) const {
         const Vector2i screenPosition = Vector2i(worldPosition.x, -worldPosition.y);
         Color color = light.color;
 
-        // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
 
         color.a = std::lerp(COLOR_AMBIENT.a, color.a, intensity);
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
 
-        rl::Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        rl::SetShaderValue(shader, mPositionUniform, &screenPosV, rl::SHADER_UNIFORM_VEC2);
-
-        // const f32 lightDepth = depthToFloat(trans.depth);
-        // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
-        // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
+        shader.setVector2("position", screenPosition.asRL());
+        // shader.setTexture("occlusionDepthTex", depthTex);
+        // shader.setFloat("lightDepth", depthToFloat(trans.depth));
+        Graphics.setUniforms(shader.get());
 
         const rl::Rectangle srcRect(0, 0, colorTex.width, colorTex.height);
         const rl::Rectangle dstRect(screenPosition.x - radius, screenPosition.y - radius, radius * 2, radius * 2);
         gfx::DrawSpriteHDR(colorTex, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
     }
-}
-
-void BoxLightSystem::onEvent(evt::ShaderReload) {
-    rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
-    mPositionUniform = GetShaderLocation(shader, "lightpos");
-    mHalflenUniform = GetShaderLocation(shader, "lighthalflen");
-    mRadiusUniform = GetShaderLocation(shader, "lightradius");
-    // mLightDepthUniform = GetShaderLocation(shader, "lightDepth");
-    // mOcclusionDepthUniform = GetShaderLocation(shader, "occlusionDepthTex");
+    shader.unbind();
 }
 
 void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
-    rl::Shader shader = ShaderManager::get(Shaders::BoxLight);
+    Shader& shader = ShaderMgr::get("AabbLight");
 
     const auto randomTexture = Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     for (auto [entityid, entity] : getEntities()) {
         if (entity.has<Invisible>()) {
             continue;
         }
-
-        // do this every entity so draw calls aren't instanced and the uniform changes
-        // should be fine if there aren't a ton of these lights
-        ScopedShader shaderScope = ShaderManager::activateScoped(Shaders::BoxLight);
 
         BoxLight light = entity.get<BoxLight>();
         const auto trans = entity.get<Transform>();
@@ -96,7 +78,6 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         Vector2i screenPosition = worldToScreenCoords(worldPosition.as<f32>(), ctx.cameraPosition, ScreenResolution::Game);
         Color color = light.color;
 
-        // RESEARCH may want to put this as a param in the component
         constexpr f32 intensity = 1.0;
         s32 radius = light.radius;
 
@@ -106,16 +87,15 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         // light falls off quadratically
         radius = ease(radius / 2, radius, intensity, Ease::InQuad);
 
-        rl::Vector2 screenPosV(screenPosition.x, screenPosition.y);
-        rl::Vector2 halfLenV(light.halfLen.x, light.halfLen.y);
-        f32 fRadius = static_cast<f32>(radius);
-        rl::SetShaderValue(shader, mPositionUniform, &screenPosV.x, rl::SHADER_UNIFORM_VEC2);
-        rl::SetShaderValue(shader, mHalflenUniform, &halfLenV.x, rl::SHADER_UNIFORM_VEC2);
-        rl::SetShaderValue(shader, mRadiusUniform, &fRadius, rl::SHADER_UNIFORM_FLOAT);
+        shader.setVector2("lightpos", screenPosition.asRL());
+        shader.setVector2("lighthalflen", light.halfLen.asRL());
+        shader.setFloat("lightradius", light.radius);
 
-        // const f32 lightDepth = depthToFloat(trans.depth);
-        // SetShaderValue(shader, mLightDepthUniform, &lightDepth, SHADER_UNIFORM_FLOAT);
-        // SetShaderValueTexture(shader, mOcclusionDepthUniform, depthTex);
+        // shader.setFloat("lightDepth", depthToFloat(trans.depth));
+        // shader.setTexture("occlusionDepthTex", depthTex);
+
+        // I have to bind/unbind the shader for every light, otherwise the uniforms from one light will affect the others.
+        // This can be solved by instancing
 
         const Vector2i lightBounds(radius + light.halfLen.x, radius + light.halfLen.y);
         const Vector2i destPosition = drawPosition - lightBounds;
@@ -124,27 +104,18 @@ void BoxLightSystem::draw(const gfx::RenderContext& ctx) const {
         const rl::Rectangle srcRect(0, 0, randomTexture.texture.width, randomTexture.texture.height);
         const rl::Rectangle dstRect(destPosition.x, destPosition.y, destSize.x, destSize.y);
 
+        shader.bind();
         gfx::DrawSpriteHDR(randomTexture.texture, srcRect, dstRect, rl::Vector2(0, 0), 0, color.asRL());
+        shader.unbind();
     }
     Graphics.releaseTemporaryRT(randomTexture);
-}
-
-void ShadowLightSystem::onEvent(evt::ShaderReload) {
-    auto shader = ShaderManager::get(Shaders::ShadowLight);
-    mLightPosUniform = rl::GetShaderLocation(shader, "lp1");
-    mRadiusUniform = rl::GetShaderLocation(shader, "radiusPixels");
-    mLightDepthUniform = rl::GetShaderLocation(shader, "lightDepth");
-    mDepthBufUniform = rl::GetShaderLocation(shader, "depthBuf");
-    mDistanceFieldUniform = rl::GetShaderLocation(shader, "_DistanceField");
-    mDistanceFieldSizeUniform = rl::GetShaderLocation(shader, "_DistanceFieldSize");
-    mAllDepthBufUniform = rl::GetShaderLocation(shader, "_AllDepth");
 }
 
 void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // RESEARCH maybe pass angle/spread uniform?
     // RESEARCH instead of binding new uniforms for every draw call, it would make more sense to pass an array of uniforms to the shader once
 
-    const auto shader = ShaderManager::get(Shaders::ShadowLight);
+    Shader& shader = ShaderMgr::get("ShadowLight");
     const auto depthTex = TextureManager::getRenderTexture(TextureID::OcclusionDepth).texture;
     const auto allDepthTex = TextureManager::getRenderTexture(TextureID::Depth).texture;
     const auto distanceFieldTex = TextureManager::getRenderTexture(TextureID::DistanceField).texture;
@@ -156,29 +127,26 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
     // must match what's in spritefrag.glsl
     const f32 depthScalar = 20.0f;
     for (auto [entityid, entity] : getEntities()) {
-        ShaderManager::activate(Shaders::ShadowLight);
-
         const auto light = entity.get<ShadowLight>();
         const auto trans = entity.get<Transform>();
 
         const Vector2f screenPos = worldToUVcoords((trans.positionPx + Vector2i(0, light.heightOffset)).as<f32>());
-        const rl::Vector2 screenPosRL = rl::Vector2(screenPos.x, screenPos.y);
-        const f32 lightRadiusPixels = light.radius;
         const f32 lightDepth = static_cast<f32>(trans.depth) / 255.0f * depthScalar;
 
         // Set shader values
-        rl::SetShaderValue(shader, mLightPosUniform, &screenPosRL, rl::SHADER_UNIFORM_VEC2);
-        rl::SetShaderValue(shader, mRadiusUniform, &lightRadiusPixels, rl::SHADER_UNIFORM_FLOAT);
-        rl::SetShaderValue(shader, mLightDepthUniform, &lightDepth, rl::SHADER_UNIFORM_FLOAT);
+        shader.setVector2("lp1", screenPos);
+        shader.setFloat("radiusPixels", light.radius);
+        shader.setFloat("lightDepth", lightDepth);
 
-        rl::Vector2 dfSize = rl::Vector2(distanceFieldTex.width, distanceFieldTex.height);
-        rl::SetShaderValue(shader, mDistanceFieldSizeUniform, &dfSize, rl::SHADER_UNIFORM_VEC2);
-        rl::SetShaderValueTexture(shader, mDepthBufUniform, depthTex);
-        rl::SetShaderValueTexture(shader, mDistanceFieldUniform, distanceFieldTex);
-        rl::SetShaderValueTexture(shader, mAllDepthBufUniform, allDepthTex);
+        // RESEARCH feel like i should be able to just set these once...
+        shader.setVector2("_DistanceFieldSize", Vector2f(distanceFieldTex.width, distanceFieldTex.height));
+        shader.setTexture("depthBuf", depthTex);
+        shader.setTexture("_DistanceField", distanceFieldTex);
+        shader.setTexture("_AllDepth", allDepthTex);
 
+        shader.bind();
         gfx::DrawRenderTextureHDR(colorTex, light.color);
-        rl::EndShaderMode();
+        shader.unbind();
     }
 
     rl::BeginMode2D(ctx.camera);

@@ -17,6 +17,9 @@ These extensions are not in Godot's shader language:
 1) The `#use mrt` macro can be used to enable Multiple Render Targets in the compiled fragment shader.
 2) #ifdebug, #else, and #endif guards for debug/release code differences
 
+NOTE:
+    this is mostly implemented in the c++ ShaderTranspiler class, but I am missing uniform default values and hints
+
 """
 
 from enum import Enum
@@ -375,7 +378,6 @@ class ShaderCompiler:
 
     def parse_macro(self, line : str) -> None:
         # print("parse_macro got:\n", line)
-        # TODO extend this macro to use custom variable names, e.g. #use mrt FragColor AllDepth OcclColor OcclDepth
         if line.startswith("#use mrt"):
             self.is_mrt = True 
         else:
@@ -487,7 +489,6 @@ class ShaderCompiler:
                 result += thing.replace("varying", "out") + '\n'
         else:
             if self.is_mrt:
-                # TODO custom mrt variable names
                 result += """
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 AllDepth;
@@ -527,7 +528,7 @@ layout(location = 3) out vec4 OcclDepth;
     def _write_shader_string_default(self, is_vertex : bool) -> None:
         if is_vertex:
             if self.is_mrt:
-                self.vertex_code = "???"# TODO
+                self.vertex_code = "???"
             else:
                 self.vertex_code = """#version 330
 in vec3 vertexPosition;
