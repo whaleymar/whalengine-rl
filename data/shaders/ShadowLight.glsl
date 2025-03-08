@@ -4,8 +4,8 @@ varying vec4 fragColor;
 uniform sampler2D texture0; // occlusion color texture
 uniform vec4 colDiffuse;
 
-uniform float iTime;
-uniform vec2 iResolution;
+global uniform vec2 _GameResolution;
+
 uniform vec2 _DistanceFieldSize; // also the size of `depthBuf`
 uniform vec2 lp1;
 uniform float radiusPixels;
@@ -45,11 +45,11 @@ vec4 getWallColor(vec2 p) {
 vec3 getLighting(vec2 p, vec2 lp) {
     const float minOcclusionAlpha = 0.99;
 
-    vec2 dfSizeRatio = iResolution / _DistanceFieldSize;
+    vec2 dfSizeRatio = _GameResolution / _DistanceFieldSize;
     vec2 dfSizeRatioInv = vec2(1.) / dfSizeRatio;
     float distScalar = (dfSizeRatioInv.x + dfSizeRatioInv.y) / 2.;
     vec2 samplePixel = p;
-    vec2 bias = (_DistanceFieldSize - iResolution) * 0.5 / _DistanceFieldSize; // distance from distance field origin to camera view origin (in screen coords)
+    vec2 bias = (_DistanceFieldSize - _GameResolution) * 0.5 / _DistanceFieldSize; // distance from distance field origin to camera view origin (in screen coords)
     vec2 samplePixelSDF = p * dfSizeRatio + bias;
     vec2 deltaStart = lp - p;
     vec2 rayDir = normalize(lp - p);
@@ -108,7 +108,7 @@ vec3 blendLighting(const vec2 p, vec2 lp) {
     float valY = -1.;
 
     // const float SCALAR = 0.05;
-    vec2 SCALAR = 2. / iResolution;
+    vec2 SCALAR = 2. / _GameResolution;
     const float BIAS = 0.;
     const float t_denom = 1. / float(LIGHTPASSES);
     float t = 0.0;
@@ -136,7 +136,7 @@ vec3 blendLightingSimple(const vec2 p, vec2 lp) {
 
 vec3 processLight(vec2 p, vec2 lightPos) {
     // doing this effectively makes the light color the ambient, since the light rendertex is multiplied
-    float pixelDistance = length(iResolution * p - iResolution * lightPos);
+    float pixelDistance = length(_GameResolution * p - _GameResolution * lightPos);
     if (pixelDistance > radiusPixels) {
         return vec3(0.);
     }
@@ -154,7 +154,7 @@ vec3 processLight(vec2 p, vec2 lightPos) {
 
         // const int fg_steps = 8;
         // float denom = float(fg_steps) * 1.5;
-        // vec2 rayDir = normalize(lightPos - p) / iResolution;
+        // vec2 rayDir = normalize(lightPos - p) / _GameResolution;
         // vec2 curP = p;
         // vec2 deltaStart = lightPos - p;
         // for (int i = 0; i < fg_steps; i++) {
@@ -194,7 +194,7 @@ vec3 processLight(vec2 p, vec2 lightPos) {
 // just do a point light bc we don't have a SDF
 vec3 processLight(vec2 p, vec2 lightPos) {
     // doing this effectively makes the light color the ambient, since the light rendertex is multiplied
-    float pixelDistance = length(iResolution * p - iResolution * lightPos);
+    float pixelDistance = length(_GameResolution * p - _GameResolution * lightPos);
     if (pixelDistance > radiusPixels) {
         return vec3(0.);
     }

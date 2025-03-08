@@ -1,9 +1,10 @@
 #include "ShaderManager.h"
 
-#include <array>
 #include <cassert>
 #include <cstring>
 #include <raylib.h>
+#include "Events/Events.h"
+#include "Gfx/Shader.h"
 #include "Gfx/ShaderTranspiler.h"
 #include "Settings.h"
 #include "Sys/System.h"
@@ -27,127 +28,66 @@ struct Uniforms {
     int iResolution;
 };
 
-static std::array<rl::Shader, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_SHADERS;
-static std::array<Uniforms, static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME)> S_UNIFORMS;
+struct RegisteredShader {
+    std::string name;
+    Shader shader;
+};
 
-static void ActivateShader(Shaders shaderEnum) {
-    auto shader = ShaderManager::get(shaderEnum);
-    s32 ix = static_cast<s32>(shaderEnum);
-    Uniforms uniforms = S_UNIFORMS[ix];
+static std::vector<RegisteredShader> S_SHADERS;
+static const char* S_ENGINE_SHADER_DIR = "whalengine/data/shaders";
 
-    rl::BeginShaderMode(shader);
+Expected<void> ShaderMgr::loadShaders() {
+    unloadShaders();
 
-    if (uniforms.isSet(Uniforms::TimeStamp)) {
-        const f32 iTime = Time.getElapsedUnmodified();
-        rl::SetShaderValue(shader, uniforms.iTime, &iTime, rl::SHADER_UNIFORM_FLOAT);
+    Expected<void> err = loadShaderDir(S_ENGINE_SHADER_DIR);
+    if (!err.isExpected()) {
+        return err;
     }
-
-    if (uniforms.isSet(Uniforms::VirtualResolution)) {
-        const f32 iResolution[2] = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME};
-        rl::SetShaderValue(shader, uniforms.iResolution, &iResolution, rl::SHADER_UNIFORM_VEC2);
-    } else if (uniforms.isSet(Uniforms::Resolution)) {
-        const f32 iResolution[2] = {FWINDOW_WIDTH_RENDER, FWINDOW_HEIGHT_RENDER};
-        rl::SetShaderValue(shader, uniforms.iResolution, &iResolution, rl::SHADER_UNIFORM_VEC2);
-    }
+    return loadShaderDir(SHADER_DIR);
 }
 
-ScopedShader::ScopedShader(rl::Shader shader, bool isActivated) {
-    if (!isActivated) {
-        rl::BeginShaderMode(shader);
-    }
+void ShaderMgr::unloadShaders() {
+    S_SHADERS.clear();
 }
 
-ScopedShader::~ScopedShader() {
-    rl::EndShaderMode();
-}
-
-void ShaderManager::loadShaders() {
-    struct ShaderInfo {
-        Shaders shaderEnum;
-        const char* path;
-        u32 uniformFlags = Uniforms::None;
-    };
-
-    static const ShaderInfo shaderInfo[] = {
-        {Shaders::Default, "whalengine/src/Shader/DefaultSprite.glsl"},
-        {Shaders::PointLight, "whalengine/src/Shader/PointLight.glsl"},
-        {Shaders::BoxLight, "whalengine/src/Shader/AabbLight.glsl", Uniforms::VirtualResolution},
-        {Shaders::ToneMap, "whalengine/src/Shader/ToneMapping.glsl"},
-        {Shaders::ShadowLight, "whalengine/src/Shader/ShadowLight.glsl", Uniforms::TimeStamp | Uniforms::VirtualResolution},
-        // {Shaders::Blur, "whalengine/src/Shader/Blur.glsl", Uniforms::Resolution},
-        // {Shaders::BlurLowRes, "whalengine/src/Shader/Blur.glsl", Uniforms::VirtualResolution},
-        // {Shaders::LightPassThru, "whalengine/src/Shader/LightPassThrough.glsl"},
-        {Shaders::Overlay, "whalengine/src/Shader/TileOverlay.glsl"},
-        {Shaders::Test, "whalengine/src/Shader/Test.glsl", Uniforms::Resolution | Uniforms::TimeStamp},
-    };
-
-    constexpr s32 len = sizeof(shaderInfo) / sizeof(ShaderInfo);
-    ShaderTranspiler shaderTranspiler;
-
-    for (size_t i = 0; i < len; i++) {
-        // TESTING
-        Expected<rl::Shader> eShader = shaderTranspiler.loadAndCompile(shaderInfo[i].path);
-        if (!eShader.isExpected()) {
-            print(eShader.error());
-            continue;
-        }
-        s32 ix = static_cast<s32>(shaderInfo[i].shaderEnum);
-        S_SHADERS[ix] = *eShader;
-        setIsUsed(ix);
-
-        S_UNIFORMS[ix].uniformFlags = shaderInfo[i].uniformFlags;
-
-        if (S_UNIFORMS[ix].isSet(Uniforms::TimeStamp)) {
-            S_UNIFORMS[ix].iTime = rl::GetShaderLocation(*eShader, "iTime");
-        }
-        if (S_UNIFORMS[ix].isSet(Uniforms::Resolution) || S_UNIFORMS[ix].isSet(Uniforms::VirtualResolution)) {
-            S_UNIFORMS[ix].iResolution = rl::GetShaderLocation(*eShader, "iResolution");
-        }
-    }
-}
-
-void ShaderManager::unloadAll() {
-    const s32 maxShaderCount = static_cast<s32>(Shaders::_Count_DO_NOT_USE_ME);
-    for (size_t i = 0; i < maxShaderCount; i++) {
-        if (getIsUsed(i)) {
-            rl::UnloadShader(S_SHADERS[i]);
-        }
-    }
-    mUsageMask = 0;
-}
-
-void ShaderManager::reloadShaders() {
-    unloadAll();
+void ShaderMgr::reloadShaders() {
     loadShaders();
-
     Event.emit<evt::ShaderReload>();
 }
 
-rl::Shader ShaderManager::get(Shaders shaderEnum) {
-    return instance()._get(shaderEnum);
+Shader& ShaderMgr::get(const std::string& sName) {
+    for (auto& [name, shader] : S_SHADERS) {
+        if (name == sName) {
+            return shader;
+        }
+    }
+    print("ERROR: Shader named", sName, "not found. Returning random shader");
+    return S_SHADERS[0].shader;
 }
 
-void ShaderManager::activate(Shaders shaderEnum) {
-    ActivateShader(shaderEnum);
-}
+Expected<void> ShaderMgr::loadShaderDir(const char* path) {
+    ShaderTranspiler transpiler;
+    rl::FilePathList files = rl::LoadDirectoryFiles(path);  // paths include the parent path
+    for (u32 i = 0; i < files.count; i++) {
+        if (!rl::IsPathFile(files.paths[i])) {
+            continue;
+        }
+        const char* filepath = files.paths[i];
+        Expected<rl::Shader> eShader = transpiler.loadAndCompile(filepath);
+        if (!eShader.isExpected()) {
+            ShaderMgr::unloadShaders();
+            return eShader.error();
+        }
 
-ScopedShader ShaderManager::activateScoped(Shaders shaderEnum) {
-    ActivateShader(shaderEnum);
-    return ScopedShader(instance()._get(shaderEnum), true);
-}
+        S_SHADERS.emplace_back(rl::GetFileNameWithoutExt(filepath), Shader(eShader.value(), filepath));
+        ShaderMetaData meta = transpiler.getMetaData();
+        for (const auto& gUniformName : meta.globalUniforms) {
+            Graphics.globalUniformSubscribe(gUniformName, S_SHADERS.back().shader);
+        }
+    }
 
-rl::Shader ShaderManager::_get(Shaders shaderEnum) const {
-    s32 ix = static_cast<s32>(shaderEnum);
-    assert(getIsUsed(ix) && "Shader not registered for passed enum");
-    return S_SHADERS[ix];
-}
-
-void ShaderManager::setIsUsed(s32 index) {
-    mUsageMask |= (1 << index);
-}
-
-bool ShaderManager::getIsUsed(s32 index) const {
-    return (mUsageMask & (1 << index)) > 0;
+    rl::UnloadDirectoryFiles(files);
+    return {};
 }
 
 }  // namespace whal

@@ -7,9 +7,6 @@ class Tonemap : public IShaderProcess {
 public:
     Tonemap();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
-
-private:
-    Shader mToneMap;
 };
 
 }  // namespace whal

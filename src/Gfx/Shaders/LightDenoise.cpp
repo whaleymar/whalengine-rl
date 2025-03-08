@@ -1,26 +1,27 @@
 #include "LightDenoise.h"
 
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/ShaderManager.h"
 #include "Sys/System.h"
 #include "raylib.h"
 
 namespace whal {
 
-LightDenoise::LightDenoise() : mDenoise("whalengine/src/Shader/Blur.glsl") {}
+LightDenoise::LightDenoise() {}
 
 // If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
 // LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/lightpassthrough.glsl") {}
 
 void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
-    assert(mDenoise.isValid());
-    mDenoise.setVector2("iResolution", rl::Vector2(src.texture.width, src.texture.height));
+    Shader& shGaussianBlur = ShaderMgr::get("GaussianBlur");
+    shGaussianBlur.setVector2("_Resolution", rl::Vector2(src.texture.width, src.texture.height));
 
     // rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_BILINEAR);
     rl::RenderTexture tmpSrc = Graphics.getTemporaryRT(src.texture, rl::TEXTURE_FILTER_POINT);
 
     // blur the src with the shader
     // this is only performant when src is around quarter resolution
-    Graphics.blit(src, tmpSrc, mDenoise.get());
+    Graphics.blit(src, tmpSrc, shGaussianBlur.get());
 
     // incrementally upscale by powers of 2 until we reach the dst resolution
     s32 srcWidth = src.texture.width;

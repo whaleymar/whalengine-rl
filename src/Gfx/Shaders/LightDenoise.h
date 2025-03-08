@@ -10,9 +10,6 @@ public:
 
     // doesn't work as uniform, shader needs it to be const
     // s32 kernelSize = 3;  // MINIMUM 3, SHOULD BE ODD NUMBER
-
-private:
-    Shader mDenoise;
 };
 
 }  // namespace whal

@@ -5,6 +5,7 @@
 #include "Components/Map.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/Shader.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Map/Tiled.h"
@@ -173,15 +174,15 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
         // note: overlays will be slow for Y sorted layers
-        auto overlayLoc = rl::GetShaderLocation(eCtx.shader, "_Overlay");
+        auto overlayLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Overlay");
         const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
-        rl::SetShaderValueTexture(eCtx.shader, overlayLoc, overlay);
-        auto scaleLoc = rl::GetShaderLocation(eCtx.shader, "_Scale");
+        rl::SetShaderValueTexture(eCtx.shader->get(), overlayLoc, overlay);
+        auto scaleLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Scale");
         rl::Vector2 scale = (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL();
-        rl::SetShaderValue(eCtx.shader, scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
-        auto timeLoc = rl::GetShaderLocation(eCtx.shader, "_Time");
+        rl::SetShaderValue(eCtx.shader->get(), scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
+        auto timeLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Time");
         f32 time = Time.getElapsed();
-        rl::SetShaderValue(eCtx.shader, timeLoc, &time, rl::SHADER_UNIFORM_FLOAT);
+        rl::SetShaderValue(eCtx.shader->get(), timeLoc, &time, rl::SHADER_UNIFORM_FLOAT);
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
@@ -315,7 +316,7 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                 .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::MaybeInChildren,
-                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
+                .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,
             });
         }
     }
@@ -438,7 +439,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 .isOccluder =
                     spriteCache.get(tile.gid).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
-                .shader = tml.overlayTex.size() > 0 ? ShaderManager::get(Shaders::Overlay) : rl::Shader{.id = 0xffffffff, .locs = nullptr},
+                .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,
             };
             S_YSORT_RENDERINFO_LUT[e].push_back(ri);
 

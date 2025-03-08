@@ -3,7 +3,6 @@
 #include <cmath>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "Util/FileUtils.h"
@@ -202,49 +201,16 @@ Expected<rl::Shader> ShaderTranspiler::compile(const string& unifiedCode) {
     return compile(shaders->first, shaders->second);
 }
 
-struct ShaderTracker {
-    std::stringstream code;
-    bool isDefault = true;
-};
-
-struct CompileState {
-    vector<string> input;
-    vector<string> varying;
-    // std::unordered_map<string, string> allUniforms;   // name: definition
-    // std::unordered_map<string, string> allConstants;  // name: definition
-    // std::unordered_map<string, string> allStructs;    // name: definition
-    // std::unordered_map<string, string> allFuncs;      // name: definition
-
-    string outFrag;
-    ShaderTracker vert;
-    ShaderTracker frag;
-    bool isMrt = false;  // Multiple Render Targets flag
-
-    Expected<void> parse(const string& unifiedShaderCode);
-    Expected<void> parseGlobalLine(const string& line);
-    Expected<void> parseMacro(const string& line);
-    Expected<void> parseInvar(const string& line);
-    Expected<void> parseOutvar(const string& line);
-    Expected<void> parseVarying(const string& line);
-    Expected<void> parseUniform(const string& line);
-    Expected<void> parseConstant(const string& line);
-    Expected<void> parseMutable(const string& line);
-    Expected<void> parseStruct(const string& line);
-    Expected<void> parseFunc(const string& line);
-
-    string getShaderString(bool isVertex) const;
-};
-
 Expected<std::pair<std::string, std::string>> ShaderTranspiler::transpileUnifiedShader(const std::string& unifiedShaderCode) {
     string code = preprocess(unifiedShaderCode);
-    CompileState state;
-    Expected<void> err = state.parse(code);
+    mState.clear();
+    Expected<void> err = mState.parse(code);
     if (!err.isExpected()) {
         return err.error();
     }
 
     // RESEARCH: build symbol lists so vertex/fragment shaders don't include structs/functions they don't use
-    std::pair<string, string> finalCode = {state.getShaderString(true), state.getShaderString(false)};
+    std::pair<string, string> finalCode = {mState.getShaderString(true), mState.getShaderString(false)};
     return finalCode;
 }
 
@@ -310,6 +276,12 @@ string ShaderTranspiler::preprocess(const string& code) const {
     return result.str();
 }
 
+ShaderMetaData ShaderTranspiler::getMetaData() const {
+    return ShaderMetaData{
+        .globalUniforms = mState.globalUniforms,
+    };
+}
+
 static const char* SHADER_TYPENAMES[] = {
     "void",   "int",    "float",  "bool",   "uint",   "double", "vec2",  "vec3",  "vec4",  "bvec2",  "bvec3",  "bvec4",
     "ivec2",  "ivec3",  "ivec4",  "uvec2",  "uvec3",  "uvec4",  "dvec2", "dvec3", "dvec4", "mat2x2", "mat2x3", "mat2x4",
@@ -323,6 +295,8 @@ Expected<void> CompileState::parseGlobalLine(const string& line) {
         return parseInvar(line);
     } else if (line.starts_with("out ")) {
         return parseOutvar(line);
+    } else if (line.starts_with("global uniform ")) {
+        return parseGlobalUniform(line);
     } else if (line.starts_with("uniform ")) {
         return parseUniform(line);
     } else if (line.starts_with("const ")) {
@@ -341,8 +315,8 @@ Expected<void> CompileState::parseGlobalLine(const string& line) {
 }
 
 Expected<void> CompileState::parse(const string& code) {
-    s32 lineNo = 1;
     u64 len = code.length();
+    currentLineNo = 1;
 
     // state
     enum class Ctx { Global, Func, Struct, Macro };
@@ -361,7 +335,6 @@ Expected<void> CompileState::parse(const string& code) {
             if (seekTarget == c && seekDepth == 0) {
                 Expected<void> err;
                 string sBuf = strip(buf.str());
-                // TODO each of these functions should write to the active vertex/fragment stringstream immediately
                 if (ctx == Ctx::Func) {
                     err = parseFunc(sBuf);
                 } else if (ctx == Ctx::Struct) {
@@ -372,7 +345,7 @@ Expected<void> CompileState::parse(const string& code) {
 
                 if (!err.isExpected()) {
                     std::stringstream ss;
-                    ss << "Error on line " << std::to_string(lineNo) << std::endl;
+                    ss << "Error on line " << std::to_string(currentLineNo) << std::endl;
                     ss << err.error();
                     return Error(ss.str());
                 }
@@ -439,7 +412,7 @@ Expected<void> CompileState::parse(const string& code) {
                 auto err = parseGlobalLine(line);
                 if (!err.isExpected()) {
                     std::stringstream ss;
-                    ss << "Error on line " << std::to_string(lineNo) << std::endl;
+                    ss << "Error on line " << std::to_string(currentLineNo) << std::endl;
                     ss << err.error();
                     return Error(ss.str());
                 }
@@ -448,7 +421,7 @@ Expected<void> CompileState::parse(const string& code) {
         }
 
         if (c == '\n') {
-            lineNo++;
+            currentLineNo++;
         }
     }
 
@@ -458,6 +431,10 @@ Expected<void> CompileState::parse(const string& code) {
 Expected<void> CompileState::parseMacro(const string& line) {
     // TODO extend this macro to use custom variable names, e.g. #use mrt FragColor AllDepth OcclColor OcclDepth
     if (line.starts_with("#use MRT")) {
+        if (currentLineNo != 1) {
+            // If i don't enfore this, parsing out vars might get messed up
+            return Error("`#use MRT` directive must appear on the first line");
+        }
         isMrt = true;
         frag.code << "layout(location = 0) out vec4 FragColor;" << std::endl << "layout(location = 1) out vec4 Depth;" << std::endl;
     } else {
@@ -487,19 +464,26 @@ Expected<void> CompileState::parseVarying(const string& line) {
     return Expected<void>();
 }
 
-Expected<void> CompileState::parseUniform(const string& line) {
+Expected<void> CompileState::parseUniform(const string& line, bool isGlobal) {
     // TODO extension: default values and hints
 
     string name = strip(splitAndGet(line, ' ', 2));
     if (name.length() == 0) {
         return Error("Error parsing uniform declaration: " + line);
     }
-    // name = name.substr(0, name.length() - 1);  // remove semicolon
-    // allUniforms[name] = line;
+    if (isGlobal) {
+        name = name.substr(0, name.length() - 1);  // remove semicolon
+        globalUniforms.push_back(name);
+    }
 
     vert.code << line << std::endl;
     frag.code << line << std::endl;
     return Expected<void>();
+}
+
+Expected<void> CompileState::parseGlobalUniform(const string& line) {
+    constexpr u64 prefixSize = 7;  // len("global ")
+    return parseUniform(line.substr(prefixSize), true);
 }
 
 Expected<void> CompileState::parseConstant(const string& line) {

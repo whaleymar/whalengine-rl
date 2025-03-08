@@ -10,11 +10,6 @@ public:
 #ifndef NDEBUG
     void drawDebug() override;
 #endif
-
-private:
-    Shader mUvMask;
-    Shader mJumpFlood;
-    Shader mDistanceField;
 };
 
 }  // namespace whal

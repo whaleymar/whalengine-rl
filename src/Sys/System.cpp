@@ -145,7 +145,7 @@ void System::resetManagers() {
 
     Schedule.clear();
     Audio.stopAll();
-    ShaderManager::instance().reloadShaders();
+    ShaderMgr::reloadShaders();
 }
 
 bool System::start() {
@@ -153,20 +153,28 @@ bool System::start() {
     S_IS_STARTED = true;
 
     Graphics.init();
-    ShaderManager::instance().loadShaders();
+
+    Expected<void> e = ShaderMgr::loadShaders();
+    if (!e.isExpected()) {
+        print(e.error());
+        Graphics.end();
+        return true;
+    }
     World.setEntityDeathCallback(&emitEntityDeathEvent);
     World.setEntityCreateCallback(&onTopLevelEntityCreated);
     World.setEntityChildCreateCallback(&onChildEntityCreated);
     World.setEntityAdoptCallback(&onEntityAdopted);
-    Schedule.start();
     if (auto err = Audio.init(); err) {
         print(*err);
+        Graphics.end();
         return true;
     }
     if (!Audio.isValid()) {
         print("Error initializing audio manager");
+        Graphics.end();
         return true;
     }
+    Schedule.start();
 
     return false;
 }
@@ -175,7 +183,7 @@ void System::end() {
     Schedule.end();
     Schedule.await();
     Audio.end();
-    ShaderManager::instance().unloadAll();
+    ShaderMgr::unloadShaders();
     World.clear();
     Graphics.end();
     S_IS_STARTED = false;

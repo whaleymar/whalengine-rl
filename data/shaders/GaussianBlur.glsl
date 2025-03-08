@@ -3,7 +3,7 @@ varying vec4 fragColor;
 
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
-uniform vec2 iResolution;
+uniform vec2 _Resolution;
 
 out vec4 finalColor;
 
@@ -35,13 +35,13 @@ void fragment() {
         Z += kernel[j];
     }
 
-    vec2 coord = fragTexCoord * iResolution;
+    vec2 coord = fragTexCoord * _Resolution;
     //read out the texels
     for (int i = -kSize; i <= kSize; ++i)
     {
         for (int j = -kSize; j <= kSize; ++j)
         {
-            vec2 sampleCoord = (coord.xy + vec2(float(i), float(j))) / iResolution;
+            vec2 sampleCoord = (coord.xy + vec2(float(i), float(j))) / _Resolution;
             sampleCoord = clamp(sampleCoord, vec2(0.), vec2(0.999999)); // no texture wrapping
             final_colour += kernel[kSize + j] * kernel[kSize + i] * texture(texture0, sampleCoord).rgb;
         }

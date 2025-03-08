@@ -96,13 +96,14 @@ extern f32 VIRTUAL_SCREEN_RATIO_STRETCH;
 ////////////////////// FILE PATHS ///////////////////////////
 /////////////////////////////////////////////////////////////
 
-inline const char* DATA_DIR = "data";
-inline const char* FONT_PATH = "data/other-font.ttf";
-inline const char* SPRITE_TEXTURE_PATH = "data/sprite/atlas0.png";
-inline const char* PALETTE_TEXTURE_PATH = "data/texture/palette.png";
-inline const char* ATLAS_METADATA_PATH = "data/sprite/atlas.xml";
-inline const char* TILED_PROJECT_FILE = "project.tiled-project";  // path relative to map dir
-inline const char* ICON_IMAGE_PATH = "data/icon.png";
+extern const char* DATA_DIR;
+extern const char* FONT_PATH;
+extern const char* SPRITE_TEXTURE_PATH;
+extern const char* PALETTE_TEXTURE_PATH;
+extern const char* ATLAS_METADATA_PATH;
+extern const char* TILED_PROJECT_FILE;
+extern const char* ICON_IMAGE_PATH;
+extern const char* SHADER_DIR;
 
 /////////////////////////////////////////////////////////////
 ////////////////////// GAME SETTINGS ////////////////////////

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Gfx/Shader.h"
+
 namespace whal {
 
 class Bloom : public IShaderProcess {
@@ -22,8 +23,6 @@ public:
 
 private:
     void _blurPass(rl::RenderTexture src, rl::RenderTexture dst);
-    Shader mThresh;
-    Shader mBlur;
 };
 
 }  // namespace whal

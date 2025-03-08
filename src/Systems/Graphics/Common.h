@@ -11,6 +11,7 @@ namespace whal {
 
 class Renderer;
 class TextureAtlas;
+class Shader;
 struct Sprite;
 
 namespace gfx {
@@ -48,7 +49,7 @@ struct EntityRenderInfo {
     const ecs::IRender* piRender;
     DrawMetaData colorBuf = {};
     s32 internal;
-    rl::Shader shader;
+    Shader* shader;
 };
 
 struct EntityPreRenderInfo {
@@ -65,7 +66,7 @@ struct EntityPreRenderInfo {
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     s32 internal = 0;
-    rl::Shader shader = rl::Shader{.id = 0xffffffff, .locs = nullptr};  // -1 maps to the default sprite shader
+    Shader* shader;
 };
 
 class RenderQueue {
