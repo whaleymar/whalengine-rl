@@ -1,9 +1,11 @@
 #include "TiledParse.h"
 
 #include "Components/Map.h"
+#include "Map/ComponentFactory.h"
 #include "Map/Tiled.h"
 #include "Physics/Shapes.h"
 #include "Util/DebugUtil.h"
+#include "Util/MathUtil.h"
 #include "Util/Vector.h"
 #include "json.hpp"
 #include "rfl/enums.hpp"
@@ -99,12 +101,23 @@ Shape getDefaultShape(const LoadContext& ctx) {
     return AABB(ctx.self.get<Transform>(), ctx.entityData.size / 2, Vector2i());
 }
 
+Shape getDefaultShapeTile(const LoadContext& ctx) {
+    const Transform& trans = ctx.self.get<Transform>();
+    Vector2i halflen = ctx.entityData.size / 2;
+
+    // tiles have discrete rotations of 0/90/180/270
+    if (math::isBetween(trans.rotation, 89.0f, 91.0f) || math::isBetween(trans.rotation, 269.0f, 271.0f)) {
+        halflen = Vector2i(halflen.y, halflen.x);
+    }
+    return AABB(ctx.parent.get<Transform>(), halflen, (trans._localPosition * trans.scale).as<s32>());
+}
+
 Shape readShapeOrDefault(const LoadContext& ctx, std::string_view key, Vector2i* dstOffset) {
     Shape shape;
     if (tryReadShape(ctx, key, &shape, dstOffset)) {
         return shape;
     }
-    return getDefaultShape(ctx);
+    return ctx.parent.has<TileTag>() ? getDefaultShapeTile(ctx) : getDefaultShape(ctx);
 }
 
 template <>

@@ -3,6 +3,7 @@
 
 #include "Components/Collider.h"
 #include "ECS.h"
+#include "Systems/Graphics/TileRenderSystem.h"
 #include "json.hpp"
 
 #include "Settings.h"
@@ -133,11 +134,19 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
             ecs::Entity e = layerEntity.createChild(false);
+            e.add<TileTag>();
 
             // level transform inherited from parent
+            // get the tile's rotation
+            std::pair<f32, Facing> orientation = getOrientation(tile);
             // if the layer has a z offset I'll remove the floatHeight and restore the old Y coordinate, because colliders ignore floatHeight (and for
             // non-visual components it really shouldn't matter)
-            e.get<Transform>().translate(Vector2f(x, -y + layer.zOffset) * FPIXELS_PER_TILE, e);
+            // e.get<Transform>().translate(Vector2f(x, -y + layer.zOffset) * FPIXELS_PER_TILE, e);
+            e.set<Transform>(TransformBuilder(e.get<Transform>())
+                                 .translate(Vector2f(x, -y + layer.zOffset) * FPIXELS_PER_TILE)
+                                 .rotation(orientation.first)
+                                 .facing(orientation.second)
+                                 .build());
             const Vector2i mapPosition = Vector2i(x, y) * PIXELS_PER_TILE;
             const EntityMapData mapData = {
                 .position = mapPosition,
@@ -415,7 +424,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         // add transform
         entity.set(TransformBuilder(entity)
                        .translate(getMapTranslation(entityMapData.position, entityMapData.size))
-                       .rotation(rotation)
+                       .rotate(rotation)
                        .depth(layerDepth)
                        .build());
 

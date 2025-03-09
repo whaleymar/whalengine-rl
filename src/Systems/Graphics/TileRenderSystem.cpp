@@ -19,7 +19,6 @@
 
 namespace whal {
 
-static std::pair<f32, Facing> getOrientation(TileInfo tile);
 static void buildYsortList(ecs::Entity e, const TileMapLayer& tml);
 static std::unordered_map<ecs::Entity, std::vector<Vector2i>, ecs::EntityHash> S_YSORT_COORD_LUT;
 static std::unordered_map<ecs::Entity, std::vector<TileInstance>, ecs::EntityHash> S_TILE_BATCH;  // for non-ysorted layers
@@ -169,7 +168,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     // caching these values once. Thousands of calls to shared_ptr_access really add up
     const s32 widthTiles = layer.tilemap->widthTiles;
     const s32 heightTiles = layer.tilemap->heightTiles;
-    const stl::Map<s32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
+    const stl::Map<u32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
 
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
@@ -194,9 +193,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const Vector2i coord = S_YSORT_COORD_LUT[eCtx.entity][ySortIx];
         const s32 ix = widthTiles * coord.y + coord.x;
         rl::rlSetTexture(ctx.atlas.getTexture().id);
-        auto tile = getTile(layer.ids[ix]);
 
-        const TileRenderInfo& renderInfo = spriteCache.get(tile.gid);
+        const TileRenderInfo& renderInfo = spriteCache.get(layer.ids[ix]);
         const auto src = rl::Vector2{
             renderInfo.sprite.atlasPosition.x,
             renderInfo.sprite.atlasPosition.y,
@@ -235,7 +233,6 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         // group identical tiles so we can cache the complicated stuff
         rl::rlSetTexture(ctx.atlas.getTexture().id);
         u32 lastMask = -1;
-        TileInfo tInfo;
         const TileRenderInfo* renderInfo;
         rl::Vector2 src;
         rl::Vector3 metaFlags;
@@ -251,10 +248,9 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             if (tile.tileMask != lastMask) {
                 lastMask = tile.tileMask;
                 skipUntilNext = false;
-                tInfo = getTile(tile.tileMask);
 
                 // using a dense map here (a vector of pairs) because it's much faster than std::unordered_map
-                renderInfo = &spriteCache.get(tInfo.gid);
+                renderInfo = &spriteCache.get(tile.tileMask);
                 if (ctx.isOccludersOnly && !renderInfo->isOccluder) {
                     skipUntilNext = true;
                     continue;
@@ -341,10 +337,10 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
 
             mDrawQueue.emplace_back(tileMask, x, y);
 
-            if (!layer.tilemap->spriteCache.contains(tile.gid)) {
+            if (!layer.tilemap->spriteCache.contains(tileMask)) {
                 const auto sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
                 const auto orient = getOrientation(tile);
-                layer.tilemap->spriteCache.insert({tile.gid, TileRenderInfo{
+                layer.tilemap->spriteCache.insert({tileMask, TileRenderInfo{
                                                                  .sprite = sprite,
                                                                  .orient = orient,
                                                                  .isOccluder = layer.collisionMask[ix],
@@ -412,7 +408,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
     const Transform& parentTrans = e.get<Transform>();
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
-    const stl::Map<s32, TileRenderInfo>& spriteCache = tml.tilemap->spriteCache;
+    const stl::Map<u32, TileRenderInfo>& spriteCache = tml.tilemap->spriteCache;
 
     // caching these values once. Thousands of calls to shared_ptr_access really add up
     const s32 widthTiles = tml.tilemap->widthTiles;
@@ -437,7 +433,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 .ysortPosition = bb.bottom() - static_cast<s32>(parentTrans.floatHeight * FLOAT_HEIGHT_MULT),
                 .entity = e,
                 .isOccluder =
-                    spriteCache.get(tile.gid).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
+                    spriteCache.get(tml.ids[ix]).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
                 .internal = lut_ix,
                 .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,
             };

@@ -30,6 +30,7 @@ enum Layer : u16 {
     Npc = 1 << 5,
     Attack = 1 << 6,
     BlocksVision = 1 << 7,
+    BlocksMovement = 1 << 8,
 };
 
 Layer fromString(const char* layer);

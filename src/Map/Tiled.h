@@ -93,7 +93,7 @@ struct TileMap {
     s32 tileSize;
 
     std::vector<TileSet> tilesets;
-    stl::Map<s32, TileRenderInfo> spriteCache;  // key is GID
+    stl::Map<u32, TileRenderInfo> spriteCache;  // key is GID
 };
 
 // Supported data types in Tiled
