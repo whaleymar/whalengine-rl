@@ -19,6 +19,7 @@ Layer fromString(const char* layer) {
     RETURN_IF(layer, Enemy);
     RETURN_IF(layer, Npc);
     RETURN_IF(layer, BlocksVision);
+    RETURN_IF(layer, BlocksMovement);
 
     return None;
 }
@@ -32,11 +33,12 @@ static const std::pair<Layer, u16> LAYER_INTERACT[] = {
     {Layer::ActorPhysics, DefaultPhysics},
     {Layer::DefaultPhysics, DefaultPhysics | PhysicsNoActor | Attack | BlocksVision},
     {Layer::PhysicsNoActor, PhysicsNoActor | Attack},
-    {Layer::Player, Attack},
-    {Layer::Enemy, Enemy | Attack},
-    {Layer::Npc, None},
+    {Layer::Player, Attack | BlocksMovement},
+    {Layer::Enemy, Enemy | Attack | BlocksMovement},
+    {Layer::Npc, BlocksMovement},
     {Layer::Attack, Attack},
     {Layer::BlocksVision, None},
+    {Layer::BlocksMovement, None},
 };
 
 LayerMatrix::LayerMatrix() {

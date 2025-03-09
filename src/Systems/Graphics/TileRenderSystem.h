@@ -8,6 +8,8 @@ namespace whal {
 struct Transform;
 struct TileMapLayer;
 struct Invisible;
+enum class Facing : u8;
+struct TileInfo;
 
 struct TileInstance {
     u32 tileMask;
@@ -25,5 +27,7 @@ public:
 private:
     mutable std::vector<TileInstance> mDrawQueue;
 };
+
+std::pair<f32, Facing> getOrientation(TileInfo tile);
 
 }  // namespace whal

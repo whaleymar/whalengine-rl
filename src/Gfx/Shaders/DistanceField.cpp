@@ -17,8 +17,8 @@ static int N_PASSES = 10;
 DistanceField::DistanceField() {}
 
 void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
-    // rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16;
-    rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+    rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16;
+    // rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8; // too noisy
     auto tmpOutput1 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);
     auto tmpOutput2 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);
     Shader& shUvMask = ShaderMgr::get("UVMask");

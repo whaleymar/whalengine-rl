@@ -105,6 +105,9 @@ struct Vector2 {
 
     // from https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
     inline Vector2<T> rotate(f32 angleDegrees, Vector2<T> about) const {
+        if (math::isNearZero(angleDegrees, 0.1f)) {
+            return *this;
+        }
         const f32 radians = -math::DEG_TO_RAD * angleDegrees;
         const f32 sin = math::sin(radians);
         const f32 cos = math::cos(radians);
