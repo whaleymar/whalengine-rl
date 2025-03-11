@@ -4,17 +4,17 @@ varying vec4 fragColor;
 uniform sampler2D texture0;
 uniform sampler2D _Palette;
 
+// let CPC = Colors Per Channel
+// size is CPC*CPC X CPC (fake 3D texture)
+// so a 16 CPC Lookup table would be 256x16 pixels
+uniform vec2 _PaletteTexSize;
+
 out vec4 finalColor;
 
-// hard-coded to a 16x16x16 color palette
-#define MAXCOLOR 15.0
-#define COLORS 16.0
-#define WIDTH 256.0
-#define HEIGHT 16.0
-
-// REGULAR POSTERIZATION SHADER
+// REGULAR QUNTIZATION SHADER
 float gamma = 0.6;
 vec4 quantize(vec4 color) {
+    float COLORS = _PaletteTexSize.y;
     vec3 texelColor = color.rgb;
     texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
     texelColor = texelColor * COLORS;
@@ -27,13 +27,15 @@ vec4 quantize(vec4 color) {
 
 // CUSTOM PALETTE POSTERIZATION
 vec4 applyPalette(vec4 px) {
+    float COLORS = _PaletteTexSize.y;
+    float MAXCOLOR = COLORS - 1.0;
     float cell = px.b * MAXCOLOR;
 
     float cell_l = floor(cell);
     float cell_h = ceil(cell);
 
-    float half_px_x = 0.5 / WIDTH;
-    float half_px_y = 0.5 / HEIGHT;
+    float half_px_x = 0.5 / _PaletteTexSize.x;
+    float half_px_y = 0.5 / _PaletteTexSize.y;
     float r_offset = half_px_x + px.r / COLORS * (MAXCOLOR / COLORS);
     float g_offset = half_px_y + px.g * (MAXCOLOR / COLORS);
 

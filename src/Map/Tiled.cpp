@@ -169,11 +169,16 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 loadObjectLayer(tiledata["objectgroup"], e, nullptr);
             }
 
-            // For simplicity, tiles with collision also block light, vision, and pathing
-            // This doesn't work if the collision is added with the collision editor.
+            // .has<> won't work for anything created in the collision editor
+            // .getInChildren<> can be used instead
+            // HACK created in colliion editor -> only blocks nav grid
+            //      top level tile property -> affects occlusion mask and nav grid
+            // I definitely want something more robust in the future
             if (e.has<Collider>()) {
-                layer.collisionMask[ix] = true;
+                layer.occlusionMask[ix] = true;
                 // e.get<Collider>().addLayer(CollisionLayer::BlocksVision); // not using this anymore
+                level.navGrid[x][y] = false;
+            } else if (e.getInChildren<Collider>(true)) {
                 level.navGrid[x][y] = false;
             }
         }
@@ -213,7 +218,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                 .sizeTiles = sizeTiles,
                 .ids = layer["data"].get<std::vector<s32>>(),
                 .tilemap = map,
-                .collisionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
+                .occlusionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
 
             // this loads chunk size and other metadata:
@@ -433,7 +438,8 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         if (pPrefab) {
             tryRead(*pPrefab, "name", &name);
         }
-        if (tryRead(object, "name", &name) || name.size() > 0) {
+        tryRead(object, "name", &name);
+        if (name.size() > 0) {
             entity.add(Name(name.c_str()));
             print("created entity: ", name);
         }

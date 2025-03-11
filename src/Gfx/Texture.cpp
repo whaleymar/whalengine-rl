@@ -264,13 +264,20 @@ void TextureManager::_drawTargetGui() {
 }
 
 void TextureManager::_setTargetTexture() {
-    // do nothing if invalid or default selection
-    if (!isRenderTextureUsed(selection) || static_cast<TextureID>(selection) == TextureID::Main) {
+    // do nothing if main is selected
+    if (static_cast<TextureID>(selection) == TextureID::Main) {
         return;
+    }
+    rl::RenderTexture rt;
+    if (!isRenderTextureUsed(selection)) {
+        // invalid selection. Let's use this as an alias for gameobjects-only
+        rt = Graphics.getStagingTex().tex;
+    } else {
+        // get the selection
+        rt = getRenderTexture(static_cast<TextureID>(selection));
     }
 
     // ok, now set TextureID::Main to whatever we selected
-    rl::RenderTexture rt = getRenderTexture(static_cast<TextureID>(selection));
     rl::RenderTexture mainTex = getRenderTexture(TextureID::Main);
 
     if (S_RENDER_TEX_INFO[selection].format == rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16) {
