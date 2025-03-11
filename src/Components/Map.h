@@ -12,7 +12,7 @@ struct TileMapLayer {
     Vector2i sizeTiles;
     std::vector<s32> ids;
     std::shared_ptr<TileMap> tilemap;
-    std::vector<bool> collisionMask;
+    std::vector<bool> occlusionMask;
     std::string overlayTex = "";
     s32 chunkSize = 16;
     s32 zOffset = 0;

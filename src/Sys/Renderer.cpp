@@ -314,27 +314,32 @@ void Renderer::buildDistanceField() const {
     mDistanceField->process(occlSrc, dfDst);
 }
 
-void Renderer::drawEntities(gfx::RenderContext renderContext) {
-    // Drawing GAME OBJECTS
-    rl::BeginTextureMode(mStagingTexture.tex);
+static void drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue) {
+    rl::BeginTextureMode(target.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     const Shader* defaultShader = &ShaderMgr::get("DefaultSprite");
     const Shader* lastShader = nullptr;
     rl::BeginShaderMode(defaultShader->get());
-    for (const auto& renderInfo : mRenderQueue.mNormalQueue) {
+    for (const auto& renderInfo : queue) {
         if (renderInfo.shader != lastShader) {
             if (renderInfo.shader == nullptr) {
                 rl::BeginShaderMode(defaultShader->get());
             } else {
                 rl::BeginShaderMode(renderInfo.shader->get());
             }
-            lastShader = renderInfo.shader;
+            lastShader = renderInfo.shader == defaultShader ? nullptr : renderInfo.shader;
         }
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
+    rl::EndShaderMode();
     rl::EndMode2D();
     rl::EndTextureMode();
+}
+
+void Renderer::drawEntities(gfx::RenderContext renderContext) {
+    // Drawing GAME OBJECTS
+    drawRenderQueue(mStagingTexture, renderContext, mRenderQueue.mNormalQueue);
 
     // adjust the camera and virtual ratio to work with a game-resolution camera
     f32 prevVirtualRatio = VIRTUAL_SCREEN_RATIO;
@@ -355,23 +360,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
         // gameRenderContext.cameraPosition = giViewBox.getPosition().as<f32>();
         gameRenderContext.cameraViewHalf = giViewBox.getHalf();
 
-        rl::BeginTextureMode(mGIOccluderTexture.tex);
-        rl::ClearBackground(Colors::ClearRL);
-        rl::BeginMode2D(gameRenderContext.camera);
-        rl::BeginShaderMode(defaultShader->get());
-        for (const auto& renderInfo : queue) {
-            if (renderInfo.shader != lastShader) {
-                if (renderInfo.shader == nullptr) {
-                    rl::BeginShaderMode(defaultShader->get());
-                } else {
-                    rl::BeginShaderMode(renderInfo.shader->get());
-                }
-                lastShader = renderInfo.shader == defaultShader ? nullptr : renderInfo.shader;
-            }
-            renderInfo.piRender->draw(renderInfo, gameRenderContext);
-        }
-        rl::EndMode2D();
-        rl::EndTextureMode();
+        drawRenderQueue(mGIOccluderTexture, gameRenderContext, queue);
     };
     renderOccluders(8, mRenderQueue.mOccluderQueueCamera);
 

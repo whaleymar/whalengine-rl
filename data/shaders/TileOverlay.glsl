@@ -20,7 +20,6 @@ uniform sampler2D _Overlay;
 
 // ratio should be (1/virtual_screen_ratio) / (texture_size)
 uniform vec2 _Scale;
-uniform float _Time;
 
 #ifdef PLATFORM_WEB
 float extractBit(int value, int bitPos) {

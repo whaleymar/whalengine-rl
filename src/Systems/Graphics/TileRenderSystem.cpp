@@ -172,16 +172,12 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
 
     // this shader could be slightly faster & more ergonomic if I make it a Shader class
     if (layer.overlayTex.size() > 0) {
-        // note: overlays will be slow for Y sorted layers
-        auto overlayLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Overlay");
+        // note: overlays will be VERY slow for Y sorted layers
         const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
-        rl::SetShaderValueTexture(eCtx.shader->get(), overlayLoc, overlay);
-        auto scaleLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Scale");
-        rl::Vector2 scale = (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL();
-        rl::SetShaderValue(eCtx.shader->get(), scaleLoc, &scale, rl::SHADER_UNIFORM_VEC2);
-        auto timeLoc = rl::GetShaderLocation(eCtx.shader->get(), "_Time");
-        f32 time = Time.getElapsed();
-        rl::SetShaderValue(eCtx.shader->get(), timeLoc, &time, rl::SHADER_UNIFORM_FLOAT);
+        eCtx.shader->setTexture("_Overlay", overlay);
+        eCtx.shader->setVector2(
+            "_Scale", (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL());
+        Graphics.setUniforms(eCtx.shader->get());
     }
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
@@ -343,7 +339,7 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
                 layer.tilemap->spriteCache.insert({tileMask, TileRenderInfo{
                                                                  .sprite = sprite,
                                                                  .orient = orient,
-                                                                 .isOccluder = layer.collisionMask[ix],
+                                                                 .isOccluder = layer.occlusionMask[ix],
                                                              }});
             }
         }
