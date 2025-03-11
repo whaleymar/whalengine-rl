@@ -10,7 +10,17 @@
 
 namespace whal {
 
+void CursorManager::set(const char* spritePath) const {
+    auto eSprite = Sprite::fromPath(spritePath);
+    if (!eSprite.isExpected()) {
+        print("Couldn't find cursor path:", spritePath);
+    } else {
+        set(eSprite.value());
+    }
+}
+
 void CursorManager::set(Sprite sprite) const {
+    sprite.color.scale(1.5);
     const bool isCustomCursorActive = !MouseCursorSystem::getEntities().empty();
     if (!isCustomCursorActive) {
         auto entity = World.entity();
