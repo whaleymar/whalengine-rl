@@ -11,6 +11,7 @@ public:
 
     CursorManager() = default;
     void set(Sprite sprite) const;
+    void set(const char* spritePath) const;
     void setDefault() const;
 
 private:
