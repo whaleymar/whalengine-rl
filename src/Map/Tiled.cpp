@@ -12,6 +12,7 @@
 #include "Components/Map.h"
 #include "Components/Name.h"
 #include "Components/Relationships.h"
+#include "Components/Tags.h"
 #include "Components/Transform.h"
 
 #include "Gfx/Depth.h"

@@ -225,11 +225,13 @@ AABB getGIViewBox(Vector2i cameraPosition, s32 sector) {
     Vector2i giSectorSizeHalf = gfx::getGISectorSize(sector).as<s32>() / 2;
     Vector2i giSectorCenter = giSectorTopLeft + giSectorSizeHalf * Vector2i(1, -1);
     Vector2i giSectorSize = giSectorSizeHalf + Vector2i(PIXELS_PER_TILE, PIXELS_PER_TILE);
+#ifndef NDEBUG
     if (EDITOR_FRAME_DO_NEXT) {
         print("GI sector", sector, "\n\tsize:", gfx::getGISectorSize(sector), "\n\ttop left:", giSectorTopLeft, "\n\tcenter:", giSectorCenter,
               "\n\thalf:", giSectorSize);
         print("");
     }
+#endif
     return AABB(giSectorCenter, giSectorSize);
 }
 
