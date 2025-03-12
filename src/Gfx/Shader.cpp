@@ -154,7 +154,7 @@ void Shader::setVector4(const char* name, rl::Vector4 value) {
 }
 
 s32 Shader::nameToId(const char* name) const {
-    for (auto [key, handle] : mNameToId) {
+    for (const auto& [key, handle] : mNameToId) {
         if (isEqualString(key.c_str(), name)) {
             return handle;
         }

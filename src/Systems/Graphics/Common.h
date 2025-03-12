@@ -48,7 +48,7 @@ struct EntityRenderInfo {
     ecs::Entity entity;
     const ecs::IRender* piRender;
     DrawMetaData colorBuf = {};
-    s32 internal;
+    void* internal;
     Shader* shader;
 };
 
@@ -65,7 +65,7 @@ struct EntityPreRenderInfo {
     s32 ysortPosition;
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
-    s32 internal = 0;
+    void* internal;
     Shader* shader;
 };
 
@@ -84,6 +84,7 @@ public:
     void setGIViewBox(const AABB& viewBox) { mGlobalIlluminationViewBox = viewBox; }
     void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
     void clear();
+    const AABB& getCameraViewBox() const { return mCameraViewBox; }
 
 private:
     std::vector<EntityRenderInfo> mNormalQueue;

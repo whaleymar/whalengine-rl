@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "Components/Collider.h"
+#include "Components/Tags.h"
 #include "ECS.h"
 #include "Systems/Graphics/TileRenderSystem.h"
 #include "json.hpp"

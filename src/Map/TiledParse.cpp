@@ -1,6 +1,7 @@
 #include "TiledParse.h"
 
 #include "Components/Map.h"
+#include "Components/Tags.h"
 #include "Map/ComponentFactory.h"
 #include "Map/Tiled.h"
 #include "Physics/Shapes.h"
