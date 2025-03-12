@@ -19,10 +19,15 @@
 
 namespace whal {
 
+struct YsortedTileInfo {
+    gfx::EntityPreRenderInfo renderInfo;
+    const TileRenderInfo* pTileRenderInfo;
+    Vector2i coord;
+};
+
 static void buildYsortList(ecs::Entity e, const TileMapLayer& tml);
-static std::unordered_map<ecs::Entity, std::vector<Vector2i>, ecs::EntityHash> S_YSORT_COORD_LUT;
-static std::unordered_map<ecs::Entity, std::vector<TileInstance>, ecs::EntityHash> S_TILE_BATCH;  // for non-ysorted layers
-static std::unordered_map<ecs::Entity, std::vector<gfx::EntityPreRenderInfo>, ecs::EntityHash> S_YSORT_RENDERINFO_LUT;
+static std::unordered_map<ecs::Entity, std::vector<TileInstance>, ecs::EntityHash> S_TILES_NORMAL;
+static std::unordered_map<ecs::Entity, std::vector<YsortedTileInfo>, ecs::EntityHash> S_TILES_YSORTED;
 
 // NOTE: assumptions made when drawing tiles:
 /*
@@ -183,20 +188,18 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
     Vector2f layerPosition = eCtx.transform->position + Vector2f(0, eCtx.transform->floatHeight * FLOAT_HEIGHT_MULT);
 
-    if (layer.isYSorted) {
+    // if internal is nonzero, we have a ysorted tile
+    if (eCtx.internal) {
         // just drawing one tile
-        const s32 ySortIx = eCtx.internal;
-        const Vector2i coord = S_YSORT_COORD_LUT[eCtx.entity][ySortIx];
-        const s32 ix = widthTiles * coord.y + coord.x;
         rl::rlSetTexture(ctx.atlas.getTexture().id);
-
-        const TileRenderInfo& renderInfo = spriteCache.get(layer.ids[ix]);
+        const YsortedTileInfo* tile = static_cast<YsortedTileInfo*>(eCtx.internal);
+        const TileRenderInfo& renderInfo = *tile->pTileRenderInfo;
         const auto src = rl::Vector2{
             renderInfo.sprite.atlasPosition.x,
             renderInfo.sprite.atlasPosition.y,
         };
 
-        const Vector2f worldPosition = Vector2f(coord.x * PIXELS_PER_TILE, -coord.y * PIXELS_PER_TILE) + layerPosition;
+        const Vector2f worldPosition = Vector2f(tile->coord.x * PIXELS_PER_TILE, -tile->coord.y * PIXELS_PER_TILE) + layerPosition;
 
         const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
@@ -232,7 +235,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const TileRenderInfo* renderInfo;
         rl::Vector2 src;
         rl::Vector3 metaFlags;
-        std::vector<TileInstance>& tiles = S_TILE_BATCH[layerEntity];
+        std::vector<TileInstance>& tiles = S_TILES_NORMAL[layerEntity];
         const u64 nTiles = tiles.size();
         const f32 z = rl::rlGetCurrentDepth();
         bool skipUntilNext = false;
@@ -287,15 +290,16 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 
         if (tml.isYSorted) {
             buildYsortList(entity, tml);
-            std::vector<gfx::EntityPreRenderInfo>& sortedTiles = S_YSORT_RENDERINFO_LUT[entity];
+            std::vector<YsortedTileInfo>& sortedTiles = S_TILES_YSORTED[entity];
             const u64 nTiles = sortedTiles.size();
             // RESEARCH could be faster if I do what non-ysorted layers do during draw & get the tile bounds that are on screen and pass those to the
             // renderqueue directly. Would save hundreds of AABB lookups. Would need to make sure addPrecalculated adds to the occluder queue too.
             for (u64 i = 0; i < nTiles; ++i) {
                 // override cached transform
-                gfx::EntityPreRenderInfo& renderInfo = sortedTiles[i];
-                renderInfo.transform = &trans;
-                queue.add(renderInfo);
+                YsortedTileInfo& tile = sortedTiles[i];
+                tile.renderInfo.transform = &trans;
+                tile.renderInfo.internal = &tile;
+                queue.add(tile.renderInfo);
             }
         } else {
             const Vector2i half = tml.sizeTiles * Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
@@ -348,14 +352,13 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
     // have to cache the sort because it's very slow
     std::sort(mDrawQueue.begin(), mDrawQueue.end(),
               [](const TileInstance& tile1, const TileInstance& tile2) -> bool { return tile1.tileMask < tile2.tileMask; });
-    S_TILE_BATCH[e] = mDrawQueue;
+    S_TILES_NORMAL[e] = mDrawQueue;
 }
 
 void TileRenderSystem::onRemove(ecs::Entity e) {
     // erase from cache
-    S_YSORT_RENDERINFO_LUT.erase(e);
-    S_YSORT_COORD_LUT.erase(e);
-    S_TILE_BATCH.erase(e);
+    S_TILES_YSORTED.erase(e);
+    S_TILES_NORMAL.erase(e);
 }
 
 std::pair<f32, Facing> getOrientation(TileInfo tile) {
@@ -395,12 +398,11 @@ std::pair<f32, Facing> getOrientation(TileInfo tile) {
 
 void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
     // by assuming tiles don't move in world space, we can cache the result from the first frame this entity was drawn.
-    if (S_YSORT_COORD_LUT.contains(e)) {
+    if (S_TILES_YSORTED.contains(e)) {
         return;
     }
 
-    S_YSORT_COORD_LUT[e] = {};
-    S_YSORT_RENDERINFO_LUT[e] = {};
+    S_TILES_YSORTED[e] = {};
     const Transform& parentTrans = e.get<Transform>();
     const Vector2i halflen(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
     s32 lut_ix = 0;
@@ -418,7 +420,7 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 continue;  // empty tile
             }
 
-            S_YSORT_COORD_LUT[e].push_back(Vector2i(x, y));
+            const TileRenderInfo& tileRenderInfo = spriteCache.get(tml.ids[ix]);
             Vector2f worldPosition =
                 Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position + Vector2f(0, parentTrans.floatHeight * FLOAT_HEIGHT_MULT);
             const AABB bb = AABB(worldPosition.round(), halflen);
@@ -428,12 +430,11 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
                 .transform = &parentTrans,
                 .ysortPosition = bb.bottom() - static_cast<s32>(parentTrans.floatHeight * FLOAT_HEIGHT_MULT),
                 .entity = e,
-                .isOccluder =
-                    spriteCache.get(tml.ids[ix]).isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
-                .internal = lut_ix,
+                .isOccluder = tileRenderInfo.isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
+                .internal = reinterpret_cast<void*>(lut_ix),
                 .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,
             };
-            S_YSORT_RENDERINFO_LUT[e].push_back(ri);
+            S_TILES_YSORTED[e].emplace_back(ri, &tileRenderInfo, Vector2i(x, y));
 
             lut_ix++;
         }
