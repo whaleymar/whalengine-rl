@@ -5,6 +5,7 @@
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
 #include "Gfx/Shaders/Posterize.h"
+#include "Util/ImguiUtil.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -298,13 +299,11 @@ void Renderer::render() {
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
-    if (VIEW_COLLIDERS_MODE) {
-        rl::BeginTextureMode(mainTex);
-        rl::BeginMode2D(renderContext.camera);
-        drawColliders();
-        rl::EndMode2D();
-        rl::EndTextureMode();
-    }
+    rl::BeginTextureMode(mainTex);
+    rl::BeginMode2D(renderContext.camera);
+    DebugRenderMgr::drawDebug();
+    rl::EndMode2D();
+    rl::EndTextureMode();
 #endif
 }
 

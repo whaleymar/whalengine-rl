@@ -10,7 +10,7 @@ public:
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 #ifndef NDEBUG
-    void drawDebug() override;
+    void drawEditor() override;
 #endif
 };
 

@@ -29,8 +29,8 @@ public:
     void onAdd(ecs::Entity entity) override;
     void onRemove(ecs::Entity entity) override;
 
-    void drawWorld();
     void drawDebug() override;
+    void drawEditor() override;
 
     void drawHierarchy(ecs::Entity entity);  // draws the hierarchy of entities that parent/are children of `entity`
 

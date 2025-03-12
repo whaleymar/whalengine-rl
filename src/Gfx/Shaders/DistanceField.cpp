@@ -58,7 +58,7 @@ void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
 }
 
 #ifndef NDEBUG
-void DistanceField::drawDebug() {
+void DistanceField::drawEditor() {
     ImGui::Begin("DistanceField");
     ImGui::SliderInt("N Flood Passes", &N_PASSES, 1, std::ceil(std::log2(960.0f)));
     ImGui::End();

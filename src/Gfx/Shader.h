@@ -69,9 +69,6 @@ public:
     // gfx::applyShaders will do it for you automatically.
     virtual void process(rl::RenderTexture source, rl::RenderTexture destination) = 0;
     virtual ~IShaderProcess() {}
-#ifndef NDEBUG
-    void drawDebug() override {}
-#endif
 };
 
 }  // namespace whal

@@ -9,6 +9,7 @@
 #include "Physics/HitInfo.h"
 #include "Physics/QuadTree/Quadtree.h"
 
+#include "Settings.h"
 #include "Systems/TriggerSystem.h"
 
 #include "Util/CameraUtil.h"
@@ -54,24 +55,26 @@ ColliderSystem::ColliderSystem() {
 }
 
 #ifndef NDEBUG
-void drawColliders() {
-    for (const auto [entityid, entity] : ColliderSystem::getEntities()) {
-        const auto collider = entity.get<Collider>();
-        Color color;
-        if (collider.isFeatherBody()) {
-            color = Colors::Magenta;
-        } else if (collider.isHeavyBody()) {
-            color = Colors::Red;
-        } else if (collider.isRigidBody()) {
-            color = Colors::Pink;
-        } else {
-            color = Colors::Blue;
+void ColliderSystem::drawDebug() {
+    if (VIEW_COLLIDERS_MODE) {
+        for (const auto [entityid, entity] : getEntities()) {
+            const auto collider = entity.get<Collider>();
+            Color color;
+            if (collider.isFeatherBody()) {
+                color = Colors::Magenta;
+            } else if (collider.isHeavyBody()) {
+                color = Colors::Red;
+            } else if (collider.isRigidBody()) {
+                color = Colors::Pink;
+            } else {
+                color = Colors::Blue;
+            }
+            collider.getShape().draw(color);
         }
-        collider.getShape().draw(color);
-    }
 
-    for (const auto& [entityid, entity] : TriggerSystem::getEntities()) {
-        entity.get<Trigger>().shape.draw(Colors::Emerald);
+        for (const auto& [entityid, entity] : TriggerSystem::getEntities()) {
+            entity.get<Trigger>().shape.draw(Colors::Emerald);
+        }
     }
 }
 #endif

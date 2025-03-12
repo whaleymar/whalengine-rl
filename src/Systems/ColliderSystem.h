@@ -5,20 +5,26 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
+#ifndef NDEBUG
+#include "Util/ImguiUtil.h"
+#endif
+
 namespace whal {
 
 class Collider;
 class AABB;
 struct RaycastHit;
 
-#ifndef NDEBUG
-void drawColliders();
-#endif
-
 struct Transform;
 class PhysicsSystem;
 
-class ColliderSystem : public ecs::ISystem<Collider, Transform>, public ecs::IMonitorSystem {
+class ColliderSystem : public ecs::ISystem<Collider, Transform>,
+                       public ecs::IMonitorSystem
+#ifndef NDEBUG
+    ,
+                       public IRenderDebug
+#endif
+{
 public:
     ColliderSystem();
     static void updatePosition(ecs::Entity entity, AABB& colliderShape, Transform nextPosition, Vector2i colliderOffset);
@@ -41,6 +47,10 @@ public:
     void onRemove(ecs::Entity entity) override;
 
     friend PhysicsSystem;
+
+#ifndef NDEBUG
+    void drawDebug() override;
+#endif
 
 private:
     // Syncs colliders with their entity's transform (in case it was altered by another system).

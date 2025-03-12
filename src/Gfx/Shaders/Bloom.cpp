@@ -63,7 +63,7 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
 }
 
 #ifndef NDEBUG
-void Bloom::drawDebug() {
+void Bloom::drawEditor() {
     ImGui::Begin("Bloom");
     ImGui::SliderFloat("Threshold", &threshold, 0.0f, 10.0f);
     ImGui::SliderFloat("Soft Threshold", &softThreshold, 0.0f, 1.0f);

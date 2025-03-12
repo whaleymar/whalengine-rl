@@ -6,18 +6,24 @@
 
 namespace whal {
 
-void ImguiMgr::draw() {
+void DebugRenderMgr::drawEditor() {
+    for (IRenderDebug* pObj : instance().mObjs) {
+        pObj->drawEditor();
+    }
+}
+
+void DebugRenderMgr::drawDebug() {
     for (IRenderDebug* pObj : instance().mObjs) {
         pObj->drawDebug();
     }
 }
 
 IRenderDebug::IRenderDebug() {
-    ImguiMgr::add(this);
+    DebugRenderMgr::add(this);
 }
 
 IRenderDebug::~IRenderDebug() {
-    ImguiMgr::remove(this);
+    DebugRenderMgr::remove(this);
 }
 
 }  // namespace whal

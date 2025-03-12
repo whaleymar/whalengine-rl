@@ -6,16 +6,17 @@
 namespace whal {
 
 class IRenderDebug;
-class ImguiMgr {
+class DebugRenderMgr {
 public:
-    static ImguiMgr& instance() {
-        static ImguiMgr instance_;
+    static DebugRenderMgr& instance() {
+        static DebugRenderMgr instance_;
         return instance_;
     }
 
     static void add(IRenderDebug* obj) { instance().mObjs.insert(obj); }
     static void remove(IRenderDebug* obj) { instance().mObjs.erase(obj); };
-    static void draw();
+    static void drawEditor();
+    static void drawDebug();
 
 private:
     std::unordered_set<IRenderDebug*> mObjs;
@@ -25,7 +26,8 @@ private:
 class IRenderDebug {
 public:
     virtual ~IRenderDebug();
-    virtual void drawDebug() = 0;
+    virtual void drawDebug() {}
+    virtual void drawEditor() {}
 
 protected:
     IRenderDebug();

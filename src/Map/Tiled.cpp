@@ -110,8 +110,6 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
     for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
-        level.navGrid.push_back(std::vector<bool>(layer.tilemap->heightTiles, true));
-
         for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
             const s32 ix = layer.tilemap->widthTiles * y + x;
             u32 tileMask = layer.ids[ix];
@@ -193,6 +191,12 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     map->widthTiles = readInt(*data, "width");
     map->heightTiles = readInt(*data, "height");
     map->tileSize = readInt(*data, "tilewidth");
+
+    // initialize the navigation grid
+    level.navGrid.clear();
+    for (s32 x = 0; x < map->widthTiles; x++) {
+        level.navGrid.push_back(std::vector<bool>(map->heightTiles, true));
+    }
 
     for (const auto& tileset : (*data)["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");

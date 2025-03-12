@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Gfx/Coordinates.h"
 #include "Map/Level.h"
+#include "Settings.h"
 
 // RESEARCH
 // Extensions I can think of:
@@ -26,7 +27,8 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     static const Vector2i directions[] = {Vector2i::RIGHT, Vector2i::LEFT,  Vector2i::UP,    Vector2i::DOWN,
                                           Vector2i(1, 1),  Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)};
     static const f32 costs[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.41f, 1.41f, 1.41f, 1.41f};
-    constexpr size_t nDirections = 8;
+    // constexpr size_t nDirections = 8;
+    constexpr size_t nDirections = 4;  // TEMP
 
     // convert world positions into level tile positions
     // level origin is top left, so negate Y values
@@ -46,6 +48,7 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
 
     Vector2i closest = start;
     f32 closestDistance = distance(start, target);
+    const Vector2i lvlSize = level.size.as<s32>() / PIXELS_PER_TILE;
 
     while (!openSet.empty()) {
         const Vector2i current = openSet.top().second;
@@ -64,7 +67,7 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         // Explore neighbors
         for (size_t i = 0; i < nDirections; i++) {
             const Vector2i neighbor = current + directions[i];
-            if (!isValidTile(neighbor, level)) {
+            if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level)) {
                 continue;
             }
 
@@ -84,9 +87,15 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     path.start = startWorldPosition;
     path.target = targetWorldPosition;
     const Vector2i pathTarget = (gScore.find(target) != gScore.end() ? target : closest);
-    for (Vector2i step = pathTarget; step != start; step = cameFrom[step]) {
-        Vector2i delta = (step - cameFrom[step]) * Vector2i(1, -1);  // re-negative Y movement
+    Vector2i step = pathTarget;
+    while (true) {
+        Vector2i from = cameFrom[step];
+        Vector2i delta = (step - from) * Vector2i(1, -1);  // re-negate Y movement
         path.tiles.push_back(delta);
+        if (step == start) {
+            break;
+        }
+        step = from;
     }
     std::reverse(path.tiles.begin(), path.tiles.end());
     return path;

@@ -194,32 +194,12 @@ void EditorUiSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-void EditorUiSystem::drawWorld() {
-    // needs custom draw func. AABB::draw is designed to work with the Render window not screen.
-    auto drawAABB = [](const AABB& aabb, Color color) {
-        const Vector2f position(aabb.left(), aabb.bottom());
-        Vector2f size = aabb.getHalf().as<f32>() * 2.0f;
-
-        // subtract size.y so we draw from bottom left instead of top left
-        Vector2f dstPosition = {position.x, -position.y - size.y};
-
-        dstPosition *= VIRTUAL_SCREEN_RATIO_STRETCH;
-        size *= VIRTUAL_SCREEN_RATIO_STRETCH;
-
-        DrawRectangleLinesEx(rl::Rectangle(dstPosition.x, dstPosition.y, size.x, size.y), 1.0f, color.asLDR());
-    };
+void EditorUiSystem::drawDebug() {
     for (ecs::Entity entity : mClickedEntities) {
         Transform trans = entity.get<Transform>();
-        // I'm drawing to the window (not to a render texture with the correct resolution), so I have to correct for this:
-        if (WINDOW_POS_OS_X > 0 || WINDOW_POS_OS_Y > 0) {
-            // make sure we're drawing it centered
-            trans.position.x += static_cast<f32>(WINDOW_POS_OS_X) / VIRTUAL_SCREEN_RATIO_STRETCH;
-            trans.position.y -= static_cast<f32>(WINDOW_POS_OS_Y) / VIRTUAL_SCREEN_RATIO_STRETCH;
-            trans.positionPx = trans.position.round();
-        }
 
-        // trans.draw(); // also hard-coded for render window size
-        drawAABB(AABB(trans.apply(Vector2i::ZERO), getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH), Colors::White);
+        trans.draw();  // also hard-coded for render window size
+        AABB(trans.apply(Vector2i::ZERO), getUiBox(entity).getHalf() / VIRTUAL_SCREEN_RATIO_STRETCH).draw(Colors::White);
     }
 }
 
@@ -364,7 +344,7 @@ void EditorUiSystem::drawHierarchy(ecs::Entity entity) {
 }
 
 // needs to be separate, otherwise the graphical stuff in `draw` will be drawn under the imgui ui
-void EditorUiSystem::drawDebug() {
+void EditorUiSystem::drawEditor() {
     ImGui::Begin("Inspector");
     for (ecs::Entity entity : mClickedEntities) {
         ImGui::TextColored(rlImGuiColors::Convert(rl::ORANGE), "%s:", getEntityName(entity).c_str());

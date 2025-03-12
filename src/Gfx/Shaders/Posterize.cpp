@@ -37,7 +37,7 @@ void Posterize::process(rl::RenderTexture src, rl::RenderTexture dst) {
 }
 
 #ifndef NDEBUG
-void Posterize::drawDebug() {
+void Posterize::drawEditor() {
     ImGui::Begin("Posterization");
     ImGui::Checkbox("Active", &S_ENABLED);
     ImGui::End();

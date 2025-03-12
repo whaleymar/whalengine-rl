@@ -44,7 +44,8 @@ Vector2i worldToScreenCoords(Vector2f worldCoords, Vector2f cameraPosition, Scre
 }
 
 Vector2i worldToTileCoords(Vector2i worldCoords) {
-    return ((worldCoords + Vector2i(PIXELS_PER_TILE / 2, -PIXELS_PER_TILE + 1)) / PIXELS_PER_TILE);
+    s32 yOffset = worldCoords.y >= 0 ? PIXELS_PER_TILE / 4 + 1 : -PIXELS_PER_TILE / 2;
+    return ((worldCoords + Vector2i(PIXELS_PER_TILE / 2, yOffset)) / PIXELS_PER_TILE);
 }
 
 Vector2i tileToWorldCoords(Vector2i tileCoords) {
