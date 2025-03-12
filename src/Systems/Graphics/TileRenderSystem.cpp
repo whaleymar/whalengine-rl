@@ -166,24 +166,9 @@ rl::Vector3 GetTileMetaFlags(const Sprite& sprite, u8 depth, bool isUI, f32 invT
 
 void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
     ecs::Entity layerEntity = eCtx.entity;
-    const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
-    const Vector2f tileSize = (Vector2f(PIXELS_PER_TILE, PIXELS_PER_TILE) * VIRTUAL_SCREEN_RATIO * eCtx.transform->scale).absolute();
-    const rl::Vector2 origin = (tileSize * Vector2f(0.5, 0.5)).asRL();
-
-    // caching these values once. Thousands of calls to shared_ptr_access really add up
-    const s32 widthTiles = layer.tilemap->widthTiles;
-    const s32 heightTiles = layer.tilemap->heightTiles;
-    const stl::Map<u32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
-
-    // this shader could be slightly faster & more ergonomic if I make it a Shader class
-    if (layer.overlayTex.size() > 0) {
-        // note: overlays will be VERY slow for Y sorted layers
-        const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
-        eCtx.shader->setTexture("_Overlay", overlay);
-        eCtx.shader->setVector2(
-            "_Scale", (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL());
-        Graphics.setUniforms(eCtx.shader->get());
-    }
+    const f32 tileSizeX = math::abs(FPIXELS_PER_TILE * VIRTUAL_SCREEN_RATIO * eCtx.transform->scale.x);
+    const f32 tileSizeY = math::abs(FPIXELS_PER_TILE * VIRTUAL_SCREEN_RATIO * eCtx.transform->scale.y);
+    const rl::Vector2 origin = rl::Vector2{tileSizeX * 0.5f, tileSizeY * 0.5f};
 
     const Vector2f invTexDims(1.0f / static_cast<f32>(ctx.atlas.getTexture().width), 1.0f / static_cast<f32>(ctx.atlas.getTexture().height));
     Vector2f layerPosition = eCtx.transform->position + Vector2f(0, eCtx.transform->floatHeight * FLOAT_HEIGHT_MULT);
@@ -204,8 +189,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const rl::Rectangle dstRect = rl::Rectangle{
             worldPosition.x * VIRTUAL_SCREEN_RATIO,
             -worldPosition.y * VIRTUAL_SCREEN_RATIO,
-            tileSize.x,
-            tileSize.y,
+            tileSizeX,
+            tileSizeY,
         };
 
         DrawTileHDR(invTexDims.x, invTexDims.y, src, dstRect, origin, renderInfo.orient.first + eCtx.transform->rotation,
@@ -217,9 +202,24 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     } else {
         // drawing all the tiles
 
+        const TileMapLayer& layer = layerEntity.get<TileMapLayer>();
+        if (layer.overlayTex.size() > 0) {
+            // note: overlays not supported for y sorted layers
+            const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
+            eCtx.shader->setTexture("_Overlay", overlay);
+            eCtx.shader->setVector2(
+                "_Scale", (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL());
+            Graphics.setUniforms(eCtx.shader->get());
+        }
+
         // Calculate which tiles are visible to the camera
         const Vector2i viewHalfTiles = Vector2i(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME) / PIXELS_PER_TILE / 2 + 1;
         // const Vector2i viewHalfTiles = ctx.cameraViewHalf / PIXELS_PER_TILE;
+
+        // caching these values once. Thousands of calls to shared_ptr_access really add up
+        const s32 widthTiles = layer.tilemap->widthTiles;
+        const s32 heightTiles = layer.tilemap->heightTiles;
+        const stl::Map<u32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
 
         // these can be outside of the range ((0, widthTiles), (0, heightTiles))
         const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - layerPosition.x) / PIXELS_PER_TILE;
@@ -269,8 +269,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
             rl::Rectangle dst = rl::Rectangle{
                 worldPosition.x * VIRTUAL_SCREEN_RATIO,
                 -worldPosition.y * VIRTUAL_SCREEN_RATIO,
-                tileSize.x,
-                tileSize.y,
+                tileSizeX,
+                tileSizeY,
             };
 
             DrawTileHDR(invTexDims.x, invTexDims.y, src, dst, origin, renderInfo->orient.first + eCtx.transform->rotation,
