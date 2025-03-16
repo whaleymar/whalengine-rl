@@ -8,6 +8,7 @@
 #include "Components/TriggerZone.h"
 #include "Components/Velocity.h"
 
+#include "Settings.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Events/Events.h"
@@ -499,6 +500,7 @@ void Collider::setOffset(Vector2i offset) {
     }
 }
 
+// carrying only happens for sidescroller games
 void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDirection, s32 solidEdge, EdgeGetter edgeFunc,
                              const std::vector<Collider*>& riding, bool isManualMove, bool isPushedBySolid, bool isSkipMomentumUpdate) {
     Vector2i moveVec;
@@ -516,10 +518,12 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
     for (auto entity : ColliderSystem::query(mShape)) {
         Collider* other = &entity.get<Collider>();
         if (other->mPhysicsBody != PhysicsBody::Heavy && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1)) {
-            // push takes priority over carry
-            auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
-            if (it != toCarry.end()) {
-                toCarry.erase(it);
+            if constexpr (WORLD_TYPE == WorldType2D::SideScroller) {
+                // push takes priority over carry
+                auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
+                if (it != toCarry.end()) {
+                    toCarry.erase(it);
+                }
             }
 
             s32 actorEdge = (other->getShape().*edgeFunc)();
@@ -599,39 +603,41 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         }
     }
 
-    // carry all riders that weren't pushed
-    for (auto other : toCarry) {
-        // I might change this for solids moving down faster than gravity RESEARCH
-        if (isXDirection) {
-            other->move(Vector2f(toMoveRounded, 0), nullptr);
-        } else {
-            other->move(Vector2f(0, toMoveRounded), nullptr);
-        }
-
-        // emit carry event
-        HitInfo hitinfo({0, 1}, false, false, true);
-        hitinfo.setOther(other->getEntity());
-        hitinfo.otherMaterial = other->getMaterial();
-        hitinfo.otherBody = other->mPhysicsBody;
-        hitinfo.otherMask = other->getLayerMask();
-        Event.emit<evt::Collision>(mSelf, hitinfo);
-
-        if (other->getEntity().has<Momentum>()) {
-            // set momentum if this movement was part of the physics system
-            if (isManualMove) {
-                if (isXDirection) {
-                    other->getEntity().get<Momentum>().maintainMomentumX();
-
-                } else {
-                    other->getEntity().get<Momentum>().maintainMomentumY();
-                }
-                // other->maintainMomentum(isXDirection);
+    if constexpr (WORLD_TYPE == WorldType2D::SideScroller) {
+        // carry all riders that weren't pushed
+        for (auto other : toCarry) {
+            // I might change this for solids moving down faster than gravity RESEARCH
+            if (isXDirection) {
+                other->move(Vector2f(toMoveRounded, 0), nullptr);
             } else {
-                f32 momentum = toMoveUnrounded / Time.dt();
-                if (isXDirection) {
-                    other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
+                other->move(Vector2f(0, toMoveRounded), nullptr);
+            }
+
+            // emit carry event
+            HitInfo hitinfo({0, 1}, false, false, true);
+            hitinfo.setOther(other->getEntity());
+            hitinfo.otherMaterial = other->getMaterial();
+            hitinfo.otherBody = other->mPhysicsBody;
+            hitinfo.otherMask = other->getLayerMask();
+            Event.emit<evt::Collision>(mSelf, hitinfo);
+
+            if (other->getEntity().has<Momentum>()) {
+                // set momentum if this movement was part of the physics system
+                if (isManualMove) {
+                    if (isXDirection) {
+                        other->getEntity().get<Momentum>().maintainMomentumX();
+
+                    } else {
+                        other->getEntity().get<Momentum>().maintainMomentumY();
+                    }
+                    // other->maintainMomentum(isXDirection);
                 } else {
-                    other->getEntity().get<Momentum>().setMomentumY(other->getEntity(), momentum);
+                    f32 momentum = toMoveUnrounded / Time.dt();
+                    if (isXDirection) {
+                        other->getEntity().get<Momentum>().setMomentumX(other->getEntity(), momentum);
+                    } else {
+                        other->getEntity().get<Momentum>().setMomentumY(other->getEntity(), momentum);
+                    }
                 }
             }
         }

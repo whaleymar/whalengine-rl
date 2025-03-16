@@ -27,14 +27,33 @@ static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32
     return true;
 }
 
+// checks if destination tile is valid, as well as the tiles in each cardinal direction of travel
+static inline bool isValidTileDiagonal(const Vector2i& v1, const ActiveLevel& level, s32 height, Vector2i moveDir) {
+    for (s32 i = 0; i < height; ++i) {
+        const s32 yIx = v1.y - i;
+        if (yIx < 0) {
+            return false;
+        }
+        if (!level.navGrid[v1.x][yIx]) {
+            return false;
+        }
+        if (!level.navGrid[v1.x][yIx - moveDir.y]) {
+            return false;
+        }
+        if (!level.navGrid[v1.x - moveDir.x][yIx]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
     using namespace std;
 
     static const Vector2i directions[] = {Vector2i::RIGHT, Vector2i::LEFT,  Vector2i::UP,    Vector2i::DOWN,
                                           Vector2i(1, 1),  Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)};
     static const f32 costs[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.41f, 1.41f, 1.41f, 1.41f};
-    // constexpr size_t nDirections = 8;
-    constexpr size_t nDirections = 4;  // TEMP
+    constexpr size_t nDirections = 8;
 
     // convert world positions into level tile positions
     // level origin is top left, so negate Y values
@@ -77,8 +96,16 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         // Explore neighbors
         for (size_t i = 0; i < nDirections; i++) {
             const Vector2i neighbor = current + directions[i];
-            if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level, height)) {
-                continue;
+            if (i >= 4) {
+                if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y ||
+                    !isValidTileDiagonal(neighbor, level, height, directions[i])) {
+                    continue;
+                }
+
+            } else {
+                if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level, height)) {
+                    continue;
+                }
             }
 
             const f32 newGScore = gScore[current] + costs[i];
