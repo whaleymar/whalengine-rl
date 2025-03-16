@@ -1,15 +1,12 @@
 #include "Path.h"
+
 #include <algorithm>
 #include <queue>
 #include <unordered_map>
+
 #include "Gfx/Coordinates.h"
 #include "Map/Level.h"
 #include "Settings.h"
-
-// RESEARCH
-// Extensions I can think of:
-// 1. A "size" parameter: findPath assumes your collider is 1x1 tile. If size is bigger should check adjacent tiles to make sure path is valid
-// 2. knowing the total distance of the path could be useful
 
 namespace whal {
 
@@ -19,12 +16,15 @@ static inline f32 distance(const Vector2i& v1, const Vector2i& v2) {
 
 static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32 height) {
     for (s32 i = 0; i < height; ++i) {
-        if (!level.navGrid[v1.x][v1.y + i]) {
+        const s32 yIx = v1.y - i;
+        if (yIx < 0) {
+            return false;
+        }
+        if (!level.navGrid[v1.x][yIx]) {
             return false;
         }
     }
     return true;
-    // return level.navGrid[v1.x][v1.y];
 }
 
 Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
@@ -40,10 +40,14 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     // level origin is top left, so negate Y values
     const Vector2i start = (worldToTileCoords(startWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
     const Vector2i target = (worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
-    // print("converted start & target from ", startWorldPosition, targetWorldPosition, "to", start, target);
 
     const auto comp = [](const pair<f32, Vector2i>& elem1, const pair<f32, Vector2i>& elem2) { return elem1.first > elem2.first; };
     priority_queue<pair<f32, Vector2i>, vector<pair<f32, Vector2i>>, decltype(comp)> openSet(comp);
+
+    // RESEARCH this could be optimized a lot.
+    // rn it makes many dynamic allocations per call
+    // Also hashmaps are suboptimal bc the coords I'm working with are normalized to the level origin, so I could use a grid structure & lookup with
+    // indices
     unordered_map<Vector2i, Vector2i, Vector2iHash> cameFrom;
     unordered_map<Vector2i, f32, Vector2iHash> gScore;
     unordered_map<Vector2i, f32, Vector2iHash> fScore;
@@ -103,7 +107,7 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         }
         step = from;
     }
-    path.tiles.pop_back();
+    path.tiles.pop_back();  // don't need start position
     std::reverse(path.tiles.begin(), path.tiles.end());
     return path;
 }
