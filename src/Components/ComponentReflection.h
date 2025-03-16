@@ -197,6 +197,11 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
     } else if constexpr (std::is_same_v<long long, Dtype>) {
         print("unhandled fundamental type: ", type_of<Dtype>());
 
+    } else if constexpr (std::is_same_v<unsigned long, Dtype>) {
+        if (ImGui::InputScalar(newPrefix.c_str(), ImGuiDataType_U64, thing)) {
+            isChange = true;
+        }
+
     } else if constexpr (std::is_same_v<float, Dtype>) {
         if (ImGui::DragFloat(newPrefix.c_str(), thing, ImGui::GetSlideSpeedLogarithmic(*thing), -FLT_MAX, +FLT_MAX, "%.2f",
                              ImGuiSliderFlags_NoRoundToFormat)) {

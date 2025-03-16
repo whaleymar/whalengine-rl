@@ -17,11 +17,17 @@ static inline f32 distance(const Vector2i& v1, const Vector2i& v2) {
     return (v1.as<f32>() - v2.as<f32>()).len();
 }
 
-static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level) {
-    return level.navGrid[v1.x][v1.y];
+static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32 height) {
+    for (s32 i = 0; i < height; ++i) {
+        if (!level.navGrid[v1.x][v1.y + i]) {
+            return false;
+        }
+    }
+    return true;
+    // return level.navGrid[v1.x][v1.y];
 }
 
-Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level) {
+Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
     using namespace std;
 
     static const Vector2i directions[] = {Vector2i::RIGHT, Vector2i::LEFT,  Vector2i::UP,    Vector2i::DOWN,
@@ -67,7 +73,7 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         // Explore neighbors
         for (size_t i = 0; i < nDirections; i++) {
             const Vector2i neighbor = current + directions[i];
-            if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level)) {
+            if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level, height)) {
                 continue;
             }
 
@@ -97,6 +103,7 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         }
         step = from;
     }
+    path.tiles.pop_back();
     std::reverse(path.tiles.begin(), path.tiles.end());
     return path;
 }
