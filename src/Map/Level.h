@@ -62,6 +62,5 @@ struct Scene {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level);
 void unloadAndRemoveLevel(ActiveLevel& level);
-void unloadLevel(ActiveLevel& level);
 
 }  // namespace whal

@@ -18,8 +18,8 @@
 namespace whal {
 
 ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent) : Level(base) {
-    self = World.entity();
-    self.set(Transform::world(worldOffset.as<f32>()));
+    self = parent.self.createChild();
+    self.set(TransformBuilder(self.get<Transform>()).translate(worldOffset.as<f32>()).build());
     self.add(Name{base.filepath});
     TileMap::load(base.filepath.c_str(), *this);
     parent.loadedLevels.push_back(*this);
@@ -135,7 +135,8 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
     // so the EntityKilled listener doesn't mutate the list we're iterating
     // also copy it so erasing it doesn't invalidate our pointer
 
-    ActiveLevel copy = level;
+    print("unloading level from scene: ", level.filepath);
+    ecs::Entity e = level.self;  // copy entity before `level` is deleted (and pointer is invalidated)
     Scene& scene = System::getGame().getScene();
     for (auto it = scene.loadedLevels.begin(); it != scene.loadedLevels.end(); ++it) {
         auto& lvl = *it;
@@ -144,14 +145,10 @@ void unloadAndRemoveLevel(ActiveLevel& level) {
             break;
         }
     }
-    unloadLevel(copy);
-}
 
-void unloadLevel(ActiveLevel& level) {
     const bool wasPaused = System::isQuietPaused();
     System::setQuietPaused(true);
-    level.self.kill();
-    print("unloaded level:", level.filepath);
+    e.kill();
     System::setQuietPaused(wasPaused);
 }
 

@@ -65,7 +65,7 @@ public:
     EventFlow& addWait(f32 waitSeconds);
 
     void tick(f32 deltaTime);
-    bool isDone() const { return mRoot == nullptr; }
+    bool isDone() const { return mRoot == nullptr || mIsCancelled; }
     u32 getId() const { return mId; }
 
     bool requiresEntity(ecs::Entity entity) {
@@ -82,11 +82,12 @@ private:
     Node* mEnd = nullptr;
     std::vector<ecs::Entity> mRequiredEntities;
     u32 mId;
+    bool mIsCancelled = false;
 };
 
 template <typename... T>
 EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const& func, T... args) {
-    if (!func) {
+    if (!func || mIsCancelled) {
         return *this;
     }
     BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3

@@ -11,9 +11,21 @@ namespace evfl {
 
 static u32 EVFL_ID = 1;  // 0 is invalid ID
 
-EventFlow::EventFlow(u32 id, std::initializer_list<ecs::Entity> requiredEntities) : mRequiredEntities(requiredEntities), mId(id) {}
+EventFlow::EventFlow(u32 id, std::initializer_list<ecs::Entity> requiredEntities) : mRequiredEntities(requiredEntities), mId(id) {
+    for (ecs::Entity e : mRequiredEntities) {
+        if (e.isKilledThisFrame()) {
+            mIsCancelled = true;
+            invalidate();
+            break;
+        }
+    }
+}
 
 EventFlow& EventFlow::addWait(f32 waitSeconds) {
+    if (mIsCancelled) {
+        return *this;
+    }
+
     auto pNode = std::make_unique<Node>(waitSeconds, nullptr, nullptr);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
@@ -28,7 +40,7 @@ EventFlow& EventFlow::addWait(f32 waitSeconds) {
 
 // run root node or wait
 void EventFlow::tick(f32 deltaTime) {
-    if (mRoot == nullptr) {
+    if (mRoot == nullptr || mIsCancelled) {
         return;
     }
     if (mRoot->waitSeconds > 0) {
