@@ -195,7 +195,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     // initialize the navigation grid
     level.navGrid.clear();
     for (s32 x = 0; x < map->widthTiles; x++) {
-        level.navGrid.push_back(std::vector<bool>(map->heightTiles, true));
+        level.navGrid.push_back(std::vector<u8>(map->heightTiles, 1));
     }
 
     for (const auto& tileset : (*data)["tilesets"]) {
@@ -693,6 +693,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
         s32 height = readInt(map, "height");
         Expected<Level::MetaData> eLvlInfo = parseLevelInfo(filename.c_str());
         if (eLvlInfo.isExpected()) {
+            // NOTE: the world file stores map dimensions in PIXELS
             Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo.value()};
             if (lvl.meta.isWorldEntryPoint) {
                 auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());

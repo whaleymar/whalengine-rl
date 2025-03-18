@@ -5,6 +5,7 @@
 #include "Components/Transform.h"
 #include "Components/TriggerZone.h"
 
+#include "Components/Velocity.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/HitInfo.h"
 #include "Physics/QuadTree/Quadtree.h"
@@ -129,7 +130,13 @@ void ColliderSystem::onAdd(ecs::Entity entity) {
     auto& collider = entity.get<Collider>();
     collider.setEntity(entity);
     if (collider.isFeatherBody() || collider.isRigidBody()) {
-        entity.add<Momentum>();
+        // things which can be pushed/carried should implicitly have related components added
+        if (!entity.has<Momentum>()) {
+            entity.add<Momentum>();
+        }
+        if (!entity.has<Velocity>()) {
+            entity.add<Velocity>();
+        }
     }
     QUAD_TREE.add(entity);
 }

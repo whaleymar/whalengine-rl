@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <queue>
-#include <unordered_map>
 
 #include "Gfx/Coordinates.h"
 #include "Map/Level.h"
@@ -10,8 +9,36 @@
 
 namespace whal {
 
+template <typename T>
+class Matrix2D {
+public:
+    Matrix2D(s32 width, s32 height, T zeroVal) : mWidth(width), mHeight(height), mZeroVal(zeroVal) {
+        mData = std::vector<T>(mWidth * mHeight, mZeroVal);
+    }
+
+    T get(s32 x, s32 y) const {
+        assert(x >= 0 && x < mWidth && "X is out of bounds");
+        assert(y >= 0 && y < mHeight && "Y is out of bounds");
+        return mData[mWidth * y + x];
+    }
+    void set(s32 x, s32 y, T val) {
+        assert(x >= 0 && x < mWidth && "X is out of bounds");
+        assert(y >= 0 && y < mHeight && "Y is out of bounds");
+        mData[mWidth * y + x] = val;
+    }
+    bool isEmpty(s32 x, s32 y) const { return get(x, y) == mZeroVal; }
+
+    bool isInBounds(s32 x, s32 y) const { return x >= 0 && x < mWidth && y >= 0 && y < mHeight; }
+
+private:
+    s32 mWidth;
+    s32 mHeight;
+    T mZeroVal;
+    std::vector<T> mData;
+};
+
 static inline f32 distance(const Vector2i& v1, const Vector2i& v2) {
-    return (v1.as<f32>() - v2.as<f32>()).len();
+    return (v1 - v2).as<f32>().len();
 }
 
 static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32 height) {
@@ -55,29 +82,27 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     static const f32 costs[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.41f, 1.41f, 1.41f, 1.41f};
     constexpr size_t nDirections = 8;
 
-    // convert world positions into level tile positions
-    // level origin is top left, so negate Y values
-    const Vector2i start = (worldToTileCoords(startWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
-    const Vector2i target = (worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1);
+    const Vector2i lvlSize = level.size.as<s32>() / PIXELS_PER_TILE;
+
+    // Convert world positions into level tile positions.
+    // Level origin is top left, so negate Y values.
+    // Clamp values to lvl in case of rounding issues.
+    const Vector2i start = ((worldToTileCoords(startWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1))
+                               .clamp({0, 0}, {lvlSize.x - 1, lvlSize.y - 1});
+    const Vector2i target = ((worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1))
+                                .clamp({0, 0}, {lvlSize.x - 1, lvlSize.y - 1});
 
     const auto comp = [](const pair<f32, Vector2i>& elem1, const pair<f32, Vector2i>& elem2) { return elem1.first > elem2.first; };
     priority_queue<pair<f32, Vector2i>, vector<pair<f32, Vector2i>>, decltype(comp)> openSet(comp);
 
-    // RESEARCH this could be optimized a lot.
-    // rn it makes many dynamic allocations per call
-    // Also hashmaps are suboptimal bc the coords I'm working with are normalized to the level origin, so I could use a grid structure & lookup with
-    // indices
-    unordered_map<Vector2i, Vector2i, Vector2iHash> cameFrom;
-    unordered_map<Vector2i, f32, Vector2iHash> gScore;
-    unordered_map<Vector2i, f32, Vector2iHash> fScore;
+    Matrix2D<Vector2i> cameFrom = Matrix2D<Vector2i>(lvlSize.x, lvlSize.y, Vector2i(-1, -1));
+    Matrix2D<f32> gScore = Matrix2D<f32>(lvlSize.x, lvlSize.y, -1.0f);
 
     openSet.emplace(0.0f, start);
-    gScore[start] = 0.0f;
-    fScore[start] = distance(start, target);
+    gScore.set(start.x, start.y, 0.0f);
 
     Vector2i closest = start;
     f32 closestDistance = distance(start, target);
-    const Vector2i lvlSize = level.size.as<s32>() / PIXELS_PER_TILE;
 
     while (!openSet.empty()) {
         const Vector2i current = openSet.top().second;
@@ -108,13 +133,13 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
                 }
             }
 
-            const f32 newGScore = gScore[current] + costs[i];
-            if (gScore.find(neighbor) == gScore.end() || newGScore < gScore[neighbor]) {
+            const f32 newGScore = gScore.get(current.x, current.y) + costs[i];
+            if (gScore.isEmpty(neighbor.x, neighbor.y) || newGScore < gScore.get(neighbor.x, neighbor.y)) {
                 // update scores
-                cameFrom[neighbor] = current;
-                gScore[neighbor] = newGScore;
-                fScore[neighbor] = newGScore + distance(neighbor, target);
-                openSet.emplace(fScore[neighbor], neighbor);
+                cameFrom.set(neighbor.x, neighbor.y, current);
+                gScore.set(neighbor.x, neighbor.y, newGScore);
+                f32 fScore = newGScore + distance(neighbor, target);
+                openSet.emplace(fScore, neighbor);
             }
         }
     }
@@ -123,10 +148,10 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     Path path;
     path.start = startWorldPosition;
     path.target = targetWorldPosition;
-    const Vector2i pathTarget = (gScore.find(target) != gScore.end() ? target : closest);
+    const Vector2i pathTarget = (gScore.isInBounds(target.x, target.y) && !gScore.isEmpty(target.x, target.y) ? target : closest);
     Vector2i step = pathTarget;
     while (true) {
-        Vector2i from = cameFrom[step];
+        Vector2i from = cameFrom.get(step.x, step.y);
         Vector2i delta = (step - from) * Vector2i(1, -1);  // re-negate Y movement
         path.tiles.push_back(delta);
         if (step == start) {

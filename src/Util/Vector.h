@@ -103,6 +103,11 @@ struct Vector2 {
     inline Vector2<s32> round() const { return Vector2<s32>(std::roundf(x), std::roundf(y)); }
     inline Vector2<s32> ceil() const { return Vector2<s32>(std::ceil(x), std::ceil(y)); }
 
+    inline Vector2<T> clamp(T lower, T upper) const { return Vector2<T>(math::clamp(x, lower, upper), math::clamp(y, lower, upper)); }
+    inline Vector2<T> clamp(Vector2<T> lower, Vector2<T> upper) const {
+        return Vector2<T>(math::clamp(x, lower.x, upper.x), math::clamp(y, lower.y, upper.y));
+    }
+
     // from https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
     inline Vector2<T> rotate(f32 angleDegrees, Vector2<T> about) const {
         if (math::isNearZero(angleDegrees, 0.1f)) {

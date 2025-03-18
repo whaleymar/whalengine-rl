@@ -23,7 +23,7 @@ struct Level {
     };
     std::string filepath;  // used for level comparisons
     Vector2f position;     // top left
-    Vector2f size;
+    Vector2f size;         // in pixels
     MetaData meta;
 
     bool operator==(const Level& other) const { return filepath == other.filepath; }
@@ -36,7 +36,7 @@ struct ActiveLevel : public Level {
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
-    std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
+    std::vector<std::vector<u8>> navGrid;  // 1 == no obstacle at tile
 
     ecs::Entity getChild(const std::string& name);
 };
