@@ -122,9 +122,13 @@ private:
     void playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,
                              f32 maxPitchShift, bool isInGroup = true);
 
+    FMOD_DSP* getFilter(Filter filterType);
     void setChannelFilter(Filter filter, FMOD_CHANNEL* channel);
     void setChannelFilter(Filter filter, FMOD_CHANNELGROUP* channelGroup);
     Expected<FMOD_DSP*> createLowPassFilter(f32 cutoff = 500, f32 resonance = 1);
+    void clearDSPs(FMOD_CHANNEL* channel);
+    void clearDSPs(FMOD_CHANNELGROUP* channel);
+
     FMOD_SOUND* mMusic = nullptr;
     FMOD_CHANNELGROUP* mClipChannelGroup = nullptr;
     FMOD_CHANNEL* mClipChannelPool[MAX_CHANNELS];

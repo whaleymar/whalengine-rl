@@ -84,6 +84,9 @@ struct TileSet {
     bool isAdditiveSpriteMask = false;
 };
 
+// TODO i would like to merge this with ActiveLevel.
+// ActiveLevel would need the tilesets and spriteCache variables, and everything holding a shared ptr to
+// TileMap would need to point to ActiveLevel instead.
 struct TileMap {
     // loads tile layers and objects as entities & adds them as children of the level
     static void load(const char* file, ActiveLevel& level);

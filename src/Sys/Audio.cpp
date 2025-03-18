@@ -456,7 +456,7 @@ void AudioPlayer::setFilterClips(Filter filter) {
 // needs to be free'd with dsp->release();
 Expected<FMOD_DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) {
     FMOD_DSP* dsp;
-    auto result = FMOD_System_CreateDSPByType(mSystem, FMOD_DSP_TYPE_LOWPASS, &dsp);
+    FMOD_RESULT result = FMOD_System_CreateDSPByType(mSystem, FMOD_DSP_TYPE_LOWPASS, &dsp);
     if (result != FMOD_OK) {
         auto err = FMOD_ErrorString(result);
         return Error(sprint("Got error creating DSP:", err));
@@ -475,14 +475,17 @@ Expected<FMOD_DSP*> AudioPlayer::createLowPassFilter(f32 cutoff, f32 resonance) 
     return dsp;
 }
 
-void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNEL* channel) {
+FMOD_DSP* AudioPlayer::getFilter(Filter filterType) {
     FMOD_DSP* dsp = nullptr;
-    switch (filter) {
+    // TODO according to https://qa.fmod.com/t/does-a-dsp-object-used-on-multiple-channels-have-to-be-instantiated-that-many-times/14680
+    // if I want to use a DSP on multiple channels I need multiple instances of it. When a channel is finished playing it will auto-remove the DSP
+    // from itself, but it won't free the DSP. So it seems like tracking DSPs is going to be a huge pain.
+    switch (filterType) {
     case Filter::None:
         break;
     case Filter::LowPass:
         if (mLowpassFilter == nullptr) {
-            auto eDSP = createLowPassFilter();
+            Expected<FMOD_DSP*> eDSP = createLowPassFilter();
             if (eDSP.isExpected()) {
                 dsp = eDSP.value();
                 mLowpassFilter = dsp;
@@ -494,42 +497,36 @@ void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNEL* channel) {
         }
     }
 
-    if (dsp != nullptr) {
-        FMOD_Channel_AddDSP(channel, 0, dsp);  // TODO hard coded index
+    return dsp;
+}
+
+void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNEL* channel) {
+    FMOD_DSP* dsp = getFilter(filter);
+    if (dsp == nullptr) {
+        clearDSPs(channel);
     } else {
-        FMOD_Channel_GetDSP(channel, 0, &dsp);
-        if (dsp != nullptr) {
-            FMOD_Channel_RemoveDSP(channel, dsp);
-        }
+        FMOD_Channel_AddDSP(channel, FMOD_CHANNELCONTROL_DSP_TAIL, dsp);
     }
 }
 
 void AudioPlayer::setChannelFilter(Filter filter, FMOD_CHANNELGROUP* channelGroup) {
-    FMOD_DSP* dsp = nullptr;
-    switch (filter) {
-    case Filter::None:
-        break;
-    case Filter::LowPass:
-        if (mLowpassFilter == nullptr) {
-            auto eDSP = createLowPassFilter();
-            if (eDSP.isExpected()) {
-                dsp = eDSP.value();
-                mLowpassFilter = dsp;
-            } else {
-                print("got error creating low pass filter: ", eDSP.error());
-            }
-        } else {
-            dsp = mLowpassFilter;
-        }
-    }
-
-    if (dsp != nullptr) {
-        FMOD_ChannelGroup_AddDSP(channelGroup, 0, dsp);  // TODO hard coded index
+    FMOD_DSP* dsp = getFilter(filter);
+    if (dsp == nullptr) {
+        clearDSPs(channelGroup);
     } else {
-        FMOD_ChannelGroup_GetDSP(channelGroup, 0, &dsp);
-        if (dsp != nullptr) {
-            FMOD_ChannelGroup_RemoveDSP(channelGroup, dsp);
-        }
+        FMOD_ChannelGroup_AddDSP(channelGroup, FMOD_CHANNELCONTROL_DSP_TAIL, dsp);
+    }
+}
+
+void AudioPlayer::clearDSPs(FMOD_CHANNEL* channel) {
+    if (mLowpassFilter != nullptr) {
+        FMOD_Channel_RemoveDSP(channel, mLowpassFilter);
+    }
+}
+
+void AudioPlayer::clearDSPs(FMOD_CHANNELGROUP* channel) {
+    if (mLowpassFilter != nullptr) {
+        FMOD_ChannelGroup_RemoveDSP(channel, mLowpassFilter);
     }
 }
 

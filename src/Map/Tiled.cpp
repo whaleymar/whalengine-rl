@@ -109,9 +109,9 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     const nlohmann::json emptyJson;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
-    for (s32 x = 0; x < layer.tilemap->widthTiles; x++) {
-        for (s32 y = 0; y < layer.tilemap->heightTiles; y++) {
-            const s32 ix = layer.tilemap->widthTiles * y + x;
+    for (s32 x = 0; x < level.sizeTiles.x; x++) {
+        for (s32 y = 0; y < level.sizeTiles.y; y++) {
+            const s32 ix = level.sizeTiles.x * y + x;
             u32 tileMask = layer.ids[ix];
             TileInfo tile = getTile(tileMask);
 
@@ -194,8 +194,8 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 
     // initialize the navigation grid
     level.navGrid.clear();
-    for (s32 x = 0; x < map->widthTiles; x++) {
-        level.navGrid.push_back(std::vector<u8>(map->heightTiles, 1));
+    for (s32 x = 0; x < level.sizeTiles.x; x++) {
+        level.navGrid.push_back(std::vector<u8>(level.sizeTiles.y, 1));
     }
 
     for (const auto& tileset : (*data)["tilesets"]) {
@@ -263,7 +263,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                             .build());
 
         BoxLight boxLight = {
-            .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.meta.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
+            .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
         lightEntity.add(Name{.name = "BoxLight"});
     } else {
@@ -657,13 +657,14 @@ void parseMapProject(const char* mapfile) {
 }
 
 // parses a level's parameters and returns its LevelInfo struct
-static Expected<Level::MetaData> parseLevelInfo(const char* lvlFileName) {
-    const auto data = getMapFile(lvlFileName);
-    for (auto& property : (*data)["properties"]) {
+static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
+    const std::shared_ptr<nlohmann::json> data = getMapFile(lvlFileName);
+    Level::ParsedData lvlInfo;
+    tryRead(*data, "width", "height", &lvlInfo.sizeTiles);
+    for (const auto& property : (*data)["properties"]) {
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
-            Level::MetaData lvlInfo;
             tryRead(mapInfo, "AmbientLight", &lvlInfo.ambientLight);
             tryRead(mapInfo, "isWorldEntryPoint", &lvlInfo.isWorldEntryPoint);
             return lvlInfo;
@@ -691,11 +692,12 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
         s32 y = readInt(map, "y");
         s32 width = readInt(map, "width");
         s32 height = readInt(map, "height");
-        Expected<Level::MetaData> eLvlInfo = parseLevelInfo(filename.c_str());
+        Expected<Level::ParsedData> eLvlInfo = parseLevelInfo(filename.c_str());
         if (eLvlInfo.isExpected()) {
             // NOTE: the world file stores map dimensions in PIXELS
-            Level lvl = {filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo.value()};
-            if (lvl.meta.isWorldEntryPoint) {
+            Level lvl = {
+                filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo->sizeTiles, eLvlInfo->ambientLight, eLvlInfo->isWorldEntryPoint};
+            if (lvl.isWorldEntryPoint) {
                 auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());
                 if (errOpt) {
                     return *errOpt;

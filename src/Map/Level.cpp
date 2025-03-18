@@ -17,12 +17,11 @@
 
 namespace whal {
 
-ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent) : Level(base) {
-    self = parent.self.createChild();
+ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent) : Level(base) {
+    self = parent.createChild();
     self.set(TransformBuilder(self.get<Transform>()).translate(worldOffset.as<f32>()).build());
     self.add(Name{base.filepath});
     TileMap::load(base.filepath.c_str(), *this);
-    parent.loadedLevels.push_back(*this);
 }
 
 ecs::Entity ActiveLevel::getChild(const std::string& name) {
@@ -80,7 +79,7 @@ Expected<ActiveLevel*> Scene::getLoadedLevelAt(Vector2i worldPos) {
 Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     s32 minDistance = 999999;
     Vector2i closestPosition;
-    for (Level lvl : allLevels) {
+    for (const Level& lvl : allLevels) {
         const AABB lvlBox((lvl.position + lvl.size * Vector2f(0.5, -0.5)).as<s32>(), (lvl.size * 0.5).as<s32>());
 
         const auto delta = worldPos - lvlBox.getPosition();
@@ -124,7 +123,8 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(const std::string& levelPath) {
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffset(level.position.x, level.position.y);
-    auto lvl = ActiveLevel(level, worldOffset, System::getGame().getScene());
+    Scene& scene = System::getGame().getScene();
+    scene.loadedLevels.emplace_back(ActiveLevel(level, worldOffset, scene.self));
     print("loaded map: ", level.filepath);
 
     return NULLOPT;

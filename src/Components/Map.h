@@ -19,10 +19,11 @@ struct TileMapLayer {
     bool isYSorted = false;
 };
 
+// UNUSED
 // Corresponds to a Tiled level
-struct TileMapLevel {
-    std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
-};
+// struct TileMapLevel {
+//     std::vector<std::vector<bool>> navGrid;  // true == no obstacle at tile
+// };
 
 // a "pointer" to an entity in the map
 struct TileMapEntity {

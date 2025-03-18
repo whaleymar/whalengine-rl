@@ -13,24 +13,25 @@
 
 namespace whal {
 
-struct TileMap;
-struct Scene;
-
 struct Level {
-    struct MetaData {
-        bool isWorldEntryPoint = false;
+    struct ParsedData {
+        Vector2i sizeTiles;
         Color ambientLight = Colors::White;
+        bool isWorldEntryPoint = false;
     };
+
     std::string filepath;  // used for level comparisons
     Vector2f position;     // top left
     Vector2f size;         // in pixels
-    MetaData meta;
+    Vector2i sizeTiles;
+    Color ambientLight = Colors::White;
+    bool isWorldEntryPoint = false;
 
     bool operator==(const Level& other) const { return filepath == other.filepath; }
 };
 
 struct ActiveLevel : public Level {
-    ActiveLevel(const Level& base, Vector2i worldOffset, Scene& parent);
+    ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent);
 
     ecs::Entity self;
 
