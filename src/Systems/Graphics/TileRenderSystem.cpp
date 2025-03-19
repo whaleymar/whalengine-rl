@@ -204,6 +204,8 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         const TileMapLayer& layer = eCtx.entity.get<TileMapLayer>();
         if (layer.overlayTex.size() > 0) {
             // note: overlays not supported for y sorted layers
+            // note: resetting shader on every draw call because the texture may have changed
+            rl::BeginShaderMode(eCtx.shader->get());
             const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
             eCtx.shader->setTexture("_Overlay", overlay);
             eCtx.shader->setVector2(
@@ -276,6 +278,10 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         }
 
         rl::rlSetTexture(0);
+        if (layer.overlayTex.size() > 0) {
+            // note: resetting shader on every draw call because the texture may have changed
+            rl::EndShaderMode();
+        }
     }
 
     rl::rlEnd();

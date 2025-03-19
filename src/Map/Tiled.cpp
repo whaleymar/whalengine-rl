@@ -316,6 +316,8 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
 #else
                         layer.overlayTex = std::move(overlayPath);
 #endif
+                    } else {
+                        print("Error loading overlay path: ", *errOpt);
                     }
                 }
             }
