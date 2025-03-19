@@ -1,12 +1,17 @@
 #include "Level.h"
 
-#include "Components/Name.h"
-#include "IGame.h"
-
+#include "Components/Collider.h"
 #include "Components/Draw.h"
+#include "Components/Name.h"
+#include "Components/Tags.h"
 #include "Components/Transform.h"
+
 #include "Entities/Block.h"
 
+#include "Systems/ColliderSystem.h"
+
+#include "Gfx/Coordinates.h"
+#include "IGame.h"
 #include "Sys/System.h"
 #include "Tiled.h"
 #include "Util/Print.h"
@@ -16,6 +21,15 @@
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
+
+AABB Level::getBoundingBox() const {
+    return AABB((position + size * Vector2f(0.5, -0.5)).as<s32>(), (size * 0.5).as<s32>());
+}
+
+Vector2i Level::worldPositionToTileClamped(Vector2i worldPosition) const {
+    return ((worldToTileCoords(worldPosition) - worldToTileCoords(position.as<s32>())) * Vector2i(1, -1))
+        .clamp({0, 0}, {sizeTiles.x - 1, sizeTiles.y - 1});
+}
 
 ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent) : Level(base) {
     self = parent.createChild();
@@ -80,7 +94,7 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     s32 minDistance = 999999;
     Vector2i closestPosition;
     for (const Level& lvl : allLevels) {
-        const AABB lvlBox((lvl.position + lvl.size * Vector2f(0.5, -0.5)).as<s32>(), (lvl.size * 0.5).as<s32>());
+        const AABB lvlBox = lvl.getBoundingBox();
 
         const auto delta = worldPos - lvlBox.getPosition();
         const auto half = lvlBox.getHalf();
@@ -119,6 +133,33 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(const std::string& levelPath) {
         }
     }
     return Error(whal_format("Level not found: {}", levelPath));
+}
+
+void Scene::update() {
+    // RESEARCH extension: navigation grid stores a u16 with collision layer information
+    for (ActiveLevel& lvl : loadedLevels) {
+        lvl.navGridDynamic = lvl.navGrid;
+        AABB lvlBox = lvl.getBoundingBox();
+        std::vector<ecs::Entity> colliders = ColliderSystem::query(lvlBox);
+        for (ecs::Entity e : colliders) {
+            if (e.has<TileTag>()) {
+                continue;
+            }
+            const Collider& collider = e.get<Collider>();
+            if (collider.getBodyType() == PhysicsBody::Feather) {
+                continue;
+            }
+
+            Vector2i topLeftTile = lvl.worldPositionToTileClamped(collider.getShape().getPositionEdge(Vector2i(-1, 1)));
+            // for bottom right, get the tile that's 1px up and left
+            Vector2i bottomRightTile = lvl.worldPositionToTileClamped(collider.getShape().getPositionEdge(Vector2i(1, -1)) + Vector2i(-1, 1));
+            for (s32 i = topLeftTile.x; i <= bottomRightTile.x; i++) {
+                for (s32 j = topLeftTile.y; j <= bottomRightTile.y; j++) {
+                    lvl.navGridDynamic[i][j] = 0;
+                }
+            }
+        }
+    }
 }
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level) {

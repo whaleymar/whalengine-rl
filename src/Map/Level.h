@@ -13,6 +13,8 @@
 
 namespace whal {
 
+class AABB;
+
 struct Level {
     struct ParsedData {
         Vector2i sizeTiles;
@@ -27,6 +29,8 @@ struct Level {
     Color ambientLight = Colors::White;
     bool isWorldEntryPoint = false;
 
+    AABB getBoundingBox() const;
+    Vector2i worldPositionToTileClamped(Vector2i worldPosition) const;
     bool operator==(const Level& other) const { return filepath == other.filepath; }
 };
 
@@ -37,7 +41,8 @@ struct ActiveLevel : public Level {
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
-    std::vector<std::vector<u8>> navGrid;  // 1 == no obstacle at tile
+    std::vector<std::vector<u8>> navGrid;         // 1 == no obstacle at tile
+    std::vector<std::vector<u8>> navGridDynamic;  // includes dynamic collider objects
 
     ecs::Entity getChild(const std::string& name);
 };
@@ -59,6 +64,7 @@ struct Scene {
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
     Expected<ActiveLevel*> getLoadedLevel(const std::string& levelPath);
+    void update();
 };
 
 Corrade::Containers::Optional<Error> loadLevel(const Level level);

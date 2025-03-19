@@ -4,6 +4,7 @@
 #include "IGame.h"
 
 #include "Gfx/ShaderManager.h"
+#include "Map/Level.h"
 #include "Settings.h"
 #include "Util/Print.h"
 #include "raylib.h"
@@ -122,6 +123,7 @@ void System::Update() {
         Schedule.tick(Time.dt());
         Audio.update();
         World.update();
+        getGame().getScene().update();
 #ifndef NDEBUG
     }  // EDITOR_FRAME_ADVANCE
 #endif

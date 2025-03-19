@@ -3,9 +3,7 @@
 #include <algorithm>
 #include <queue>
 
-#include "Gfx/Coordinates.h"
 #include "Map/Level.h"
-#include "Settings.h"
 
 namespace whal {
 
@@ -41,13 +39,13 @@ static inline f32 distance(const Vector2i& v1, const Vector2i& v2) {
     return (v1 - v2).as<f32>().len();
 }
 
-static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32 height) {
+static inline bool isValidTile(const Vector2i& v1, const std::vector<std::vector<u8>>& navGrid, s32 height) {
     for (s32 i = 0; i < height; ++i) {
         const s32 yIx = v1.y - i;
         if (yIx < 0) {
             return false;
         }
-        if (!level.navGrid[v1.x][yIx]) {
+        if (!navGrid[v1.x][yIx]) {
             return false;
         }
     }
@@ -55,19 +53,19 @@ static inline bool isValidTile(const Vector2i& v1, const ActiveLevel& level, s32
 }
 
 // checks if destination tile is valid, as well as the tiles in each cardinal direction of travel
-static inline bool isValidTileDiagonal(const Vector2i& v1, const ActiveLevel& level, s32 height, Vector2i moveDir) {
+static inline bool isValidTileDiagonal(const Vector2i& v1, const std::vector<std::vector<u8>>& navGrid, s32 height, Vector2i moveDir) {
     for (s32 i = 0; i < height; ++i) {
         const s32 yIx = v1.y - i;
         if (yIx < 0) {
             return false;
         }
-        if (!level.navGrid[v1.x][yIx]) {
+        if (!navGrid[v1.x][yIx]) {
             return false;
         }
-        if (!level.navGrid[v1.x][yIx - moveDir.y]) {
+        if (!navGrid[v1.x][yIx - moveDir.y]) {
             return false;
         }
-        if (!level.navGrid[v1.x - moveDir.x][yIx]) {
+        if (!navGrid[v1.x - moveDir.x][yIx]) {
             return false;
         }
     }
@@ -82,21 +80,17 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
     static const f32 costs[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.41f, 1.41f, 1.41f, 1.41f};
     constexpr size_t nDirections = 8;
 
-    const Vector2i lvlSize = level.size.as<s32>() / PIXELS_PER_TILE;
-
     // Convert world positions into level tile positions.
     // Level origin is top left, so negate Y values.
     // Clamp values to lvl in case of rounding issues.
-    const Vector2i start = ((worldToTileCoords(startWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1))
-                               .clamp({0, 0}, {lvlSize.x - 1, lvlSize.y - 1});
-    const Vector2i target = ((worldToTileCoords(targetWorldPosition) - worldToTileCoords(level.position.as<s32>())) * Vector2i(1, -1))
-                                .clamp({0, 0}, {lvlSize.x - 1, lvlSize.y - 1});
+    const Vector2i start = level.worldPositionToTileClamped(startWorldPosition);
+    const Vector2i target = level.worldPositionToTileClamped(targetWorldPosition);
 
     const auto comp = [](const pair<f32, Vector2i>& elem1, const pair<f32, Vector2i>& elem2) { return elem1.first > elem2.first; };
     priority_queue<pair<f32, Vector2i>, vector<pair<f32, Vector2i>>, decltype(comp)> openSet(comp);
 
-    Matrix2D<Vector2i> cameFrom = Matrix2D<Vector2i>(lvlSize.x, lvlSize.y, Vector2i(-1, -1));
-    Matrix2D<f32> gScore = Matrix2D<f32>(lvlSize.x, lvlSize.y, -1.0f);
+    Matrix2D<Vector2i> cameFrom = Matrix2D<Vector2i>(level.sizeTiles.x, level.sizeTiles.y, Vector2i(-1, -1));
+    Matrix2D<f32> gScore = Matrix2D<f32>(level.sizeTiles.x, level.sizeTiles.y, -1.0f);
 
     openSet.emplace(0.0f, start);
     gScore.set(start.x, start.y, 0.0f);
@@ -122,13 +116,14 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
         for (size_t i = 0; i < nDirections; i++) {
             const Vector2i neighbor = current + directions[i];
             if (i >= 4) {
-                if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y ||
-                    !isValidTileDiagonal(neighbor, level, height, directions[i])) {
+                if (neighbor.x < 0 || neighbor.x >= level.sizeTiles.x || neighbor.y < 0 || neighbor.y >= level.sizeTiles.y ||
+                    !isValidTileDiagonal(neighbor, level.navGridDynamic, height, directions[i])) {
                     continue;
                 }
 
             } else {
-                if (neighbor.x < 0 || neighbor.x >= lvlSize.x || neighbor.y < 0 || neighbor.y >= lvlSize.y || !isValidTile(neighbor, level, height)) {
+                if (neighbor.x < 0 || neighbor.x >= level.sizeTiles.x || neighbor.y < 0 || neighbor.y >= level.sizeTiles.y ||
+                    !isValidTile(neighbor, level.navGridDynamic, height)) {
                     continue;
                 }
             }
