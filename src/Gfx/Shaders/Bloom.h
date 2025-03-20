@@ -22,7 +22,7 @@ public:
     f32 intensity = 1.0;  // [Range(0.0f, 10.0f)]
 
 private:
-    void _blurPass(rl::RenderTexture src, rl::RenderTexture dst);
+    void _blurPass(rl::RenderTexture src, rl::RenderTexture dst, Shader& shader);
 };
 
 }  // namespace whal

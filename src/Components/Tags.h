@@ -11,6 +11,7 @@ struct IgnoreTimeModifiers {};
 struct BlocksLight {};
 struct MouseCursor {};
 struct TileTag {};
+struct TiledObjectLayer {};
 
 struct TagLoader : ISerialize<TagLoader, ComponentFactory> {
     static void loadImpl(ecs::Entity entity, const LoadContext& ctx);

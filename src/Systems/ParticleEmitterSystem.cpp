@@ -22,8 +22,8 @@ void ParticleEmitterSystem::update() {
     const Vector2f sampleSpeed = Vector2f::fromAngleFast(360.0f * Rng.uniform());
 
     for (auto [entityid, entity] : getEntities()) {
-        const auto trans = entity.get<Transform>();
-        const auto& emitter = entity.get<ParticleEmitter>();
+        const Transform& trans = entity.get<Transform>();
+        const ParticleEmitter& emitter = entity.get<ParticleEmitter>();
 
         f32 nParticlesFloat = static_cast<f32>(emitter.particlesPerSecond) * Time.dt();
         s32 nParticles = nParticlesFloat;

@@ -48,7 +48,6 @@ static const std::shared_ptr<nlohmann::json> getTemplate(std::string_view templa
 static const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile);
 static const std::shared_ptr<nlohmann::json> getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
-static Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth);
 static Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer);
 
 void clearMapCache() {
@@ -245,10 +244,15 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
-            loadObjectLayer(layer, level.self, &level);
+            ecs::Entity layerEntity = level.self.createChild();
+            layerEntity.add(Name(readString(layer, "name")));
+            layerEntity.add<TiledObjectLayer>();
+            loadObjectLayer(layer, layerEntity, &level);
+
         } else if (type == "imagelayer") {
             // parseImageLayer(layer, level);
             print("parseImageLayer disabled!");
+
         } else {
             print("unrecognized layer: ", type, "\nSkipping for now");
         }
@@ -269,20 +273,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     } else {
         print("Couldn't allocate entity for level lighting");
     }
-}
-
-Depth getLayerDepth(const nlohmann::json& layer, Depth defaultDepth) {
-    Depth layerDepth = defaultDepth;
-    if (layer.contains("properties")) {
-        for (auto& property : layer["properties"]) {
-            std::string propertytype = readString(property, "propertytype");
-            if (propertytype == "Depth") {
-                layerDepth = readDepth(property["value"]);
-                break;
-            }
-        }
-    }
-    return layerDepth;
 }
 
 Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer) {
@@ -336,7 +326,22 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
 void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt) {
     using json = nlohmann::json;
 
-    const Depth layerDepth = getLayerDepth(layer, Depth::Level);
+    Transform& parentTrans = parent.get<Transform>();
+
+    // only need to parse depth for real layers (not tile collision data)
+    Depth layerDepth = Depth::Level;
+    if (levelOpt != nullptr) {
+        // Not everything in TileMapLayer is relevant to object layers
+        TileMapLayer tmpLayer;
+        layerDepth = loadTileLayerInfo(layer, parent, tmpLayer);
+        if (tmpLayer.zOffset != 0) {
+            // if there's a Z offset (e.g. this layer has some height in the 3rd dimension), then move its actual position down and make it
+            // "Float" so it's still rendered in the correct spot
+            f32 positionOffset = static_cast<f32>(tmpLayer.zOffset) * FPIXELS_PER_TILE;
+            parentTrans.translate(Vector2f(0, -positionOffset), parent);
+            parentTrans.setFloatHeight(positionOffset / FLOAT_HEIGHT_MULT, parent);
+        }
+    }
 
     bool failedToAllocateEntities = false;
     const json& objects = layer["objects"];
@@ -394,7 +399,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 
             if (objType == "Map_CameraPoint") {
                 Vector2i cameraPoint = readVector2i(object, "x", "y");
-                levelOpt->cameraFocalPoint = (parent.get<Transform>().position + getMapTranslation(cameraPoint, Vector2i::ZERO)).as<s32>();
+                levelOpt->cameraFocalPoint = (parentTrans.position + getMapTranslation(cameraPoint, Vector2i::ZERO)).as<s32>();
             }
 
             // not an entity, so kill it

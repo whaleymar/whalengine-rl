@@ -37,14 +37,14 @@ void Bloom::process(rl::RenderTexture src, rl::RenderTexture dst) {
     // downscale
     Graphics.fixedShaderMode(shBlur.get());
 
-    _blurPass(bloomTex, halfRes);
-    _blurPass(halfRes, quarterRes);
-    _blurPass(quarterRes, eightRes);
+    _blurPass(bloomTex, halfRes, shBlur);
+    _blurPass(halfRes, quarterRes, shBlur);
+    _blurPass(quarterRes, eightRes, shBlur);
 
     // upscale
-    _blurPass(eightRes, quarterRes);
-    _blurPass(quarterRes, halfRes);
-    _blurPass(halfRes, bloomTex);
+    _blurPass(eightRes, quarterRes, shBlur);
+    _blurPass(quarterRes, halfRes, shBlur);
+    _blurPass(halfRes, bloomTex, shBlur);
 
     Graphics.endFixedShaderMode();
 
@@ -73,10 +73,10 @@ void Bloom::drawEditor() {
 #endif
 
 // this will go somewhere else once I have a framework for built-in uniforms
-void Bloom::_blurPass(rl::RenderTexture src, rl::RenderTexture dst) {
+void Bloom::_blurPass(rl::RenderTexture src, rl::RenderTexture dst, Shader& shader) {
 // GLSL ES 2.0 doesn't have the textureSize function
 #ifdef __EMSCRIPTEN__
-    mBlur.setVector2("_TextureSize", Vector2f(src.texture.width, src.texture.height));
+    shader.setVector2("_TextureSize", Vector2f(src.texture.width, src.texture.height));
 #endif
     Graphics.blit(src, dst);
 }

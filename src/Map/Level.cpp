@@ -38,14 +38,25 @@ ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity pa
     TileMap::load(base.filepath.c_str(), *this);
 }
 
-ecs::Entity ActiveLevel::getChild(const std::string& name) {
-    for (const ecs::Entity& child : self.children()) {
+static ecs::Entity findChild(ecs::Entity parent, const std::string& name) {
+    for (const ecs::Entity& child : parent.children()) {
         const Name* nameOpt = child.tryGet<Name>();
         if (nameOpt && nameOpt->name == name) {
             return child;
         }
+
+        if (child.has<TiledObjectLayer>()) {
+            ecs::Entity maybe = findChild(child, name);
+            if (maybe.isValid()) {
+                return maybe;
+            }
+        }
     }
     return ecs::Entity{};
+}
+
+ecs::Entity ActiveLevel::getChild(const std::string& name) {
+    return findChild(self, name);
 }
 
 bool Scene::isValid() const {
