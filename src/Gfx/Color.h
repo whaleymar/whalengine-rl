@@ -44,6 +44,7 @@ struct Color {
     static Color lerp(const Color& lhs, const Color& rhs, const f32 t);
     static Color fromRL(rl::Color color, f32 brightness = 1.0f);
     static Color fromRGB(s32 r, s32 g, s32 b, s32 a = 255, f32 brightness = 1.0f);
+    static Color fromString(const std::string& name);
 };
 
 std::ostream& operator<<(std::ostream& out, Color const& self);

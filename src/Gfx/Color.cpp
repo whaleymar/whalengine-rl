@@ -3,6 +3,7 @@
 #include <ostream>
 #include <raylib.h>
 #include "Util/MathUtil.h"
+#include "Util/Print.h"
 
 namespace whal {
 
@@ -37,6 +38,53 @@ Color Color::fromRL(rl::Color color, f32 brightness) {
 
 Color Color::fromRGB(s32 r, s32 g, s32 b, s32 a, f32 brightness) {
     return fromRL(rl::Color{static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b), static_cast<u8>(a)}, brightness);
+}
+
+Color Color::fromString(const std::string& name) {
+    if (name == "Clear") {
+        return Colors::Clear;
+    } else if (name == "White") {
+        return Colors::White;
+    } else if (name == "ClearWhite") {
+        return Colors::ClearWhite;
+    } else if (name == "Black") {
+        return Colors::Black;
+    } else if (name == "Emerald") {
+        return Colors::Emerald;
+    } else if (name == "Purple") {
+        return Colors::Purple;
+    } else if (name == "Pink") {
+        return Colors::Pink;
+    } else if (name == "LightBlue") {
+        return Colors::LightBlue;
+    } else if (name == "Red") {
+        return Colors::Red;
+    } else if (name == "Green") {
+        return Colors::Green;
+    } else if (name == "DarkGreen") {
+        return Colors::DarkGreen;
+    } else if (name == "Gray") {
+        return Colors::Gray;
+    } else if (name == "DarkGray") {
+        return Colors::DarkGray;
+    } else if (name == "Brown") {
+        return Colors::Brown;
+    } else if (name == "DarkBrown") {
+        return Colors::DarkBrown;
+    } else if (name == "Beige") {
+        return Colors::Beige;
+    } else if (name == "Blue") {
+        return Colors::Blue;
+    } else if (name == "DarkBlue") {
+        return Colors::DarkBlue;
+    } else if (name == "Orange") {
+        return Colors::Orange;
+    } else if (name == "Magenta") {
+        return Colors::Magenta;
+    }
+
+    print("No matching color found for", name);
+    return Colors::White;
 }
 
 std::ostream& operator<<(std::ostream& out, Color const& self) {
