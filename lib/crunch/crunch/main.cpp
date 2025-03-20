@@ -270,8 +270,27 @@ static int Pack(uint64_t newHash, string& outputDirectory, string& name, vector<
                 json << endl;
             }
         }
-        if (!options.splitSubdirectories) {
+
+        if (!options.splitSubdirectories && animations.size() == 0) {
             json << "\t}" << endl;
+        } else if (animations.size() > 0) {
+            if (!options.splitSubdirectories) {
+                json << "\t}," << endl;
+            }
+            json << "\t\"animations\": [" << endl;
+            bool isFirst = true;
+            for (const auto& animation : animations) {
+                if (!isFirst) {
+                    json << "," << endl;
+                } else {
+                    isFirst = false;
+                }
+                animation.saveJson(json);
+            }
+            json << endl << "\t]" << endl;
+        }
+
+        if (!options.splitSubdirectories) {
             json << '}' << endl;
         }
         json.close();

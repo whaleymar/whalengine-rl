@@ -8,8 +8,8 @@ namespace whal {
 
 std::unordered_map<std::string, Animation> S_ANIMATION_TABLE;
 
-void AnimationFactory::add(const char* name, const Animation& animation) {
-    S_ANIMATION_TABLE.insert({std::string(name), animation});
+void AnimationFactory::add(const std::string& name, const Animation& animation) {
+    S_ANIMATION_TABLE.insert({name, animation});
 }
 
 const Animation& AnimationFactory::get(const char* name) {

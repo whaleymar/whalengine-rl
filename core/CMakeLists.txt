@@ -31,7 +31,6 @@ set(FMOD_DIR "${PROJECT_SOURCE_DIR}/../lib/fmod")
 
 target_include_directories(${PROJECT_NAME} 
     PUBLIC "${PROJECT_SOURCE_DIR}/../src"
-    PUBLIC "${PROJECT_SOURCE_DIR}/../lib/RapidXML"
     PUBLIC "${PROJECT_SOURCE_DIR}/../lib/json"
     PUBLIC "${PROJECT_SOURCE_DIR}/../lib/reflect-cpp/include"
     PUBLIC "${FMOD_DIR}/api/core/inc"

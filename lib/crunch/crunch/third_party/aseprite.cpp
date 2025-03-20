@@ -413,6 +413,26 @@ void Animation::saveXml(std::ofstream& xml) const {
     xml << "\t\t</animation>" << endl;
 }
 
+void Animation::saveJson(std::ofstream& json) const {
+    using namespace std;
+    json << "\t\t{" << endl
+         << "\t\t\t\"name\": \"" << name << "\"" << "," << endl
+         << "\t\t\t\"framecount\": " << frameDurations.size() << "," << endl
+         << "\t\t\t\"frames\": [" << endl;
+    size_t ix = 1;
+    for (float frameDuration : frameDurations) {
+        json << "\t\t\t\t{\"id\": " << ix << ", \"time\": " << frameDuration << "}";
+        if (ix != frameDurations.size()) {
+            json << "," << endl;
+        } else {
+            json << endl;
+        }
+        ix++;
+    }
+
+    json << "\t\t\t]" << endl << "\t\t}";
+}
+
 }  // namespace ase
 
 // int main(int argc, char** argv) {

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <json.hpp>
 #include <raylib.h>
 #include <rlgl.h>
 #include <string>
@@ -14,12 +15,8 @@
 #include "Map/AnimationFactory.h"
 #include "Settings.h"
 
-#include "Util/FileUtils.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
-
-#define RAPIDXML_NO_EXCEPTIONS
-#include "RapidXML/rapidxml.hpp"
 
 #ifndef NDEBUG
 #include "Gfx/ShaderManager.h"
@@ -28,95 +25,69 @@
 #include "rfl/enums.hpp"
 #endif
 
-namespace rapidxml {
-
-void parse_error_handler(const char* what, void* where) {
-    print("Got XML parsing error: ", what);
-    std::abort();
-}
-
-}  // namespace rapidxml
-
 #define NULLOPT Corrade::Containers::NullOpt;
 
 namespace whal {
 
 static std::array<rl::RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
-// TODO crunch has a json export option. Use that to eliminate rapidxml dependency
 Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::string& atlasDataPath) {
-    using namespace rapidxml;
-
     mTexture = texture;
 
-    xml_document<> doc;
+    std::ifstream file(atlasDataPath);
+    nlohmann::json doc;
+    file >> doc;
 
-    Expected<std::string> content = readFile(atlasDataPath.c_str());
-    if (!content.isExpected()) {
-        return content.error();
+    mIsTrimEnabled = doc["trim"];
+    mIsRotateEnabled = doc["rotate"];
+
+    if (!doc.contains("textures")) {
+        return Error("Could not find 'textures'");
+    }
+    if (!doc["textures"].contains("atlas0")) {
+        return Error("Could not find 'atlas0'");
     }
 
-    std::string xmldata = content.value();
-    doc.parse<0>(&xmldata[0]);
-    xml_node<>* atlasNode = doc.first_node("atlas");
-    if (!atlasNode) {
-        return Error("Could not find 'atlas' root node");
-    }
-    xml_node<>* trimNode = atlasNode->first_node("trim");
-    if (!trimNode) {
-        return Error("Could not find 'trim' node");
-    }
-    mIsTrimEnabled = strcmp(trimNode->value(), "true") == 0;
-
-    xml_node<>* rotateNode = atlasNode->first_node("rotate");
-    if (!rotateNode) {
-        return Error("Could not find 'rotate' node");
-    }
-    mIsRotateEnabled = strcmp(rotateNode->value(), "true") == 0;
-
-    xml_node<>* texNode = atlasNode->first_node("tex");
-    if (!texNode) {
-        return Error("Could not find 'tex' node");
-    }
-
-    for (xml_node<>* spriteNode = texNode->first_node("img"); spriteNode; spriteNode = spriteNode->next_sibling("img")) {
-        const char* name = spriteNode->first_attribute("n")->value();
-        Vector2i atlasPosition = {std::stoi(spriteNode->first_attribute("x")->value()), std::stoi(spriteNode->first_attribute("y")->value())};
-        Vector2i dimensions = {std::stoi(spriteNode->first_attribute("w")->value()), std::stoi(spriteNode->first_attribute("h")->value())};
+    const nlohmann::json& atlas = doc["textures"]["atlas0"];
+    for (auto it = atlas.begin(); it != atlas.end(); ++it) {
+        std::string name = it.key();
+        s32 x = it.value().at("x");
+        s32 y = it.value().at("y");
+        s32 w = it.value().at("w");
+        s32 h = it.value().at("h");
 
         // ignoring trim and rotate unless i need them
-        rl::Rectangle frame = rl::Rectangle(atlasPosition.x, atlasPosition.y, dimensions.x, dimensions.y);
-        mTable.insert({name, frame});
+        rl::Rectangle frame = rl::Rectangle(x, y, w, h);
+        mTable.insert({std::move(name), frame});
     }
 
     mIsValid = true;
 
     // add animations to the animation factory
-    xml_node<>* animationsNode = atlasNode->first_node("animations");
-    if (!animationsNode) {
-        return Error("Could not find 'animations' root node");
+    if (!doc.contains("animations")) {
+        return Error("Could not find 'animations'");
     }
 
-    for (xml_node<>* animationNode = animationsNode->first_node("animation"); animationNode;
-         animationNode = animationNode->next_sibling("animation")) {
-        const char* name = animationNode->first_attribute("name")->value();
-        const s32 frameCount = std::stoi(animationNode->first_attribute("framecount")->value());
+    const nlohmann::json& animations = doc["animations"];
+    for (const nlohmann::json& anim : animations) {
+        std::string name = anim["name"];
+        const s32 frameCount = anim["framecount"];
         std::vector<Animation::FrameExt> frames;
         frames.reserve(frameCount);
 
-        for (xml_node<>* frameNode = animationNode->first_node("frame"); frameNode; frameNode = frameNode->next_sibling("frame")) {
-            f32 frameTime = std::stof(frameNode->first_attribute("time")->value());
-            s32 id = std::stoi(frameNode->first_attribute("id")->value());
+        for (const nlohmann::json& frame : anim["frames"]) {
+            f32 frameTime = frame["time"];
+            s32 id = frame["id"];
             frames.push_back(Animation::FrameExt{
                 .frame = *getFrame(whal_format("{}{}", name, id)),
                 .duration = frameTime,
             });
         }
 
-        AnimationFactory::add(name, Animation{
-                                        .frames = std::move(frames),
-                                        .name = name,
-                                    });
+        AnimationFactory::add(std::move(name), Animation{
+                                                   .frames = std::move(frames),
+                                                   .name = name,
+                                               });
     }
 
     return NULLOPT;

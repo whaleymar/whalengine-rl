@@ -155,6 +155,7 @@ struct Animation {
 
     void addFrame(const Frame& frame);
     void saveXml(std::ofstream& xml) const;
+    void saveJson(std::ofstream& json) const;
 };
 
 }  // namespace ase
