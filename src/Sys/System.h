@@ -90,6 +90,7 @@ bool _EngineIsHotReloadRequested();
 s32 _EngineGetWindowWidth();
 s32 _EngineGetWindowHeight();
 const char* _EngineGetWindowTitle();
+const char* _EngineGetIconPath();
 s32 _EngineGetTargetFPS();
 
 #ifndef NDEBUG

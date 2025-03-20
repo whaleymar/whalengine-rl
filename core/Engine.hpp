@@ -131,6 +131,7 @@ public:
         GetWindowHeight = getSymbol<IntGetter>("_EngineGetWindowHeight");
         GetTargetFPS = getSymbol<IntGetter>("_EngineGetTargetFPS");
         GetWindowTitle = getSymbol<StrGetter>("_EngineGetWindowTitle");
+        GetIconPath = getSymbol<StrGetter>("_EngineGetIconPath");
 #ifndef NDEBUG
         GetEditorMode = getSymbol<BoolCB>("_EngineIsEditorMode");
         SetEditorMode = getSymbol<BoolSetter>("_EngineSetEditorMode");
@@ -161,6 +162,7 @@ public:
         GetWindowHeight = _EngineGetWindowHeight;
         GetTargetFPS = _EngineGetTargetFPS;
         GetWindowTitle = _EngineGetWindowTitle;
+        GetIconPath = _EngineGetIconPath;
 #ifndef NDEBUG
         GetEditorMode = _EngineIsEditorMode;
         SetEditorMode = _EngineSetEditorMode;
@@ -194,6 +196,7 @@ public:
     IntGetter GetWindowHeight;
     IntGetter GetTargetFPS;
     StrGetter GetWindowTitle;
+    StrGetter GetIconPath;
     GameCreator CreateGameCB;
     GameDestructor DestroyGameCB;
 #ifndef NDEBUG
@@ -226,8 +229,8 @@ public:
 
         // Set application icon for desktop builds
 #ifndef __EMSCRIPTEN__
-        if (rl::FileExists(ICON_IMAGE_PATH)) {
-            mIconImage = rl::LoadImage(ICON_IMAGE_PATH);
+        if (rl::FileExists(mGameHandler.GetIconPath())) {
+            mIconImage = rl::LoadImage(mGameHandler.GetIconPath());
             SetWindowIcon(mIconImage);
         }
 #endif
@@ -343,7 +346,7 @@ public:
 
         // Raylib end
 #ifndef __EMSCRIPTEN__
-        if (rl::FileExists(ICON_IMAGE_PATH)) {
+        if (rl::FileExists(mGameHandler.GetIconPath())) {
             UnloadImage(mIconImage);
         }
 #endif

@@ -266,6 +266,10 @@ const char* _EngineGetWindowTitle() {
     return WINDOW_TITLE;
 }
 
+const char* _EngineGetIconPath() {
+    return ICON_IMAGE_PATH;
+}
+
 s32 _EngineGetTargetFPS() {
     return FPS_TARGET;
 }
