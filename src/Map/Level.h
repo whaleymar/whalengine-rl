@@ -41,8 +41,11 @@ struct ActiveLevel : public Level {
 
     Corrade::Containers::Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
-    std::vector<std::vector<u8>> navGrid;         // 1 == no obstacle at tile
-    std::vector<std::vector<u8>> navGridDynamic;  // includes dynamic collider objects
+    std::vector<std::vector<u8>> navGrid;  // 1 == no obstacle at tile. Tile geometry only.
+
+    // Holds IDs of collider entities on the map (excluding tiles).
+    // Entity IDs are bitwise OR'd if multiple entities are on the tile.
+    std::vector<std::vector<u32>> navGridDynamic;
 
     ecs::Entity getChild(const std::string& name);
 };

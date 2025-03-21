@@ -15,6 +15,6 @@ struct Path {
     Vector2i target;
 };
 
-Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height);
+Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height);
 
 }  // namespace whal

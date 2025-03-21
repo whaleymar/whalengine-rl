@@ -149,7 +149,7 @@ Expected<ActiveLevel*> Scene::getLoadedLevel(const std::string& levelPath) {
 void Scene::update() {
     // RESEARCH extension: navigation grid stores a u16 with collision layer information
     for (ActiveLevel& lvl : loadedLevels) {
-        lvl.navGridDynamic = lvl.navGrid;
+        lvl.navGridDynamic = std::vector<std::vector<u32>>(lvl.sizeTiles.x, std::vector<u32>(lvl.sizeTiles.y, 0));
         AABB lvlBox = lvl.getBoundingBox();
         std::vector<ecs::Entity> colliders = ColliderSystem::query(lvlBox);
         for (ecs::Entity e : colliders) {
@@ -166,7 +166,7 @@ void Scene::update() {
             Vector2i bottomRightTile = lvl.worldPositionToTileClamped(collider.getShape().getPositionEdge(Vector2i(1, -1)) + Vector2i(-1, 1));
             for (s32 i = topLeftTile.x; i <= bottomRightTile.x; i++) {
                 for (s32 j = topLeftTile.y; j <= bottomRightTile.y; j++) {
-                    lvl.navGridDynamic[i][j] = 0;
+                    lvl.navGridDynamic[i][j] |= e.id();
                 }
             }
         }

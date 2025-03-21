@@ -39,13 +39,18 @@ static inline f32 distance(const Vector2i& v1, const Vector2i& v2) {
     return (v1 - v2).as<f32>().len();
 }
 
-static inline bool isValidTile(const Vector2i& v1, const std::vector<std::vector<u8>>& navGrid, s32 height) {
+static inline bool isValidTile(const Vector2i& v1, const std::vector<std::vector<u8>>& navGridStatic,
+                               const std::vector<std::vector<u32>>& navGridDynamic, u32 entityID, s32 height) {
     for (s32 i = 0; i < height; ++i) {
         const s32 yIx = v1.y - i;
         if (yIx < 0) {
             return false;
         }
-        if (!navGrid[v1.x][yIx]) {
+        if (!navGridStatic[v1.x][yIx]) {
+            return false;
+        }
+        u32 id = navGridDynamic[v1.x][yIx];
+        if (id > 0 && id != entityID) {
             return false;
         }
     }
@@ -53,26 +58,39 @@ static inline bool isValidTile(const Vector2i& v1, const std::vector<std::vector
 }
 
 // checks if destination tile is valid, as well as the tiles in each cardinal direction of travel
-static inline bool isValidTileDiagonal(const Vector2i& v1, const std::vector<std::vector<u8>>& navGrid, s32 height, Vector2i moveDir) {
+static inline bool isValidTileDiagonal(const Vector2i& v1, const std::vector<std::vector<u8>>& navGridStatic,
+                                       const std::vector<std::vector<u32>>& navGridDynamic, u32 entityID, s32 height, Vector2i moveDir) {
     for (s32 i = 0; i < height; ++i) {
         const s32 yIx = v1.y - i;
         if (yIx < 0) {
             return false;
         }
-        if (!navGrid[v1.x][yIx]) {
+        if (!navGridStatic[v1.x][yIx]) {
             return false;
         }
-        if (!navGrid[v1.x][yIx - moveDir.y]) {
+        if (!navGridStatic[v1.x][yIx - moveDir.y]) {
             return false;
         }
-        if (!navGrid[v1.x - moveDir.x][yIx]) {
+        if (!navGridStatic[v1.x - moveDir.x][yIx]) {
+            return false;
+        }
+        u32 id = navGridDynamic[v1.x][yIx];
+        if (id > 0 && id != entityID) {
+            return false;
+        }
+        id = navGridDynamic[v1.x][yIx - moveDir.y];
+        if (id > 0 && id != entityID) {
+            return false;
+        }
+        id = navGridDynamic[v1.x - moveDir.x][yIx];
+        if (id > 0 && id != entityID) {
             return false;
         }
     }
     return true;
 }
 
-Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
+Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
     using namespace std;
 
     static const Vector2i directions[] = {Vector2i::RIGHT, Vector2i::LEFT,  Vector2i::UP,    Vector2i::DOWN,
@@ -117,13 +135,13 @@ Path findPath(const Vector2i startWorldPosition, const Vector2i targetWorldPosit
             const Vector2i neighbor = current + directions[i];
             if (i >= 4) {
                 if (neighbor.x < 0 || neighbor.x >= level.sizeTiles.x || neighbor.y < 0 || neighbor.y >= level.sizeTiles.y ||
-                    !isValidTileDiagonal(neighbor, level.navGridDynamic, height, directions[i])) {
+                    !isValidTileDiagonal(neighbor, level.navGrid, level.navGridDynamic, entityID, height, directions[i])) {
                     continue;
                 }
 
             } else {
                 if (neighbor.x < 0 || neighbor.x >= level.sizeTiles.x || neighbor.y < 0 || neighbor.y >= level.sizeTiles.y ||
-                    !isValidTile(neighbor, level.navGridDynamic, height)) {
+                    !isValidTile(neighbor, level.navGrid, level.navGridDynamic, entityID, height)) {
                     continue;
                 }
             }
