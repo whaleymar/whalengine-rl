@@ -8,6 +8,7 @@ namespace whal {
 void AnimationSystem::update() {
     for (auto& [entityid, entity] : getEntities()) {
         auto& anim = entity.get<Animator>();
+        anim._isAnimationFinishedThisFrame = false;  // reset flag
         if (anim.brain == nullptr) {
             continue;
         }

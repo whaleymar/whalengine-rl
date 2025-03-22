@@ -71,6 +71,8 @@ extern const Color Blue;
 extern const Color DarkBlue;
 extern const Color Orange;
 extern const Color Magenta;
+extern const Color Yellow;
+extern const Color Gold;
 
 extern const rl::Color ClearRL;
 

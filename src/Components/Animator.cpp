@@ -90,11 +90,17 @@ bool Animator::isFrameDone() const {
     return _curFrameDuration >= animations[curAnimIx].frames[curFrameIx].duration;
 }
 
+bool Animator::isAnimationJustFinished() const {
+    return _isAnimationFinishedThisFrame;
+}
+
 bool Animator::play(const std::string& name) {
     if (getAnimation().name == name) {
         return false;
     }
 
+    _isAnimationFinishedThisFrame = false;
+    _isLoopingAnimationDone = false;
     for (size_t i = 0; i < animations.size(); i++) {
         if (animations[i].name == name) {
             curAnimIx = i;
@@ -120,16 +126,24 @@ bool Animator::isPlaying(const std::initializer_list<std::string>& names) const 
 }
 
 void Animator::nextFrame() {
+    _isAnimationFinishedThisFrame = false;
     const s32 frameCount = getAnimation().getFrameCount();
     if (curFrameIx + 1 == frameCount && !isLooping) {
         // animation is done
+        if (!_isLoopingAnimationDone) {
+            _isAnimationFinishedThisFrame = true;
+        }
+        _isLoopingAnimationDone = true;
         return;
     }
     curFrameIx = (curFrameIx + 1) % frameCount;
     _curFrameDuration = 0.0;
+    _isAnimationFinishedThisFrame = curFrameIx == 0;
 }
 
 void Animator::resetAnimation() {
+    _isAnimationFinishedThisFrame = false;
+    _isLoopingAnimationDone = false;
     curAnimDuration = 0;
     curFrameIx = 0;
     _curFrameDuration = Rng.uniform() * 0.5;
@@ -162,6 +176,18 @@ void Animator::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
 
 s32 Animation::getFrameCount() const {
     return frames.size();
+}
+
+void Animation::setDuration(f32 totalDuration) {
+    f32 currentDuration = 0.0f;
+    for (const FrameExt& frame : frames) {
+        currentDuration += frame.duration;
+    }
+
+    const f32 mult = totalDuration / currentDuration;
+    for (FrameExt& frame : frames) {
+        frame.duration *= mult;
+    }
 }
 
 }  // namespace whal

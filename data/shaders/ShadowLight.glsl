@@ -30,8 +30,10 @@ bool isWall(vec2 p) {
 }
 
 bool isBehindSomething(vec2 p) {
-    float depth = texture(_AllDepth, p).r;
-    return lightDepth < depth;
+    vec4 samp = texture(_AllDepth, p);
+    float depth = samp.r;
+    // only do this for things that are mostly opaque
+    return samp.a > 0.5 && lightDepth < depth;
 }
 
 bool isOutOfBounds(vec2 p) {

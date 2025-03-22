@@ -147,7 +147,9 @@ public:
 
     template <typename T>
     using ValueGetter = std::type_identity_t<std::function<T&(ecs::Entity)>>;
-    // using ValueGetter = T& (*)(ecs::Entity);
+
+    template <typename T>
+    using ConstValueGetter = std::type_identity_t<std::function<T(ecs::Entity)>>;
 
     template <typename T>
     using ValueSetter = std::type_identity_t<std::function<void(const T&, ecs::Entity)>>;
@@ -182,8 +184,8 @@ public:
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
         : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
 
-    Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
-        : mDuration(duration), mTweenValue(target), mGetter(getter), mSetter(setter), mEntity(entity) {}
+    Tween(T target, f32 duration, TweenManager::ConstValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
+        : mDuration(duration), mTweenValue(target), mGetterConst(getter), mSetter(setter), mEntity(entity) {}
 
     ~Tween() = default;
 
@@ -277,7 +279,7 @@ private:
 
     void init() override {
         if (!isSet(TweenParams::CustomOrigin)) {
-            mStartValue = mGetter(mEntity);
+            mStartValue = mGetterConst ? mGetterConst(mEntity) : mGetter(mEntity);
         }
 
         if (isSet(TweenParams::RelativeTarget)) {
@@ -288,6 +290,7 @@ private:
     }
 
     void setValue(const T& val) {
+        assert((mSetter || mGetter) && "Tween must have a setter or a mutable getter");
         if (mSetter) {
             mSetter(val, mEntity);
         } else {
@@ -303,7 +306,8 @@ private:
     T mStartValue;
     T mEndValue;
     T mTweenValue;
-    std::function<T&(ecs::Entity)> mGetter;
+    std::function<T&(ecs::Entity)> mGetter = nullptr;
+    std::function<T(ecs::Entity)> mGetterConst = nullptr;
     std::function<void(const T&, ecs::Entity)> mSetter = nullptr;
     ecs::Entity mEntity;
     TweenCallback mOnStart = nullptr;

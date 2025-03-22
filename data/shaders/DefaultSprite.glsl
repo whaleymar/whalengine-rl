@@ -88,6 +88,6 @@ void fragment() {
     // During release, this can just be 1.0
     const float scalar = 20.0;
     if (isUI < 0.5) {
-        Depth = vec4(fragDepth * scalar, 0., 0., texelColor.a);
+        Depth = vec4(fragDepth * scalar, 0., 0., texelColor.a * fragColor.a);
     }
 }

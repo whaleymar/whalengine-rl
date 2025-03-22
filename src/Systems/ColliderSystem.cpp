@@ -112,6 +112,12 @@ void ColliderSystem::setIsIgnoreCollision(ecs::Entity first, ecs::Entity second,
             S_IGNORE_COLLISION.erase({first.id(), second.id()});
         }
     }
+#ifndef NDEBUG
+    else {
+        print("skipping call to setIsIgnoreCollision because one or both entities are not part of the ColliderSystem. Did you forget to activate an "
+              "entity before calling this?");
+    }
+#endif
 }
 
 bool ColliderSystem::isIgnoreCollision(ecs::Entity first, ecs::Entity second) {

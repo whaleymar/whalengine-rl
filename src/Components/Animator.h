@@ -45,6 +45,8 @@ struct Animator : ISerialize<Animator, ComponentFactory> {
     s32 curFrameIx = 0;
     f32 _curFrameDuration = 0.0;
     bool isLooping = true;
+    bool _isAnimationFinishedThisFrame = false;
+    bool _isLoopingAnimationDone = false;
 
     Frame getFrame() const;
     Animation& getAnimation();
@@ -52,6 +54,7 @@ struct Animator : ISerialize<Animator, ComponentFactory> {
     f32 getFrameTimeElapsed() const;
     f32 getFrameDuration() const;
     bool isFrameDone() const;
+    bool isAnimationJustFinished() const;  // returns true if an animation just finished its final frame
 
     bool play(const std::string& name);
     bool isPlaying(const std::string& name) const;
@@ -74,6 +77,7 @@ struct Animation {
     std::string name;
 
     s32 getFrameCount() const;
+    void setDuration(f32 totalDuration);
 };
 
 }  // namespace whal

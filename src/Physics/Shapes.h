@@ -134,7 +134,9 @@ public:
     ShapeTag getShape() const { return mShape; }
 
     AABB getAABB() const;
+    AABB& getAABBMut();
     Circle getCircle() const;
+    Circle& getCircleMut();
     AABB getBoundingBox() const;
 
     void setPosition(Vector2i center);

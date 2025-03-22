@@ -81,6 +81,10 @@ Color Color::fromString(const std::string& name) {
         return Colors::Orange;
     } else if (name == "Magenta") {
         return Colors::Magenta;
+    } else if (name == "Yellow") {
+        return Colors::Yellow;
+    } else if (name == "Gold") {
+        return Colors::Gold;
     }
 
     print("No matching color found for", name);
@@ -113,6 +117,8 @@ const Color Blue = Color::fromRL(rl::BLUE);
 const Color DarkBlue = Color::fromRL(rl::DARKBLUE);
 const Color Orange = Color::fromRL(rl::ORANGE);
 const Color Magenta = Color::fromRL(rl::MAGENTA);
+const Color Yellow = Color::fromRL(rl::YELLOW);
+const Color Gold = Color::fromRL(rl::GOLD);
 
 const rl::Color ClearRL = Clear.asLDR();
 

@@ -215,6 +215,11 @@ Circle Shape::getCircle() const {
     return mCircle;
 }
 
+Circle& Shape::getCircleMut() {
+    assert(mShape == ShapeTag::Circle && "trying to run getCircleMut but ColliderShape is not a circle");
+    return mCircle;
+}
+
 AABB Shape::getBoundingBox() const {
     switch (mShape) {
     case ShapeTag::AABB:
@@ -226,6 +231,11 @@ AABB Shape::getBoundingBox() const {
 
 AABB Shape::getAABB() const {
     assert(mShape == ShapeTag::AABB && "trying to run getAABB but ColliderShape is not an AABB");
+    return mAABB;
+}
+
+AABB& Shape::getAABBMut() {
+    assert(mShape == ShapeTag::AABB && "trying to run getAABBMut but ColliderShape is not an AABB");
     return mAABB;
 }
 
