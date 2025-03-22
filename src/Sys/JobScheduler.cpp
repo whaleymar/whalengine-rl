@@ -26,7 +26,7 @@ EventFlow& EventFlow::addWait(f32 waitSeconds) {
         return *this;
     }
 
-    auto pNode = std::make_unique<Node>(waitSeconds, nullptr, nullptr);
+    auto pNode = std::make_unique<Node>(nullptr, waitSeconds);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
         mEnd = mRoot.get();
@@ -43,15 +43,10 @@ void EventFlow::tick(f32 deltaTime) {
     if (mRoot == nullptr || mIsCancelled) {
         return;
     }
-    if (mRoot->waitSeconds > 0) {
-        mRoot->waitSeconds -= deltaTime;
-        return;
-    }
 
-    if (mRoot->boundFunc) {
-        mRoot->boundFunc();
+    if (mRoot->tick(deltaTime)) {
+        mRoot = std::move(mRoot->next);
     }
-    mRoot = std::move(mRoot->next);
 }
 
 }  // namespace evfl

@@ -36,14 +36,45 @@ namespace whal {
 namespace evfl {
 
 struct Node {
-    // RESEARCH:
-    // union {
-    //     f32 waitSeconds;
-    //     s32 waitFrames;
-    // };
+    Node(std::function<void()> boundFunc_, f32 waitSeconds_) : waitSeconds(waitSeconds_), boundFunc(boundFunc_) {}
+    virtual ~Node() = default;
+
+    // returns true if node is finished
+    virtual bool tick(f32 dt) {
+        if (boundFunc) {
+            boundFunc();
+        }
+        if (waitSeconds > 0) {
+            waitSeconds -= dt;
+            return false;
+        }
+        return true;
+    }
+
     f32 waitSeconds = 0.0;
     std::function<void()> boundFunc = nullptr;
     std::unique_ptr<Node> next = nullptr;
+};
+
+struct RepeatNode : public Node {
+    RepeatNode(std::function<void()> boundFunc_, f32 waitSeconds_, f32 repeatEvery_) : Node(boundFunc_, waitSeconds_), repeatEvery(repeatEvery_) {}
+
+    bool tick(f32 dt) override {
+        if (boundFunc && timeSinceCall >= repeatEvery) {
+            boundFunc();
+            timeSinceCall = 0.0f;
+        } else {
+            timeSinceCall += dt;
+        }
+        if (waitSeconds > 0) {
+            waitSeconds -= dt;
+            return false;
+        }
+        return true;
+    }
+
+    f32 repeatEvery = 0.0f;
+    f32 timeSinceCall = 0.0f;
 };
 
 // RESEARCH
@@ -61,6 +92,9 @@ public:
     // RESEARCh -- requires BoolNode
     // template <typename... T>
     // EventFlow& cancelIf(std::type_identity_t<std::function<bool(T...)>> const& func, T... args);
+
+    template <typename... T>
+    EventFlow& repeat(f32 duration, f32 repeatEvery, std::type_identity_t<std::function<void(T...)>> const& func, T... args);
 
     EventFlow& addWait(f32 waitSeconds);
 
@@ -91,7 +125,25 @@ EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const&
         return *this;
     }
     BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
-    auto pNode = std::make_unique<Node>(0, bf, nullptr);
+    auto pNode = std::make_unique<Node>(bf, 0.0f);
+    if (mRoot == nullptr) {
+        mRoot = std::move(pNode);
+        mEnd = mRoot.get();
+        return *this;
+    }
+
+    mEnd->next = std::move(pNode);
+    mEnd = mEnd->next.get();
+    return *this;
+}
+
+template <typename... T>
+EventFlow& EventFlow::repeat(f32 duration, f32 repeatEvery, std::type_identity_t<std::function<void(T...)>> const& func, T... args) {
+    if (!func || mIsCancelled) {
+        return *this;
+    }
+    BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
+    auto pNode = std::make_unique<RepeatNode>(bf, duration, repeatEvery);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
         mEnd = mRoot.get();

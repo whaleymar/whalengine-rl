@@ -18,9 +18,9 @@ ACTIVELY WORKING ON:
     - lights
 
 ## Gfx 
-- animate the TileMapLayer overlay texture
 - shader uniform caching
 - shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color
+- (BUG): when posterization shader is off, alpha values behave weird. between like 30-200, it makes sprites look black
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -32,7 +32,6 @@ ACTIVELY WORKING ON:
 
 ## Debug tools 
 - imgui integration
-    - add more components to imgui component renderer
     - change which Scene I'm in -- allows for debug-only scenes that are easier to use
     - toggle which shaders are used in the camera's pipeline
     - search for entity by name, inspect in editor
@@ -43,6 +42,7 @@ ACTIVELY WORKING ON:
         - lua integration is doable (and brings benefits like insta hot reloading) 
         - but would require extending ComponentFactory to convert components to/from lua tables
     - could stop using lambdas and exclusively use named free functions. Then I can serialize the function signature
+- entity serialization function (need to iterate components)
 
 ## Map 
 - put tiled project in game's `data` directory so paths are easier to work with
