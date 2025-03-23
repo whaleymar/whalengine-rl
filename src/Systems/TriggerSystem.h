@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Components/Transform.h"
-#include "Components/TriggerZone.h"
+#include "Components/Trigger.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

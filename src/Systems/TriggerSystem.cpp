@@ -2,7 +2,7 @@
 
 #include "Components/Collider.h"
 #include "Components/Transform.h"
-#include "Components/TriggerZone.h"
+#include "Components/Trigger.h"
 #include "Physics/CollisionLayer.h"
 #include "Systems/ColliderSystem.h"
 

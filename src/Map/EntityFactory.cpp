@@ -3,7 +3,7 @@
 #include "Components/Callback.h"
 #include "Components/Collider.h"
 #include "Components/RailsControl.h"
-#include "Components/TriggerZone.h"
+#include "Components/Trigger.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {

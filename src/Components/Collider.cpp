@@ -5,7 +5,7 @@
 #include "Components/PlayerControl.h"
 #include "Components/RigidBody.h"
 #include "Components/Transform.h"
-#include "Components/TriggerZone.h"
+#include "Components/Trigger.h"
 #include "Components/Velocity.h"
 
 #include "Settings.h"

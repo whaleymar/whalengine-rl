@@ -17,7 +17,7 @@
 #include "Components/RigidBody.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Components/TriggerZone.h"
+#include "Components/Trigger.h"
 #include "Components/Velocity.h"
 
 namespace whal::ecs {

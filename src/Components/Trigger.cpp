@@ -1,4 +1,4 @@
-#include "TriggerZone.h"
+#include "Trigger.h"
 
 #include "Map/TiledParse.h"
 #include "Util/JsonUtil.h"
