@@ -1,5 +1,7 @@
 #include "RaylibUtil.h"
+
 #include <cstring>
+#include <string>
 
 #include "Settings.h"
 #include "raylib.h"

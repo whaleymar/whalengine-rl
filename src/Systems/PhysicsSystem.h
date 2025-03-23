@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/Velocity.h"
 #include "Events/Events.h"
 #include "Physics/HitInfo.h"
 #include "Sys/IListen.h"
@@ -8,11 +9,6 @@
 #include "Util/Types.h"
 
 namespace whal {
-
-struct Transform;
-struct Velocity;
-struct AngularVelocity;
-struct HitInfo;
 
 // TODO parameter file
 inline constexpr f32 TERMINAL_VELOCITY_Y = -160;

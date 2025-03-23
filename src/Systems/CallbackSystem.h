@@ -1,11 +1,9 @@
 #pragma once
 
+#include "Components/Callback.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct CustomUpdate;
-struct OnDeath;
 
 class CustomUpdateSystem : public ecs::ISystem<CustomUpdate>, public ecs::IUpdate {
 public:

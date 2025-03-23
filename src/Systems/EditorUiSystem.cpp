@@ -10,7 +10,6 @@
 
 #include "Components/Collider.h"
 #include "Components/ComponentReflection.h"
-#include "Components/Name.h"
 #include "Components/Transform.h"
 #include "IGame.h"
 #include "Map/Level.h"
@@ -243,11 +242,7 @@ constexpr void iterComponents(ecs::Entity entity) {
 }
 
 std::string getEntityName(ecs::Entity entity) {
-    if (entity.has<Name>()) {
-        return whal_format("{} (ID = {})", entity.get<Name>(), entity.id());
-    } else {
-        return "Entity " + std::to_string(entity.id());
-    }
+    return whal_format("{} (ID = {})", entity.name(), entity.id());
 }
 
 static void drawComponents(ecs::Entity entity, int xOffset = 0) {

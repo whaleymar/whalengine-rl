@@ -2,11 +2,8 @@
 
 #include "Components/Collider.h"
 #include "Components/Draw.h"
-#include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-
-#include "Entities/Block.h"
 
 #include "Systems/ColliderSystem.h"
 
@@ -32,16 +29,14 @@ Vector2i Level::worldPositionToTileClamped(Vector2i worldPosition) const {
 }
 
 ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent) : Level(base) {
-    self = parent.createChild();
+    self = parent.createChild(base.filepath.c_str());
     self.set(TransformBuilder(self.get<Transform>()).translate(worldOffset.as<f32>()).build());
-    self.add(Name{base.filepath});
     TileMap::load(base.filepath.c_str(), *this);
 }
 
 static ecs::Entity findChild(ecs::Entity parent, const std::string& name) {
     for (const ecs::Entity& child : parent.children()) {
-        const Name* nameOpt = child.tryGet<Name>();
-        if (nameOpt && nameOpt->name == name) {
+        if (name == child.name()) {
             return child;
         }
 

@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Components/Map.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "ECS.h"
 #include "Util/Types.h"
 
 namespace whal {
 
-struct Transform;
-struct TileMapLayer;
-struct Invisible;
-enum class Facing : u8;
 struct TileInfo;
 
 struct TileInstance {

@@ -4,7 +4,6 @@
 
 #include "Components/Callback.h"
 #include "Components/Camera.h"
-#include "Components/Name.h"
 #include "Components/RailsControl.h"
 #include "Components/Relationships.h"
 #include "Components/Tags.h"
@@ -18,14 +17,13 @@
 namespace whal {
 
 ecs::Entity createCamera(Transform trans) {
-    auto camera = World.entity(false);
+    auto camera = World.entity("Camera", false);
     if (!camera.isValid()) {
         return camera;
     }
     auto _ = ecs::DeferActivate(camera);
 
     camera.set(trans);
-    camera.add(Name("Camera"));
     camera.add<Camera>();
     camera.add<AudioListener>();
     camera.add<IgnoreTimeModifiers>();

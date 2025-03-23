@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/Collider.h"
 #include "Physics/CollisionLayer.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
@@ -11,11 +12,7 @@
 
 namespace whal {
 
-class Collider;
-class AABB;
 struct RaycastHit;
-
-struct Transform;
 class PhysicsSystem;
 
 class ColliderSystem : public ecs::ISystem<Collider, Transform>,

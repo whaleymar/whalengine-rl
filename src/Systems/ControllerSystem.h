@@ -1,14 +1,12 @@
 #pragma once
 
+#include "Components/PlayerControl.h"
+#include "Components/RigidBody.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct PlayerControl;
-struct RigidBody;
-struct Transform;
-struct Velocity;
-struct Jumper;
 
 class ControllerSystem : public ecs::ISystem<PlayerControl, Transform, Velocity, RigidBody>, public ecs::IUpdate {
 public:

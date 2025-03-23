@@ -1,12 +1,11 @@
 #pragma once
 
+#include "Components/Draw.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct Sprite;
-struct Transform;
-struct Invisible;
 
 class SpriteRenderSystem : public ecs::ISystem<Sprite, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:

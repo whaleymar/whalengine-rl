@@ -1,15 +1,13 @@
 #pragma once
 
+#include "Components/Relationships.h"
+#include "Components/Transform.h"
+#include "Components/Velocity.h"
 #include "Events/Events.h"
 #include "Sys/IListen.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct Orbit;
-struct Follow;
-struct Velocity;
-struct Transform;
 
 class OrbitSystem : public ecs::ISystem<Orbit, Transform>, public ecs::IUpdate {
 public:

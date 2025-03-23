@@ -1,11 +1,10 @@
 #pragma once
 
+#include "Components/Draw.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 namespace whal {
-
-struct MouseCursor;
-struct Transform;
-struct Sprite;
 
 class MouseCursorSystem : public ecs::ISystem<MouseCursor, Transform, Sprite>,
                           public ecs::AttrUniqueEntity,

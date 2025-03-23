@@ -1,12 +1,11 @@
 #pragma once
 
+#include "Components/MonoBehavior.h"
 #include "ECS.h"
 #include "Events/Events.h"
 #include "Sys/IListen.h"
 
 namespace whal {
-
-struct MonoBehavior;
 
 class MonoBehaviorSystem : public ecs::ISystem<MonoBehavior>,
                            public ecs::IUpdate,

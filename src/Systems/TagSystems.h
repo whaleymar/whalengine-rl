@@ -1,12 +1,10 @@
 #pragma once
 
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct Player;
-struct AudioListener;
-struct Transform;
 
 class PlayerSystem : public ecs::ISystem<Player> {};
 

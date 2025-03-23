@@ -4,7 +4,6 @@
 
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"
-#include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
@@ -40,7 +39,7 @@ ecs::Entity createParticle(Vector2i worldPosition, const MaterialData& materialD
 }
 
 void addParticleComponents(ecs::Entity particle, const MaterialData& materialData, f32 lifetimeMultiplier) {
-    particle.add(Name("particle"));
+    particle.setName("particle");
     particle.add<Particle>();
     particle.add<Velocity>();
 

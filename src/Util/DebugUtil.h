@@ -10,7 +10,6 @@
 #include "Components/Draw.h"
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
-#include "Components/Name.h"
 #include "Components/ParticleEmitter.h"
 #include "Components/PlayerControl.h"
 #include "Components/RailsControl.h"
@@ -47,7 +46,6 @@ DECLARE_COMPONENT(whal::ShadowLight);
 DECLARE_COMPONENT(whal::Lifetime);
 DECLARE_COMPONENT(whal::DrawText);
 DECLARE_COMPONENT(whal::ParticleEmitter);
-DECLARE_COMPONENT(whal::Name);
 DECLARE_COMPONENT(whal::Animator);
 DECLARE_COMPONENT(whal::Orbit);
 DECLARE_COMPONENT(whal::Player);

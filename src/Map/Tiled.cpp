@@ -10,7 +10,6 @@
 
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Map.h"
-#include "Components/Name.h"
 #include "Components/Relationships.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
@@ -155,7 +154,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
             };
 
 #ifndef NDEBUG
-            e.add(Name{.name = whal_format("Tile ({}, {})", x, y)});
+            e.setName(whal_format("Tile ({}, {})", x, y).c_str());
 #endif
 
             // this call is safe even if the tile doesn't have any top-level components
@@ -214,9 +213,8 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 
         if (type == "tilelayer") {
             // create an entity with a TileMapLayer component
-            ecs::Entity layerEntity = level.self.createChild(false);
+            ecs::Entity layerEntity = level.self.createChild(readString(layer, "name").c_str(), false);
             auto _ = ecs::DeferActivate(layerEntity);
-            layerEntity.add(Name(readString(layer, "name")));
             const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
             layerEntity.add(TileMapLayer{
                 .sizeTiles = sizeTiles,
@@ -244,8 +242,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
-            ecs::Entity layerEntity = level.self.createChild();
-            layerEntity.add(Name(readString(layer, "name")));
+            ecs::Entity layerEntity = level.self.createChild(readString(layer, "name").c_str());
             layerEntity.add<TiledObjectLayer>();
             loadObjectLayer(layer, layerEntity, &level);
 
@@ -259,7 +256,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    auto lightEntity = level.self.createChild();
+    auto lightEntity = level.self.createChild("BoxLight");
     if (lightEntity.isValid()) {
         lightEntity.set(TransformBuilder(lightEntity.get<Transform>())
                             .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>()))
@@ -269,7 +266,6 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         BoxLight boxLight = {
             .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
         lightEntity.add(boxLight);
-        lightEntity.add(Name{.name = "BoxLight"});
     } else {
         print("Couldn't allocate entity for level lighting");
     }
@@ -278,7 +274,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer) {
     Depth layerDepth = Depth::Level;
     if (!data.contains("properties")) {
-        print(entity.get<Name>(), "layer is missing TileMapInfo property (has no properties field)");
+        print(entity.name(), "layer is missing TileMapInfo property (has no properties field)");
         return layerDepth;
     }
 
@@ -316,7 +312,7 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
         }
     }
 
-    print(entity.get<Name>(), "layer is missing TileMapInfo property");
+    print(entity.name(), "layer is missing TileMapInfo property");
     return layerDepth;
 }
 
@@ -452,7 +448,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         }
         tryRead(object, "name", &name);
         if (name.size() > 0) {
-            entity.add(Name(name.c_str()));
+            entity.setName(name.c_str());
             print("created entity: ", name);
         }
 
@@ -683,7 +679,7 @@ static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     const auto data = getWorldFile(mapfile);
-    dstScene.self.add<Name>({mapfile});
+    dstScene.self.setName(mapfile);
 
 #ifndef NDEBUG
     std::string type = readString(*data, "type");

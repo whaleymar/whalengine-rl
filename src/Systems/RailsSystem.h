@@ -1,12 +1,10 @@
 #pragma once
 
-#include "whalECS/src/ECS.h"
+#include "Components/RailsControl.h"
+#include "Components/Transform.h"
+#include "ECS.h"
 
 namespace whal {
-
-struct RailsControl;
-struct Velocity;
-struct Transform;
 
 class RailsSystem : public ecs::ISystem<RailsControl, Transform>, public ecs::IUpdate, public ecs::IMonitorSystem {
 public:

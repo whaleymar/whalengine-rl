@@ -2,7 +2,6 @@
 
 #include <raylib.h>
 #include "Components/Draw.h"
-#include "Components/Name.h"
 #include "Components/Tags.h"
 #include "Gfx/Depth.h"
 #include "Sys/System.h"
@@ -23,8 +22,7 @@ void CursorManager::set(Sprite sprite) const {
     sprite.color.scale(1.5);
     const bool isCustomCursorActive = !MouseCursorSystem::getEntities().empty();
     if (!isCustomCursorActive) {
-        auto entity = World.entity();
-        entity.add(Name("Cursor"));
+        auto entity = World.entity("Cursor");
         entity.get<Transform>().depth = Depth::UIClose;
         entity.add(sprite);
         entity.add<MouseCursor>();

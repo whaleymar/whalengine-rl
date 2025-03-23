@@ -9,8 +9,6 @@
 
 namespace whal {
 
-struct Transform;
-
 class EditorUiSystem : public ecs::ISystem<Transform>,
                        public ecs::IMonitorSystem,
                        public IListen<evt::Input, true, InputEvent>,

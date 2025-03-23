@@ -1,10 +1,9 @@
 #pragma once
 
+#include "Components/Lifetime.h"
 #include "whalECS/src/ECS.h"
-namespace whal {
 
-struct Lifetime;
-struct Velocity;
+namespace whal {
 
 class LifetimeSystem : public ecs::ISystem<Lifetime>, public ecs::IUpdate {
 public:

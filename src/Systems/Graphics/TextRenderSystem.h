@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Components/Draw.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace rl {
@@ -7,10 +10,6 @@ typedef struct Font Font;
 }
 
 namespace whal {
-
-struct DrawText;
-struct Transform;
-struct Invisible;
 
 class TextRenderSystem : public ecs::ISystem<DrawText, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:

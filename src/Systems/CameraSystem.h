@@ -1,13 +1,11 @@
 #pragma once
 
+#include "Components/Camera.h"
 #include "Events/Events.h"
 #include "Sys/IListen.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct Camera;
-struct Transform;
 
 class CameraSystem : public ecs::ISystem<Camera, Transform>,
                      public ecs::AttrUniqueEntity,

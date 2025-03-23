@@ -1,14 +1,11 @@
 #pragma once
 
+#include "Components/Light.h"
+#include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
-
-struct PointLight;
-struct BoxLight;
-struct Transform;
-struct ShadowLight;
-struct Invisible;
 
 class PointLightSystem : public ecs::ISystem<Transform, PointLight, ecs::Exclude<Invisible>>, public ecs::IRenderLight {
 public:
