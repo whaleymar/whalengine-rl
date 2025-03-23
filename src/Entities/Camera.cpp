@@ -1,18 +1,12 @@
 #include "Camera.h"
 
-#include "whalECS/src/ECS.h"
+#include "ECS.h"
 
-#include "Components/Callback.h"
 #include "Components/Camera.h"
-#include "Components/RailsControl.h"
-#include "Components/Relationships.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 
 #include "Sys/System.h"
-
-// #include "Components/PlayerControl.h"
-// #include "Components/Velocity.h"
 
 namespace whal {
 
@@ -27,8 +21,6 @@ ecs::Entity createCamera(Transform trans) {
     camera.add<Camera>();
     camera.add<AudioListener>();
     camera.add<IgnoreTimeModifiers>();
-    // camera.add<PlayerControl>();
-    // camera.add<Velocity>();
 
     return camera;
 }

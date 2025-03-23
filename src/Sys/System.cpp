@@ -166,6 +166,7 @@ bool System::start() {
     World.setEntityCreateCallback(&onTopLevelEntityCreated);
     World.setEntityChildCreateCallback(&onChildEntityCreated);
     World.setEntityAdoptCallback(&onEntityAdopted);
+
     if (auto err = Audio.init(); err) {
         print(*err);
         Graphics.end();

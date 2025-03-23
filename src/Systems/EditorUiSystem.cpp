@@ -204,13 +204,11 @@ void EditorUiSystem::drawDebug() {
 
 template <typename T>
 static void componentEditor(ecs::Entity entity) {
-    const std::string cmpName(type_of<T>());
-    // ImGui::BeginChild(cmpName.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY);
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth;
     if constexpr (std::is_same_v<T, Transform>) {
         flags |= ImGuiTreeNodeFlags_DefaultOpen;
     }
-    if (ImGui::TreeNodeEx(cmpName.c_str(), flags)) {
+    if (ImGui::TreeNodeEx(World.component<T>().name(), flags)) {
         if constexpr (IsCustomEditor<T>) {
             entity.get<T>().onEditorRender();
         } else {

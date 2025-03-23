@@ -22,29 +22,26 @@
 
 namespace whal {
 
-constexpr f32 GRAVITY = 100;
-
-constexpr f32 FRICTION_GROUND = 240;
-constexpr f32 FRICTION_AIR = 200;
-constexpr f32 MOVE_EPSILON = 0.1;
-
-constexpr f32 JUMP_PEAK_GRAVITY_MULT = 0.5;
-constexpr f32 JUMP_PEAK_SPEED_MAX = -28;  // once Y velocity is below this, no longer considered "jumping"
-
 using CallbackMap = std::unordered_map<ecs::Entity, std::vector<std::pair<ecs::Entity, Vector2i>>, ecs::EntityHash>;
 
 // this gets cleared at the beginning of PhsyicsSystem::update
 static CallbackMap S_CALLBACK_QUEUE;
 
-void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping) {
-    bool isInJumpPeak = isJumping && math::isBetween(velocity.total.y, JUMP_PEAK_SPEED_MAX, 0.0f);
-    f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - JUMP_PEAK_GRAVITY_MULT);
-    velocity.stable.y =
-        math::approach(velocity.stable.y, gravityMultiplier * TERMINAL_VELOCITY_Y, math::abs(gravityMultiplier) * GRAVITY * peakMultiplier * dt);
+void applyGravity(Velocity& velocity, f32 dt, f32 gravityMultiplier, bool isJumping, const PhysicsParams& params) {
+    bool isInJumpPeak = isJumping && math::isBetween(velocity.total.y, params.jumpPeakSpeedMax, 0.0f);
+    f32 peakMultiplier = 1 - static_cast<f32>(isInJumpPeak) * (1 - params.jumpPeakGravityMult);
+    velocity.stable.y = math::approach(velocity.stable.y, gravityMultiplier * params.terminalVelocityY,
+                                       math::abs(gravityMultiplier) * params.gravity * peakMultiplier * dt);
 }
 
 void applyFriction(Vector2f& velocity, f32 frictionMultiplier) {
     velocity.x = math::approach(velocity.x, 0, frictionMultiplier);
+}
+
+PhysicsSystem::PhysicsSystem() {
+    if (!World.has<PhysicsParams>()) {
+        World.add<PhysicsParams>();
+    }
 }
 
 // Any type of collision (regular, push, carry) is emitted as an event and received here.
@@ -109,6 +106,7 @@ void PhysicsSystem::update() {
     S_CALLBACK_QUEUE.clear();
     // ColliderSystem::syncColliders();
     syncColliders(getEntities());
+    const PhysicsParams& physicsParams = World.get<PhysicsParams>();
 
     std::vector<ecs::Entity> allColliderEntities;
     for (auto& [entityid, entity] : getEntities()) {
@@ -126,18 +124,18 @@ void PhysicsSystem::update() {
             frictionMultiplier = rbOpt->frictionMultiplier;
         }
 
-        const f32 frictionStepGround = dt * FRICTION_GROUND * frictionMultiplier.x;
-        const f32 frictionStepAir = dt * FRICTION_AIR * frictionMultiplier.y;
-        const f32 gravityStep = dt * GRAVITY * 3;
+        const f32 frictionStepGround = dt * physicsParams.frictionGround * frictionMultiplier.x;
+        const f32 frictionStepAir = dt * physicsParams.frictionAir * frictionMultiplier.y;
+        const f32 gravityStep = dt * physicsParams.gravity * 3;
         Transform& trans = entity.get<Transform>();
         Velocity& vel = entity.get<Velocity>();
 
         // if impulse ends, use residual
         Vector2f impulse = vel.impulse;
-        if (!impulse.x && !math::isNearZero(vel.residualImpulse.x, MOVE_EPSILON)) {
+        if (!impulse.x && !math::isNearZero(vel.residualImpulse.x, physicsParams.moveEpsilon)) {
             impulse.x += vel.residualImpulse.x;
         }
-        if (!impulse.y && !math::isNearZero(vel.residualImpulse.y, MOVE_EPSILON)) {
+        if (!impulse.y && !math::isNearZero(vel.residualImpulse.y, physicsParams.moveEpsilon)) {
             impulse.y += vel.residualImpulse.y;
         }
 
@@ -220,14 +218,14 @@ void PhysicsSystem::update() {
             if (!rbOpt->isGrounded) {
                 if (jumpControlOpt) {
                     auto& jumpControl = entity.get<Jumper>();
-                    if (totalVelocity.y < JUMP_PEAK_SPEED_MAX) {
+                    if (totalVelocity.y < physicsParams.jumpPeakSpeedMax) {
                         // falling == not jumping
                         // a little lower than 0 while applying reduced gravity
                         jumpControl.isJumping = false;
                     }
-                    applyGravity(vel, dt, rbOpt->gravityMultiplier, jumpControl.isJumping);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, jumpControl.isJumping, physicsParams);
                 } else {
-                    applyGravity(vel, dt, rbOpt->gravityMultiplier, false);
+                    applyGravity(vel, dt, rbOpt->gravityMultiplier, false, physicsParams);
                 }
 
                 rbOpt->isLanding = false;
