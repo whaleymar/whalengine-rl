@@ -1,53 +1,52 @@
 #include "CameraUtil.h"
 
 #include "Components/Relationships.h"
+#include "Components/Tags.h"
 #include "Systems/CameraSystem.h"
 
 namespace whal {
 
-Corrade::Containers::Optional<ecs::Entity> getCamera() {
+static ecs::Entity createCamera() {
+    auto camera = World.entity("Camera", false);
+    if (!camera.isValid()) {
+        return camera;
+    }
+    auto _ = ecs::DeferActivate(camera);
+
+    camera.add<Camera>();
+    camera.add<AudioListener>();
+    camera.add<IgnoreTimeModifiers>();
+
+    return camera;
+}
+
+ecs::Entity getCamera() {
     if (World.getSystem<CameraSystem>()->getEntities().empty()) {
-        return Corrade::Containers::NullOpt;
+        return createCamera();
     }
     return World.getSystem<CameraSystem>()->first();
 }
 
 Vector2i getCameraPosition() {
-    static Vector2i lastPos;
-    auto eOpt = getCamera();
-    if (eOpt) {
-        lastPos = eOpt->get<Transform>().positionPx;
-    }
-    return lastPos;
+    return getCamera().get<Transform>().positionPx;
 }
 
 Vector2f getCameraPositionPrecise() {
-    static Vector2f lastPos;
-    auto eOpt = getCamera();
-    if (eOpt) {
-        lastPos = eOpt->get<Transform>().position;
-    }
-
-    return lastPos;
+    return getCamera().get<Transform>().position;
 }
 
 void setCameraTarget(ecs::Entity target) {
-    if (auto cameraOpt = getCamera(); cameraOpt) {
-        auto camera = *cameraOpt;
-        if (camera.has<Follow>()) {
-            auto& follow = camera.get<Follow>();
-            follow.targetEntityID = target.id();
-        } else {
-            camera.add(Follow(target));
-        }
+    ecs::Entity camera = getCamera();
+    if (camera.has<Follow>()) {
+        auto& follow = camera.get<Follow>();
+        follow.targetEntityID = target.id();
+    } else {
+        camera.add(Follow(target));
     }
 }
 
 void setCameraPosition(Vector2i pos) {
-    auto eOpt = getCamera();
-    if (eOpt) {
-        eOpt->set(Transform::world(pos.x, pos.y));
-    }
+    getCamera().set(Transform::world(pos.x, pos.y));
 }
 
 }  // namespace whal

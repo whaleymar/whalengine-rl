@@ -60,7 +60,7 @@ void EditorUiSystem::activate() {
 
 void EditorUiSystem::deactivate() {
     S_IS_ACTIVE = false;
-    ecs::Entity camera = *getCamera();
+    ecs::Entity camera = getCamera();
     camera.get<Transform>().setPosition(S_CAMERA_POS, camera);
 }
 
@@ -87,7 +87,7 @@ void EditorUiSystem::panCamera() const {
         return;
     }
 
-    ecs::Entity camera = *getCamera();
+    ecs::Entity camera = getCamera();
     camera.get<Transform>().translate(delta * Vector2f(-1, 1) / VIRTUAL_SCREEN_RATIO_STRETCH, camera);
 }
 

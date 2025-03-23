@@ -19,9 +19,7 @@
 #include "Settings.h"
 #include "Sys/System.h"
 
-#include "Systems/ColliderSystem.h"
 #include "Systems/Graphics/Common.h"
-#include "Systems/LightSystem.h"
 
 #include "Util/CameraUtil.h"
 #include "Util/Print.h"
@@ -233,7 +231,7 @@ gfx::RenderContext Renderer::getRenderContext(bool useUnstretchedRenderWindow) c
     if (!useUnstretchedRenderWindow) {
         worldCamera.offset = rl::Vector2(WINDOW_WIDTH_STRETCH / 2, WINDOW_HEIGHT_STRETCH / 2);
     }
-    ecs::Entity cameraEntity = *getCamera();
+    ecs::Entity cameraEntity = getCamera();
     worldCamera.rotation = cameraEntity.get<Transform>().rotation;
 
     // HACK dumb shit (raylib rounding issue that affects UVs when camera is exactly between 2 pixels in screen space)
