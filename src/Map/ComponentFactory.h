@@ -100,4 +100,6 @@ struct ComponentFactory : SerializeFactory<ComponentFactory, LoadContext> {
     static std::unordered_map<std::string, std::pair<TiledDataType, std::string>> memberTypes;
 };
 
+void initEcsSerializer();
+
 }  // namespace whal
