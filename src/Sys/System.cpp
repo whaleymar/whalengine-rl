@@ -4,6 +4,7 @@
 #include "IGame.h"
 
 #include "Gfx/ShaderManager.h"
+#include "Map/ComponentFactory.h"
 #include "Map/Level.h"
 #include "Settings.h"
 #include "Util/Print.h"
@@ -178,6 +179,8 @@ bool System::start() {
         return true;
     }
     Schedule.start();
+
+    ComponentFactory::init();
 
     return false;
 }

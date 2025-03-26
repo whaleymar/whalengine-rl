@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "Map/ComponentFactory.h"
 #include "Physics/CollisionLayer.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
@@ -16,6 +15,7 @@ class Collider;
 struct HitInfo;
 class PhysicsSystem;
 class TweenPositionSystem;
+class ComponentFactory;
 
 // the default function which is called when a non-solid collider is squished between two solids (it dies).
 void defaultSquish(ecs::Entity callbackEntity, ecs::Entity other, Vector2i hitNormal);
@@ -36,10 +36,11 @@ struct ColliderParams {
     Vector2i offset = Vector2i::ZERO;
 };
 
-class Collider : public ISerialize<Collider, ComponentFactory> {
+class Collider {
 public:
     friend PhysicsSystem;
     friend TweenPositionSystem;
+    friend ComponentFactory;
 
     Collider() = default;
     Collider(Transform transform, Vector2i halflen, PhysicsBody physicsBody, u16 layerMask, ColliderParams params = ColliderParams{});
@@ -104,8 +105,6 @@ public:
     HitInfo checkCollisionQT(const Vector2i position, const Vector2i moveNormal, const bool triggerCollisionEvents = false) const;
     void squish(ecs::Entity other, Vector2i hitNormal);
     bool tryCornerCorrection(Vector2i nextPos, s32 moveSign, Vector2i moveNormal, Vector2i correctionBuffer);
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 
 protected:
     void updateEntityPosition();

@@ -6,6 +6,7 @@
 #include "Gfx/Depth.h"
 #include "Sys/System.h"
 #include "Systems/MouseCursorSystem.h"
+#include "Util/Print.h"
 
 namespace whal {
 

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <json.hpp>
 #include <raylib.h>
 #include <rlgl.h>

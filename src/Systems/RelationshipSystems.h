@@ -9,11 +9,6 @@
 
 namespace whal {
 
-class OrbitSystem : public ecs::ISystem<Orbit, Transform>, public ecs::IUpdate {
-public:
-    void update() override;
-};
-
 class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform>,
                      public ecs::IUpdate,
                      public ecs::IMonitorSystem,

@@ -3,15 +3,10 @@
 #include <cassert>
 #include <cstring>
 
-#include "ECS.h"
-
 #include "Components/Draw.h"
-
+#include "ECS.h"
 #include "Map/AnimationFactory.h"
-#include "Map/TiledParse.h"
-
 #include "Sys/System.h"
-
 #include "Util/Print.h"
 
 namespace whal {
@@ -151,27 +146,6 @@ void Animator::resetAnimation() {
 
 void Animator::setLooping(bool loop) {
     isLooping = loop;
-}
-
-void Animator::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
-    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
-    std::string animatorName = readString(*ctx.values, "Animator");
-    Animator animator = Animator::fromAnimation(AnimationFactory::get(animatorName.c_str()));
-    entity.add(animator);
-    sprite.setFrame(animator.getFrame());
-
-    s32 rotation;
-    if (tryRead(*ctx.values, "rotationDegrees", &rotation)) {
-        entity.get<Transform>().rotation = rotation;
-    }
-
-    tryRead(*ctx.values, "Color", &sprite.color);
-
-    f32 brightness;
-    if (tryRead(*ctx.values, "Brightness", &brightness)) {
-        sprite.color.scale(brightness);
-    }
-    entity.add(sprite);
 }
 
 s32 Animation::getFrameCount() const {

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Map/ComponentFactory.h"
-#include "Util/ISerialize.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -20,11 +18,11 @@ struct BufferedInput {
     void notUsed();
 };
 
-struct PlayerControl : ISerialize<PlayerControl, ComponentFactory> {
+struct PlayerControl {
     f32 moveSpeed = 80;
 };
 
-struct Jumper : ISerialize<Jumper, ComponentFactory> {
+struct Jumper {
     bool isTryingJump() const;
     bool canJump() const;
 
@@ -39,6 +37,5 @@ struct Jumper : ISerialize<Jumper, ComponentFactory> {
     BufferedInput buffer;
     bool isJumping = false;
 };
-REGISTER_SERIALIZE(Jumper)
 
 }  // namespace whal

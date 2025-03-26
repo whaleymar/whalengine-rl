@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Gfx/Depth.h"
-#include "Map/ComponentFactory.h"
 #include "Physics/CollisionUtil.h"
 #include "Physics/Material.h"
 #include "Util/Vector.h"
 
 namespace whal {
 
-struct ParticleEmitter : ISerialize<ParticleEmitter, ComponentFactory> {
+struct ParticleEmitter {
     WorldMaterial material;
     CollisionDir direction;
     Depth depth;
@@ -19,8 +18,6 @@ struct ParticleEmitter : ISerialize<ParticleEmitter, ComponentFactory> {
     Vector2i offset = {0, 0};
 
     void setDirection(CollisionDir dir) { direction = dir; }
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 }  // namespace whal

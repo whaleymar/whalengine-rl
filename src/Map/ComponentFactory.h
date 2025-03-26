@@ -1,14 +1,10 @@
 #pragma once
 
-#include <type_traits>
 #include <unordered_map>
+#include "ECS.h"
 #include "json_fwd.hpp"
 
-#include <rfl/json.hpp>
-#include "Map/TiledParse.h"
-#include "Util/ISerialize.h"
 #include "Util/Types.h"
-#include "rfl/to_view.hpp"
 
 namespace whal {
 
@@ -25,55 +21,20 @@ struct LoadContext {
     const EntityMapData& entityData;
     ecs::Entity self;
     ecs::Entity parent;
-    bool isTiledData = false;
 };
 
-// not working...
-// template <typename T, typename = void>
-// struct IsSerializable : std::false_type {};
-// template <typename T>
-// struct IsSerializable<T, std::void_t<decltype(rfl::json::write(std::declval<T>()))>> : std::true_type {};
+// a meta-component (given to other components) with a callback that parses tiled data and adds the component to the entity.
+struct TiledDeserialize {
+    using Loader = void (*)(ecs::Entity, const LoadContext&);
+    Loader load;
+};
 
-// loadImpl signature:
-// void ::loadImpl(ecs::Entity entity, const LoadContext& ctx);
-struct ComponentFactory : SerializeFactory<ComponentFactory, LoadContext> {
-    // Requirements for the Default Loader:
-    // 1. The component does not have a custom constructor
-    // 2. (tiled specific) the tiled property types and members are named exactly the same as in code
-    template <typename T>
-        requires(CustomLoad<T, LoadType> ||
-                 std::is_aggregate<T>::value)  //  ComponentFactory::DefaultLoadImpl doesn't work for components with custom constructors
-    static void DefaultLoadImpl(ecs::Entity entity, const LoadContext& ctx) {
-        T cpnt = entity.has<T>() ? entity.get<T>() : T{};
-        if (ctx.isTiledData) {
-            // TODO this doesn't handle a couple of things:
-            // 1. parsing enum from string
-            // 2. parsing shape
-            // 3. parsing target entity ID
+class ComponentFactory {
+public:
+    static const TiledDeserialize* get(const char* componentName);
+    static void init();
 
-            const auto view = rfl::to_view(cpnt);
-            view.apply([&](const auto& f) { tryRead(*ctx.values, f.name(), f.value()); });
-        }
-
-        entity.add(cpnt);
-    }
-
-    template <typename T>
-    // requires(IsSerializable<T>())
-    static std::string DefaultSaveImpl(ecs::Entity entity) {
-        // print("Running ComponentFactoryNew::DefaultSaveImpl");
-        // std::string data = rfl::json::write(entity.get<T>());
-        // print(data);
-        return nullptr;
-    }
-
-    // template <typename T>
-    // requires(!IsSerializable<T>())
-    // static void* DefaultSaveImpl(ecs::Entity entity) {
-    //     return nullptr;
-    // }
-
-    // TODO these are currently UNUSED. I would like to use them to automatically deserialize Tiled property members based on their type.
+    // These are currently UNUSED. I would like to use them to automatically deserialize Tiled property members based on their type.
     //    Right now, I dispatch an overloaded `tryRead` call to set each member when deserializing a component.
     //    Instead, I want to check what type the member is in tiled (is it an enum? is it a Tiled color? A whal::Color?)
     //    And use that information to deserialize without writing a dedicated `tryRead` implementation
@@ -98,8 +59,10 @@ struct ComponentFactory : SerializeFactory<ComponentFactory, LoadContext> {
     // So if Light:color is a whal::Color in Tiled, then the value is {TiledDataType::Class, "whal::Color"}
     // TODO should use PropertyType instead of TiledDataType
     static std::unordered_map<std::string, std::pair<TiledDataType, std::string>> memberTypes;
-};
 
-void initEcsSerializer();
+private:
+    static void initTiledLoader();
+    static void initEcsSerializer();
+};
 
 }  // namespace whal

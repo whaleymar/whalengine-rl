@@ -2,11 +2,6 @@
 
 #include <cstring>
 #include <raylib.h>
-// #include <rfl/json.hpp>
-#include "Map/Tiled.h"
-#include "Map/TiledParse.h"
-
-#include "Components/Transform.h"
 
 #include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
@@ -72,71 +67,11 @@ bool Sprite::isFlagSet(flag f) const {
     return (flags & f) > 0;
 }
 
-namespace stl {
-template <class ForwardIt, class T = typename std::iterator_traits<ForwardIt>::value_type>
-void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_value) {
-    for (; first != last; ++first)
-        if (*first == old_value)
-            *first = new_value;
-}
-}  // namespace stl
-
-void Sprite::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
-    Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
-
-    tryRead(*ctx.values, "Color", &sprite.color);
-
-    f32 brightness;
-    if (tryRead(*ctx.values, "Brightness", &brightness)) {
-        sprite.color.scale(brightness);
-    }
-
-    std::string spritePath = "";
-    if (tryRead(*ctx.values, "Sprite", &spritePath)) {
-        stl::replace(spritePath.begin(), spritePath.end(), '\\', '/');
-    }
-    auto eSprite = Sprite::fromPath(spritePath.c_str());
-    if (eSprite.isExpected()) {
-        sprite.frameSize = eSprite.value().frameSize;
-        sprite.atlasPosition = eSprite.value().atlasPosition;
-        entity.add(sprite);
-    } else {
-        print("Error: Coudn't find frame for sprite:", spritePath);
-    }
-
-    // how to rfl::json :
-    // print(rfl::json::write(sprite));
-    // print(rfl::json::write(entity.get<Transform>()));
-}
-
 DrawRect DrawRect::create(Color color, Vector2i frameSize) {
     return DrawRect{
         .frameSize = frameSize,
         .color = color,
     };
-}
-
-void DrawRect::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
-    DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DrawRect{};
-    draw.frameSize = ctx.entityData.size;
-
-    tryRead(*ctx.values, "Color", &draw.color);
-
-    f32 brightness;
-    if (tryRead(*ctx.values, "Brightness", &brightness)) {
-        draw.color.scale(brightness);
-    }
-    entity.add(draw);
-}
-
-void DrawText::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
-    DrawText text = entity.has<DrawText>() ? entity.get<DrawText>() : DrawText{};
-
-    tryRead(*ctx.values, "color", &text.color);
-    tryRead(*ctx.values, "text", &text.text);
-    tryRead(*ctx.values, "center", &text.isCentered);
-    text.frameSize = ctx.entityData.size;
-    entity.add(text);
 }
 
 }  // namespace whal

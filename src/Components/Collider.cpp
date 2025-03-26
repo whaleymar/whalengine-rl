@@ -19,7 +19,6 @@
 
 #include "Sys/System.h"
 
-#include "Util/JsonUtil.h"
 #include "Util/MathUtil.h"
 
 namespace whal {
@@ -777,42 +776,6 @@ bool Collider::tryCornerCorrection(Vector2i nextPosition, s32 moveSign, Vector2i
         }
     }
     return false;
-}
-
-void Collider::loadImpl(ecs::Entity entity, const LoadContext& ctx) {
-    Collider collider = entity.has<Collider>() ? entity.get<Collider>() : Collider{};
-    CollisionDir collisionDir = collider.getCollisionDir();
-    WorldMaterial material = collider.getMaterial();
-
-    if (tryReadVal(*ctx.values, "CollisionDir", &collisionDir)) {
-        collider.setCollisionDir(collisionDir);
-    }
-    if (tryReadVal(*ctx.values, "Material", &material)) {
-        collider.setMaterial(material);
-    }
-    tryReadVal(*ctx.values, "Type", &collider.mPhysicsBody);
-
-    std::string layerName;
-    if (tryReadVal(*ctx.values, "Layer", &layerName)) {
-        // can have multiple values. Written as "layername,layername,layername"
-        u16 mask = 0;
-        size_t curIx = 0;
-        while (true) {
-            size_t commaIx = layerName.find(",", curIx);
-            if (commaIx == std::string::npos) {
-                mask |= CollisionLayer::fromString(layerName.substr(curIx).c_str());
-                break;
-            }
-            // add layer and update curIx
-            mask |= CollisionLayer::fromString(layerName.substr(curIx, commaIx - curIx).c_str());
-            curIx = commaIx + 1;
-        }
-        // collider.setCollisionMask(CollisionLayer::fromString(layerName.c_str()));
-        collider.setCollisionMask(mask);
-    }
-
-    collider.setShape(readShapeOrDefault(ctx, "Shape", &collider.mOffset).getAABB());
-    entity.add(collider);
 }
 
 void Momentum::setMomentumX(ecs::Entity self, const f32 momentumX) {

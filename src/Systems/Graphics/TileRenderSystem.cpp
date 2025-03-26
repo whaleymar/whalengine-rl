@@ -1,4 +1,5 @@
 #include "TileRenderSystem.h"
+#include <cstring>
 
 #include "Common.h"
 #include "Components/Draw.h"

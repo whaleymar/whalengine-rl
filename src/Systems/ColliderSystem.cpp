@@ -14,6 +14,7 @@
 #include "Systems/TriggerSystem.h"
 
 #include "Util/CameraUtil.h"
+#include "Util/Print.h"
 #include "Util/Vector.h"
 
 #ifndef NDEBUG

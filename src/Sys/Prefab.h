@@ -1,7 +1,7 @@
 #pragma once
 
-// #include "Map/ComponentFactory.h"
 #include "Map/EntityFactory.h"
+
 namespace whal {
 
 struct System;
@@ -13,7 +13,6 @@ public:
     PrefabManager() = default;
 
     EntityFactory entity;
-    // ComponentFactory component;
 
 private:
     PrefabManager(const PrefabManager&) = delete;

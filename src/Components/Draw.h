@@ -5,7 +5,6 @@
 #include "Gfx/Color.h"
 #include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
-#include "Map/ComponentFactory.h"
 #include "Util/Vector.h"
 
 template <typename T>
@@ -17,7 +16,7 @@ struct Frame;
 
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
-struct Sprite : ISerialize<Sprite, ComponentFactory> {
+struct Sprite {
     // controls settings in the main sprite shader
     enum flag : u32 {
         None = 0,
@@ -48,18 +47,13 @@ struct Sprite : ISerialize<Sprite, ComponentFactory> {
     void setFlag(flag f);
     void resetFlag(flag f);
     bool isFlagSet(flag f) const;
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
-// constexpr bool asdf = is_base_of_template<ISerialize, Sprite>::value;
 
-struct DrawRect : ISerialize<DrawRect, ComponentFactory> {
+struct DrawRect {
     static DrawRect create(Color color = Colors::White, Vector2i frameSize = {8, 8});
 
     Vector2i frameSize;
     Color color = Colors::White;
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 struct DrawBezierQuad {
@@ -82,19 +76,16 @@ struct DrawStraightLine {
     bool isRotateAboutCenter = false;
 };
 
-struct DrawText : ISerialize<DrawText, ComponentFactory> {
+struct DrawText {
     std::string text;
     Vector2i frameSize;
     Color color = Colors::White;
     bool isCentered = false;
     bool isWrapped = true;
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
-struct SpriteOutline : ISerialize<SpriteOutline, ComponentFactory> {
+struct SpriteOutline {
     Color color = Colors::White;
 };
-REGISTER_SERIALIZE(SpriteOutline);
 
 }  // namespace whal

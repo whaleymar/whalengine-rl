@@ -156,6 +156,14 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         FMOD_Channel_Set3DLevel(mMusicChannel, 0.0);
     }
 
+    // playing around with changing the playback speed
+    // f32 freq;
+    // FMOD_Channel_GetFrequency(mMusicChannel, &freq);
+    // print("default frequency (from channel) is ", freq);
+    // FMOD_Sound_GetDefaults(mMusic, &freq, nullptr);
+    // print("default frequency (from sound) is ", freq);  // this will stay the same no matter what I do to the channel
+    // FMOD_Channel_SetFrequency(mMusicChannel, freq * 0.5f);
+
     mIsPlayingMusic = true;
 }
 

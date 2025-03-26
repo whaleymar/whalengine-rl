@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Map/ComponentFactory.h"
 namespace whal {
 
 struct Player {};
@@ -13,9 +12,7 @@ struct MouseCursor {};
 struct TileTag {};
 struct TiledObjectLayer {};
 
-struct TagLoader : ISerialize<TagLoader, ComponentFactory> {
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
-};
-REGISTER_SERIALIZE(TagLoader)
+// Meta component for loading tags
+struct TagLoader {};
 
 }  // namespace whal

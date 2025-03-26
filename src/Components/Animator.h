@@ -1,11 +1,10 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
-#include "Map/ComponentFactory.h"
-#include "Util/Types.h"
-
 #include "Gfx/Frame.h"
+#include "Util/Types.h"
 
 namespace whal {
 
@@ -33,7 +32,7 @@ bool basicAnimationUnsquish(Animator& animator, ecs::Entity entity);
 // 1. the animation's name as registered in the AnimationFactory (typically the basename of the file, like "sprite/player.aseprite" -> "player").
 // 2. the animation's simple name, which is used to play it with Animator::play. Pass an empty string to use the animation's full name.
 using AnimInfo = std::vector<std::tuple<const char*, const char*>>;
-struct Animator : ISerialize<Animator, ComponentFactory> {
+struct Animator {
     static Animator fromAnimation(const Animation& animation, AnimBrain brain = &basicAnimation, bool isLooping = true);
     static Animator fromAnimation(const char* factoryName, AnimBrain brain = &basicAnimation, bool isLooping = true);
     static Animator from(const AnimInfo& animInfo, AnimBrain brain, bool isLooping = true);
@@ -62,8 +61,6 @@ struct Animator : ISerialize<Animator, ComponentFactory> {
     void nextFrame();
     void resetAnimation();
     void setLooping(bool loop);
-
-    static void loadImpl(ecs::Entity entity, const LoadContext& ctx);
 };
 
 // an animation is a sequence of same-sized frames

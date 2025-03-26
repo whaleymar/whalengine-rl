@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Map/ComponentFactory.h"
-#include "Map/TiledParse.h"
 #include "Physics/Material.h"
 #include "Settings.h"
 #include "Util/Types.h"
@@ -9,7 +7,7 @@
 
 namespace whal {
 
-struct RigidBody : ISerialize<RigidBody, ComponentFactory> {
+struct RigidBody {
     void setGrounded(WorldMaterial material);
     void setNotGrounded();
 

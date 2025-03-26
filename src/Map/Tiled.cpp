@@ -1,33 +1,28 @@
 #include "Tiled.h"
+
 #include <memory>
 
 #include "Components/Collider.h"
-#include "ECS.h"
-#include "Systems/Graphics/TileRenderSystem.h"
-#include "json.hpp"
-
-#include "Settings.h"
-
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Map.h"
 #include "Components/Relationships.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-
+#include "ECS.h"
 #include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
-
 #include "Map/ComponentFactory.h"
 #include "Map/EntityFactory.h"
 #include "Map/Level.h"
-#include "TiledParse.h"
-
+#include "Settings.h"
 #include "Sys/System.h"
-
+#include "Systems/Graphics/TileRenderSystem.h"
+#include "TiledParse.h"
 #include "Util/DebugUtil.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
+#include "json.hpp"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 
@@ -67,7 +62,6 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         .entityData = entityData,
         .self = entity,
         .parent = parent,
-        .isTiledData = true,
     };
 
     for (const auto& property : object["properties"]) {
@@ -75,7 +69,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         if (!tryRead(property, "propertytype", &componentName)) {
             continue;
         }
-        const std::optional<ComponentFactory::SerializeFuncs> serializerOpt = ComponentFactory::Get(componentName.c_str());
+        const TiledDeserialize* serializerOpt = ComponentFactory::get(componentName.c_str());
         if (!serializerOpt) {
             if (componentName == "InheritTemplate") {
                 auto newTemplateFile = readString(property["value"], "TemplateFileName");
@@ -641,7 +635,7 @@ void parseMapProject(const char* mapfile) {
                         // TODO if it's an enum I also need to store the propertytype
                         // if the enum is stored as an int, memberType will be an int, but I'll also need propertytype
                         // and if the enum is stored as a string, memberType will be a string
-                        // so I need to double check if memberPropType is in ComponentFactory::propertyTypes
+                        // so I need to double check if memberPropType is in ComponentFactory2::propertyTypes
                     } else {
                         // propertyType doesn't matter, do empty string
                         ComponentFactory::memberTypes.insert({std::move(memberName), {memberType, ""}});

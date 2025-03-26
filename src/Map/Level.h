@@ -5,6 +5,7 @@
 
 #include "CorradeOptional.h"
 
+#include "whalECS/src/ECS.h"
 #include "whalECS/src/Expected.h"
 
 #include "Components/Relationships.h"
