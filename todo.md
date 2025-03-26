@@ -1,13 +1,10 @@
 # To Do 
 
 ACTIVELY WORKING ON:
-- something to automatically add a sprite to an entity when I add an animator
-- some low-pitched sound between placing a mine and it going off
 - more convenient Audio.playClip method for adding sound position -- then go add sound position to all the places i forgot
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
-- editing globals like physics gravity/friction values from game -> put in Settings.cpp
 - Want to create more world materials in game
 
 ## Components (some of these are duplicates of other tasks)
@@ -42,7 +39,6 @@ ACTIVELY WORKING ON:
         - lua integration is doable (and brings benefits like insta hot reloading) 
         - but would require extending ComponentFactory to convert components to/from lua tables
     - could stop using lambdas and exclusively use named free functions. Then I can serialize the function signature
-- entity serialization function (need to iterate components)
 
 ## Map 
 - put tiled project in game's `data` directory so paths are easier to work with
@@ -80,7 +76,7 @@ ACTIVELY WORKING ON:
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
-- make physics simulation run at 60 fps even if framerate is higher
+- make physics simulation run at 60 fps even if framerate is higher (would require interpolation which is a can of worms)
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Get windows builds working again
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.

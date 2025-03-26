@@ -175,8 +175,6 @@ struct Transform {
     // ignores the Z axis (floatHeight)
     Vector2i apply2DInverse(Vector2i transformedPosition, Vector2i relOffset) const;
 
-    static std::string saveImpl(ecs::Entity entity);
-
 #ifndef NDEBUG
     void draw() const;
 #endif
