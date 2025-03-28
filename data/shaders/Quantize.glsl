@@ -12,21 +12,21 @@ uniform vec2 _PaletteTexSize;
 out vec4 finalColor;
 
 // REGULAR QUNTIZATION SHADER
-float gamma = 0.6;
-vec4 quantize(vec4 color) {
-    float COLORS = _PaletteTexSize.y;
-    vec3 texelColor = color.rgb;
-    texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
-    texelColor = texelColor * COLORS;
-    texelColor = floor(texelColor);
-    texelColor = texelColor / COLORS;
-    texelColor = pow(texelColor, vec3(1.0 / gamma));
-
-    return vec4(texelColor, color.a);
-}
+// float gamma = 0.6;
+// vec4 quantize(vec4 color) {
+//     float COLORS = _PaletteTexSize.y;
+//     vec3 texelColor = color.rgb;
+//     texelColor = pow(texelColor, vec3(gamma, gamma, gamma));
+//     texelColor = texelColor * COLORS;
+//     texelColor = floor(texelColor);
+//     texelColor = texelColor / COLORS;
+//     texelColor = pow(texelColor, vec3(1.0 / gamma));
+//
+//     return vec4(texelColor, color.a);
+// }
 
 // CUSTOM PALETTE POSTERIZATION
-vec4 applyPalette(vec4 px) {
+vec3 applyPalette(vec3 px) {
     float COLORS = _PaletteTexSize.y;
     float MAXCOLOR = COLORS - 1.0;
     float cell = px.b * MAXCOLOR;
@@ -47,7 +47,8 @@ vec4 applyPalette(vec4 px) {
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 
-    return graded_color * fragColor;
+    // return graded_color * fragColor.rgb;
+    return graded_color.rgb;
 }
 
 void fragment() {
@@ -59,14 +60,16 @@ void fragment() {
     float b = texelColor.b;
     float maxChan = r > g ? (r > b ? r : b) : (g > b ? g : b);
 
+    float a = texelColor.a;
+
     if (maxChan > 1.) {
         // convert to LDR, posterize, then go back to HDR
-        texelColor = vec4(texelColor.r / maxChan, texelColor.g / maxChan, texelColor.b / maxChan, texelColor.a);
-        texelColor = applyPalette(texelColor);
-        finalColor = vec4(texelColor.r * maxChan, texelColor.g * maxChan, texelColor.b * maxChan, texelColor.a);
+        vec3 query = texelColor.rgb / maxChan;
+        vec3 newCol = applyPalette(query);
+        finalColor = vec4(newCol * maxChan, a);
     } else {
         // normal LDR posterization
-        finalColor = applyPalette(texelColor);
+        finalColor = vec4(applyPalette(texelColor.rgb), a);
     }
 
     // quantization on pixel art seems unecessary

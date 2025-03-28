@@ -93,7 +93,8 @@ public:
     // src and dest should not be the same RenderTexture.
     // If no shader is specified, then the currently active shader will be used.
     // If a fixed shader is set (using `fixedShaderMode`), then that shader will be used.
-    void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr});
+    void blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader = {.id = 0, .locs = nullptr},
+              rl::BlendMode blendMode = rl::BLEND_ALPHA);
 
     // Queue a shader's uniform value to be set the next time `blit` is run with a shader.
     // Alternatively, `setUniforms` can set them manually.

@@ -202,12 +202,16 @@ void Renderer::releaseTemporaryRT(rl::RenderTexture rt) {
     mAvailableRTs.push_back(released);
 }
 
-void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader) {
+void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader shader, rl::BlendMode blendMode) {
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, src.texture.width, -src.texture.height);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, dst.texture.width, dst.texture.height);
 
     rl::BeginTextureMode(dst);
     rl::ClearBackground(Colors::ClearRL);
+    if (blendMode != rl::BLEND_ALPHA) {
+        rl::BeginBlendMode(blendMode);
+    }
+
     const bool isCustomShader = shader.id != 0;
     if (mIsFixedShaderMode) {
         setUniforms(mFixedShader);
@@ -221,6 +225,10 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
 
     } else {
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    }
+
+    if (blendMode != rl::BLEND_ALPHA) {
+        rl::EndBlendMode();
     }
     rl::EndTextureMode();
 }
@@ -269,10 +277,10 @@ void Renderer::render() {
 
     // posterize before applying lighting
     // TODO should belong to a pre-lighting postprocess pass in camera
-    static Posterize sPosterize;
+    static Posterize sPosterize;  // registers the palette tex
     auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
-    blit(mStagingTexture.tex, tmpTex);
-    sPosterize.process(tmpTex, mStagingTexture.tex);
+    sPosterize.process(mStagingTexture.tex, tmpTex);
+    blit(tmpTex, mStagingTexture.tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
     releaseTemporaryRT(tmpTex);
 
     // 2. Renders everything to TextureID::Main
@@ -281,7 +289,10 @@ void Renderer::render() {
     rl::ClearBackground(Colors::ClearRL);
 
     // Game Objects.
+    // required for FBOs that will be drawn to the screen (?) Otherwise things with transparency look black:
+    rl::BeginBlendMode(rl::BLEND_ALPHA_PREMULTIPLY);
     gfx::DrawRenderTexture(mStagingTexture.tex);
+    rl::EndBlendMode();
 
     // Lights.
     rl::BeginBlendMode(rl::BLEND_MULTIPLIED);

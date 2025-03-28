@@ -25,15 +25,15 @@ Posterize::Posterize() {
 void Posterize::process(rl::RenderTexture src, rl::RenderTexture dst) {
 #ifndef NDEBUG
     if (!S_ENABLED) {
-        Graphics.blit(src, dst);
+        Graphics.blit(src, dst, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
         return;
     }
 #endif
-    Shader& mPosterize = ShaderMgr::get("Quantize");
+    Shader& posterizeShader = ShaderMgr::get("Quantize");
     auto paletteTex = TextureManager::getTexture(TEXNAME_PALETTE);
-    mPosterize.setTexture("_Palette", paletteTex);
-    mPosterize.setVector2("_PaletteTexSize", rl::Vector2(paletteTex.width, paletteTex.height));
-    Graphics.blit(src, dst, mPosterize.get());
+    posterizeShader.setTexture("_Palette", paletteTex);
+    posterizeShader.setVector2("_PaletteTexSize", rl::Vector2(paletteTex.width, paletteTex.height));
+    Graphics.blit(src, dst, posterizeShader.get(), rl::BLEND_ALPHA_PREMULTIPLY);
 }
 
 #ifndef NDEBUG
