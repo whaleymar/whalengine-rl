@@ -21,13 +21,15 @@ void BezierRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
         const DrawBezierQuad& line = entity.get<DrawBezierQuad>();
         const Transform& trans = entity.get<Transform>();
-        const AABB bb = AABB::fromPoints(trans.positionPx, trans.positionPx + line.controlPointOffset, trans.positionPx + line.endPointOffset);
+        AABB bb = AABB::fromPoints(trans.positionPx, trans.positionPx + line.controlPointOffset, trans.positionPx + line.endPointOffset);
 
-        // for Y sorting purposes I want floatHeight to be ignored
+        // float height should affect bounding box (for culling) but not Y sorting
+        s32 floatOffset = static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT);
+        bb.getPositionMut().y += floatOffset;
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
             .transform = &trans,
-            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
+            .ysortPosition = bb.bottom() - floatOffset,
             .entity = entity,
         });
     }

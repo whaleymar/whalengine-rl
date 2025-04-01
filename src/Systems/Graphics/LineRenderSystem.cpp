@@ -80,12 +80,15 @@ void LineRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const DrawStraightLine& line = entity.get<DrawStraightLine>();
         const Transform& trans = entity.get<Transform>();
         const LinePoints points = getRotatedPoints(trans.position, trans, line);
-        const AABB bb = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>());
+        AABB bb = AABB::fromPoints(points.p1.as<s32>(), points.p2.as<s32>());
 
+        // float height should affect bounding box (for culling) but not Y sorting
+        s32 floatOffset = static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT);
+        bb.getPositionMut().y += floatOffset;
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
             .transform = &trans,
-            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
+            .ysortPosition = bb.bottom() - floatOffset,
             .entity = entity,
         });
     }

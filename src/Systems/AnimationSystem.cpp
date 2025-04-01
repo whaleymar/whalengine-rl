@@ -29,4 +29,10 @@ void AnimationSystem::update() {
     }
 }
 
+void AnimationSystem::onAdd(ecs::Entity e) {
+    if (!e.has<Sprite>()) {
+        e.add<Sprite>(Sprite::fromFrame(e.get<Animator>().getFrame()));
+    }
+}
+
 }  // namespace whal

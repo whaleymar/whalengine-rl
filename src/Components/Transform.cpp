@@ -302,8 +302,8 @@ Vector2f Transform::apply2D(Vector2f relOffset) const {
 Vector2i Transform::apply2D(Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAndFloatAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
-        return positionPx + relOffset + scaleAndFloatAdjustment;
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
+        return positionPx + relOffset + scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -354,8 +354,8 @@ Vector2f Transform::apply2DInverse(Vector2f transformedPosition, Vector2f relOff
 Vector2i Transform::apply2DInverse(Vector2i transformedPosition, Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAndFloatAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
-        return transformedPosition - relOffset - scaleAndFloatAdjustment;
+        const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute())).round();
+        return transformedPosition - relOffset - scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions

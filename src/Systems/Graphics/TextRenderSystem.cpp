@@ -73,14 +73,16 @@ void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const DrawText& draw = entity.get<DrawText>();
         const Transform& trans = entity.get<Transform>();
 
-        const AABB bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2, Vector2i()) :
-                                                 Box(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
+        AABB bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2) :
+                                           Box(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
 
-        // for Y sorting purposes I want floatHeight to be ignored
+        // float height should affect bounding box (for culling) but not Y sorting
+        s32 floatOffset = static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT);
+        bb.getPositionMut().y += floatOffset;
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,
             .transform = &trans,
-            .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
+            .ysortPosition = bb.bottom() - floatOffset,
             .entity = entity,
         });
     }

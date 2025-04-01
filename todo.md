@@ -17,7 +17,6 @@ ACTIVELY WORKING ON:
 ## Gfx 
 - shader uniform caching
 - shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color
-- (BUG): the color chosen by the posterization shader appears to be affected by the object's alpha value. Likely due to blending issues earlier in the pipeline
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight

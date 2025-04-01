@@ -75,10 +75,6 @@ void ParticleEmitterSystem::update() {
 
         spawnLocation += emitter.offset;
         for (s32 i = 0; i < nParticles; i++) {
-            /*auto particle = createParticle(spawnLocation, emitter.material, emitter.depth, emitter.lifetimeMultiplier);*/
-            // RESEARCH: i am not passing the emitter component's depth on to the particle anymore.
-            // It inherits depth from the emitter now. I think I want that?
-
             // Create particle as child of emitter so it inherits its transform. Then orphan afterwards.
             ecs::Entity particle = entity.createChild(false);
             if (!particle.isValid()) {
@@ -89,10 +85,13 @@ void ParticleEmitterSystem::update() {
                 // add some random float value
                 s32 floatToAdd = Rng.range(0, PIXELS_PER_TILE);
                 spawnLocation.y -= floatToAdd;
-                particle.set(
-                    TransformBuilder(trans).position(spawnLocation.as<f32>()).height(trans.floatHeight + static_cast<f32>(floatToAdd)).build());
+                particle.set(TransformBuilder(trans)
+                                 .position(spawnLocation.as<f32>())
+                                 .height(trans.floatHeight + static_cast<f32>(floatToAdd))
+                                 .depth(emitter.depth)
+                                 .build());
             } else {
-                particle.set(TransformBuilder(trans).position(spawnLocation.as<f32>()).build());
+                particle.set(TransformBuilder(trans).position(spawnLocation.as<f32>()).depth(emitter.depth).build());
             }
             addParticleComponents(particle, MaterialData::get(emitter.material), emitter.lifetimeMultiplier);
 

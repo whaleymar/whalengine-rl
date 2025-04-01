@@ -127,6 +127,19 @@ static const MaterialData S_MATERIAL_DUST = {
     .maxScale = 2.0,
 };
 
+static const MaterialData S_MATERIAL_SMOKE = {
+    .name = "Smoke",
+    .id = WorldMaterial::Smoke,
+    .colorRange = {Colors::White, Colors::DarkGray},
+    .flags = MaterialData::DecayTime | MaterialData::FadeOutFlag,
+    .bounciness = 0.0,
+    .gravityCoef = -0.5,
+    .frictionCoefs = {0.0, 0.0},
+    .decayParams = {.decayTime = MaterialData::DecayTimeParams()},
+    .minScale = 0.0,
+    .maxScale = 2.0,
+};
+
 static const MaterialData S_MATERIAL_FIRE = {
     .name = "Fire",
     .id = WorldMaterial::Fire,
@@ -226,6 +239,8 @@ const MaterialData& getMaterialData(WorldMaterial material) {
         return S_MATERIAL_TINYDUST;
     case WorldMaterial::Magik:
         return S_MATERIAL_MAGIK;
+    case WorldMaterial::Smoke:
+        return S_MATERIAL_SMOKE;
     }
 }
 

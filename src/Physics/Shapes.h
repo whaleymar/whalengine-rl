@@ -26,8 +26,10 @@ public:
     void setPosition(Vector2i center);
     void setPosition(Transform transform, Vector2i relativeOffset);
     Vector2i getPosition() const { return mCenter; }
+    Vector2i& getPositionMut() { return mCenter; }
 
     Vector2i getHalf() const { return mHalf; }
+    Vector2i& getHalfMut() { return mHalf; }
     void setHalf(Vector2i half) { mHalf = half; }
     Vector2i getPositionEdge(Vector2i unitDir) const;
     Vector2i getClosestPointTo(Vector2i point) const;
