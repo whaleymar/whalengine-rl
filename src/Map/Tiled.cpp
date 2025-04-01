@@ -429,11 +429,18 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         tryRead(object, "rotation", &rotation);
 
         // add transform
-        entity.set(TransformBuilder(entity)
-                       .translate(getMapTranslation(entityMapData.position, entityMapData.size))
-                       .rotate(rotation)
-                       .depth(layerDepth)
-                       .build());
+        Transform trans = TransformBuilder(entity)
+                              .translate(getMapTranslation(entityMapData.position, entityMapData.size))
+                              .rotate(rotation)
+                              .depth(layerDepth)
+                              .build();
+        entity.set(trans);
+
+        // add initial position
+        entity.add<TileMapObject>({
+            .initialTransform = trans,
+            .mapFile = levelOpt ? levelOpt->filepath : "",
+        });
 
         // add name
         std::string name = "";

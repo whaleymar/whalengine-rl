@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include "Components/Transform.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -20,9 +21,14 @@ struct TileMapLayer {
 };
 
 // a "pointer" to an entity in the map
-struct TileMapEntity {
+struct TileMapEntityDescriptor {
     std::string mapFile;
     std::string entityName;
+};
+
+struct TileMapObject {
+    Transform initialTransform;
+    std::string mapFile;
 };
 
 }  // namespace whal

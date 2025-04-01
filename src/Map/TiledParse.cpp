@@ -43,9 +43,9 @@ std::string readString(const nlohmann::json& data, std::string_view key) {
     return data[key];
 }
 
-TileMapEntity readEntity(const nlohmann::json& data, std::string_view key) {
+TileMapEntityDescriptor readEntity(const nlohmann::json& data, std::string_view key) {
     DBG_ASSERT(data.contains(key), whal_format("Missing key: {}", key).c_str());
-    return TileMapEntity{
+    return TileMapEntityDescriptor{
         .mapFile = data["mapFile"],
         .entityName = data["entityName"],
     };
@@ -198,7 +198,7 @@ bool tryRead(const nlohmann::json& data, std::string_view key, Vector2f* dst) {
 }
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntity* dst) {
+bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntityDescriptor* dst) {
     if (data.contains(key)) {
         tryRead(data[key], "mapFile", &dst->mapFile);
         tryRead(data[key], "entityName", &dst->entityName);
