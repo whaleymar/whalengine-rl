@@ -89,6 +89,11 @@ bool Animator::isAnimationJustFinished() const {
     return _isAnimationFinishedThisFrame;
 }
 
+f32 Animator::getAnimationTimeRemaining() const {
+    f32 timeLeftCeiling = animations[curAnimIx].getRemaining(curFrameIx);
+    return timeLeftCeiling - (_curFrameDuration < 0.0f ? 0.0f : _curFrameDuration);
+}
+
 bool Animator::play(const std::string& name) {
     if (getAnimation().name == name) {
         return false;
@@ -153,15 +158,27 @@ s32 Animation::getFrameCount() const {
 }
 
 void Animation::setDuration(f32 totalDuration) {
-    f32 currentDuration = 0.0f;
-    for (const FrameExt& frame : frames) {
-        currentDuration += frame.duration;
-    }
-
+    const f32 currentDuration = getDuration();
     const f32 mult = totalDuration / currentDuration;
     for (FrameExt& frame : frames) {
         frame.duration *= mult;
     }
+}
+
+f32 Animation::getDuration() const {
+    f32 currentDuration = 0.0f;
+    for (const FrameExt& frame : frames) {
+        currentDuration += frame.duration;
+    }
+    return currentDuration;
+}
+
+f32 Animation::getRemaining(s32 ix) const {
+    f32 currentDuration = 0.0f;
+    for (u64 i = ix; i < frames.size(); i++) {
+        currentDuration += frames[i].duration;
+    }
+    return currentDuration;
 }
 
 }  // namespace whal

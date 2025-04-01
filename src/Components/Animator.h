@@ -54,6 +54,7 @@ struct Animator {
     f32 getFrameDuration() const;
     bool isFrameDone() const;
     bool isAnimationJustFinished() const;  // returns true if an animation just finished its final frame
+    f32 getAnimationTimeRemaining() const;
 
     bool play(const std::string& name);
     bool isPlaying(const std::string& name) const;
@@ -75,6 +76,8 @@ struct Animation {
 
     s32 getFrameCount() const;
     void setDuration(f32 totalDuration);
+    f32 getDuration() const;         // total duration of all frames
+    f32 getRemaining(s32 ix) const;  // duration of frames starting at ix
 };
 
 }  // namespace whal

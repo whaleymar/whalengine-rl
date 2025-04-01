@@ -10,7 +10,7 @@ struct Velocity {
         return Velocity{
             .stable = stableVelocity,
             .impulse = {},
-            .total = {},
+            .total = stableVelocity,
             .residualImpulse = {},
         };
     }
