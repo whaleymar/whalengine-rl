@@ -1,6 +1,7 @@
 # To Do 
 
 ACTIVELY WORKING ON:
+- add local floatHeight to transforms (or just don't have parents affect children?)
 - more convenient Audio.playClip method for adding sound position -- then go add sound position to all the places i forgot
 
 ## Separating Game vs Engine 

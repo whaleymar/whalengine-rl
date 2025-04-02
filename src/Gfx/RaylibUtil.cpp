@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Settings.h"
+#include "Sys/System.h"
 #include "raylib.h"
 #include "rlgl.h"
 
@@ -13,6 +14,18 @@ namespace whal::gfx {
 
 static void DrawTextCodepointPro(rl::Font font, int codepoint, rl::Vector2 position, float fontSize, rl::Vector4 hdrColor, float angle,
                                  rl::Vector2 origin, rl::Vector3 packedCBI, rl::Vector2 scale);
+
+void BeginTextureMode(rl::RenderTexture2D target) {
+    rl::BeginTextureMode(target);
+    Graphics.globalUniformSetVec2("_Resolution", rl::Vector2(target.texture.width, target.texture.height));
+    Graphics.globalUniformSetFloat("_VirtualRatio", static_cast<f32>(target.texture.width) / FWINDOW_WIDTH_GAME);
+}
+
+void EndTextureMode() {
+    rl::EndTextureMode();
+    Graphics.globalUniformSetVec2("_Resolution", rl::Vector2(FWINDOW_WIDTH_STRETCH, FWINDOW_HEIGHT_STRETCH));
+    Graphics.globalUniformSetFloat("_VirtualRatio", VIRTUAL_SCREEN_RATIO_STRETCH);
+}
 
 // Draw text using font inside rectangle limits
 void DrawTextBoxed(rl::Font font, const char* text, RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center, Color tint,

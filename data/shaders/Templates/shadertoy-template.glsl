@@ -8,12 +8,12 @@ uniform vec4 colDiffuse;
 
 // mine:
 // global uniform float _Time;
-// global uniform vec2 _GameResolution;
+// global uniform vec2 _Resolution;
 
 out vec4 finalColor;
 
 void fragment() {
     // iChannel0 -> texture0
     // fragColor -> finalColor
-    // fragCoord = fragTexCoord * _GameResolution
+    // fragCoord = fragTexCoord * _Resolution
 }

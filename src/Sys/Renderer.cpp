@@ -67,10 +67,14 @@ void Renderer::init() {
                                        .tag = UniformVariant::Float,
                                        .val = {.uniFloat = 0.0f},
                                    });
-    globalUniformRegister("_GameResolution", UniformVariant{
-                                                 .tag = UniformVariant::Vec2,
-                                                 .val = {.uniVec2 = {FWINDOW_WIDTH_GAME, FWINDOW_HEIGHT_GAME}},
-                                             });
+    globalUniformRegister("_Resolution", UniformVariant{
+                                             .tag = UniformVariant::Vec2,
+                                             .val = {.uniVec2 = {FWINDOW_WIDTH_STRETCH, FWINDOW_HEIGHT_STRETCH}},
+                                         });
+    globalUniformRegister("_VirtualRatio", UniformVariant{
+                                               .tag = UniformVariant::Float,
+                                               .val = {.uniFloat = VIRTUAL_SCREEN_RATIO_STRETCH},
+                                           });
 }
 
 void Renderer::end() {
@@ -206,7 +210,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, src.texture.width, -src.texture.height);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, dst.texture.width, dst.texture.height);
 
-    rl::BeginTextureMode(dst);
+    gfx::BeginTextureMode(dst);
     rl::ClearBackground(Colors::ClearRL);
     if (blendMode != rl::BLEND_ALPHA) {
         rl::BeginBlendMode(blendMode);
@@ -230,7 +234,7 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
     if (blendMode != rl::BLEND_ALPHA) {
         rl::EndBlendMode();
     }
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 }
 
 gfx::RenderContext Renderer::getRenderContext(bool useUnstretchedRenderWindow) const {
@@ -285,7 +289,7 @@ void Renderer::render() {
 
     // 2. Renders everything to TextureID::Main
     rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
-    rl::BeginTextureMode(mainTex);
+    gfx::BeginTextureMode(mainTex);
     rl::ClearBackground(Colors::ClearRL);
 
     // Game Objects.
@@ -301,18 +305,18 @@ void Renderer::render() {
 
     // UI.
     drawUI(renderContext);
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 
     // 3. Apply post processing
     gfx::applyShaders(mainTex, renderContext.cameraEntity.get<Camera>().postEffects);
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
-    rl::BeginTextureMode(mainTex);
+    gfx::BeginTextureMode(mainTex);
     rl::BeginMode2D(renderContext.camera);
     DebugRenderMgr::drawDebug();
     rl::EndMode2D();
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 #endif
 }
 
@@ -323,7 +327,7 @@ void Renderer::buildDistanceField() const {
 }
 
 static void drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue) {
-    rl::BeginTextureMode(target.tex);
+    gfx::BeginTextureMode(target.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     const Shader* defaultShader = &ShaderMgr::get("DefaultSprite");
@@ -342,7 +346,7 @@ static void drawRenderQueue(const MultiTexture& target, const gfx::RenderContext
     }
     rl::EndShaderMode();
     rl::EndMode2D();
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 }
 
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
@@ -376,29 +380,29 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
     const rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
     const rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
-    // rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
-    // rl::ClearBackground(Colors::ClearRL);
-    // rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    // rl::EndTextureMode();
+    gfx::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
+    rl::ClearBackground(Colors::ClearRL);
+    rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    gfx::EndTextureMode();
 
     auto tmp = getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
-    rl::BeginTextureMode(tmp);
+    gfx::BeginTextureMode(tmp);
     rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 
     s32 sector = Time.getFrame() % 8;
     renderOccluders(sector, mRenderQueue.mOccluderQueue);
 
     // TEMP TESTING
-    rl::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
-    rl::ClearBackground(rl::WHITE);
-    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    // gfx::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
+    // rl::ClearBackground(rl::WHITE);
+    // rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     // looking at cropped draw:
     // auto sectorSize = gfx::getGISectorSize(sector);
     // rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
     //                    rl::Rectangle{0, 0, sectorSize.x, sectorSize.y}, rl::Vector2{0, 0}, 0, rl::WHITE);
-    rl::EndTextureMode();
+    // gfx::EndTextureMode();
 
     VIRTUAL_SCREEN_RATIO = prevVirtualRatio;
     scaleDepthBuffers(renderContext, tmp.texture);
@@ -410,7 +414,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
 void Renderer::drawLights(gfx::RenderContext renderContext) {
     rl::RenderTexture lightTex =
         Graphics.getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16, rl::TEXTURE_FILTER_BILINEAR);
-    rl::BeginTextureMode(lightTex);
+    gfx::BeginTextureMode(lightTex);
     rl::BeginMode2D(renderContext.camera);
     rl::ClearBackground(rl::BLACK);
 
@@ -421,7 +425,7 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
 
     rl::EndBlendMode();
     rl::EndMode2D();
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 
     // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
     static LightDenoise lightingPipeline;
@@ -439,16 +443,16 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepth
     rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
     rl::Rectangle dstRect = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
 
-    rl::BeginTextureMode(targetDepthTex);
+    gfx::BeginTextureMode(targetDepthTex);
     rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(allDepthTex, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 
     // Render to larger occlusion color buf
     // clear the center sector and draw the occlusion stuff visible to the camera
     const rl::Rectangle srcRectGame = rl::Rectangle(0, 0, WINDOW_WIDTH_GAME, -WINDOW_HEIGHT_GAME);
     rl::RenderTexture globalOccl = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
-    rl::BeginTextureMode(globalOccl);
+    gfx::BeginTextureMode(globalOccl);
     Vector2f loc = gfx::getGISector(8);
     rl::rlSetBlendFactors(RL_ONE, RL_ZERO, RL_FUNC_ADD);
     rl::BeginBlendMode(rl::BLEND_CUSTOM);
@@ -469,7 +473,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepth
     rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
                        rl::Rectangle{loc.x, loc.y, sectorSize.x, sectorSize.y}, rl::Vector2{0, 0}, 0, rl::WHITE);
     rl::EndBlendMode();
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 }
 
 void Renderer::drawUI(const gfx::RenderContext ctx) const {

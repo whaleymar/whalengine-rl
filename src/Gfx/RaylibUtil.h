@@ -23,6 +23,10 @@ namespace gfx {
 struct RaylibDrawParams;
 struct DrawMetaData;
 
+// Thin wrappers over raylib's Begin/EndTextureMode which set a global uniform for the viewport size.
+void BeginTextureMode(rl::RenderTexture2D target);
+void EndTextureMode();
+
 void DrawTextBoxed(rl::Font font, const char* text, gfx::RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,
                    Color tint, float angle, Vector2f pivotOffset, gfx::DrawMetaData cbi, rl::Vector2 scale);
 void DrawTextBoxedSelectable(rl::Font font, const char* text, gfx::RaylibDrawParams params, float fontSize, float spacing, bool wordWrap, bool center,

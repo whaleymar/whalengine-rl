@@ -59,6 +59,7 @@ struct Scene {
     s32 startLevelIx = -1;
     ecs::Entity self;
 
+    // TODO instead of optional/expected errors just do asserts. They should never fail.
     bool isValid() const;
     Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);
     Level getStartLevel() const;

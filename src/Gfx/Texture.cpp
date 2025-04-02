@@ -119,10 +119,10 @@ Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgrou
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)
     rl::Rectangle dstRect = rl::Rectangle(0, 0, frameOpt->width, frameOpt->height);
 
-    rl::BeginTextureMode(texture);
+    gfx::BeginTextureMode(texture);
     rl::ClearBackground(Colors::ClearRL);
     rl::DrawTexturePro(getTexture(), *frameOpt, dstRect, {0.0f, 0.0f}, 0.0f, rl::WHITE);
-    rl::EndTextureMode();
+    gfx::EndTextureMode();
 
     return texture;
 }

@@ -22,7 +22,7 @@ EventFlow::EventFlow(u32 id, std::initializer_list<ecs::Entity> requiredEntities
 }
 
 EventFlow& EventFlow::addWait(f32 waitSeconds) {
-    if (mIsCancelled) {
+    if (mIsCancelled || waitSeconds == 0.0f) {
         return *this;
     }
 

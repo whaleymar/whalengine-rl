@@ -84,7 +84,7 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     //     localPosition = pivotOffset.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
     // }
 
-    position = parentTrans.getRotatedPosition2D() + _localPosition;  // handles floating height
+    position = parentTrans.getRotatedPosition2D() + _localPosition;
     positionPx = position.round();
     scale = parentTrans.scale * _localScale;
     rotation = parentTrans.rotation + _localRotation;

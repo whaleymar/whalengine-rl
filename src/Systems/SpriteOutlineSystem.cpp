@@ -19,11 +19,7 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
 
     // outline depth is one layer below the parent entity
     const Depth outlineDepth = static_cast<Depth>(static_cast<u8>(entity.get<Transform>().depth) - 1);
-
     // const Depth outlineDepth = entity.get<Transform>().depth;
-
-    // RESEARCH looks weird after portal teleport
-    // f32 ySortOffset = -silhouette.frameSize.y;  // make sure this always appears behind the main sprite
 
     for (auto dir : outlineDirs) {
         ecs::Entity outline = entity.createChild("OutlineSprite");
@@ -32,7 +28,8 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
         }
         outline.get<Transform>().depth = outlineDepth;
         outline.get<Transform>().translate(directionToVector(dir).as<f32>(), outline);
-        // silhouette.setYsortPriority(outline, ySortOffset);
+        // TODO looks weird after portal teleport BECAUSE I am not storing local floatHeight separately in transform, so reparenting an entity fucks
+        // with its float height silhouette.setYsortPriority(outline, -2);
         outline.add(silhouette);
     }
 }
