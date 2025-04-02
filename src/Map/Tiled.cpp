@@ -714,7 +714,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
         }
     }
     if (!dstScene.isValid()) {
-        return Error("Scene is not valid");
+        return Error("Scene is not valid (didn't find world entry point)");
     }
 
     return NULLOPT;

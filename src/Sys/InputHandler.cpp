@@ -256,15 +256,26 @@ void InputHandler::update() {
 
 void InputHandler::updateGamepadState() {
     // check gamepads? idk what im doing
-    // for (s32 i = 0; i < 4; i++) {
-    //     if (rl::IsGamepadAvailable(i)) {
-    //         if (mActiveGamepad != i) {
-    //             print("Setting gamepad to", rl::GetGamepadName(i));
-    //             Input.setActiveGamepad(i);
-    //         }
-    //         break;
-    //     }
-    // }
+    if (mIsGamepadAllowed) {
+        for (s32 i = 0; i < 4; i++) {
+            if (rl::IsGamepadAvailable(i)) {
+#ifndef NDEBUG
+                // I have a drawing tablet that will show up here even when it is disconnected it's so annoying!
+                std::string gamepadName = rl::GetGamepadName(i);
+                if (gamepadName.find("HUION") != gamepadName.npos) {
+                    continue;
+                }
+#endif
+                if (mActiveGamepad != i) {
+                    print("Setting gamepad to", rl::GetGamepadName(i));
+                    Input.setActiveGamepad(i);
+                }
+                break;
+            }
+        }
+    } else {
+        mActiveGamepad = 10;  // inactive value
+    }
 
     // Most OSes will send gamepad input to the window even if it isn't focused (unlike keyboard/mouse inputs)
     if (!isUsingGamepad() || !rl::IsWindowFocused()) {

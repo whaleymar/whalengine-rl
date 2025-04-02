@@ -139,6 +139,8 @@ public:
     void add(const std::string& name, whal::GamepadAxis axis) const;
 
     void setDeadzone(const std::string& name, f32 deadzone) const;
+    void setIsGamepadAllowed(bool allowed) { mIsGamepadAllowed = allowed; }
+    bool getIsGamepadAllowed() const { return mIsGamepadAllowed; }
 
     void remove(const std::string& name) const;
 
@@ -177,6 +179,7 @@ private:
     InputCode mLastInputJustPressed = 0;  // last input received, or 0 if nothing was pressed this frame
     bool mIsOffscreenMouseInputAllowed = false;
     bool mIsMouseOnScreen = true;
+    bool mIsGamepadAllowed = true;
 };
 
 }  // namespace whal

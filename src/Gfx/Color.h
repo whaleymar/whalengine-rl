@@ -12,6 +12,11 @@ typedef struct Color Color;
 
 namespace whal {
 
+enum class HexStringVariant {
+    RGBA,  // RGB ok too
+    ARGB,
+};
+
 // HDR Color
 struct Color {
     f32 r;
@@ -45,6 +50,7 @@ struct Color {
     static Color fromRL(rl::Color color, f32 brightness = 1.0f);
     static Color fromRGB(s32 r, s32 g, s32 b, s32 a = 255, f32 brightness = 1.0f);
     static Color fromString(const std::string& name);
+    static Color fromHex(const std::string& name, HexStringVariant variant = HexStringVariant::RGBA);
 };
 
 std::ostream& operator<<(std::ostream& out, Color const& self);

@@ -79,6 +79,9 @@ public:
     f32 getSfxVolume() const { return mSfxVolume; }
     f32 getMasterVolume() const { return mMasterVolume; }
 
+    void setMusicPlaybackSpeed(f32 speed = 1.0f);
+    f32 getMusicPlaybackSpeed() const;
+
     void update();
 
     void setFilterMusic(Filter filter);

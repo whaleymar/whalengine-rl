@@ -156,14 +156,6 @@ void AudioPlayer::playMusic(const char* path, f32 volume, Filter filter, bool is
         FMOD_Channel_Set3DLevel(mMusicChannel, 0.0);
     }
 
-    // playing around with changing the playback speed
-    // f32 freq;
-    // FMOD_Channel_GetFrequency(mMusicChannel, &freq);
-    // print("default frequency (from channel) is ", freq);
-    // FMOD_Sound_GetDefaults(mMusic, &freq, nullptr);
-    // print("default frequency (from sound) is ", freq);  // this will stay the same no matter what I do to the channel
-    // FMOD_Channel_SetFrequency(mMusicChannel, freq * 0.5f);
-
     mIsPlayingMusic = true;
 }
 
@@ -387,6 +379,30 @@ void AudioPlayer::setMasterVolume(f32 volume) {
             }
         }
     }
+}
+
+void AudioPlayer::setMusicPlaybackSpeed(f32 speed) {
+    if (!mMusic || !mMusicChannel) {
+        return;
+    }
+
+    f32 defaultFreq;
+    FMOD_Sound_GetDefaults(mMusic, &defaultFreq, nullptr);
+    FMOD_Channel_SetFrequency(mMusicChannel, defaultFreq * speed);
+}
+
+f32 AudioPlayer::getMusicPlaybackSpeed() const {
+    if (!mMusic || !mMusicChannel) {
+        return 0.0f;
+    }
+
+    f32 defaultFreq;
+    FMOD_Sound_GetDefaults(mMusic, &defaultFreq, nullptr);
+
+    f32 freq;
+    FMOD_Channel_GetFrequency(mMusicChannel, &freq);
+
+    return freq / defaultFreq;
 }
 
 void AudioPlayer::setIsMuted(bool isMuted) {

@@ -3,9 +3,12 @@
 #include <cstring>
 #include <raylib.h>
 
+#include "Components/Transform.h"
+#include "ECS.h"
 #include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
 
+#include "Settings.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
@@ -65,6 +68,12 @@ void Sprite::resetFlag(flag f) {
 
 bool Sprite::isFlagSet(flag f) const {
     return (flags & f) > 0;
+}
+
+void Sprite::setYsortPriority(ecs::Entity self, f32 priority) const {
+    Transform& trans = self.get<Transform>();
+    trans.translate(Vector2f(0, -priority), self);
+    trans.setFloatHeight(priority / FLOAT_HEIGHT_MULT, self);
 }
 
 DrawRect DrawRect::create(Color color, Vector2i frameSize) {

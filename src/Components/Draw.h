@@ -12,6 +12,10 @@ class Expected;
 
 namespace whal {
 
+namespace ecs {
+class Entity;
+}
+
 struct Frame;
 
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
@@ -47,6 +51,9 @@ struct Sprite {
     void setFlag(flag f);
     void resetFlag(flag f);
     bool isFlagSet(flag f) const;
+
+    // uses transform.floatHeight to artificially change y sorting priority. Higher = more likely to be closer to the camera.
+    void setYsortPriority(ecs::Entity self, f32 priority) const;
 };
 
 struct DrawRect {

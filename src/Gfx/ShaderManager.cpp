@@ -51,7 +51,10 @@ void ShaderMgr::unloadShaders() {
 }
 
 void ShaderMgr::reloadShaders() {
-    loadShaders();
+    Expected<void> err = loadShaders();
+    if (!err.isExpected()) {
+        print(err.error());
+    }
     Event.emit<evt::ShaderReload>();
 }
 

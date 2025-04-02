@@ -17,6 +17,7 @@ ACTIVELY WORKING ON:
 ## Gfx 
 - shader uniform caching
 - shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color
+- i would like a convenient way for a drawable entity to stay in the same screen location even when the camera moves
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight

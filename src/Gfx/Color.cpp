@@ -1,5 +1,6 @@
 #include "Color.h"
 
+#include <cassert>
 #include <ostream>
 #include <raylib.h>
 #include "Util/MathUtil.h"
@@ -89,6 +90,37 @@ Color Color::fromString(const std::string& name) {
 
     print("No matching color found for", name);
     return Colors::White;
+}
+
+Color Color::fromHex(const std::string& hexString, HexStringVariant variant) {
+    s32 r, g, b, a;
+
+    switch (variant) {
+    case HexStringVariant::RGBA:
+        assert(hexString.length() == 8 || hexString.length() == 6);
+
+        std::istringstream(hexString.substr(0, 2)) >> std::hex >> r;
+        std::istringstream(hexString.substr(2, 2)) >> std::hex >> g;
+        std::istringstream(hexString.substr(4, 2)) >> std::hex >> b;
+        if (hexString.length() == 8) {
+            std::istringstream(hexString.substr(6, 2)) >> std::hex >> a;
+        } else {
+            a = 255;
+        }
+
+        break;
+
+    case HexStringVariant::ARGB:
+        assert(hexString.length() == 8);
+        std::istringstream(hexString.substr(0, 2)) >> std::hex >> a;
+        std::istringstream(hexString.substr(2, 2)) >> std::hex >> r;
+        std::istringstream(hexString.substr(4, 2)) >> std::hex >> g;
+        std::istringstream(hexString.substr(6, 2)) >> std::hex >> b;
+
+        break;
+    }
+
+    return Color::fromRGB(r, g, b, a);
 }
 
 std::ostream& operator<<(std::ostream& out, Color const& self) {
