@@ -144,7 +144,7 @@ public:
 private:
     Renderer(const Renderer&) = delete;
     void operator=(const Renderer&) = delete;
-    void init();    // called after OpenGL context established
+    bool init();    // called after OpenGL context established. Returns true on error.
     void update();  // called once per frame
     void end();     // called by System::end
 

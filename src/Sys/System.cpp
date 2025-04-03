@@ -148,14 +148,18 @@ void System::resetManagers() {
 
     Schedule.clear();
     Audio.stopAll();
+    Audio.clearClipRegistry();
     ShaderMgr::reloadShaders();
+    TextureManager::instance().unloadAll();
 }
 
 bool System::start() {
     assert(!S_IS_STARTED);
     S_IS_STARTED = true;
 
-    Graphics.init();
+    if (Graphics.init()) {
+        return true;
+    }
 
     Expected<void> e = ShaderMgr::loadShaders();
     if (!e.isExpected()) {

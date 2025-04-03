@@ -58,7 +58,21 @@ Renderer::Renderer() {
     mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
 }
 
-void Renderer::init() {
+#define CHECK_ERROR(err)                                                                                                                             \
+    if (err) {                                                                                                                                       \
+        print(*err);                                                                                                                                 \
+        return true;                                                                                                                                 \
+    }
+
+bool Renderer::init() {
+    // Load default textures
+    auto err = TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
+    CHECK_ERROR(err);
+    err = TextureManager::instance().loadAndRegister(NOISE_TEXTURE_PATH, "perlin_noise");
+    CHECK_ERROR(err);
+    err = TextureManager::instance().loadAndRegister(PALETTE_TEXTURE_PATH, TEXNAME_PALETTE);
+    CHECK_ERROR(err);
+
     mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     mDistanceField = new DistanceField();
@@ -75,9 +89,13 @@ void Renderer::init() {
                                                .tag = UniformVariant::Float,
                                                .val = {.uniFloat = VIRTUAL_SCREEN_RATIO_STRETCH},
                                            });
+
+    return false;
 }
 
 void Renderer::end() {
+    mStagingTexture.release();
+    mGIOccluderTexture.release();
     delete mDistanceField;
 }
 
