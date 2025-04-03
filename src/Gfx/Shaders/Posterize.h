@@ -6,7 +6,7 @@ namespace whal {
 
 class Posterize : public IShaderProcess {
 public:
-    Posterize();
+    Posterize() = default;
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 #ifndef NDEBUG

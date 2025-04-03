@@ -100,6 +100,7 @@ extern const char* DATA_DIR;
 extern const char* FONT_PATH;
 extern const char* SPRITE_TEXTURE_PATH;
 extern const char* PALETTE_TEXTURE_PATH;
+extern const char* NOISE_TEXTURE_PATH;
 extern const char* ATLAS_METADATA_PATH;
 extern const char* TILED_PROJECT_FILE;
 extern const char* ICON_IMAGE_PATH;

@@ -3,9 +3,7 @@
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
-#include "Settings.h"
 #include "Sys/System.h"
-#include "Util/Print.h"
 #include "raylib.h"
 
 #ifndef NDEBUG
@@ -14,13 +12,6 @@ static bool S_ENABLED = true;
 #endif
 
 namespace whal {
-
-Posterize::Posterize() {
-    auto err = TextureManager::instance().loadAndRegister(PALETTE_TEXTURE_PATH, TEXNAME_PALETTE);
-    if (err) {
-        print(*err);
-    }
-}
 
 void Posterize::process(rl::RenderTexture src, rl::RenderTexture dst) {
 #ifndef NDEBUG
