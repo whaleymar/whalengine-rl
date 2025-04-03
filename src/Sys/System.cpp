@@ -150,7 +150,7 @@ void System::resetManagers() {
     Audio.stopAll();
     Audio.clearClipRegistry();
     ShaderMgr::reloadShaders();
-    TextureManager::instance().unloadAll();
+    Graphics.reset();
 }
 
 bool System::start() {

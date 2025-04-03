@@ -147,6 +147,7 @@ private:
     bool init();    // called after OpenGL context established. Returns true on error.
     void update();  // called once per frame
     void end();     // called by System::end
+    void reset();   // called by System::resetManagers
 
     void buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf);
     void drawEntities(gfx::RenderContext ctx);

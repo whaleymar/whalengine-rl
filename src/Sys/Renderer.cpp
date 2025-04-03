@@ -64,14 +64,22 @@ Renderer::Renderer() {
         return true;                                                                                                                                 \
     }
 
-bool Renderer::init() {
-    // Load default textures
+static bool loadTextureManagerDefaults() {
     auto err = TextureManager::instance().loadAndRegisterAtlas(SPRITE_TEXTURE_PATH, ATLAS_METADATA_PATH, TEXNAME_SPRITE);
     CHECK_ERROR(err);
     err = TextureManager::instance().loadAndRegister(NOISE_TEXTURE_PATH, "perlin_noise");
     CHECK_ERROR(err);
     err = TextureManager::instance().loadAndRegister(PALETTE_TEXTURE_PATH, TEXNAME_PALETTE);
     CHECK_ERROR(err);
+
+    return false;
+}
+
+bool Renderer::init() {
+    // Load default textures
+    if (loadTextureManagerDefaults()) {
+        return true;
+    }
 
     mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
     mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
@@ -94,9 +102,15 @@ bool Renderer::init() {
 }
 
 void Renderer::end() {
+    TextureManager::instance().unloadAll();
     mStagingTexture.release();
     mGIOccluderTexture.release();
     delete mDistanceField;
+}
+
+void Renderer::reset() {
+    TextureManager::instance().unloadAll();
+    loadTextureManagerDefaults();
 }
 
 void Renderer::update() {
