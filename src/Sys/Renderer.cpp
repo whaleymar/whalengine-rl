@@ -22,6 +22,7 @@
 #include "Systems/Graphics/Common.h"
 
 #include "Util/CameraUtil.h"
+#include "Util/DebugUtil.h"
 #include "Util/Print.h"
 
 #include "Gfx/Shaders/LightDenoise.h"
@@ -98,6 +99,22 @@ bool Renderer::init() {
                                                .val = {.uniFloat = VIRTUAL_SCREEN_RATIO_STRETCH},
                                            });
 
+    rl::Texture noiseTex = TextureManager::instance().getTexture("perlin_noise");
+    globalUniformRegister("_PerlinNoise", UniformVariant{
+                                              .tag = UniformVariant::Texture,
+                                              .val = {.uniTex = noiseTex.id},
+                                          });
+    globalUniformRegister("_PerlinNoiseSize", UniformVariant{
+                                                  UniformVariant::Vec2,
+                                                  {.uniVec2 = rl::Vector2(noiseTex.width, noiseTex.height)},
+                                              });
+
+    // TEMP
+    globalUniformRegister("_DissolveAmount", UniformVariant{
+                                                 .tag = UniformVariant::Float,
+                                                 .val = {.uniFloat = 0.0f},
+                                             });
+
     return false;
 }
 
@@ -111,6 +128,11 @@ void Renderer::end() {
 void Renderer::reset() {
     TextureManager::instance().unloadAll();
     loadTextureManagerDefaults();
+
+    // global textures must be reloaded here
+    rl::Texture noiseTex = TextureManager::instance().getTexture("perlin_noise");
+    globalUniformSetTexture("_PerlinNoise", noiseTex);
+    globalUniformSetVec2("_PerlinNoiseSize", rl::Vector2(noiseTex.width, noiseTex.height));
 }
 
 void Renderer::update() {
@@ -358,19 +380,19 @@ void Renderer::buildDistanceField() const {
     mDistanceField->process(occlSrc, dfDst);
 }
 
-static void drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue) {
+void Renderer::drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue) {
     gfx::BeginTextureMode(target.tex);
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     const Shader* defaultShader = &ShaderMgr::get("DefaultSprite");
     const Shader* lastShader = nullptr;
-    rl::BeginShaderMode(defaultShader->get());
+    defaultShader->bind();
     for (const auto& renderInfo : queue) {
         if (renderInfo.shader != lastShader) {
             if (renderInfo.shader == nullptr) {
-                rl::BeginShaderMode(defaultShader->get());
+                defaultShader->bind();
             } else {
-                rl::BeginShaderMode(renderInfo.shader->get());
+                renderInfo.shader->bind();
             }
             lastShader = renderInfo.shader == defaultShader ? nullptr : renderInfo.shader;
         }
@@ -714,7 +736,7 @@ void Renderer::globalUniformSubscribe(const std::string& name, const Shader& sha
 
     // get the location of this uniform in the shader and add it as a subscriber
     s32 loc = rl::GetShaderLocation(shader.get(), name.c_str());
-    assert(loc != -1 && "Global uniform not found in shader");
+    DBG_ASSERT(loc != -1, whal_format("Global uniform {} not found in shader {}", name, shader.getPath()));
 
     u32 shaderId = shader.get().id;
     GlobalUniformTracker tracker = GlobalUniformTracker{
@@ -737,6 +759,13 @@ void Renderer::globalUniformBindAll(rl::Shader shader) {
     }
     for (GlobalUniformTracker tracker : it->second) {
         mGlobalUniforms[tracker.index].set(shader, tracker.uniformLoc);
+    }
+}
+
+void Renderer::globalUniformOnShaderUnload(rl::Shader shader) {
+    auto it = mGlobalUniformSubscribers.find(shader.id);
+    if (it != mGlobalUniformSubscribers.end()) {
+        mGlobalUniformSubscribers.erase(it);
     }
 }
 

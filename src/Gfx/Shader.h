@@ -25,8 +25,8 @@ public:
     Shader(Shader&& other);
     virtual ~Shader();
 
-    void bind();    // binds shader and uniforms
-    void unbind();  // issues draw call
+    void bind() const;    // binds shader and uniforms
+    void unbind() const;  // issues draw call
 
     // TODO implement uniform caching. Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached
     // value. Only send the value to Renderer if it's different than the cached val.
@@ -46,6 +46,7 @@ public:
     bool isValid() const { return mIsReady; }
     void invalidate() { mIsReady = false; }
     rl::Shader get() const { return mHandle; }
+    const std::string& getPath() const { return mShaderPath; }
 
 protected:
     std::string mShaderPath;

@@ -17,6 +17,7 @@ class Entity;
 }
 
 struct Frame;
+class Shader;
 
 enum class DrawTag { Rect, Sprite, BezierQuad, Line };
 
@@ -38,6 +39,7 @@ struct Sprite {
     // rectangle masks would be nice for clipping/tweening
     Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
     u32 flags = flag::None;
+    Shader* shader = nullptr;
 
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
     static Sprite fromFrame(Frame frame, Color color_ = Colors::White);

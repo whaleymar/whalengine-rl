@@ -127,10 +127,9 @@ public:
     // Creates a uniform which is globally accessible by all shaders. This should run before shaders are compiled.
     // If a shader is compiled and it wants an unregistered uniform, the compilation will fail.
     void globalUniformRegister(const std::string& name, UniformVariant initialValue);
-
     void globalUniformSubscribe(const std::string& name, const Shader& shader);
-
     void globalUniformBindAll(rl::Shader shader);
+    void globalUniformOnShaderUnload(rl::Shader shader);
 
     // Set the value of a uniform
     void globalUniformSetFloat(const std::string& name, f32 val);
@@ -151,6 +150,7 @@ private:
 
     void buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf);
     void drawEntities(gfx::RenderContext ctx);
+    void drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue);
     void drawLights(gfx::RenderContext ctx);
     void scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture updatedSector) const;
     void buildDistanceField() const;

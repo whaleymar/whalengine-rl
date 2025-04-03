@@ -189,7 +189,23 @@ Expected<rl::Shader> ShaderTranspiler::compile(const string& vertCode, const str
     if (rl::IsShaderValid(shader)) {
         return shader;
     }
-    print("Vertex Shader:\n", vertexFinal, "\n\n", "Fragment Shader:\n", fragmentFinal);
+    print("ERROR COMPILING SHADER!!!");
+    print("\nVERTEX SHADER:");
+    std::istringstream stream(vertexFinal);
+    string line;
+
+    s32 i = 1;
+    while (std::getline(stream, line)) {
+        print(i++, line);
+    }
+
+    print("\nFRAGMENT SHADER");
+    stream = std::istringstream(fragmentFinal);
+    i = 1;
+    while (std::getline(stream, line)) {
+        print(i++, line);
+    }
+
     return Error("Invalid shader. Check raylib logging for details.");
 }
 

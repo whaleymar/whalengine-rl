@@ -66,7 +66,7 @@ struct EntityPreRenderInfo {
     ecs::Entity entity;
     IsOccluder isOccluder = IsOccluder::Unchecked;
     void* internal = 0;
-    Shader* shader;
+    Shader* shader = nullptr;
 };
 
 class RenderQueue {

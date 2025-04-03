@@ -49,16 +49,17 @@ Shader::Shader(Shader&& other) {
 
 Shader::~Shader() {
     if (mIsReady && rl::IsWindowReady()) {
+        Graphics.globalUniformOnShaderUnload(mHandle);
         rl::UnloadShader(mHandle);
     }
 }
 
-void Shader::bind() {
+void Shader::bind() const {
     rl::BeginShaderMode(mHandle);
     Graphics.setUniforms(mHandle);
 }
 
-void Shader::unbind() {
+void Shader::unbind() const {
     rl::EndShaderMode();
 }
 

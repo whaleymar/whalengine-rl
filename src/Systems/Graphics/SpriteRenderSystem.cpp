@@ -39,6 +39,7 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
             .transform = &trans,
             .ysortPosition = bb.bottom() - floatOffset,
             .entity = entity,
+            .shader = sprite.shader,
         });
     }
 }

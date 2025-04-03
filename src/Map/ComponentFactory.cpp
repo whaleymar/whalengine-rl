@@ -26,7 +26,7 @@ namespace whal {
 // - I can use non-default serde implementations for those
 void ComponentFactory::initEcsSerializer() {
     addDefault<Transform>();
-    addDefault<Sprite>();
+    // addDefault<Sprite>(); // has shader pointer (i would want to store the string name)
     addDefault<DrawRect>();
     addDefault<DrawStraightLine>();
     addDefault<DrawText>();
