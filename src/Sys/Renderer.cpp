@@ -108,12 +108,6 @@ bool Renderer::init() {
                                                   {.uniVec2 = rl::Vector2(noiseTex.width, noiseTex.height)},
                                               });
 
-    // TEMP
-    globalUniformRegister("_DissolveAmount", UniformVariant{
-                                                 .tag = UniformVariant::Float,
-                                                 .val = {.uniFloat = 0.0f},
-                                             });
-
     return false;
 }
 

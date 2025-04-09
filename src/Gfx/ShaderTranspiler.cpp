@@ -275,12 +275,16 @@ string ShaderTranspiler::preprocess(const string& code) const {
             // regular comment, goto next line
             seekIx = code.find('\n', i + 2) + 1;
             isSeekAccumulate = false;
+            // add a newline since we're not accumulating and will lose a line break (would break if next line is a macro)
+            result << '\n';
             continue;
         }
 
         if (c == '/' && code.at(i + 1) == '*') {
             seekIx = code.find("*/", i + 2) + 2;
             isSeekAccumulate = false;
+            // add a newline since we're not accumulating and will lose a line break (would break if next line is a macro)
+            result << '\n';
             continue;
         }
 
