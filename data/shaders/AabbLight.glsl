@@ -1,30 +1,33 @@
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec3 vertexNormal;
+in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
+uniform mat4 mvp;
+
 varying vec2 fragTexCoord;
 varying vec4 fragColor;
+varying vec2 lighthalflen;
+varying vec2 lightpos;
+varying float lightradius;
 
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-uniform vec2 lightpos;
-uniform vec2 lighthalflen;
-uniform float lightradius;
-// global uniform vec2 _Resolution;
 
 out vec4 finalColor;
 
-// bool isWall(vec2 p) {
-//     vec4 sampleDepth = texture(occlusionDepthTex, p);
-//     float depth = sampleDepth.r;
-//
-//     return lightDepth < depth;
-// }
-//
-// vec4 getWallColor(vec2 p) {
-//     return texture(texture0, p);
-// }
+void vertex() {
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    lighthalflen = vertexCustom0.xy * 0.5;
+    lightpos = vertexNormal.rg;
+    lightradius = vertexNormal.b;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
 
-vec4 getLighting() {
+void fragment() {
     // Get the position of the current fragment (screen coordinates! y=0 at thebottom)
     vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
-    // return vec4(position / _Resolution, 0., 1.); // testing
 
     // clamp delta to be on the light's bounds. that is the closest point on the light to the pixel
     vec2 delta = position - lightpos; // vector pointing from light center to cur pixel
@@ -36,31 +39,13 @@ vec4 getLighting() {
 
     // if inside the box, fully lit
     if (abs(delta.x) < lighthalflen.x && abs(delta.y) < lighthalflen.y) {
-        return fragColor;
+        finalColor = fragColor;
+        return;
     }
 
     // outside of the box, decrease intensity until radius
     float dist = distance(position, closestPoint);
     float intensity = clamp(1. - dist / lightradius, 0., 1.);
-    // float intensity = 0.;
 
-    return fragColor * intensity;
-}
-
-void fragment() {
-    // check if behind an occluder
-    // if (isWall(fragTexCoord)) {
-    // finalColor = vec4(0.);
-    // } else {
-    // vec2 p = fragTexCoord * _Resolution / (lighthalflen * 2);
-    // vec2 p = fragTexCoord * (lighthalflen * 2) / _Resolution;
-    // vec4 sampleDepth = texture(occlusionDepthTex, p);
-    // finalColor = vec4(sampleDepth.r, 0., 0., 1.);
-    finalColor = getLighting();
-    // }
-
-    // testing
-    // finalColor = vec4(intensity, 0., 0., 1.);
-
-    // finalColor = vec4(1., 1., 1., 1.);
+    finalColor = fragColor * intensity;
 }

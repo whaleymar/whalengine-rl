@@ -1,7 +1,6 @@
 # To Do 
 
 ACTIVELY WORKING ON:
-- add local floatHeight to transforms (or just don't have parents affect children?)
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -22,7 +21,6 @@ ACTIVELY WORKING ON:
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
-    - consolidate pointlight and shadowlight
 - shadows do NOT play well with a moving camera (due to pixel clamping)
 - when shadowlight entity is floating, should do a raycast to ensure the lighting isn't appearing on the other side of walls
 
@@ -75,6 +73,7 @@ ACTIVELY WORKING ON:
         - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
         - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
 - more convenient Audio.playClip method for adding sound position -- then go add sound position to all the places i forgot
+- add local floatHeight to transforms (or just don't have parents affect children?)
 
 ## Misc (low priority)
 - ECS parallelization (low priority)

@@ -1,20 +1,36 @@
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec3 vertexNormal;
+in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
+uniform mat4 mvp;
+
 varying vec2 fragTexCoord;
 varying vec4 fragColor;
+varying vec2 lp1;
+varying float radiusPixels;
+varying float lightDepth;
 
 uniform sampler2D texture0; // occlusion color texture
-uniform vec4 colDiffuse;
 
 global uniform vec2 _Resolution; // viewport resolution
 
 uniform vec2 _DistanceFieldSize; // also the size of `depthBuf`
-uniform vec2 lp1;
-uniform float radiusPixels;
-uniform float lightDepth;
 uniform sampler2D depthBuf;
 uniform sampler2D _DistanceField;
 uniform sampler2D _AllDepth;
 
 out vec4 finalColor;
+
+void vertex() {
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    lp1 = vertexNormal.rg;
+    radiusPixels = vertexNormal.b;
+    lightDepth = vertexCustom0.b;
+    gl_Position = mvp * vec4(vertexPosition, 1.0);
+}
 
 #ifndef PLATFORM_WEB
 const int STEPS = 64;

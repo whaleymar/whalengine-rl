@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <raylib.h>
+#include "rlgl.h"
 
 #include "Components/Transform.h"
 #include "ECS.h"
@@ -64,10 +65,6 @@ void Sprite::setFlag(flag f) {
 
 void Sprite::resetFlag(flag f) {
     flags = (flags & ~f);
-}
-
-bool Sprite::isFlagSet(flag f) const {
-    return (flags & f) > 0;
 }
 
 void Sprite::setYsortPriority(ecs::Entity self, f32 priority) const {

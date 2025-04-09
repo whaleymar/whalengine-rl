@@ -579,18 +579,23 @@ in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
 uniform mat4 mvp;
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out vec2 spriteSize;
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
+    spriteSize = vertexCustom0.xy;
     gl_Position = mvp*vec4(vertexPosition, 1.0);
 })";
 
 static const char* S_DEFAULT_FRAGMENT = R"(#version 330
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in vec2 spriteSize;
 uniform sampler2D texture0;
 out vec4 finalColor;
 void main() {
@@ -603,9 +608,12 @@ in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
 uniform mat4 mvp;
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out vec2 spriteSize;
 out float fragDepth;
 out float isUI;
 out float isMask;
@@ -629,6 +637,7 @@ float extractBit(uint intData, int bitPosition) {
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
+    spriteSize = vertexCustom0.rg;
     #ifdef PLATFORM_WEB
     int bitData = int(floor(vertexNormal.r + 0.5));
     fragDepth = 0.;
@@ -649,6 +658,7 @@ layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 Depth;
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in vec2 spriteSize;
 in float fragDepth;
 in float isOccluder;
 in float isUI;

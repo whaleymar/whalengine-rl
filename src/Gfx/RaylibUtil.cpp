@@ -271,7 +271,7 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi)
 }
 
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
-                   rl::Vector3 packedCBI) {
+                   rl::Vector3 packedCBI, f32 custom0b, f32 custom0a) {
     // Check if texture is valid
     if (texture.id > 0) {
         float width = (float)texture.width;
@@ -325,6 +325,9 @@ void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle de
 
         rl::rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
         rl::rlSetNormals(packedCBI);
+
+        // source.width gets abs'd above
+        rl::rlSetCustom0(source.width, math::abs(source.height), custom0b, custom0a);
 
         const float texLeft = flipX ? (source.x + source.width) / width : source.x / width;
         const float texRight = flipX ? source.x / width : (source.x + source.width) / width;
@@ -399,6 +402,7 @@ void DrawRectangleHDR(rl::Rectangle rec, rl::Vector2 origin, float rotation, rl:
 
     rlSetNormals(packedCBI);
     rlColor4f(hdrColor.x, hdrColor.y, hdrColor.z, hdrColor.w);
+    rl::rlSetCustom0(rec.width, rec.height, 0.0f, 0.0f);
 
     rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
     rlVertex2f(topLeft.x, topLeft.y);

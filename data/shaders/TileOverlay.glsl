@@ -4,6 +4,8 @@ in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
 
 varying vec2 fragTexCoord;
 varying vec4 fragColor;

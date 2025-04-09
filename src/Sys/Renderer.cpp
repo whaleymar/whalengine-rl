@@ -22,7 +22,6 @@
 #include "Systems/Graphics/Common.h"
 
 #include "Util/CameraUtil.h"
-#include "Util/DebugUtil.h"
 #include "Util/Print.h"
 
 #include "Gfx/Shaders/LightDenoise.h"
@@ -736,7 +735,10 @@ void Renderer::globalUniformSubscribe(const std::string& name, const Shader& sha
 
     // get the location of this uniform in the shader and add it as a subscriber
     s32 loc = rl::GetShaderLocation(shader.get(), name.c_str());
-    DBG_ASSERT(loc != -1, whal_format("Global uniform {} not found in shader {}", name, shader.getPath()));
+    if (loc == -1) {
+        print(whal_format("Global uniform {} not found in shader {}", name, shader.getPath()));
+        return;
+    }
 
     u32 shaderId = shader.get().id;
     GlobalUniformTracker tracker = GlobalUniformTracker{

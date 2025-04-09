@@ -4,11 +4,12 @@ in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
+in vec4 vertexCustom0;
+in vec4 vertexCustom1;
 
 varying vec2 fragTexCoord;
 varying vec4 fragColor;
 varying float fragDepth;
-// varying float isOccluder;
 varying float isUI;
 varying float isMask;
 varying vec2 maskTexCoord;
@@ -17,7 +18,6 @@ varying float isMaskBlendAdditive;
 
 uniform mat4 mvp;
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
 
 #ifdef PLATFORM_WEB
 float extractBit(int value, int bitPos) {

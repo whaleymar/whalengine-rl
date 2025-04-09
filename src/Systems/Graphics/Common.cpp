@@ -41,7 +41,11 @@ rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const
 
     f32 maskOffsetUVX = 0.0f;
     f32 maskOffsetUVY = 0.0f;
-    if (!sprite.maskPosRelative.isZero()) {
+    if (sprite.isFlagSet(Sprite::Dissolve)) {
+        // send the top left coordinate
+        maskOffsetUVX = sprite.atlasPosition.x / textureDims.x;
+        maskOffsetUVY = sprite.atlasPosition.y / textureDims.y;
+    } else if (!sprite.maskPosRelative.isZero()) {
         maskOffsetUVX = sprite.maskPosRelative.x / textureDims.x;  // x offset
         maskOffsetUVY = sprite.maskPosRelative.y / textureDims.y;  // y offset
 

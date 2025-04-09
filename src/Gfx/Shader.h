@@ -25,7 +25,7 @@ public:
     Shader(Shader&& other);
     virtual ~Shader();
 
-    void bind() const;    // binds shader and uniforms
+    void bind() const;    // binds shader and uniforms. RUN AFTER ALL UNIFORMS R SET.
     void unbind() const;  // issues draw call
 
     // TODO implement uniform caching. Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached

@@ -8,7 +8,6 @@
 #include "Physics/Box.h"
 
 #include "Settings.h"
-#include "rlgl.h"
 
 namespace whal {
 
@@ -21,7 +20,7 @@ void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Rend
     const gfx::RaylibDrawParams params = gfx::getDrawParams(*eCtx.transform, sprite.frameSize);
 
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, eCtx.transform->rotation, sprite.color.asRL(),
-                       eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()));
+                       eCtx.colorBuf.asRL(sprite, ctx.atlas.getSize()), sprite.custom0b);
 }
 
 void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {

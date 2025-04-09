@@ -27,6 +27,7 @@ struct Sprite {
         None = 0,
         Silhouette = 1 << 0,
         MaskBlendAdditive = 1 << 1,
+        Dissolve = 1 << 2,
         // mask blending (subtract)
         // outline
     };
@@ -39,6 +40,7 @@ struct Sprite {
     // rectangle masks would be nice for clipping/tweening
     Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
     u32 flags = flag::None;
+    f32 custom0b;
     Shader* shader = nullptr;
 
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
@@ -52,7 +54,7 @@ struct Sprite {
 
     void setFlag(flag f);
     void resetFlag(flag f);
-    bool isFlagSet(flag f) const;
+    inline bool isFlagSet(flag f) const { return (flags & f) > 0; }
 
     // uses transform.floatHeight to artificially change y sorting priority. Higher = more likely to be closer to the camera.
     void setYsortPriority(ecs::Entity self, f32 priority) const;
