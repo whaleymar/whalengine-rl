@@ -5,7 +5,6 @@
 #include <rlgl.h>
 
 #include "Components/Light.h"
-#include "Components/Tags.h"
 #include "Components/Transform.h"
 
 #include "Events/Events.h"
