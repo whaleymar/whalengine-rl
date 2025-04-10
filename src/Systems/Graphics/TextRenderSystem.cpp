@@ -30,12 +30,12 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     constexpr s32 spacing = 0;         // PARAM
     const Color tint = Colors::White;  // PARAM
 
-    const DrawText draw = eCtx.entity.get<DrawText>();
+    const TextSprite text = eCtx.entity.get<TextSprite>();
     const Transform& trans = *eCtx.transform;
 
     // rotation pivot correction
     Vector2f pivotOffsetScreen = trans.pivotOffset.as<f32>() * Vector2f(1, -1) * VIRTUAL_SCREEN_RATIO;
-    Vector2f frameSize = draw.frameSize.as<f32>();
+    Vector2f frameSize = text.frameSize.as<f32>();
 
     // scale to full resolution
     frameSize = (frameSize * VIRTUAL_SCREEN_RATIO * trans.scale).absolute();
@@ -64,13 +64,13 @@ void TextRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         .origin = rl::Vector2{0, 0},
     };
 
-    gfx::DrawTextBoxed(*mFont, draw.text.c_str(), params, getFontSize(), spacing, draw.isWrapped, draw.isCentered, draw.color * tint, trans.rotation,
+    gfx::DrawTextBoxed(*mFont, text.text.c_str(), params, getFontSize(), spacing, text.isWrapped, text.isCentered, text.color * tint, trans.rotation,
                        pivotOffsetScreen, eCtx.colorBuf, trans.scale.absolute().asRL());
 }
 
 void TextRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
     for (const auto& [entityid, entity] : getEntities()) {
-        const DrawText& draw = entity.get<DrawText>();
+        const TextSprite& draw = entity.get<TextSprite>();
         const Transform& trans = entity.get<Transform>();
 
         AABB bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2) :

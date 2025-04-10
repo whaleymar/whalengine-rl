@@ -43,7 +43,7 @@ DECLARE_COMPONENT(whal::PointLight);
 DECLARE_COMPONENT(whal::BoxLight);
 DECLARE_COMPONENT(whal::ShadowLight);
 DECLARE_COMPONENT(whal::Lifetime);
-DECLARE_COMPONENT(whal::DrawText);
+DECLARE_COMPONENT(whal::TextSprite);
 DECLARE_COMPONENT(whal::ParticleEmitter);
 DECLARE_COMPONENT(whal::Animator);
 DECLARE_COMPONENT(whal::Player);

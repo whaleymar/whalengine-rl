@@ -87,7 +87,7 @@ struct DrawStraightLine {
     bool isRotateAboutCenter = false;
 };
 
-struct DrawText {
+struct TextSprite {
     std::string text;
     Vector2i frameSize;
     Color color = Colors::White;

@@ -11,7 +11,7 @@ typedef struct Font Font;
 
 namespace whal {
 
-class TextRenderSystem : public ecs::ISystem<DrawText, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
+class TextRenderSystem : public ecs::ISystem<TextSprite, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
 public:
     TextRenderSystem();
     ~TextRenderSystem();

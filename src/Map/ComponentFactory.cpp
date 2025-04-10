@@ -29,7 +29,7 @@ void ComponentFactory::initEcsSerializer() {
     // addDefault<Sprite>(); // has shader pointer (i would want to store the string name)
     addDefault<DrawRect>();
     addDefault<DrawStraightLine>();
-    addDefault<DrawText>();
+    addDefault<TextSprite>();
     addDefault<DrawBezierQuad>();
     addDefault<SpriteOutline>();
     // addDefault<Animator>(); // complex class (i wouldn't want to default-serialize this anyway, probably just the string name + brain callback
@@ -111,7 +111,7 @@ void ComponentFactory::initTiledLoader() {
     );
 
     // DrawText
-    TILED_LOADER(DrawText, DrawText text = entity.has<DrawText>() ? entity.get<DrawText>() : DrawText{};
+    TILED_LOADER(TextSprite, TextSprite text = entity.has<TextSprite>() ? entity.get<TextSprite>() : TextSprite{};
 
                  tryRead(*ctx.values, "color", &text.color); tryRead(*ctx.values, "text", &text.text);
                  tryRead(*ctx.values, "center", &text.isCentered); text.frameSize = ctx.entityData.size; entity.add(text);

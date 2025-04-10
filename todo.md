@@ -15,9 +15,10 @@ ACTIVELY WORKING ON:
 
 ## Gfx 
 - shader uniform caching
-- shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color
+- shaders: automatically add builtins like fragTexCoord, fragTexColor, and vertexPos/TexCoord/Normal/Color (also make them the same names)
 - i would like a convenient way for a drawable entity to stay in the same screen location even when the camera moves
 - Make TextureManager work with string keys (and give it the ShaderMgr treatment where it loads everything within a dedicated directory at startup)
+- use depth buffers to blend pixel perfect procedurally drawn shapes with the normal render buffer
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
@@ -34,10 +35,8 @@ ACTIVELY WORKING ON:
 
 ## Save data
 - figure out how to serialize callbacks (like onDeath component, Lifetime::onDeath, Collider::onCollisionEnter, Trigger::xyz)
-    - could integrate lua scripting and write the callbacks using those
-        - lua integration is doable (and brings benefits like insta hot reloading) 
-        - but would require extending ComponentFactory to convert components to/from lua tables
     - could stop using lambdas and exclusively use named free functions. Then I can serialize the function signature
+- Serializing assets needs work. I almost always just need a file path (uid would be better)
 
 ## Map 
 - put tiled project in game's `data` directory so paths are easier to work with
@@ -54,6 +53,7 @@ ACTIVELY WORKING ON:
 ## Physics 
 - colliders need to scale with transform
     - kinda hard because the physics system only cares about position. There's nothing checking if a collider's size matches the scale
+- fucking use box2d
 
 ## Rendering Performance (if needed)
 - put sorting on a 1 frame delay and have a separate thread sort entities from the previous frame. 
