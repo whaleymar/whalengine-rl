@@ -7,6 +7,7 @@
 
 #include "CorradeOptional.h"
 
+#include "Util/Singleton.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
@@ -62,12 +63,8 @@ struct MultiTexture {
 };
 
 class TextureManager {
+    SINGLETON_CUSTOM(TextureManager)
 public:
-    static TextureManager& instance() {
-        static TextureManager instance_;
-        return instance_;
-    }
-
     // gets main render texture for drawing (TextureID::Main in non-debug builds)
 #ifndef NDEBUG
     static void setTargetTexture() { instance()._setTargetTexture(); }
@@ -92,11 +89,7 @@ public:
     void reloadRenderTextures();
 
 private:
-    TextureManager();
-
     ~TextureManager();
-    TextureManager(const TextureManager&) = delete;
-    void operator=(const TextureManager&) = delete;
 
     s32 getTextureIndex(const std::string& name) const;
     s32 getTextureAtlasIndex(const std::string& name) const;

@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Gfx/Texture.h"
 #include "Systems/Graphics/Common.h"
 #include "raylib.h"
 
-#include <memory>
+#include <memory>  // TODO remove this header
 #include <vector>
 
 namespace whal {
@@ -18,6 +17,7 @@ void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IS
 
 struct System;
 class DistanceField;
+struct MultiTexture;
 
 struct UniformVariant {
     enum UniformType {
@@ -74,7 +74,7 @@ public:
     // Renders all game objects to the main frame buffer
     // and applies any post processing effects attached to the camera.
     void render();
-    MultiTexture getStagingTex() const { return mStagingTexture; }
+    MultiTexture* getStagingTex() const { return mStagingTexture; }
 
     // Temporary Render Textures are convenient and stay cached for a few frames. You should manually release them
     // when you're done using them so another process can use it. Otherwise, they will be released at the end of the frame.
@@ -166,8 +166,8 @@ private:
     std::vector<RTInfo> mAvailableRTs;
     std::vector<RTInfo> mUsedRTs;
 
-    MultiTexture mStagingTexture;
-    MultiTexture mGIOccluderTexture;
+    MultiTexture* mStagingTexture;
+    MultiTexture* mGIOccluderTexture;
 
     DistanceField* mDistanceField;
 

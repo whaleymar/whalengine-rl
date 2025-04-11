@@ -2,6 +2,7 @@
 
 #include "Components/Relationships.h"
 #include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "Systems/CameraSystem.h"
 
 namespace whal {

@@ -81,8 +81,8 @@ bool Renderer::init() {
         return true;
     }
 
-    mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
-    mGIOccluderTexture = MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    mStagingTexture = new MultiTexture(MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16));
+    mGIOccluderTexture = new MultiTexture(MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8));
     mDistanceField = new DistanceField();
 
     globalUniformRegister("_Time", UniformVariant{
@@ -113,9 +113,11 @@ bool Renderer::init() {
 
 void Renderer::end() {
     TextureManager::instance().unloadAll();
-    mStagingTexture.release();
-    mGIOccluderTexture.release();
+    mStagingTexture->release();
+    mGIOccluderTexture->release();
     delete mDistanceField;
+    delete mStagingTexture;
+    delete mGIOccluderTexture;
 }
 
 void Renderer::reset() {
@@ -329,9 +331,9 @@ void Renderer::render() {
     // posterize before applying lighting
     // TODO should belong to a pre-lighting postprocess pass in camera
     static Posterize sPosterize;
-    auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
-    sPosterize.process(mStagingTexture.tex, tmpTex);
-    blit(tmpTex, mStagingTexture.tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
+    auto tmpTex = getTemporaryRT(mStagingTexture->tex.texture);
+    sPosterize.process(mStagingTexture->tex, tmpTex);
+    blit(tmpTex, mStagingTexture->tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
     releaseTemporaryRT(tmpTex);
 
     // 2. Renders everything to TextureID::Main
@@ -342,7 +344,7 @@ void Renderer::render() {
     // Game Objects.
     // required for FBOs that will be drawn to the screen (?) Otherwise things with transparency look black:
     rl::BeginBlendMode(rl::BLEND_ALPHA_PREMULTIPLY);
-    gfx::DrawRenderTexture(mStagingTexture.tex);
+    gfx::DrawRenderTexture(mStagingTexture->tex);
     rl::EndBlendMode();
 
     // Lights.
@@ -398,7 +400,7 @@ void Renderer::drawRenderQueue(const MultiTexture& target, const gfx::RenderCont
 
 void Renderer::drawEntities(gfx::RenderContext renderContext) {
     // Drawing GAME OBJECTS
-    drawRenderQueue(mStagingTexture, renderContext, mRenderQueue.mNormalQueue);
+    drawRenderQueue(*mStagingTexture, renderContext, mRenderQueue.mNormalQueue);
 
     // adjust the camera and virtual ratio to work with a game-resolution camera
     f32 prevVirtualRatio = VIRTUAL_SCREEN_RATIO;
@@ -419,7 +421,7 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
         // gameRenderContext.cameraPosition = giViewBox.getPosition().as<f32>();
         gameRenderContext.cameraViewHalf = giViewBox.getHalf();
 
-        drawRenderQueue(mGIOccluderTexture, gameRenderContext, queue);
+        drawRenderQueue(*mGIOccluderTexture, gameRenderContext, queue);
     };
     renderOccluders(8, mRenderQueue.mOccluderQueueCamera);
 
@@ -429,13 +431,13 @@ void Renderer::drawEntities(gfx::RenderContext renderContext) {
 
     gfx::BeginTextureMode(TextureManager::getRenderTexture(TextureID::OcclusionColor));
     rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(mGIOccluderTexture.tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::DrawTexturePro(mGIOccluderTexture->tex.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     gfx::EndTextureMode();
 
     auto tmp = getTemporaryRT(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME);
     gfx::BeginTextureMode(tmp);
     rl::ClearBackground(Colors::ClearRL);
-    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+    rl::DrawTexturePro(mGIOccluderTexture->getDepth(), srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
     gfx::EndTextureMode();
 
     s32 sector = Time.getFrame() % 8;
@@ -484,7 +486,7 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
 
 void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepthView) const {
     // Downscale the Multi-Render Target buffers to Game resolution (for lighting)
-    const auto allDepthTex = mStagingTexture.getDepth();
+    const auto allDepthTex = mStagingTexture->getDepth();
 
     const auto targetDepthTex = TextureManager::getRenderTexture(TextureID::Depth);
     rl::Rectangle srcRect = rl::Rectangle(0, 0, WINDOW_WIDTH_RENDER, -WINDOW_HEIGHT_RENDER);
@@ -517,7 +519,7 @@ void Renderer::scaleDepthBuffers(gfx::RenderContext ctx, rl::Texture cameraDepth
     rl::DrawRectangle(loc.x, loc.y, sectorSize.x, sectorSize.y, Colors::ClearRL);
 
     // draw updated sector
-    rl::DrawTexturePro(mGIOccluderTexture.getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
+    rl::DrawTexturePro(mGIOccluderTexture->getDepth(), rl::Rectangle(0.0, sectorSize.y, sectorSize.x, -sectorSize.y),
                        rl::Rectangle{loc.x, loc.y, sectorSize.x, sectorSize.y}, rl::Vector2{0, 0}, 0, rl::WHITE);
     rl::EndBlendMode();
     gfx::EndTextureMode();
@@ -650,8 +652,9 @@ void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vecto
     WINDOW_HEIGHT_RENDER = newSize.y;
     cascadeWindowChanges(parentSize, windowPosition);
 
-    mStagingTexture.release();
-    mStagingTexture = MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16);
+    mStagingTexture->release();
+    delete mStagingTexture;
+    mStagingTexture = new MultiTexture(MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16));
     TextureManager::instance().reloadRenderTextures();
     mRaylibCamera.offset = rl::Vector2(WINDOW_WIDTH_RENDER / 2, WINDOW_HEIGHT_RENDER / 2);
     Event.emit<evt::WindowResize>(Vector2f(FWINDOW_WIDTH_RENDER / oldSize.x, FWINDOW_HEIGHT_RENDER / oldSize.y));

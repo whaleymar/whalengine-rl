@@ -243,7 +243,7 @@ void TextureManager::_setTargetTexture() {
     rl::RenderTexture rt;
     if (!isRenderTextureUsed(selection)) {
         // invalid selection. Let's use this as an alias for gameobjects-only
-        rt = Graphics.getStagingTex().tex;
+        rt = Graphics.getStagingTex()->tex;
     } else {
         // get the selection
         rt = getRenderTexture(static_cast<TextureID>(selection));

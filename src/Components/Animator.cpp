@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "Components/Draw.h"
+#include "Components/Transform.h"
 #include "ECS.h"
 #include "Map/AnimationFactory.h"
 #include "Sys/System.h"

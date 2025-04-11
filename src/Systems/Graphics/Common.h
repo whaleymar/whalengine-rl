@@ -1,8 +1,6 @@
 #pragma once
 
 #include <raylib.h>
-#include "Components/Transform.h"
-#include "CorradeOptional.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
@@ -13,6 +11,7 @@ class Renderer;
 class TextureAtlas;
 class Shader;
 struct Sprite;
+struct Transform;
 
 namespace gfx {
 

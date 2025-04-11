@@ -1,6 +1,7 @@
 #include "CameraSystem.h"
 
 #include "Components/Tags.h"
+#include "Components/Transform.h"
 #include "Map/Level.h"
 #include "Sys/Tween.h"
 

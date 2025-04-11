@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Util/Singleton.h"
 #ifndef NDEBUG
 #include <unordered_set>
 
@@ -7,12 +8,8 @@ namespace whal {
 
 class IRenderDebug;
 class DebugRenderMgr {
+    SINGLETON(DebugRenderMgr)
 public:
-    static DebugRenderMgr& instance() {
-        static DebugRenderMgr instance_;
-        return instance_;
-    }
-
     static void add(IRenderDebug* obj) { instance().mObjs.insert(obj); }
     static void remove(IRenderDebug* obj) { instance().mObjs.erase(obj); };
     static void drawEditor();

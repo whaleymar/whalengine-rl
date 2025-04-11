@@ -8,6 +8,7 @@
 #include "Components/Lifetime.h"
 #include "Components/Light.h"
 #include "Components/RigidBody.h"
+#include "Components/Transform.h"
 #include "Components/Velocity.h"
 #include "Sys/System.h"
 
