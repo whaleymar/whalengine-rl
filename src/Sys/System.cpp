@@ -2,6 +2,7 @@
 
 #include "Events/Listeners.h"
 #include "IGame.h"
+#include "SystemExternal.h"
 
 #include "Gfx/ShaderManager.h"
 #include "Map/ComponentFactory.h"

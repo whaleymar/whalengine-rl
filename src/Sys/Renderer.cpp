@@ -328,7 +328,7 @@ void Renderer::render() {
 
     // posterize before applying lighting
     // TODO should belong to a pre-lighting postprocess pass in camera
-    static Posterize sPosterize;  // registers the palette tex
+    static Posterize sPosterize;
     auto tmpTex = getTemporaryRT(mStagingTexture.tex.texture);
     sPosterize.process(mStagingTexture.tex, tmpTex);
     blit(tmpTex, mStagingTexture.tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);

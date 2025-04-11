@@ -1,12 +1,12 @@
 #pragma once
 
+#include <array>
 #include <future>
 #include <raylib.h>
 #include "IGame.h"
-#include "Settings.h"
 #include "Util/Print.h"
 
-#include "Sys/System.h"
+#include "Sys/SystemExternal.h"
 
 // WEB BUILD STUFF
 #ifdef __EMSCRIPTEN__

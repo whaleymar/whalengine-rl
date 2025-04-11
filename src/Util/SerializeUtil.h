@@ -25,7 +25,7 @@ static ecs::Serialize defaultSerdeImpl() {
                 if (dataOpt) {
                     e.add<T>(*dataOpt);
                 } else {
-                    print("Error parsing component: ", dataOpt.error()->what());
+                    print("Error parsing component: ", dataOpt.error().what());
                     e.add<T>();
                 }
             },
