@@ -3,6 +3,7 @@
 #include "Systems/Graphics/Common.h"
 #include "raylib.h"
 
+#include <string>
 #include <vector>
 
 namespace whal {

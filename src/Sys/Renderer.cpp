@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <raylib.h>
+
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
 #include "Gfx/Shaders/Posterize.h"

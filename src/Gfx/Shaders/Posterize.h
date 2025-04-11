@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Gfx/Shader.h"
+#include "Util/Singleton.h"
 
 namespace whal {
 
