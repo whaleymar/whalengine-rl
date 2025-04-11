@@ -3,7 +3,6 @@
 #include "Systems/Graphics/Common.h"
 #include "raylib.h"
 
-#include <memory>  // TODO remove this header
 #include <vector>
 
 namespace whal {
@@ -11,12 +10,11 @@ namespace whal {
 class IShaderProcess;
 namespace gfx {
 
-void applyShaders(rl::RenderTexture target, const std::vector<std::shared_ptr<IShaderProcess>>& shaders);
+void applyShaders(rl::RenderTexture target, const std::vector<IShaderProcess*>& shaders);
 
 }  // namespace gfx
 
 struct System;
-class DistanceField;
 struct MultiTexture;
 
 struct UniformVariant {
@@ -168,8 +166,6 @@ private:
 
     MultiTexture* mStagingTexture;
     MultiTexture* mGIOccluderTexture;
-
-    DistanceField* mDistanceField;
 
     std::vector<ShaderUniform> mUniformQueue;
 

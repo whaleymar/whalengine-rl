@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Gfx/Shader.h"
+
 namespace whal {
 
 class Tonemap : public IShaderProcess {
+    SINGLETON_CUSTOM(Tonemap)
 public:
-    Tonemap();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 };
 

@@ -5,8 +5,8 @@
 namespace whal {
 
 class Posterize : public IShaderProcess {
+    SINGLETON(Posterize)
 public:
-    Posterize() = default;
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 #ifndef NDEBUG

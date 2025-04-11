@@ -5,8 +5,8 @@
 namespace whal {
 
 class Bloom : public IShaderProcess {
+    SINGLETON_CUSTOM(Bloom)
 public:
-    Bloom();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
 #ifndef NDEBUG

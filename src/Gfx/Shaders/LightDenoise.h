@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Gfx/Shader.h"
+
 namespace whal {
 
 class LightDenoise : public IShaderProcess {
+    SINGLETON_CUSTOM(LightDenoise)
 public:
-    LightDenoise();
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 
     // doesn't work as uniform, shader needs it to be const

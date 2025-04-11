@@ -25,6 +25,10 @@ public:
     Shader(Shader&& other);
     virtual ~Shader();
 
+    // no copying
+    Shader(const Shader& other) = delete;
+    void operator=(const Shader& other) = delete;
+
     void bind() const;    // binds shader and uniforms. RUN AFTER ALL UNIFORMS R SET.
     void unbind() const;  // issues draw call
 

@@ -30,10 +30,10 @@ namespace whal {
 
 namespace gfx {
 
-void applyShaders(rl::RenderTexture target, std::vector<std::shared_ptr<IShaderProcess>>& shaders) {
+void applyShaders(rl::RenderTexture target, std::vector<IShaderProcess*>& shaders) {
     rl::RenderTexture swap = Graphics.getTemporaryRT(target.texture);
     bool isSwapTarget = true;
-    for (std::shared_ptr<IShaderProcess>& pShader : shaders) {
+    for (IShaderProcess* pShader : shaders) {
         if (isSwapTarget) {
             pShader->process(target, swap);
         } else {
@@ -83,7 +83,6 @@ bool Renderer::init() {
 
     mStagingTexture = new MultiTexture(MultiTexture::create(WINDOW_WIDTH_RENDER, WINDOW_HEIGHT_RENDER, rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16));
     mGIOccluderTexture = new MultiTexture(MultiTexture::create(WINDOW_WIDTH_GAME, WINDOW_HEIGHT_GAME, rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8));
-    mDistanceField = new DistanceField();
 
     globalUniformRegister("_Time", UniformVariant{
                                        .tag = UniformVariant::Float,
@@ -115,7 +114,6 @@ void Renderer::end() {
     TextureManager::instance().unloadAll();
     mStagingTexture->release();
     mGIOccluderTexture->release();
-    delete mDistanceField;
     delete mStagingTexture;
     delete mGIOccluderTexture;
 }
@@ -330,9 +328,8 @@ void Renderer::render() {
 
     // posterize before applying lighting
     // TODO should belong to a pre-lighting postprocess pass in camera
-    static Posterize sPosterize;
     auto tmpTex = getTemporaryRT(mStagingTexture->tex.texture);
-    sPosterize.process(mStagingTexture->tex, tmpTex);
+    Posterize::instance().process(mStagingTexture->tex, tmpTex);
     blit(tmpTex, mStagingTexture->tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
     releaseTemporaryRT(tmpTex);
 
@@ -372,7 +369,7 @@ void Renderer::render() {
 void Renderer::buildDistanceField() const {
     const rl::RenderTexture occlSrc = TextureManager::getRenderTexture(TextureID::OcclusionDepth);
     const rl::RenderTexture dfDst = TextureManager::getRenderTexture(TextureID::DistanceField);
-    mDistanceField->process(occlSrc, dfDst);
+    DistanceField::instance().process(occlSrc, dfDst);
 }
 
 void Renderer::drawRenderQueue(const MultiTexture& target, const gfx::RenderContext& renderContext, const std::vector<gfx::EntityRenderInfo>& queue) {
@@ -477,10 +474,8 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     gfx::EndTextureMode();
 
     // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
-    static LightDenoise lightingPipeline;
-
     const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
-    lightingPipeline.process(lightTex, lightTexUpscale);
+    LightDenoise::instance().process(lightTex, lightTexUpscale);
     Graphics.releaseTemporaryRT(lightTex);
 }
 
