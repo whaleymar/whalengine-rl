@@ -176,6 +176,18 @@ public:
     std::vector<evfl::EventFlow>& getEventFlows() { return mEventFlows; }
     TweenManager& getTweenMgr() { return mTweenMgr; }
 
+    // basic tween that's not attached to an entity
+    template <typename T>
+        requires Multipliable<T>
+    Tweener<T> tween(T from, T to, f32 duration) {
+        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(to, duration, nullptr, ecs::Entity{});
+        mTweenMgr.mTweens.push_back(tween);
+        Tweener<T> tweener(tween);
+        tweener.setEmpty();
+        tweener.from(from);
+        return tweener;
+    }
+
     // Tween scheduling
     // have to use `auto` for the getter, otherwise the compiler can't infer T for some reason.
     // static_cast still enforces compile-time type safety.

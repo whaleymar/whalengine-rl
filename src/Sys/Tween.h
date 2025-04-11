@@ -15,6 +15,7 @@ enum Flags : u8 {
     CustomOrigin = 1 << 2,
     Bounce = 1 << 3,
     IgnorePause = 1 << 4,
+    Empty = 1 << 5,  // not attached to an entity (allowed to have a null getter)
 };
 }
 
@@ -127,12 +128,19 @@ public:
         return *this;
     }
 
+    Tweener<T>& setEmpty() {
+        mTween->setFlag(TweenParams::Empty);
+        return *this;
+    }
+
     Tweener<T>& setTransition(Ease easeFunc) {
         mTween->mEaseFunc = easeFunc;
         return *this;
     }
 
     const Tween<T>* get() const { return mTween.get(); }
+    T getValue() const { return mTween->getValue(); }
+    T getValueOr(T backup) const { return mTween ? mTween->getValue() : backup; }
 
 private:
     std::shared_ptr<Tween<T>> mTween;
@@ -182,10 +190,10 @@ public:
 
     // i would like this to be private but friending std::shared_ptr doesn't work
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
-        : mDuration(duration), mTweenValue(target), mGetter(getter), mEntity(entity) {}
+        : mDuration(duration), mTweenTarget(target), mGetter(getter), mEntity(entity) {}
 
     Tween(T target, f32 duration, TweenManager::ConstValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
-        : mDuration(duration), mTweenValue(target), mGetterConst(getter), mSetter(setter), mEntity(entity) {}
+        : mDuration(duration), mTweenTarget(target), mGetterConst(getter), mSetter(setter), mEntity(entity) {}
 
     ~Tween() = default;
 
@@ -227,10 +235,10 @@ private:
                 resetFlag(TweenParams::CustomOrigin);
                 if (isSet(TweenParams::Bounce)) {
                     if (isSet(TweenParams::RelativeTarget)) {
-                        mTweenValue = mTweenValue * -1.0f;
+                        mTweenTarget = mTweenTarget * -1.0f;
                     } else {
-                        auto tmp = mTweenValue;
-                        mTweenValue = mStartValue;
+                        auto tmp = mTweenTarget;
+                        mTweenTarget = mStartValue;
                         mStartValue = tmp;
                     }
                 }
@@ -278,21 +286,27 @@ private:
     void setFlag(TweenParams::Flags flag) { mFlags = (mFlags | flag); }
 
     void init() override {
-        if (!isSet(TweenParams::CustomOrigin)) {
-            mStartValue = mGetterConst ? mGetterConst(mEntity) : mGetter(mEntity);
-        }
+        if (mGetterConst || mGetter) {
+            if (!isSet(TweenParams::CustomOrigin)) {
+                mStartValue = mGetterConst ? mGetterConst(mEntity) : mGetter(mEntity);
+            }
 
-        if (isSet(TweenParams::RelativeTarget)) {
-            mEndValue = mStartValue + mTweenValue;
+            if (isSet(TweenParams::RelativeTarget)) {
+                mEndValue = mStartValue + mTweenTarget;
+            } else {
+                mEndValue = mTweenTarget;
+            }
         } else {
-            mEndValue = mTweenValue;
+            mEndValue = mTweenTarget;
         }
     }
 
     void setValue(const T& val) {
-        assert((mSetter || mGetter) && "Tween must have a setter or a mutable getter");
+        assert((mSetter || mGetter || isSet(TweenParams::Empty)) && "Non-empty Tween must have a setter or a mutable getter");
         if (mSetter) {
             mSetter(val, mEntity);
+        } else if (isSet(TweenParams::Empty)) {
+            // do nothing
         } else {
             mGetter(mEntity) = val;
         }
@@ -305,7 +319,7 @@ private:
     s32 mNumLoops = 0;
     T mStartValue;
     T mEndValue;
-    T mTweenValue;
+    T mTweenTarget;
     std::function<T&(ecs::Entity)> mGetter = nullptr;
     std::function<T(ecs::Entity)> mGetterConst = nullptr;
     std::function<void(const T&, ecs::Entity)> mSetter = nullptr;

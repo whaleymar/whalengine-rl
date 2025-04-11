@@ -147,7 +147,7 @@ void System::resetManagers() {
     Time.mTimeElapsedUnmodified = 0.0f;
     Time.mTimeMultiplier = 1.0f;
 
-    Schedule.clear();
+    // Schedule.clear(); // anything relying on an entity should be cleaned up correctly
     Audio.stopAll();
     Audio.clearClipRegistry();
     ShaderMgr::reloadShaders();

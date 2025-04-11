@@ -50,6 +50,7 @@ void TweenManager::update() {
                                              pTween->onStart();
                                              return false;
                                          } else if (pTween->isDone()) {
+                                             pTween->onUpdate();
                                              pTween->onEnd();
                                              return true;
                                          } else {
