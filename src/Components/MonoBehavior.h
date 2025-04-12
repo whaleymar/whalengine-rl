@@ -1,9 +1,8 @@
 #pragma once
 
-// TODO use corrade?
-#include <memory>
 #include "ECS.h"
 #include "Sys/InputHandler.h"
+#include "Util/Memory/Box.h"
 
 namespace whal {
 struct InputEvent;
@@ -35,7 +34,7 @@ struct MonoBase {
     // onDrawGizmo?
     virtual void onInput(ecs::Entity self, InputEvent input) {}
 
-    virtual std::unique_ptr<MonoBase> clone() const = 0;
+    virtual Box<MonoBase> clone() const = 0;
 
     // I could do a default onEditorRender in IMonoBehavior, but I have to define a ReflectionType
     // for derived classes anyway (aggregate types can't have virtual functions) so I might as well
@@ -46,20 +45,20 @@ struct MonoBase {
 // using CRTP to automatically define a clone method so that MonoBehavior is copy-constructible
 template <typename T>
 struct IMonoBehavior : MonoBase {
-    std::unique_ptr<MonoBase> clone() const override { return std::unique_ptr<T>(new T(*static_cast<const T*>(this))); }
+    Box<MonoBase> clone() const override { return Box<T>(new T(*static_cast<const T*>(this))); }
 };
 
 /*
 Example Usage:
 class PlayerScript : public IMonoBehavior<PlayerScript> {};
-entity.add(MonoBehaviour{std::make_unique<PlayerScript>()});
+entity.add(MonoBehaviour{Box<PlayerScript>::New()});
 */
 struct MonoBehavior {
-    std::unique_ptr<MonoBase> pBehavior;
+    Box<MonoBase> pBehavior;
     void onEditorRender() { pBehavior->onEditorRender(); }
 
     // rule of five
-    MonoBehavior(std::unique_ptr<MonoBase>&& behavior) : pBehavior(std::move(behavior)) {}
+    MonoBehavior(Box<MonoBase>&& behavior) : pBehavior(std::move(behavior)) {}
     ~MonoBehavior() = default;
     MonoBehavior(MonoBehavior const& other) : pBehavior(other.pBehavior->clone()) {}
     MonoBehavior(MonoBehavior&& other) = default;

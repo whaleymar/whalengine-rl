@@ -10,7 +10,6 @@
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Map/Tiled.h"
-#include "Physics/Box.h"
 
 #include "Settings.h"
 #include "Sys/System.h"

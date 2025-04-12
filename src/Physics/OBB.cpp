@@ -1,4 +1,4 @@
-#include "Box.h"
+#include "OBB.h"
 
 #include <algorithm>
 #include <cmath>
@@ -7,11 +7,11 @@
 
 namespace whal {
 
-Box::Box(Vector2i center, Vector2i half, f32 rotationDegrees) : mCenter(center), mHalf(half), mRotationDegrees(rotationDegrees) {}
+OBB::OBB(Vector2i center, Vector2i half, f32 rotationDegrees) : mCenter(center), mHalf(half), mRotationDegrees(rotationDegrees) {}
 
-Box::Box(AABB aabb, f32 rotationDegrees) : mCenter(aabb.getPosition()), mHalf(aabb.getHalf()), mRotationDegrees(rotationDegrees) {}
+OBB::OBB(AABB aabb, f32 rotationDegrees) : mCenter(aabb.getPosition()), mHalf(aabb.getHalf()), mRotationDegrees(rotationDegrees) {}
 
-AABB Box::getBoundingAABB() const {
+AABB OBB::getBoundingAABB() const {
     // optimize for common case
     if (mRotationDegrees == 0.0f) {
         return AABB(mCenter, mHalf);

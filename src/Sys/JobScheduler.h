@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Settings.h"
+#include "Util/Memory/Box.h"
 
 #ifdef USE_THREADS
 
@@ -40,38 +41,17 @@ struct Node {
     virtual ~Node() = default;
 
     // returns true if node is finished
-    virtual bool tick(f32 dt) {
-        if (boundFunc) {
-            boundFunc();
-        }
-        if (waitSeconds > 0) {
-            waitSeconds -= dt;
-            return false;
-        }
-        return true;
-    }
+    virtual bool tick(f32 dt);
 
     f32 waitSeconds = 0.0;
     std::function<void()> boundFunc = nullptr;
-    std::unique_ptr<Node> next = nullptr;
+    Box<Node> next;
 };
 
 struct RepeatNode : public Node {
     RepeatNode(std::function<void()> boundFunc_, f32 waitSeconds_, f32 repeatEvery_) : Node(boundFunc_, waitSeconds_), repeatEvery(repeatEvery_) {}
 
-    bool tick(f32 dt) override {
-        if (boundFunc && timeSinceCall >= repeatEvery) {
-            boundFunc();
-            timeSinceCall = 0.0f;
-        } else {
-            timeSinceCall += dt;
-        }
-        if (waitSeconds > 0) {
-            waitSeconds -= dt;
-            return false;
-        }
-        return true;
-    }
+    bool tick(f32 dt) override;
 
     f32 repeatEvery = 0.0f;
     f32 timeSinceCall = 0.0f;
@@ -109,10 +89,10 @@ public:
         return false;
     }
 
-    void invalidate() { mRoot.release(); }
+    void invalidate() { mRoot.reset(); }
 
 private:
-    std::unique_ptr<Node> mRoot = nullptr;
+    Box<Node> mRoot;
     Node* mEnd = nullptr;
     std::vector<ecs::Entity> mRequiredEntities;
     u32 mId;
@@ -125,7 +105,7 @@ EventFlow& EventFlow::add(std::type_identity_t<std::function<void(T...)>> const&
         return *this;
     }
     BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
-    auto pNode = std::make_unique<Node>(bf, 0.0f);
+    Box<Node> pNode = Box<Node>::New(bf, 0.0f);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
         mEnd = mRoot.get();
@@ -143,7 +123,7 @@ EventFlow& EventFlow::repeat(f32 duration, f32 repeatEvery, std::type_identity_t
         return *this;
     }
     BoundFunction bf = [args..., func]() { func(args...); };  // boyfriend :3
-    auto pNode = std::make_unique<RepeatNode>(bf, duration, repeatEvery);
+    Box<Node> pNode = Box<RepeatNode>::New(bf, duration, repeatEvery);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
         mEnd = mRoot.get();

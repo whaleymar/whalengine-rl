@@ -5,7 +5,7 @@
 #include "Components/Draw.h"
 #include "Components/Transform.h"
 #include "Gfx/RaylibUtil.h"
-#include "Physics/Box.h"
+#include "Physics/OBB.h"
 #include "Settings.h"
 
 namespace whal {
@@ -24,7 +24,7 @@ void RectangleRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
         const DrawRect& draw = entity.get<DrawRect>();
         const Transform& trans = entity.get<Transform>();
         AABB bb = trans.rotation == 0.0f ? AABB(trans, draw.frameSize / 2) :
-                                           Box(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
+                                           OBB(trans.getRotatedPosition().round(), draw.frameSize / 2, trans.rotation).getBoundingAABB();
 
         // float height should affect bounding box (for culling) but not Y sorting
         s32 floatOffset = static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT);

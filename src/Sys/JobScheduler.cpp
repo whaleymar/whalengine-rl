@@ -1,13 +1,37 @@
 #include "JobScheduler.h"
 
 #include <initializer_list>
-#include <memory>
 #include "Events/Events.h"
 #include "System.h"
 
 namespace whal {
 
 namespace evfl {
+
+bool Node::tick(f32 dt) {
+    if (boundFunc) {
+        boundFunc();
+    }
+    if (waitSeconds > 0) {
+        waitSeconds -= dt;
+        return false;
+    }
+    return true;
+}
+
+bool RepeatNode::tick(f32 dt) {
+    if (boundFunc && timeSinceCall >= repeatEvery) {
+        boundFunc();
+        timeSinceCall = 0.0f;
+    } else {
+        timeSinceCall += dt;
+    }
+    if (waitSeconds > 0) {
+        waitSeconds -= dt;
+        return false;
+    }
+    return true;
+}
 
 static u32 EVFL_ID = 1;  // 0 is invalid ID
 
@@ -26,7 +50,7 @@ EventFlow& EventFlow::addWait(f32 waitSeconds) {
         return *this;
     }
 
-    auto pNode = std::make_unique<Node>(nullptr, waitSeconds);
+    Box<Node> pNode = Box<Node>::New(nullptr, waitSeconds);
     if (mRoot == nullptr) {
         mRoot = std::move(pNode);
         mEnd = mRoot.get();

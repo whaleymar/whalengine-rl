@@ -6,11 +6,12 @@ namespace whal {
 
 class AABB;
 
-class Box {
+// Oriented Bounding Box
+class OBB {
 public:
-    Box() = default;
-    Box(Vector2i center, Vector2i half, f32 rotationDegrees);
-    Box(AABB aabb, f32 rotationDegrees);
+    OBB() = default;
+    OBB(Vector2i center, Vector2i half, f32 rotationDegrees);
+    OBB(AABB aabb, f32 rotationDegrees);
 
     AABB getBoundingAABB() const;
 
