@@ -1,31 +1,31 @@
 #pragma once
 
-#include "Audio.h"
-#include "Cursor.h"
-#include "Event.h"
-#include "InputHandler.h"
-#include "JobScheduler.h"
-#include "Prefab.h"
 #include "Random.h"
-#include "Renderer.h"
-#include "Time.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
 
 class IGame;
 class Engine;
+class Renderer;
+class TimeManager;
+class AudioPlayer;
+class CursorManager;
+class PrefabManager;
+class JobScheduler;
+class InputHandler;
+class EventManager;
 
-extern TimeManager Time;
-extern InputHandler Input;
-extern RNGManager Rng;
-extern EventManager Event;
-extern AudioPlayer Audio;
-extern JobScheduler Schedule;
+extern TimeManager& Time;
+extern InputHandler& Input;
+extern RNGManager Rng;  // The "main" Random Number Generator, but game logic can use other instances.
+extern EventManager& Event;
+extern AudioPlayer& Audio;
+extern JobScheduler& Schedule;
 extern ecs::World& World;
-extern PrefabManager Prefab;
-extern CursorManager Cursor;
-extern Renderer Graphics;
+extern PrefabManager& Prefab;
+extern CursorManager& Cursor;
+extern Renderer& Graphics;
 
 struct System {
     friend Engine;

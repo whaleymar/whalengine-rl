@@ -7,6 +7,7 @@
 #include "Physics/MaterialData.h"
 #include "Physics/Shapes.h"
 #include "Settings.h"
+#include "Sys/Time.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Components/Collider.h"

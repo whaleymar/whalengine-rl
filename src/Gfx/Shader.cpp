@@ -1,7 +1,9 @@
 #include "Shader.h"
 
 #include "ShaderTranspiler.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
+#include "Util/String.h"
 #include "raylib.h"
 
 #ifndef NDEBUG

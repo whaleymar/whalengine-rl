@@ -20,19 +20,20 @@ float fastRandomFloat(u32& state) {
     return result - 1.0f;                              // Adjust the range to [0, 1)
 }
 
-static u32 RANDOM_STATE = static_cast<u32>(std::time(nullptr));
-
 namespace whal {
 
-f32 RNGManager::uniform() const {
-    return fastRandomFloat(RANDOM_STATE);
+// by default, use the current time as the seed
+RNGManager::RNGManager() : mState(static_cast<u32>(std::time(nullptr))) {}
+
+f32 RNGManager::uniform() {
+    return fastRandomFloat(mState);
 }
 
-f32 RNGManager::range(f32 lower, f32 upper) const {
+f32 RNGManager::range(f32 lower, f32 upper) {
     return std::lerp(lower, upper, uniform());
 }
 
-s32 RNGManager::range(s32 lower, s32 upperExclusive) const {
+s32 RNGManager::range(s32 lower, s32 upperExclusive) {
     const auto retVal = std::lerp(lower, upperExclusive, uniform());
     assert(retVal != upperExclusive);  // idk if uniform() can return 1.0
     return retVal;

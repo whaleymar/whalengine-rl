@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 
+#include "Util/Singleton.h"
 #include "Util/Types.h"
 #include "whalECS/src/Traits.h"
 
@@ -34,10 +35,8 @@ private:
 };
 
 class EventManager {
+    SINGLETON(EventManager)
 public:
-    friend System;
-    EventManager() = default;
-
     template <typename E, typename... T>
         requires(std::is_base_of<IEvent<T...>, E>::value)
     void registerListener(EventListener<T...>& listener) {
@@ -82,8 +81,6 @@ public:
     }
 
 private:
-    EventManager(EventManager& other) = delete;
-
     void removeListenerAt(EventId eventId, size_t ix) {
         auto last = mListeners[eventId].back();
         mListeners[eventId][ix] = last;

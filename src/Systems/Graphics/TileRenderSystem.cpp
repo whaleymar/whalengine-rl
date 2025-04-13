@@ -1,4 +1,5 @@
 #include "TileRenderSystem.h"
+#include <algorithm>
 #include <cstring>
 
 #include "Common.h"
@@ -10,8 +11,8 @@
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Map/Tiled.h"
-
 #include "Settings.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
 #include "Util/CameraUtil.h"
 #include "raylib.h"

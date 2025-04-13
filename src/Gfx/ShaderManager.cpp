@@ -7,6 +7,7 @@
 #include "Gfx/Shader.h"
 #include "Gfx/ShaderTranspiler.h"
 #include "Settings.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
 
 #include "Util/Print.h"

@@ -2,6 +2,7 @@
 
 #include "Components/Callback.h"
 #include "Sys/System.h"
+#include "Sys/Time.h"
 
 namespace whal {
 

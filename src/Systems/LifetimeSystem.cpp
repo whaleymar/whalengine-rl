@@ -3,6 +3,7 @@
 #include "Components/Callback.h"
 #include "Components/Lifetime.h"
 #include "Sys/System.h"
+#include "Sys/Time.h"
 
 namespace whal {
 

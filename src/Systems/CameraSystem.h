@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Components/Camera.h"
+#include "Components/Transform.h"
 #include "Events/Events.h"
 #include "Sys/IListen.h"
 #include "whalECS/src/ECS.h"

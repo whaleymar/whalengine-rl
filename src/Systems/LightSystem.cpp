@@ -6,7 +6,6 @@
 
 #include "Components/Light.h"
 #include "Components/Transform.h"
-
 #include "Events/Events.h"
 #include "Gfx/Color.h"
 #include "Gfx/Coordinates.h"
@@ -15,6 +14,7 @@
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Settings.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
 
 #include "Util/Vector.h"

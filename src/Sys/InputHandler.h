@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Util/Singleton.h"
 #include "Util/Vector.h"
 #include "raylib.h"
 
@@ -22,7 +23,6 @@ enum class GamepadAxis {
 };
 
 struct System;
-
 using InputCode = u32;
 
 // Get a unique normalized value for any input type
@@ -51,6 +51,8 @@ enum class GamepadType {
 GamepadType GamepadFromString(const std::string& name);
 
 class InputHandler {
+    SINGLETON(InputHandler)
+
 public:
     friend System;
 
@@ -59,8 +61,6 @@ public:
         InputCode code;
     };
 
-    InputHandler() = default;
-    void update();
     void loadMappings(const InputPair mappings[], s32 count) const;
     void resetMappings() const;
     void setActiveGamepad(s32 id);
@@ -165,9 +165,7 @@ public:
     bool fromString(const std::string& data);  // returns true on error
 
 private:
-    InputHandler(const InputHandler&) = delete;
-    void operator=(const InputHandler&) = delete;
-
+    void update();
     void updateGamepadState();
     void updateLastInput();
 

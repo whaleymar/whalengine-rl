@@ -7,8 +7,8 @@
 
 #include "Settings.h"
 #include "System.h"
-
 #include "Util/Print.h"
+#include "Util/Vector.h"
 
 #define NULLOPT Corrade::Containers::NullOpt;
 

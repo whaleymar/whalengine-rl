@@ -2,6 +2,7 @@
 
 #include "Settings.h"
 #include "Util/Memory/Box.h"
+#include "Util/Singleton.h"
 
 #ifdef USE_THREADS
 
@@ -137,12 +138,11 @@ struct System;
 
 // This can't inherit IListen because circular imports
 class JobScheduler {
-public:
+    SINGLETON_CUSTOM(JobScheduler)
     friend System;
 
-    JobScheduler();
-
-    // Asych callback scheduling:
+public:
+    // Asynch callback scheduling:
     template <typename... T>
     void after(std::type_identity_t<std::function<void(T...)>> const& func, f32 delaySeconds, T... args);
 
@@ -218,9 +218,6 @@ public:
     }
 
 private:
-    JobScheduler(const JobScheduler&) = delete;
-    void operator=(const JobScheduler&) = delete;
-
     void start();
     void await();
     void end();

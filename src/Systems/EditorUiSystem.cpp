@@ -1,26 +1,23 @@
+#include "Sys/Time.h"
 #ifndef NDEBUG
-
-#include "EditorUiSystem.h"
-
-#include "InspectorComponents.h"  // DEFINED IN GAME REPO
-#include "imgui.h"
-
-#include "ECS.h"
-#include "raylib.h"
 
 #include "Components/Collider.h"
 #include "Components/ComponentReflection.h"
 #include "Components/Transform.h"
-#include "IGame.h"
-#include "Map/Level.h"
-
+#include "ECS.h"
+#include "EditorUiSystem.h"
 #include "Events/Events.h"
 #include "Gfx/Coordinates.h"
+#include "IGame.h"
+#include "InspectorComponents.h"  // DEFINED IN GAME REPO
+#include "Map/Level.h"
 #include "Settings.h"
-#include "Util/CameraUtil.h"
-#include "rlImGuiColors.h"
-
+#include "Sys/InputHandler.h"
 #include "Systems/ColliderSystem.h"
+#include "Util/CameraUtil.h"
+#include "imgui.h"
+#include "raylib.h"
+#include "rlImGuiColors.h"
 
 namespace whal {
 

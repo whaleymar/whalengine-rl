@@ -8,6 +8,7 @@
 #include "ECS.h"
 #include "Map/AnimationFactory.h"
 #include "Sys/System.h"
+#include "Sys/Time.h"
 #include "Util/Print.h"
 
 namespace whal {

@@ -10,8 +10,6 @@ namespace whal {
 static constexpr f32 MAX_FRAME_TIME = 0.1;  // cap at half a second
 static auto S_GAME_STARTTIME = std::chrono::system_clock::now();
 
-TimeManager::TimeManager() {}
-
 void TimeManager::update() {
     f32 frameTime = rl::GetFrameTime();
     mDeltatimeUnmodified = frameTime > MAX_FRAME_TIME ? MAX_FRAME_TIME : frameTime;

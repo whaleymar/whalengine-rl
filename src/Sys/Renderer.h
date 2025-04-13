@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Systems/Graphics/Common.h"
+#include "Util/Singleton.h"
 #include "raylib.h"
 
 #include <string>
@@ -54,6 +55,8 @@ struct ShaderUniform {
 };
 
 class Renderer {
+    SINGLETON_CUSTOM(Renderer)
+    friend System;
     struct RTInfo {
         rl::RenderTexture rt;
         rl::TextureFilter filter;  // store filter so it's only changed when necessary
@@ -67,9 +70,6 @@ class Renderer {
     };
 
 public:
-    friend System;
-    Renderer();
-
     // Renders all game objects to the main frame buffer
     // and applies any post processing effects attached to the camera.
     void render();
@@ -140,8 +140,6 @@ public:
     void globalUniformSetVec4(const std::string& name, rl::Vector4 val);
 
 private:
-    Renderer(const Renderer&) = delete;
-    void operator=(const Renderer&) = delete;
     bool init();    // called after OpenGL context established. Returns true on error.
     void update();  // called once per frame
     void end();     // called by System::end

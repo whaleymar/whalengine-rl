@@ -10,6 +10,7 @@
 #include "Components/RigidBody.h"
 #include "Components/Transform.h"
 #include "Components/Velocity.h"
+#include "Sys/JobScheduler.h"
 #include "Sys/System.h"
 
 #include "Util/Vector.h"

@@ -4,11 +4,11 @@
 #include <string>
 
 #include "Settings.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
+#include "Systems/Graphics/Common.h"
 #include "raylib.h"
 #include "rlgl.h"
-
-#include "Systems/Graphics/Common.h"
 
 namespace whal::gfx {
 

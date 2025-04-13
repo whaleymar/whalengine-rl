@@ -9,6 +9,7 @@
 #include "Components/Velocity.h"
 
 #include "Settings.h"
+#include "Sys/Time.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Events/Events.h"

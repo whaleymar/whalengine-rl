@@ -1,13 +1,19 @@
 #include "Sys/System.h"
 
 #include "Events/Listeners.h"
-#include "IGame.h"
-#include "SystemExternal.h"
-
 #include "Gfx/ShaderManager.h"
+#include "IGame.h"
 #include "Map/ComponentFactory.h"
 #include "Map/Level.h"
 #include "Settings.h"
+#include "Sys/Audio.h"
+#include "Sys/Cursor.h"
+#include "Sys/InputHandler.h"
+#include "Sys/JobScheduler.h"
+#include "Sys/Prefab.h"
+#include "Sys/Renderer.h"
+#include "Sys/Time.h"
+#include "SystemExternal.h"
 #include "Util/Print.h"
 #include "raylib.h"
 #ifdef __EMSCRIPTEN__
@@ -19,16 +25,16 @@ namespace whal {
 static IGame* S_PGAME = nullptr;
 
 // MODULES
-InputHandler Input = InputHandler();
-TimeManager Time = TimeManager();
-RNGManager Rng = RNGManager();
-EventManager Event = EventManager();
-AudioPlayer Audio = AudioPlayer();
-JobScheduler Schedule = JobScheduler();
+InputHandler& Input = InputHandler::instance();
+TimeManager& Time = TimeManager::instance();
+RNGManager Rng = RNGManager();  // intentionally not a singleton in case I want multiple seed
+EventManager& Event = EventManager::instance();
+AudioPlayer& Audio = AudioPlayer::instance();
+JobScheduler& Schedule = JobScheduler::instance();
 ecs::World& World = ecs::World::getInstance();
-PrefabManager Prefab = PrefabManager();
-CursorManager Cursor = CursorManager();
-Renderer Graphics = Renderer();
+PrefabManager& Prefab = PrefabManager::instance();
+CursorManager& Cursor = CursorManager::instance();
+Renderer& Graphics = Renderer::instance();
 
 // VARIABLES
 static bool S_IS_PAUSED = false;

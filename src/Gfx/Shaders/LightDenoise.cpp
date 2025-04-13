@@ -2,6 +2,7 @@
 
 #include "Gfx/RaylibUtil.h"
 #include "Gfx/ShaderManager.h"
+#include "Sys/Renderer.h"
 #include "Sys/System.h"
 #include "raylib.h"
 

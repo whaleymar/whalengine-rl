@@ -1,7 +1,9 @@
 #include "Tween.h"
 
 #include <algorithm>
+#include "Settings.h"
 #include "Sys/System.h"
+#include "Sys/Time.h"
 
 namespace whal {
 

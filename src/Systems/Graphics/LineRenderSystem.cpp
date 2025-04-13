@@ -7,6 +7,7 @@
 #include "Gfx/RaylibUtil.h"
 #include "Settings.h"
 #include "Sys/System.h"
+#include "Sys/Time.h"
 #include "Util/MathUtil.h"
 
 namespace whal {

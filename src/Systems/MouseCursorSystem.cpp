@@ -1,6 +1,7 @@
 #include "MouseCursorSystem.h"
 
 #include "Components/Tags.h"
+#include "Sys/InputHandler.h"
 #include "Sys/System.h"
 
 namespace whal {

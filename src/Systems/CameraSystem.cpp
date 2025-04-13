@@ -3,6 +3,8 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "Map/Level.h"
+#include "Sys/JobScheduler.h"
+#include "Sys/Time.h"
 #include "Sys/Tween.h"
 
 namespace whal {

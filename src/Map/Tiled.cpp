@@ -14,6 +14,7 @@
 #include "Map/EntityFactory.h"
 #include "Map/Level.h"
 #include "Settings.h"
+#include "Sys/Prefab.h"
 #include "Sys/System.h"
 #include "Systems/Graphics/TileRenderSystem.h"
 #include "TiledParse.h"

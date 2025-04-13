@@ -3,8 +3,8 @@
 #include "CorradeOptional.h"
 
 #include <vector>
+#include "Util/Singleton.h"
 #include "Util/Types.h"
-#include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
 
 typedef struct FMOD_SYSTEM FMOD_SYSTEM;
@@ -13,6 +13,11 @@ typedef struct FMOD_CHANNEL FMOD_CHANNEL;
 typedef struct FMOD_CHANNELGROUP FMOD_CHANNELGROUP;
 typedef struct FMOD_CHANNELCONTROL FMOD_CHANNELCONTROL;
 typedef struct FMOD_DSP FMOD_DSP;
+
+template <typename T>
+struct Vector2;
+typedef Vector2<f32> Vector2f;
+typedef Vector2<s32> Vector2i;
 
 namespace whal {
 
@@ -36,13 +41,13 @@ private:
 };
 
 class AudioPlayer {
+    SINGLETON_CUSTOM(AudioPlayer)
 public:
     enum class Filter { None, LowPass };
 
     friend System;
     friend AudioClip;
 
-    AudioPlayer();
     Corrade::Containers::Optional<Error> init();
     void end();
 
@@ -82,8 +87,6 @@ public:
     void setMusicPlaybackSpeed(f32 speed = 1.0f);
     f32 getMusicPlaybackSpeed() const;
 
-    void update();
-
     void setFilterMusic(Filter filter);
     void setFilterClips(Filter filter);
     Filter getFilterMusic() const { return mMusicFilter; }
@@ -105,6 +108,8 @@ public:
     void clearClipRegistry();
 
 private:
+    void update();
+
     struct RegisteredClip {
         std::string name;
         AudioClip clip;
@@ -117,9 +122,6 @@ private:
         bool isMusicPaused = false;
         bool isSfxPaused = false;
     };
-
-    AudioPlayer(const AudioPlayer&) = delete;
-    void operator=(const AudioPlayer&) = delete;
 
     FMOD_SYSTEM* getSystem() const;
     void playClipWithChannel(const AudioClip& clip, FMOD_CHANNEL* channel, f32 volume, Filter filter, bool isLooping, Vector2i* position,

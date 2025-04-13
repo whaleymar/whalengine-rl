@@ -3,6 +3,7 @@
 #include "Components/RailsControl.h"
 #include "Components/Transform.h"
 
+#include "Sys/Audio.h"
 #include "Sys/System.h"
 
 namespace whal {

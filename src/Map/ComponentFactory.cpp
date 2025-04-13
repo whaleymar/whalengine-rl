@@ -18,6 +18,7 @@
 #include "Map/Tiled.h"
 #include "Map/TiledParse.h"
 #include "Serializer.h"
+#include "Sys/JobScheduler.h"
 #include "Sys/System.h"
 #include "Util/JsonUtil.h"
 #include "Util/SerializeUtil.h"

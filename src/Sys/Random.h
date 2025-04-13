@@ -6,19 +6,18 @@ namespace whal {
 
 struct System;
 
+// Not a singleton! Free to make new RNG managers for game stuff!
 class RNGManager {
 public:
-    friend System;
+    RNGManager();
+    RNGManager(u32 seed) : mState(seed) {}
+    f32 uniform();
 
-    RNGManager() = default;
-    f32 uniform() const;
-
-    f32 range(f32 lower, f32 upper) const;
-    s32 range(s32 lower, s32 upperExclusive) const;
+    f32 range(f32 lower, f32 upper);
+    s32 range(s32 lower, s32 upperExclusive);
 
 private:
-    RNGManager(const RNGManager&) = delete;
-    void operator=(const RNGManager&) = delete;
+    u32 mState;
 };
 
 }  // namespace whal

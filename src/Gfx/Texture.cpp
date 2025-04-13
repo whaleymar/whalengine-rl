@@ -15,7 +15,7 @@
 #include "Gfx/Shader.h"
 #include "Map/AnimationFactory.h"
 #include "Settings.h"
-
+#include "Sys/Renderer.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 

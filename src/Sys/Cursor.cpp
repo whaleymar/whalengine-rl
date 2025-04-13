@@ -3,7 +3,9 @@
 #include <raylib.h>
 #include "Components/Draw.h"
 #include "Components/Tags.h"
+#include "Expected.h"
 #include "Gfx/Depth.h"
+#include "Settings.h"
 #include "Sys/System.h"
 #include "Systems/MouseCursorSystem.h"
 #include "Util/Print.h"
@@ -11,7 +13,7 @@
 namespace whal {
 
 void CursorManager::set(const char* spritePath) const {
-    auto eSprite = Sprite::fromPath(spritePath);
+    Expected<Sprite> eSprite = Sprite::fromPath(spritePath);
     if (!eSprite.isExpected()) {
         print("Couldn't find cursor path:", spritePath);
     } else {
