@@ -5,7 +5,6 @@
 #include <forward_list>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -62,8 +61,8 @@ concept IsMapLike =
 template <typename T>
 concept IsStringLike = std::same_as<T, std::string> || std::same_as<T, char*> || std::same_as<T, const char*>;
 
-template <typename T>
-concept IsSmartPointer = std::same_as<T, std::unique_ptr<typename T::element_type>> || std::same_as<T, std::shared_ptr<typename T::element_type>>;
+// template <typename T>
+// concept IsSmartPointer = std::same_as<T, std::unique_ptr<typename T::element_type>> || std::same_as<T, std::shared_ptr<typename T::element_type>>;
 
 template <typename T>
 concept IsReflectable = std::is_aggregate_v<T> || rfl::internal::has_reflection_type_v<T> || IsVectorLike<T> || IsMapLike<T> || IsStringLike<T>;

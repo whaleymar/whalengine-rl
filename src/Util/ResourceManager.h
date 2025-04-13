@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <memory>
 #include <vector>
 #include "Util/FileUtils.h"
+#include "Util/Memory/Arc.h"
 #include "Util/String.h"
 #include "Util/Types.h"
 
@@ -19,7 +19,7 @@ public:
 
     void clearCache() { mCache.clear(); }
 
-    std::shared_ptr<T> readData(const char* filePath) {
+    Arc<T> readData(const char* filePath) {
         for (auto it = mCache.begin(); it != mCache.end(); it++) {
             if (isEqualString(it->path, filePath)) {
                 // found item in cache, move to back
@@ -37,9 +37,10 @@ public:
         assert(isExist(filePath) && "file path doesn't exist");
 
         std::ifstream file(filePath);
-        auto newData = std::make_shared<T>();
+        Arc<T> newData = Arc<T>::New();
         file >> *newData;
 
+        // use push_back so the ref count is 2
         mCache.push_back({filePath, newData});
 
         return newData;
@@ -48,7 +49,7 @@ public:
 private:
     struct CacheItem {
         std::string path;
-        std::shared_ptr<T> data;
+        Arc<T> data;
     };
 
     std::vector<CacheItem> mCache;

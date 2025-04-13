@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <memory>
 #include "Util/Easing.h"
+#include "Util/Memory/Arc.h"
 #include "whalECS/src/ECS.h"
 
 namespace whal {
@@ -58,7 +58,7 @@ public:
     using BoolTweenCallback = bool (*)(ecs::Entity, const Tween<T>&);
 
     Tweener() = default;
-    Tweener(std::shared_ptr<Tween<T>> tween) : mTween(tween) {}
+    Tweener(Arc<Tween<T>> tween) : mTween(tween) {}
 
     void kill() const {
         if (mTween) {
@@ -143,7 +143,7 @@ public:
     T getValueOr(T backup) const { return mTween ? mTween->getValue() : backup; }
 
 private:
-    std::shared_ptr<Tween<T>> mTween;
+    Arc<Tween<T>> mTween;
 };
 
 class JobScheduler;
@@ -174,7 +174,7 @@ private:
     void update();
     void clear();
 
-    std::vector<std::shared_ptr<ITween>> mTweens;
+    std::vector<Arc<ITween>> mTweens;
     std::unordered_set<ecs::Entity, ecs::EntityHash> mKilledEntities;
 };
 
@@ -188,12 +188,16 @@ public:
     using TweenCallback = void (*)(ecs::Entity, const Tween<T>&);
     using BoolTweenCallback = bool (*)(ecs::Entity, const Tween<T>&);
 
-    // i would like this to be private but friending std::shared_ptr doesn't work
+    // i would like this to be private but friending Rc<T> doesn't work?
     Tween(T target, f32 duration, TweenManager::ValueGetter<T> getter, ecs::Entity entity)
-        : mDuration(duration), mTweenTarget(target), mGetter(getter), mEntity(entity) {}
+        : mDuration(duration), mTweenTarget(target), mGetter(getter), mEntity(entity) {
+        init();
+    }
 
     Tween(T target, f32 duration, TweenManager::ConstValueGetter<T> getter, TweenManager::ValueSetter<T> setter, ecs::Entity entity)
-        : mDuration(duration), mTweenTarget(target), mGetterConst(getter), mSetter(setter), mEntity(entity) {}
+        : mDuration(duration), mTweenTarget(target), mGetterConst(getter), mSetter(setter), mEntity(entity) {
+        init();
+    }
 
     ~Tween() = default;
 

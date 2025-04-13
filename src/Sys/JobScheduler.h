@@ -9,10 +9,6 @@
 #include <mutex>
 #include <thread>
 
-#else
-
-#include <memory>
-
 #endif
 
 #include <functional>
@@ -160,7 +156,7 @@ public:
     template <typename T>
         requires Multipliable<T>
     Tweener<T> tween(T from, T to, f32 duration) {
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(to, duration, nullptr, ecs::Entity{});
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(to, duration, nullptr, ecs::Entity{});
         mTweenMgr.mTweens.push_back(tween);
         Tweener<T> tweener(tween);
         tweener.setEmpty();
@@ -174,7 +170,7 @@ public:
     template <typename T>
         requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, T target, f32 duration, auto getter) {
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<TweenManager::ValueGetter<T>>(getter), entity);
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(target, duration, static_cast<TweenManager::ValueGetter<T>>(getter), entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }
@@ -182,8 +178,8 @@ public:
     template <typename T>
         requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, T target, f32 duration, auto getter, auto setter) {
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, static_cast<TweenManager::ConstValueGetter<T>>(getter),
-                                                                     static_cast<TweenManager::ValueSetter<T>>(setter), entity);
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(target, duration, static_cast<TweenManager::ConstValueGetter<T>>(getter),
+                                                 static_cast<TweenManager::ValueSetter<T>>(setter), entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }
@@ -193,7 +189,7 @@ public:
         requires Multipliable<T>
     Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::* member) {
         const auto getter = [member](ecs::Entity e) -> T& { return e.get<Component>().*member; };
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, entity);
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(target, duration, getter, entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }
@@ -204,7 +200,7 @@ public:
     Tweener<T> tween(ecs::Entity entity, auto target, f32 duration, T Component::* member, void (Component::* const setterMethod)(T, ecs::Entity)) {
         const auto getter = [member](ecs::Entity e) -> T { return e.get<Component>().*member; };
         const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(target, duration, getter, setter, entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }
@@ -216,7 +212,7 @@ public:
                      void (Component::* const setterMethod)(const T&, ecs::Entity)) {
         const auto getter = [member](ecs::Entity e) -> T { return e.get<Component>().*member; };
         const auto setter = [setterMethod](const T& value, ecs::Entity e) { (e.get<Component>().*setterMethod)(value, e); };
-        std::shared_ptr<Tween<T>> tween = std::make_shared<Tween<T>>(target, duration, getter, setter, entity);
+        Arc<Tween<T>> tween = Arc<Tween<T>>::New(target, duration, getter, setter, entity);
         mTweenMgr.mTweens.push_back(tween);
         return Tweener(tween);
     }

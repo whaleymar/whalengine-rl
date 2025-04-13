@@ -347,6 +347,7 @@ Expected<void> CompileState::parse(const string& code) {
     char seekTarget;
     s32 seekDepth = 0;
     char seekDepthIncrementor;
+    bool hasSeekDepthIncrementor = false;
 
     for (u64 i = 0; i < len; i++) {
         char c = code.at(i);
@@ -377,8 +378,9 @@ Expected<void> CompileState::parse(const string& code) {
                 seekDepth = 0;
                 seekTarget = '\0';
                 seekDepthIncrementor = '\0';
+                hasSeekDepthIncrementor = false;
                 statementStart = i + 1;
-            } else if (c == seekDepthIncrementor) {
+            } else if (hasSeekDepthIncrementor && c == seekDepthIncrementor) {
                 seekDepth++;
             } else if (seekTarget == c) {
                 seekDepth--;
@@ -402,6 +404,7 @@ Expected<void> CompileState::parse(const string& code) {
                     isSeeking = true;
                     seekTarget = '}';
                     seekDepthIncrementor = '{';
+                    hasSeekDepthIncrementor = true;
                     seekDepth = -1;
                     buf << c;
 
@@ -419,6 +422,7 @@ Expected<void> CompileState::parse(const string& code) {
                                 isSeeking = true;
                                 seekTarget = '}';
                                 seekDepthIncrementor = '{';
+                                hasSeekDepthIncrementor = true;
                                 seekDepth = -1;
                                 buf << c;
                                 break;

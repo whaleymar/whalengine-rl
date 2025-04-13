@@ -28,7 +28,7 @@ namespace internal {
 // TODO try to forward declare this and define it in a source file?
 class IRefCnt {
 public:
-    // AtomicCount shared_count;  // Number of shared_ptrs
+    // AtomicCount shared_count;  // Number of Rcs
     std::atomic<u64> shared_count;
 
     IRefCnt() noexcept : shared_count(1) {}
@@ -51,22 +51,22 @@ private:
 }  // namespace internal
 
 template <typename T>
-class Rc {
+class Arc {
 public:
     template <typename... Args>
-    Rc<T> New(Args&&... args) {
-        return Rc<T>(new T(args...));
+    static Arc<T> New(Args&&... args) {
+        return Arc<T>(new T(args...));
     }
 
     // Default constructor
-    Rc() noexcept : mPtr(nullptr), mRefCounter(nullptr) {}
+    Arc() = default;
 
     // nullptr constructor
-    Rc(std::nullptr_t) noexcept : mPtr(nullptr), mRefCounter(nullptr) {}
+    Arc(std::nullptr_t) noexcept : mPtr(nullptr), mRefCounter(nullptr) {}
 
     // Constructor with raw pointer
     template <typename U>
-    explicit Rc(U* ptr) {
+    explicit Arc(U* ptr) {
         if (ptr) {
             mPtr = ptr;
             mRefCounter = new internal::RefCnt<U>(ptr);
@@ -77,16 +77,17 @@ public:
     }
 
     // Copy constructor
-    Rc(const Rc& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) { increment_ref_count(); }
+    Arc(const Arc& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) { increment_ref_count(); }
 
     // Converting copy constructor for upcasting
     template <typename U>
-    Rc(const Rc<U>& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
+        requires std::is_convertible_v<U*, T*>
+    Arc(const Arc<U>& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
         increment_ref_count();
     }
 
     // Move constructor
-    Rc(Rc&& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
+    Arc(Arc&& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
         other.mPtr = nullptr;
         other.mRefCounter = nullptr;
     }
@@ -94,25 +95,25 @@ public:
     // Converting move constructor for upcasting
     template <typename U>
         requires std::is_convertible_v<U*, T*>
-    Rc(Rc<U>&& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
+    Arc(Arc<U>&& other) noexcept : mPtr(other.mPtr), mRefCounter(other.mRefCounter) {
         other.mPtr = nullptr;
         other.mRefCounter = nullptr;
     }
 
     // Destructor
-    ~Rc() { decrement_ref_count(); }
+    ~Arc() { decrement_ref_count(); }
 
     // Copy assignment
-    Rc& operator=(const Rc& other) noexcept {
+    Arc& operator=(const Arc& other) noexcept {
         if (this != &other) {
-            Rc temp(other);
+            Arc temp(other);
             swap(temp);
         }
         return *this;
     }
 
     // Move assignment
-    Rc& operator=(Rc&& other) noexcept {
+    Arc& operator=(Arc&& other) noexcept {
         if (this != &other) {
             decrement_ref_count();
             mPtr = other.mPtr;
@@ -124,22 +125,22 @@ public:
     }
 
     // Reset to empty
-    void reset() noexcept { Rc().swap(*this); }
+    void reset() noexcept { Arc().swap(*this); }
 
     // Reset with new pointer
     template <typename U>
     void reset(U* ptr) {
-        Rc(ptr).swap(*this);
+        Arc(ptr).swap(*this);
     }
 
     // Reset with new pointer and deleter
     template <typename U, typename Deleter>
     void reset(U* ptr, Deleter deleter) {
-        Rc(ptr, deleter).swap(*this);
+        Arc(ptr, deleter).swap(*this);
     }
 
     // Swap with another Rc
-    void swap(Rc& other) noexcept {
+    void swap(Arc& other) noexcept {
         T* temp_ptr = mPtr;
         internal::IRefCnt* temp_ctrl = mRefCounter;
 
@@ -168,11 +169,11 @@ public:
     explicit operator bool() const noexcept { return mPtr != nullptr; }
 
 private:
-    T* mPtr;
-    internal::IRefCnt* mRefCounter;
+    T* mPtr = nullptr;
+    internal::IRefCnt* mRefCounter = nullptr;
 
     template <typename U>
-    friend class Rc;
+    friend class Arc;
 
     // for AtomicCount
     // void increment_ref_count() noexcept {
@@ -204,6 +205,7 @@ private:
             if (mRefCounter->shared_count.fetch_sub(1, std::memory_order_acq_rel) == 1) {
                 mRefCounter->destroy();
                 delete mRefCounter;
+                mRefCounter = nullptr;
             }
         }
     }
@@ -211,51 +213,51 @@ private:
 
 // Comparison operators
 template <typename T1, typename T2>
-bool operator==(const Rc<T1>& lhs, const Rc<T2>& rhs) noexcept {
+bool operator==(const Arc<T1>& lhs, const Arc<T2>& rhs) noexcept {
     return lhs.get() == rhs.get();
 }
 
 template <typename T1, typename T2>
-bool operator!=(const Rc<T1>& lhs, const Rc<T2>& rhs) noexcept {
+bool operator!=(const Arc<T1>& lhs, const Arc<T2>& rhs) noexcept {
     return !(lhs == rhs);
 }
 
 template <typename T>
-bool operator==(const Rc<T>& lhs, std::nullptr_t) noexcept {
+bool operator==(const Arc<T>& lhs, std::nullptr_t) noexcept {
     return !lhs;
 }
 
 template <typename T>
-bool operator==(std::nullptr_t, const Rc<T>& rhs) noexcept {
+bool operator==(std::nullptr_t, const Arc<T>& rhs) noexcept {
     return !rhs;
 }
 
 template <typename T>
-bool operator!=(const Rc<T>& lhs, std::nullptr_t) noexcept {
+bool operator!=(const Arc<T>& lhs, std::nullptr_t) noexcept {
     return static_cast<bool>(lhs);
 }
 
 template <typename T>
-bool operator!=(std::nullptr_t, const Rc<T>& rhs) noexcept {
+bool operator!=(std::nullptr_t, const Arc<T>& rhs) noexcept {
     return static_cast<bool>(rhs);
 }
 
 template <typename T, typename U>
-bool operator==(const Rc<T>& lhs, const U* rhs) noexcept {
+bool operator==(const Arc<T>& lhs, const U* rhs) noexcept {
     return lhs.get() == rhs;
 }
 
 template <typename T, typename U>
-bool operator==(const U* lhs, const Rc<T>& rhs) noexcept {
+bool operator==(const U* lhs, const Arc<T>& rhs) noexcept {
     return lhs == rhs.get();
 }
 
 template <typename T, typename U>
-bool operator!=(const Rc<T>& lhs, const U* rhs) noexcept {
+bool operator!=(const Arc<T>& lhs, const U* rhs) noexcept {
     return lhs.get() != rhs;
 }
 
 template <typename T, typename U>
-bool operator!=(const U* lhs, const Rc<T>& rhs) noexcept {
+bool operator!=(const U* lhs, const Arc<T>& rhs) noexcept {
     return lhs != rhs.get();
 }

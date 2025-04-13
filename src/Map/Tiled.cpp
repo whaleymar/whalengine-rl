@@ -1,7 +1,5 @@
 #include "Tiled.h"
 
-#include <memory>
-
 #include "Components/Collider.h"
 #include "Components/Light.h"  // for level ambient lighting
 #include "Components/Map.h"
@@ -38,9 +36,9 @@ std::unordered_map<std::string, std::pair<TiledDataType, std::string>> Component
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
 static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
-static const std::shared_ptr<nlohmann::json> getTemplate(std::string_view templateFile);
-static const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile);
-static const std::shared_ptr<nlohmann::json> getWorldFile(std::string_view mapFile);
+static const Arc<nlohmann::json> getTemplate(std::string_view templateFile);
+static const Arc<nlohmann::json> getMapFile(std::string_view mapFile);
+static const Arc<nlohmann::json> getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
 static Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer);
 
@@ -179,7 +177,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
 void TileMap::load(const char* path, ActiveLevel& level) {
     const auto data = getMapFile(path);
 
-    std::shared_ptr<TileMap> map = std::make_shared<TileMap>();
+    Arc<TileMap> map = Arc<TileMap>::New();
     map->widthTiles = readInt(*data, "width");
     map->heightTiles = readInt(*data, "height");
     map->tileSize = readInt(*data, "tilewidth");
@@ -398,7 +396,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         }
 
         // check for prefab:
-        std::shared_ptr<nlohmann::json> pPrefab = nullptr;
+        Arc<nlohmann::json> pPrefab = nullptr;
         if (object.contains("template")) {
             auto templateFile = readString(object, "template");
             pPrefab = getTemplate(templateFile);
@@ -609,7 +607,7 @@ static TiledDataType getDtype(const std::string& name) {
 
 // parses all the data types in a project
 void parseMapProject(const char* mapfile) {
-    const auto data = getWorldFile(mapfile);
+    const Arc<nlohmann::json> data = getWorldFile(mapfile);
     for (const auto& propType : (*data)["propertyTypes"]) {
         const std::string name = readString(propType, "name");
         const TiledDataType dtype = getDtype(propType["type"]);
@@ -662,7 +660,7 @@ void parseMapProject(const char* mapfile) {
 
 // parses a level's parameters and returns its LevelInfo struct
 static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
-    const std::shared_ptr<nlohmann::json> data = getMapFile(lvlFileName);
+    const Arc<nlohmann::json> data = getMapFile(lvlFileName);
     Level::ParsedData lvlInfo;
     tryRead(*data, "width", "height", &lvlInfo.sizeTiles);
     for (const auto& property : (*data)["properties"]) {
@@ -731,12 +729,12 @@ Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize) {
 
 // MAP LOADING STUFF
 
-const std::shared_ptr<nlohmann::json> getWorldFile(std::string_view mapFile) {
+const Arc<nlohmann::json> getWorldFile(std::string_view mapFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
 }
 
-const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile) {
+const Arc<nlohmann::json> getMapFile(std::string_view mapFile) {
     // const auto fullPath = whal_format("{}/exports/{}", MAP_DIR, mapFile);
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
@@ -744,13 +742,14 @@ const std::shared_ptr<nlohmann::json> getMapFile(std::string_view mapFile) {
 
 // TEMPLATE STUFF
 
-const std::shared_ptr<nlohmann::json> getTemplate(std::string_view templateFile) {
+const Arc<nlohmann::json> getTemplate(std::string_view templateFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
-    return std::make_shared<nlohmann::json>((*S_TEMPLATE_MANAGER.readData(fullPath.c_str()))["object"]);
+    // create a new Arc because we're creating a new reference to the "object" field
+    return Arc<nlohmann::json>::New((*S_TEMPLATE_MANAGER.readData(fullPath.c_str()))["object"]);
 }
 
 std::string getTypeFromTemplate(const std::string& templateFile) {
-    const auto prefabData = getTemplate(templateFile);
+    const Arc<nlohmann::json> prefabData = getTemplate(templateFile);
     std::string objType = "";
     tryRead(*prefabData, "type", &objType);
     return objType;
@@ -760,8 +759,8 @@ std::string getTypeFromTemplate(const std::string& templateFile) {
 Vector2i getObjectSize(const nlohmann::json& objectData) {
     Vector2i size;
     if (objectData.contains("template")) {
-        auto templateFile = readString(objectData, "template");
-        const auto prefab = getTemplate(templateFile);
+        std::string templateFile = readString(objectData, "template");
+        const Arc<nlohmann::json> prefab = getTemplate(templateFile);
         tryRead(*prefab, "width", "height", &size);
     }
 

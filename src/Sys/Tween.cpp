@@ -13,7 +13,7 @@ void TweenManager::update() {
     // fastest way of removing finished tweens from the vector
     if (mTweens.size() > 0) {
         mTweens.erase(std::remove_if(mTweens.begin(), mTweens.end(),
-                                     [this](std::shared_ptr<ITween>& pTween) {
+                                     [this](Arc<ITween>& pTween) {
                                          if (mKilledEntities.contains(pTween->getEntity())) {
                                              return true;
                                          }
