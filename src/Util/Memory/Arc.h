@@ -1,40 +1,27 @@
 #pragma once
 
-#include <atomic>
 #include <type_traits>
 #include "Util/Types.h"
 
 namespace internal {
-// Simple atomic operations for thread safety
-// This is a minimal implementation without full STL
 
-// class AtomicCount {
-// public:
-//     explicit AtomicCount(u64 v) noexcept : mCount(v) {}
-//
-//     u64 operator++() noexcept { return __sync_add_and_fetch(&mCount, 1); }
-//
-//     u64 operator--() noexcept { return __sync_sub_and_fetch(&mCount, 1); }
-//
-//     operator u64() const noexcept { return __sync_fetch_and_add(const_cast<volatile u64*>(&mCount), 0); }
-//
-// private:
-//     // Using volatile for basic thread visibility
-//     // Note: In a production environment, you'd use proper atomics
-//     volatile u64 mCount;
-// };
+// NOTE: using PIMPL pattern to avoid including <atomic> in this header
+class RefCntImpl;
 
 // Control block for reference counting
-// TODO try to forward declare this and define it in a source file?
 class IRefCnt {
 public:
-    // AtomicCount shared_count;  // Number of Rcs
-    std::atomic<u64> shared_count;
+    IRefCnt() noexcept;
+    virtual ~IRefCnt();
 
-    IRefCnt() noexcept : shared_count(1) {}
-    virtual ~IRefCnt() = default;
+    void addRef() noexcept;
+    bool release() noexcept;  // returns true if object should be deleted
+    u64 getCount() const noexcept;
 
     virtual void destroy() noexcept = 0;  // Destroy the managed object
+
+private:
+    RefCntImpl* mImpl;
 };
 
 // Control block with specific type information
@@ -160,7 +147,7 @@ public:
     T* operator->() const noexcept { return mPtr; }
 
     // Get reference count (for debugging/testing)
-    u64 use_count() const noexcept { return mRefCounter ? static_cast<u64>(mRefCounter->shared_count) : 0; }
+    u64 use_count() const noexcept { return mRefCounter ? mRefCounter->getCount() : 0; }
 
     // Check if this is the only reference
     bool unique() const noexcept { return use_count() == 1; }
@@ -175,26 +162,9 @@ private:
     template <typename U>
     friend class Arc;
 
-    // for AtomicCount
-    // void increment_ref_count() noexcept {
-    //     if (mRefCounter) {
-    //         ++mRefCounter->shared_count;
-    //     }
-    // }
-
-    // for AtomicCount
-    // void decrement_ref_count() noexcept {
-    //     if (mRefCounter) {
-    //         if (--mRefCounter->shared_count == 0) {
-    //             mRefCounter->destroy();
-    //             delete mRefCounter;
-    //         }
-    //     }
-    // }
-
     void increment_ref_count() noexcept {
         if (mRefCounter) {
-            mRefCounter->shared_count.fetch_add(1, std::memory_order_relaxed);
+            mRefCounter->addRef();
         }
     }
 
@@ -202,7 +172,7 @@ private:
         if (mRefCounter) {
             // When decrementing the shared count, we need stronger ordering
             // to ensure proper visibility of all previous operations
-            if (mRefCounter->shared_count.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+            if (mRefCounter->release()) {
                 mRefCounter->destroy();
                 delete mRefCounter;
                 mRefCounter = nullptr;
