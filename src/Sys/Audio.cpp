@@ -2,6 +2,7 @@
 
 #include <fmod.h>
 #include <fmod_errors.h>
+#include "Util/STL_reduce.h"
 #include "fmod_common.h"
 #include "fmod_dsp_effects.h"
 
@@ -562,7 +563,7 @@ void AudioPlayer::registerClip(const char* name, AudioClip clip) {
 }
 
 void AudioPlayer::unregisterClip(const char* name) {
-    auto it = ecs::whal_find(mClipRegistry.begin(), mClipRegistry.end(), name);
+    auto it = stl::find(mClipRegistry.begin(), mClipRegistry.end(), name);
     if (it == mClipRegistry.end()) {
         return;
     }
@@ -570,7 +571,7 @@ void AudioPlayer::unregisterClip(const char* name) {
 }
 
 AudioClip AudioPlayer::getClip(const char* name) {
-    auto it = ecs::whal_find(mClipRegistry.begin(), mClipRegistry.end(), name);
+    auto it = stl::find(mClipRegistry.begin(), mClipRegistry.end(), name);
     if (it == mClipRegistry.end()) {
 #ifndef NDEBUG
         print("[AudioPlayer::getClip]: no clip with name", name, "found");

@@ -1,9 +1,12 @@
 #pragma once
 
 #include "Random.h"
-#include "whalECS/src/ECS.h"
 
 namespace whal {
+
+namespace ecs {
+class World;
+}
 
 class IGame;
 class Engine;
