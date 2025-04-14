@@ -6,7 +6,6 @@
 #include "Events/Events.h"
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
-#include "Gfx/Shaders/Posterize.h"
 #include "Sys/Time.h"
 #include "Util/ImguiUtil.h"
 #include "raylib/src/rlgl.h"
@@ -27,8 +26,6 @@
 #include "Util/CameraUtil.h"
 #include "Util/Print.h"
 
-#include "Gfx/Shaders/LightDenoise.h"
-
 namespace whal {
 
 namespace gfx {
@@ -47,7 +44,7 @@ void applyShaders(rl::RenderTexture target, std::vector<IShaderProcess*>& shader
 
     if (!isSwapTarget) {
         // make sure final image is on the target
-        Graphics.blit(swap, target);
+        Graphics.blit(swap, target, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
     }
     Graphics.releaseTemporaryRT(swap);
 }
@@ -329,12 +326,8 @@ void Renderer::render() {
     lightRenderContext.cameraPosition = renderContext.cameraPosition;
     drawLights(lightRenderContext);  // drawn to TextureID::Lighting
 
-    // posterize before applying lighting
-    // TODO should belong to a pre-lighting postprocess pass in camera
-    auto tmpTex = getTemporaryRT(mStagingTexture->tex.texture);
-    Posterize::instance().process(mStagingTexture->tex, tmpTex);
-    blit(tmpTex, mStagingTexture->tex, {0, nullptr}, rl::BLEND_ALPHA_PREMULTIPLY);
-    releaseTemporaryRT(tmpTex);
+    Camera cameraSettings = renderContext.cameraEntity.get<Camera>();
+    gfx::applyShaders(mStagingTexture->tex, cameraSettings.beforeLighting);
 
     // 2. Renders everything to TextureID::Main
     rl::RenderTexture mainTex = TextureManager::getRenderTexture(TextureID::Main);
@@ -357,7 +350,7 @@ void Renderer::render() {
     gfx::EndTextureMode();
 
     // 3. Apply post processing
-    gfx::applyShaders(mainTex, renderContext.cameraEntity.get<Camera>().postEffects);
+    gfx::applyShaders(mainTex, cameraSettings.postEffects);
 
     // 4. Draw debug stuff.
 #ifndef NDEBUG
@@ -476,9 +469,15 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     rl::EndMode2D();
     gfx::EndTextureMode();
 
-    // TODO the camera should own this pipeline but idk how to design around the fact that lights are drawn at a lower resolution...
-    const auto lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
-    LightDenoise::instance().process(lightTex, lightTexUpscale);
+    rl::RenderTexture lightTexUpscale = TextureManager::getRenderTexture(TextureID::Lighting);
+    Camera cameraSettings = getCamera().get<Camera>();
+    IShaderProcess* upscaleShader = cameraSettings.lightingUpscaler;
+    if (upscaleShader) {
+        upscaleShader->process(lightTex, lightTexUpscale);
+    } else {
+        // If I don't want blur, this shader just sets alpha to 1 for all values, otherwise multiplication gets weird
+        blit(lightTex, lightTexUpscale, ShaderMgr::get("LightPassThrough").get());
+    }
     Graphics.releaseTemporaryRT(lightTex);
 }
 

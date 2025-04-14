@@ -8,11 +8,6 @@
 
 namespace whal {
 
-LightDenoise::LightDenoise() {}
-
-// If I don't want blur, this just sets alpha to 1 for all values, otherwise multiplication gets weird
-// LightDenoise::LightDenoise() : mDenoise("", "whalengine/src/Shader/lightpassthrough.glsl") {}
-
 void LightDenoise::process(rl::RenderTexture src, rl::RenderTexture dst) {
     Shader& shGaussianBlur = ShaderMgr::get("GaussianBlur");
     shGaussianBlur.setVector2("_Resolution", rl::Vector2(src.texture.width, src.texture.height));

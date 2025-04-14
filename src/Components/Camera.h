@@ -6,10 +6,11 @@ namespace whal {
 
 class IShaderProcess;
 
-// TODO i want a "pre-lighting" shader list
 struct Camera {
+    std::vector<IShaderProcess*> beforeLighting;
     std::vector<IShaderProcess*> postEffects;
-    // std::vector<IShaderProcess*> lightEffects;
+    IShaderProcess* lightingUpscaler = nullptr;  // shader used when scaling lights from game to render resolution
+    // std::vector<IShaderProcess*> lightEffects; // would probably want to split into pre/post upscale stages
 };
 
 }  // namespace whal

@@ -6,7 +6,7 @@
 namespace whal {
 
 class LightDenoise : public IShaderProcess {
-    SINGLETON_CUSTOM(LightDenoise)
+    SINGLETON(LightDenoise)
 public:
     void process(rl::RenderTexture source, rl::RenderTexture dest) override;
 

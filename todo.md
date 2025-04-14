@@ -1,7 +1,6 @@
 # To Do 
 
 ACTIVELY WORKING ON:
-- custom Box/Arc allocator
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 
@@ -83,6 +82,8 @@ ACTIVELY WORKING ON:
 - ECS ISystem entities should be a vector, not a hashmap. Would improve cache locality & reduce memory usage. Any checks for if an entity is inside a system could be done by checking the entity's Pattern against the system's
 - Get windows builds working again
 - if I ever want a multi-camera setup, each camera would need its own RenderTexture::Main to draw to.
+- jemalloc
+- custom allocators (from EASTL?), especially for Box/Arc
 
 ## Bugs 
 - quad bleeding -- can only be fixed by adding padding between sprites in sprite atlas
