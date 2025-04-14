@@ -29,25 +29,28 @@ namespace whal {
 // - E.g. Sprite/Animator I would just want a string or two.
 // - I can use non-default serde implementations for those
 void ComponentFactory::initEcsSerializer() {
-    addDefault<Transform>();
+    // WORKING BUT UNUSED FOR NOW (commenting due to insane compile times)
+    // addDefault<Transform>();
+    // addDefault<DrawRect>();
+    // addDefault<DrawStraightLine>();
+    // addDefault<TextSprite>();
+    // addDefault<DrawBezierQuad>();
+    // addDefault<SpriteOutline>();
+    // addDefault<Velocity>();
+    // addDefault<PlayerControl>();
+    // addDefault<PointLight>();
+    // addDefault<BoxLight>();
+    // addDefault<ShadowLight>();
+    // addDefault<ParticleEmitter>();
+    // addDefault<RigidBody>();
+
+    // NEEDS WORK:
     // addDefault<Sprite>(); // has shader pointer (i would want to store the string name)
-    addDefault<DrawRect>();
-    addDefault<DrawStraightLine>();
-    addDefault<TextSprite>();
-    addDefault<DrawBezierQuad>();
-    addDefault<SpriteOutline>();
     // addDefault<Animator>(); // complex class (i wouldn't want to default-serialize this anyway, probably just the string name + brain callback
     // name?)
-    addDefault<Velocity>();
-    addDefault<PlayerControl>();
     // addDefault<Collider>(); // complex class
     // addDefault<Wiggle>(); // has callback
-    addDefault<PointLight>();
-    addDefault<BoxLight>();
-    addDefault<ShadowLight>();
     // addDefault<Lifetime>(); // has callback
-    addDefault<ParticleEmitter>();
-    addDefault<RigidBody>();
     // addDefault<TileMapLayer>(); // don't want default serializer
     // addDefault<Trigger>(); // has callbacks
     // addDefault<MonoBehavior>();
