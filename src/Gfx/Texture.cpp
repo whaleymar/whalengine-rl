@@ -86,7 +86,7 @@ Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::stri
         frames.reserve(frameCount);
 
         for (const JsonValue& frame : anim["frames"]) {
-            f32 frameTime = frame["time"].getFloat();
+            f32 frameTime = frame["time"].getNumber();
             s32 id = frame["id"].getInt();
 
             frames.push_back(Animation::FrameExt{

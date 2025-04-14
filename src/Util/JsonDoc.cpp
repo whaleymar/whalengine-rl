@@ -1,4 +1,5 @@
 #include "Util/JsonDoc.h"
+#include <cassert>
 #include <yyjson.h>
 
 bool JsonValue::isNull() const {
@@ -29,20 +30,49 @@ bool JsonValue::isObject() const {
     return mVal && yyjson_is_obj(mVal);
 }
 
-bool JsonValue::getBool(bool defaultValue) const {
+bool JsonValue::getBoolOr(bool defaultValue) const {
     return mVal && yyjson_is_bool(mVal) ? yyjson_get_bool(mVal) : defaultValue;
 }
 
-int64_t JsonValue::getInt(int64_t defaultValue) const {
+s32 JsonValue::getIntOr(s32 defaultValue) const {
     return mVal && yyjson_is_int(mVal) ? yyjson_get_int(mVal) : defaultValue;
 }
 
-double JsonValue::getFloat(double defaultValue) const {
+f64 JsonValue::getFloatOr(f64 defaultValue) const {
     return mVal && yyjson_is_real(mVal) ? yyjson_get_real(mVal) : defaultValue;
 }
 
-std::string JsonValue::getString(const std::string& defaultValue) const {
+std::string JsonValue::getStringOr(const std::string& defaultValue) const {
     return mVal && yyjson_is_str(mVal) ? yyjson_get_str(mVal) : defaultValue;
+}
+
+bool JsonValue::getBool() const {
+    assert(mVal && yyjson_is_bool(mVal));
+    return unsafe_yyjson_get_bool(mVal);
+}
+
+s32 JsonValue::getInt() const {
+    assert(mVal && yyjson_is_int(mVal));
+    return unsafe_yyjson_get_int(mVal);
+}
+
+f64 JsonValue::getFloat() const {
+    assert(mVal && yyjson_is_real(mVal));
+    return unsafe_yyjson_get_real(mVal);
+}
+
+f64 JsonValue::getNumber() const {
+    assert(mVal && yyjson_is_real(mVal) || yyjson_is_int(mVal));
+    if (yyjson_is_real(mVal)) {
+        return unsafe_yyjson_get_real(mVal);
+    } else {
+        return unsafe_yyjson_get_int(mVal);
+    }
+}
+
+std::string JsonValue::getString() const {
+    assert(mVal && yyjson_is_str(mVal));
+    return unsafe_yyjson_get_str(mVal);
 }
 
 bool JsonValue::contains(const std::string& key) const {
@@ -57,7 +87,7 @@ JsonValue JsonValue::operator[](const std::string& key) const {
 }
 
 // Access array element by index
-JsonValue JsonValue::operator[](size_t idx) const {
+JsonValue JsonValue::operator[](u64 idx) const {
     if (!mVal || !yyjson_is_arr(mVal)) {
         return JsonValue(nullptr);
     }
@@ -65,7 +95,7 @@ JsonValue JsonValue::operator[](size_t idx) const {
 }
 
 // Get array size
-size_t JsonValue::size() const {
+u64 JsonValue::size() const {
     if (!mVal || !yyjson_is_arr(mVal)) {
         return 0;
     }
@@ -121,7 +151,6 @@ yyjson_api_inline yyjson_val* whal_yyjson_obj_iter_next(JsonObjIter* iter) {
 
 JsonValue::ObjectIterator::ObjectIterator(yyjson_val* obj, bool end) : mIdx(0), mMax(obj ? yyjson_obj_size(obj) : 0), mEnd(end) {
     if (!end && obj && yyjson_obj_size(obj) > 0) {
-        // yyjson_obj_iter_init(obj, &mIter);
         whal_yyjson_obj_iter_init(obj, &mIter);
         // Get the first key-value pair
         mCurrentKey = whal_yyjson_obj_iter_next(&mIter);
@@ -148,7 +177,7 @@ JsonValue::ObjectIterator& JsonValue::ObjectIterator::operator++() {
     return *this;
 }
 
-KeyValuePair JsonValue::ObjectIterator::operator*() const {
+JsonKVPair JsonValue::ObjectIterator::operator*() const {
     if (mCurrentKey && mCurrentVal) {
         return {yyjson_get_str(mCurrentKey), JsonValue(mCurrentVal)};
     }
@@ -196,7 +225,7 @@ JsonDoc JsonDoc::fromFile(const std::string& filePath) {
 JsonDoc JsonDoc::fromString(const std::string& jsonStr) {
     JsonDoc doc;
     doc.mData = jsonStr;
-    size_t len = jsonStr.length();
+    u64 len = jsonStr.length();
     doc.mDoc = yyjson_read(doc.mData.c_str(), len, 0);
     return doc;
 }

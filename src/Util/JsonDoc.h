@@ -1,15 +1,16 @@
 #pragma once
 
 #include <string>
+#include "Util/Types.h"
 
 class JsonDoc;
-struct KeyValuePair;
+struct JsonKVPair;
 typedef struct yyjson_val yyjson_val;
 typedef struct yyjson_doc yyjson_doc;
 
 struct JsonObjIter {
-    size_t idx;      /**< next key's index */
-    size_t max;      /**< maximum key index (obj.size) */
+    u64 idx;         /**< next key's index */
+    u64 max;         /**< maximum key index (obj.size) */
     yyjson_val* cur; /**< next key */
     yyjson_val* obj; /**< the object being iterated */
 };
@@ -26,20 +27,25 @@ public:
     bool isArray() const;
     bool isObject() const;
 
-    bool getBool(bool defaultValue = false) const;
-    int64_t getInt(int64_t defaultValue = 0) const;
-    double getFloat(double defaultValue = 0.0) const;
-    std::string getString(const std::string& defaultValue = "") const;
+    bool getBoolOr(bool defaultValue = false) const;
+    s32 getIntOr(s32 defaultValue = 0) const;
+    f64 getFloatOr(f64 defaultValue = 0.0) const;
+    std::string getStringOr(const std::string& defaultValue = "") const;
+    bool getBool() const;
+    s32 getInt() const;
+    f64 getFloat() const;
+    f64 getNumber() const;  // works for floats and ints
+    std::string getString() const;
     bool contains(const std::string& key) const;
 
     // Access object property by key
     JsonValue operator[](const std::string& key) const;
 
     // Access array element by index
-    JsonValue operator[](size_t idx) const;
+    JsonValue operator[](u64 idx) const;
 
     // Get array size
-    size_t size() const;
+    u64 size() const;
 
     // Helper for array iteration
     class ArrayIterator {
@@ -52,8 +58,8 @@ public:
 
     private:
         yyjson_val* mArr;
-        size_t mIdx;
-        size_t mMax;
+        u64 mIdx;
+        u64 mMax;
     };
 
     ArrayIterator begin() const;
@@ -66,13 +72,13 @@ public:
 
         bool operator!=(const ObjectIterator& other) const;
         ObjectIterator& operator++();
-        KeyValuePair operator*() const;
+        JsonKVPair operator*() const;
 
     private:
         // yyjson_obj_iter mIter;
         JsonObjIter mIter;
-        size_t mIdx;
-        size_t mMax;
+        u64 mIdx;
+        u64 mMax;
         bool mEnd;
 
         yyjson_val* mCurrentKey = nullptr;
@@ -89,7 +95,7 @@ private:
     explicit JsonValue(yyjson_val* val) : mVal(val) {}
 };
 
-struct KeyValuePair {
+struct JsonKVPair {
     std::string key;
     JsonValue value;
 };
