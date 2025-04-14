@@ -2,8 +2,8 @@
 
 #include <unordered_map>
 #include "ECS.h"
-#include "json_fwd.hpp"
 
+#include "Util/JsonDoc.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -15,8 +15,8 @@ enum class TiledDataType;
 
 // passed as const reference when loading components
 struct LoadContext {
-    const nlohmann::json* values;  // should rename this to `componentData` or something
-    const nlohmann::json& allObjects;
+    JsonValue values;  // should rename this to `componentData` or something
+    JsonValue allObjects;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex;
     const EntityMapData& entityData;
     ecs::Entity self;

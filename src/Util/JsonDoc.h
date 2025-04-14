@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Util/IResource.h"
 #include "Util/Types.h"
 
 class JsonDoc;
@@ -43,6 +44,8 @@ public:
 
     // Access array element by index
     JsonValue operator[](u64 idx) const;
+
+    bool operator()() const { return mVal != nullptr; }
 
     // Get array size
     u64 size() const;
@@ -100,10 +103,10 @@ struct JsonKVPair {
     JsonValue value;
 };
 
-class JsonDoc {
+class JsonDoc : public IResource {
 public:
     JsonDoc() = default;
-    ~JsonDoc();
+    virtual ~JsonDoc();
 
     JsonDoc(JsonDoc&& other) noexcept;
 
@@ -112,6 +115,10 @@ public:
     // No copy
     JsonDoc(const JsonDoc&) = delete;
     JsonDoc& operator=(const JsonDoc&) = delete;
+
+    JsonValue operator*() const { return getRoot(); }
+
+    bool load(const char* path) override;
 
     bool isValid() const { return mDoc != nullptr; }
 

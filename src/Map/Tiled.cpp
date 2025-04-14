@@ -19,9 +19,10 @@
 #include "Systems/Graphics/TileRenderSystem.h"
 #include "TiledParse.h"
 #include "Util/DebugUtil.h"
+#include "Util/JsonDoc.h"
+#include "Util/JsonUtil.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
-#include "json.hpp"
 
 using Corrade::Containers::NullOpt;
 
@@ -29,33 +30,33 @@ namespace whal {
 
 static const char* MAP_DIR = "data/map";
 
-static ResourceManager<nlohmann::json, 50> S_TEMPLATE_MANAGER;
-static ResourceManager<nlohmann::json, 250> S_MAP_MANAGER;
+static ResourceManager<JsonDoc, 50> S_TEMPLATE_MANAGER;
+static ResourceManager<JsonDoc, 250> S_MAP_MANAGER;
 std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = {};
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
 static TileSet loadTileset(const std::string& basename, s32 firstgid);
-static void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
+static void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
-static const Arc<nlohmann::json> getTemplate(std::string_view templateFile);
-static const Arc<nlohmann::json> getMapFile(std::string_view mapFile);
-static const Arc<nlohmann::json> getWorldFile(std::string_view mapFile);
+static const Arc<JsonValue> getTemplate(std::string_view templateFile);
+static const Arc<JsonDoc> getMapFile(std::string_view mapFile);
+static const Arc<JsonDoc> getWorldFile(std::string_view mapFile);
 static std::string getTypeFromTemplate(const std::string& templateFile);
-static Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer);
+static Depth loadTileLayerInfo(const JsonValue data, ecs::Entity entity, TileMapLayer& layer);
 
 void clearMapCache() {
     S_MAP_MANAGER.clearCache();
     S_TEMPLATE_MANAGER.clearCache();
 }
 
-static void addComponents(ecs::Entity entity, EntityMapData entityData, const nlohmann::json& object, const nlohmann::json& allObjects,
+static void addComponents(ecs::Entity entity, EntityMapData entityData, JsonValue object, JsonValue allObjects,
                           const std::unordered_map<s32, std::pair<s32, ecs::Entity>>& idToIndex, ecs::Entity parent) {
     if (!object.contains("properties")) {
         return;
     }
 
     LoadContext ctx = {
-        .values = nullptr,
+        .values = JsonValue(),
         .allObjects = allObjects,
         .idToIndex = idToIndex,
         .entityData = entityData,
@@ -63,7 +64,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         .parent = parent,
     };
 
-    for (const auto& property : object["properties"]) {
+    for (JsonValue property : object["properties"]) {
         std::string componentName;
         if (!tryRead(property, "propertytype", &componentName)) {
             continue;
@@ -71,9 +72,9 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
         const TiledDeserialize* serializerOpt = ComponentFactory::get(componentName.c_str());
         if (!serializerOpt) {
             if (componentName == "InheritTemplate") {
-                auto newTemplateFile = readString(property["value"], "TemplateFileName");
+                std::string newTemplateFile = readString(property["value"], "TemplateFileName");
                 std::string path = whal_format("templates/{}.tj", newTemplateFile);
-                const auto newPrefab = getTemplate(path);
+                const Arc<JsonValue> newPrefab = getTemplate(path);
                 addComponents(entity, entityData, *newPrefab, allObjects, idToIndex, parent);
                 EntityBuilder builderFunc = nullptr;
                 Prefab.entity.getEntry(newTemplateFile.c_str(), &builderFunc);
@@ -88,7 +89,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, const nl
             continue;
         }
 
-        ctx.values = &property["value"];
+        ctx.values = property["value"];
         serializerOpt->load(entity, ctx);
     }
 }
@@ -97,7 +98,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     TileMapLayer& layer = layerEntity.get<TileMapLayer>();
 
     // dummy objects that tiles don't need because they are standalone entities
-    const nlohmann::json emptyJson;
+    JsonValue emptyJson;
     const std::unordered_map<s32, std::pair<s32, ecs::Entity>> emptyIdToIndex;
 
     for (s32 x = 0; x < level.sizeTiles.x; x++) {
@@ -119,8 +120,8 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 continue;
             }
 
-            const auto mapFile = getMapFile(tset.fileName);
-            const auto& tiledata = (*mapFile)["tiles"][propsIx];
+            const Arc<JsonDoc> mapFile = getMapFile(tset.fileName);
+            const JsonValue tiledata = mapFile->getRoot()["tiles"][propsIx];
             // Tile has extra properties (e.g. a collider)
             // so we'll create a child entity to encapsulate this behavior
             ecs::Entity e = layerEntity.createChild(false);
@@ -176,12 +177,13 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
 }
 
 void TileMap::load(const char* path, ActiveLevel& level) {
-    const auto data = getMapFile(path);
+    const Arc<JsonDoc> data = getMapFile(path);
 
     Arc<TileMap> map = Arc<TileMap>::New();
-    map->widthTiles = readInt(*data, "width");
-    map->heightTiles = readInt(*data, "height");
-    map->tileSize = readInt(*data, "tilewidth");
+    JsonValue root = data->getRoot();
+    map->widthTiles = readInt(root, "width");
+    map->heightTiles = readInt(root, "height");
+    map->tileSize = readInt(root, "tilewidth");
 
     // initialize the navigation grid
     level.navGrid.clear();
@@ -189,7 +191,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         level.navGrid.push_back(std::vector<u8>(level.sizeTiles.y, 1));
     }
 
-    for (const auto& tileset : (*data)["tilesets"]) {
+    for (JsonValue tileset : root["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
 
@@ -197,7 +199,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         map->tilesets.push_back(tset);
     }
 
-    for (const auto& layer : (*data)["layers"]) {
+    for (JsonValue layer : root["layers"]) {
         bool isVisible = readBool(layer, "visible");
         if (!isVisible) {
             continue;
@@ -211,7 +213,8 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
             layerEntity.add(TileMapLayer{
                 .sizeTiles = sizeTiles,
-                .ids = layer["data"].get<std::vector<s32>>(),
+                // .ids = layer["data"].get<std::vector<s32>>(),
+                .ids = jsonPropertyToVector<s32>(layer, "data"),
                 .tilemap = map,
                 .occlusionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
@@ -249,7 +252,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    auto lightEntity = level.self.createChild("BoxLight");
+    ecs::Entity lightEntity = level.self.createChild("BoxLight");
     if (lightEntity.isValid()) {
         lightEntity.set(TransformBuilder(lightEntity.get<Transform>())
                             .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>()))
@@ -264,14 +267,14 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 }
 
-Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapLayer& layer) {
+Depth loadTileLayerInfo(JsonValue data, ecs::Entity entity, TileMapLayer& layer) {
     Depth layerDepth = Depth::Level;
     if (!data.contains("properties")) {
         print(entity.name(), "layer is missing TileMapInfo property (has no properties field)");
         return layerDepth;
     }
 
-    for (const auto& property : data["properties"]) {
+    for (JsonValue property : data["properties"]) {
         std::string propertytype = readString(property, "propertytype");
         if (propertytype == "whal::TileMapLayer") {
             const auto& value = property["value"];
@@ -312,9 +315,7 @@ Depth loadTileLayerInfo(const nlohmann::json& data, ecs::Entity entity, TileMapL
 // parses Tiled object info to create entities as children of the given parent.
 // If levelOpt is not null*, then metadata will be parsed for the level as well.
 // *should not be null when parsing a true object layer. Can be null when parsing a nested objectgroup (like tile collision data).
-void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLevel* levelOpt) {
-    using json = nlohmann::json;
-
+void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt) {
     Transform& parentTrans = parent.get<Transform>();
 
     // only need to parse depth for real layers (not tile collision data)
@@ -333,7 +334,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
     }
 
     bool failedToAllocateEntities = false;
-    const json& objects = layer["objects"];
+    JsonValue objects = layer["objects"];
     std::unordered_map<s32, std::pair<s32, ecs::Entity>> idToIndex;
     for (size_t ix = 0; ix < objects.size(); ix++) {
         s32 id = readInt(objects[ix], "id");
@@ -397,7 +398,7 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
         }
 
         // check for prefab:
-        Arc<nlohmann::json> pPrefab = nullptr;
+        Arc<JsonValue> pPrefab = nullptr;
         if (object.contains("template")) {
             auto templateFile = readString(object, "template");
             pPrefab = getTemplate(templateFile);
@@ -473,27 +474,28 @@ void loadObjectLayer(const nlohmann::json& layer, ecs::Entity parent, ActiveLeve
 }
 
 TileSet loadTileset(const std::string& basename, s32 firstgid) {
-    const auto data = getMapFile(basename);
+    const Arc<JsonDoc> data = getMapFile(basename);
+    JsonValue root = **data;
 
-    auto sourceFilePath = readString(*data, "image");
+    auto sourceFilePath = readString(root, "image");
 
     const s32 firstIx = std::max<s32>(sourceFilePath.find_last_of('/'), sourceFilePath.find_last_of('\\')) + 1;
     const s32 lastIx = sourceFilePath.find(".", firstIx);
     const std::string sourceFileBasenameNoExt = sourceFilePath.substr(firstIx, lastIx - firstIx);
 
-    const s32 tileWidth = readInt(*data, "tilewidth");
-    const s32 tileHeight = readInt(*data, "tileheight");
-    const s32 width = readInt(*data, "imagewidth");
-    const s32 height = readInt(*data, "imageheight");
+    const s32 tileWidth = readInt(root, "tilewidth");
+    const s32 tileHeight = readInt(root, "tileheight");
+    const s32 width = readInt(root, "imagewidth");
+    const s32 height = readInt(root, "imageheight");
 
     const s32 widthTiles = width / tileWidth;
     const s32 heightTiles = height / tileHeight;
-    const s32 tilecount = readInt(*data, "tilecount");
+    const s32 tilecount = readInt(root, "tilecount");
 
     std::vector<s32> idToIx(tilecount, -1);
-    if (data->contains("tiles")) {
+    if (root.contains("tiles")) {
         s32 ix = 0;
-        for (const auto& tiledata : (*data)["tiles"]) {
+        for (const auto& tiledata : (root)["tiles"]) {
             s32 id = readInt(tiledata, "id");
             idToIx[id] = ix++;
         }
@@ -501,12 +503,12 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
 
     std::string maskPath = "";
     bool isAdditiveSpriteMask = false;
-    if (data->contains("properties")) {
-        for (const auto& prop : (*data)["properties"]) {
-            if (prop["name"] == "SpriteMask") {
-                maskPath = prop["value"];
-            } else if (prop["name"] == "SpriteMaskBlending") {
-                std::string blending = prop["value"];
+    if (root.contains("properties")) {
+        for (JsonValue prop : root["properties"]) {
+            if (prop["name"].getString() == "SpriteMask") {
+                maskPath = prop["value"].getString();
+            } else if (prop["name"].getString() == "SpriteMaskBlending") {
+                std::string blending = prop["value"].getString();
                 if (blending == "Add") {
                     isAdditiveSpriteMask = true;
                 }
@@ -521,8 +523,8 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
         .tileHeight = tileHeight,
         .widthTiles = widthTiles,
         .heightTiles = heightTiles,
-        .margin = (*data)["margin"],
-        .spacing = (*data)["spacing"],
+        .margin = root["margin"].getInt(),
+        .spacing = root["spacing"].getInt(),
         .fileName = basename,
         .spriteFileName = std::move(sourceFileBasenameNoExt),
         .spriteMaskFileName = std::move(maskPath),
@@ -608,10 +610,11 @@ static TiledDataType getDtype(const std::string& name) {
 
 // parses all the data types in a project
 void parseMapProject(const char* mapfile) {
-    const Arc<nlohmann::json> data = getWorldFile(mapfile);
-    for (const auto& propType : (*data)["propertyTypes"]) {
+    const Arc<JsonDoc> data = getWorldFile(mapfile);
+    JsonValue root = **data;
+    for (JsonValue propType : root["propertyTypes"]) {
         const std::string name = readString(propType, "name");
-        const TiledDataType dtype = getDtype(propType["type"]);
+        const TiledDataType dtype = getDtype(propType["type"].getString());
         if (dtype == TiledDataType::Enum) {
             // for enums, check how the data is stored (packed int, basic int, or string)
             const std::string storage = readString(propType, "storageType");
@@ -632,7 +635,7 @@ void parseMapProject(const char* mapfile) {
                 for (const auto& member : propType["members"]) {
                     std::string memberName = readString(member, "name");
                     memberName = name + ":" + memberName;
-                    const TiledDataType memberType = getDtype(member["type"]);
+                    const TiledDataType memberType = getDtype(member["type"].getString());
                     if (memberType == TiledDataType::Class) {
                         // this is a class, so we need to store its propertyType
                         std::string memberPropType = "";  // is possible that it's null
@@ -661,10 +664,11 @@ void parseMapProject(const char* mapfile) {
 
 // parses a level's parameters and returns its LevelInfo struct
 static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
-    const Arc<nlohmann::json> data = getMapFile(lvlFileName);
+    const Arc<JsonDoc> data = getMapFile(lvlFileName);
+    JsonValue root = **data;
     Level::ParsedData lvlInfo;
-    tryRead(*data, "width", "height", &lvlInfo.sizeTiles);
-    for (const auto& property : (*data)["properties"]) {
+    tryRead(root, "width", "height", &lvlInfo.sizeTiles);
+    for (JsonValue property : root["properties"]) {
         std::string propType = readString(property, "propertytype");
         if (propType == "Map_MapInfo") {
             auto mapInfo = property["value"];
@@ -678,19 +682,20 @@ static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
 }
 
 Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
-    const auto data = getWorldFile(mapfile);
+    const Arc<JsonDoc> data = getWorldFile(mapfile);
+    JsonValue root = **data;
     dstScene.self.setName(mapfile);
 
 #ifndef NDEBUG
-    std::string type = readString(*data, "type");
+    std::string type = readString(root, "type");
     if (type != "world") {
         return Error("Not a world file");
     }
 #endif
 
     dstScene.name = mapfile;
-    for (auto& map : (*data)["maps"]) {
-        std::string filename = map["fileName"];
+    for (JsonValue map : root["maps"]) {
+        std::string filename = map["fileName"].getString();
         s32 x = readInt(map, "x");
         s32 y = readInt(map, "y");
         s32 width = readInt(map, "width");
@@ -730,12 +735,12 @@ Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize) {
 
 // MAP LOADING STUFF
 
-const Arc<nlohmann::json> getWorldFile(std::string_view mapFile) {
+const Arc<JsonDoc> getWorldFile(std::string_view mapFile) {
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
 }
 
-const Arc<nlohmann::json> getMapFile(std::string_view mapFile) {
+const Arc<JsonDoc> getMapFile(std::string_view mapFile) {
     // const auto fullPath = whal_format("{}/exports/{}", MAP_DIR, mapFile);
     const auto fullPath = whal_format("{}/{}", MAP_DIR, mapFile);
     return S_MAP_MANAGER.readData(fullPath.c_str());
@@ -743,30 +748,17 @@ const Arc<nlohmann::json> getMapFile(std::string_view mapFile) {
 
 // TEMPLATE STUFF
 
-const Arc<nlohmann::json> getTemplate(std::string_view templateFile) {
-    const auto fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
+const Arc<JsonValue> getTemplate(std::string_view templateFile) {
+    const std::string fullPath = whal_format("{}/{}", MAP_DIR, templateFile);
     // create a new Arc because we're creating a new reference to the "object" field
-    return Arc<nlohmann::json>::New((*S_TEMPLATE_MANAGER.readData(fullPath.c_str()))["object"]);
+    return Arc<JsonValue>::New((**S_TEMPLATE_MANAGER.readData(fullPath.c_str()))["object"]);
 }
 
 std::string getTypeFromTemplate(const std::string& templateFile) {
-    const Arc<nlohmann::json> prefabData = getTemplate(templateFile);
+    const Arc<JsonValue> prefabData = getTemplate(templateFile);
     std::string objType = "";
     tryRead(*prefabData, "type", &objType);
     return objType;
-}
-
-// reads size from object data, taking templates into account
-Vector2i getObjectSize(const nlohmann::json& objectData) {
-    Vector2i size;
-    if (objectData.contains("template")) {
-        std::string templateFile = readString(objectData, "template");
-        const Arc<nlohmann::json> prefab = getTemplate(templateFile);
-        tryRead(*prefab, "width", "height", &size);
-    }
-
-    tryRead(objectData, "width", "height", &size);
-    return size;
 }
 
 }  // namespace whal

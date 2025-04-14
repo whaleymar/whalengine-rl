@@ -1,10 +1,10 @@
 #pragma once
 
-#include <algorithm>
+#include <algorithm>  // TODO remove this include
 #include <cassert>
-#include <fstream>
 #include <vector>
 #include "Util/FileUtils.h"
+#include "Util/IResource.h"
 #include "Util/Memory/Arc.h"
 #include "Util/String.h"
 #include "Util/Types.h"
@@ -13,6 +13,7 @@ namespace whal {
 
 // reads file resources of the same type, keeps N of them in memory, freeing the one that went the longest without a read.
 template <typename T, s32 N>
+    requires std::is_base_of_v<IResource, T>
 class ResourceManager {
 public:
     ResourceManager() = default;
@@ -36,9 +37,8 @@ public:
 
         assert(isExist(filePath) && "file path doesn't exist");
 
-        std::ifstream file(filePath);
         Arc<T> newData = Arc<T>::New();
-        file >> *newData;
+        newData->load(filePath);
 
         // use push_back so the ref count is 2
         mCache.push_back({filePath, newData});

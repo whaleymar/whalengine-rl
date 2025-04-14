@@ -72,7 +72,7 @@ static TiledDeserialize defaultTiledLoaderImpl() {
                 //     using Dtype = std::remove_reference_t<decltype(*f.value())>;
 
                 const auto view = rfl::to_view(cpnt);
-                view.apply([&](const auto& f) { tryRead(*ctx.values, f.name(), f.value()); });
+                view.apply([&](const auto& f) { tryRead(ctx.values, f.name().data(), f.value()); });
 
                 entity.add(cpnt);
             },

@@ -212,6 +212,11 @@ JsonDoc& JsonDoc::operator=(JsonDoc&& other) noexcept {
     return *this;
 }
 
+bool JsonDoc::load(const char* path) {
+    mDoc = yyjson_read_file(path, 0, NULL, NULL);
+    return !isValid();
+}
+
 JsonValue JsonDoc::getRoot() const {
     return mDoc ? JsonValue(yyjson_doc_get_root(mDoc)) : JsonValue(nullptr);
 }

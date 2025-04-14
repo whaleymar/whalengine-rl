@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string_view>
 #include "TypeName.h"
+#include "Util/JsonDoc.h"  // TODO can forward declare after I remove the template
 #include "Util/Print.h"
 #include "Util/Types.h"
-#include "json_fwd.hpp"
+
+class JsonValue;
 
 template <typename T>
 struct Vector2;
@@ -24,57 +25,57 @@ class Entity;
 }
 
 // base reader methods:
-s32 readInt(const nlohmann::json& json, std::string_view key);
-s32 readFloat(const nlohmann::json& json, std::string_view key);
-Vector2i readVector2i(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
-Vector2f readVector2f(const nlohmann::json& json, const char* xKey = "x", const char* yKey = "y");
-bool readBool(const nlohmann::json& data, std::string_view key);
-std::string readString(const nlohmann::json& json, std::string_view key);
-TileMapEntityDescriptor readEntity(const nlohmann::json& json, std::string_view key);
+s32 readInt(const JsonValue json, const char* key);
+s32 readFloat(const JsonValue json, const char* key);
+Vector2i readVector2i(const JsonValue json, const char* xKey = "x", const char* yKey = "y");
+Vector2f readVector2f(const JsonValue json, const char* xKey = "x", const char* yKey = "y");
+bool readBool(const JsonValue data, const char* key);
+std::string readString(const JsonValue json, const char* key);
 Color readColor(const std::string& hexString);
 Depth readDepth(const std::string& depthString);
 
 // TODO need to unify API
-Shape readShape(const LoadContext& ctx, std::string_view key, Vector2i* dstOffset = nullptr);
+Shape readShape(const LoadContext& ctx, const char* key, Vector2i* dstOffset = nullptr);
 Shape getDefaultShape(const LoadContext& ctx);  // uses shape of Tiled object instead of a Property
-bool tryReadShape(const LoadContext& ctx, std::string_view key, Shape* dst, Vector2i* dstOffset = nullptr);
-Shape readShapeOrDefault(const LoadContext& ctx, std::string_view key,
+bool tryReadShape(const LoadContext& ctx, const char* key, Shape* dst, Vector2i* dstOffset = nullptr);
+Shape readShapeOrDefault(const LoadContext& ctx, const char* key,
                          Vector2i* dstOffset = nullptr);  // tries to get a custom shape, returns default shape if none present
 
+// TODO make this *not* a template. Simple overloads will suffice
 template <typename T>
-bool tryRead(const nlohmann::json& data, std::string_view key, T* dst) {
+bool tryRead(const JsonValue data, const char* key, T* dst) {
     print("tryRead not implemented for", type_of<T>());
     return false;
 }
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, s32* dst);
+bool tryRead(const JsonValue data, const char* key, s32* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, f32* dst);
+bool tryRead(const JsonValue data, const char* key, f32* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, bool* dst);
+bool tryRead(const JsonValue data, const char* key, bool* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, std::string* dst);
+bool tryRead(const JsonValue data, const char* key, std::string* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, Color* dst);
+bool tryRead(const JsonValue data, const char* key, Color* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, Depth* dst);
+bool tryRead(const JsonValue data, const char* key, Depth* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, Vector2i* dst);
+bool tryRead(const JsonValue data, const char* key, Vector2i* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, Vector2f* dst);
+bool tryRead(const JsonValue data, const char* key, Vector2f* dst);
 
 template <>
-bool tryRead(const nlohmann::json& data, std::string_view key, TileMapEntityDescriptor* dst);
+bool tryRead(const JsonValue data, const char* key, TileMapEntityDescriptor* dst);
 
-bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2i* dst);
-bool tryRead(const nlohmann::json& data, std::string_view xKey, std::string_view yKey, Vector2f* dst);
+bool tryRead(const JsonValue data, const char* xKey, const char* yKey, Vector2i* dst);
+bool tryRead(const JsonValue data, const char* xKey, const char* yKey, Vector2f* dst);
 
 }  // namespace whal

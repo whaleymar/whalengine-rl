@@ -6,7 +6,6 @@
 #include "Components/Transform.h"
 #include "CorradeOptional.h"
 #include "CorradePointer.h"
-#include "json_fwd.hpp"
 
 #include "whalECS/src/Expected.h"
 
@@ -41,7 +40,6 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
 Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent);
 Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize);
 const TileSet& getTileSet(const TileMap& map, s32 blockId);
-Vector2i getObjectSize(const nlohmann::json& objectData);
 void clearMapCache();
 
 struct EntityMapData {

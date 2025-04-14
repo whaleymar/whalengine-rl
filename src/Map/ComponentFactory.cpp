@@ -80,7 +80,7 @@ void ComponentFactory::init() {
     initTiledLoader();
 }
 
-static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const LoadContext& ctx);
+static bool loadCheckpoints(JsonValue checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const LoadContext& ctx);
 
 void ComponentFactory::initTiledLoader() {
     addDefaultTiledLoader<SpriteOutline>();
@@ -92,12 +92,12 @@ void ComponentFactory::initTiledLoader() {
 
     // Sprite
     TILED_LOADER(
-        Sprite, Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{}; tryRead(*ctx.values, "Color", &sprite.color);
+        Sprite, Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{}; tryRead(ctx.values, "Color", &sprite.color);
 
-        f32 brightness; if (tryRead(*ctx.values, "Brightness", &brightness)) { sprite.color.scale(brightness); }
+        f32 brightness; if (tryRead(ctx.values, "Brightness", &brightness)) { sprite.color.scale(brightness); }
 
                         std::string spritePath = "";
-        if (tryRead(*ctx.values, "Sprite", &spritePath)) { stl::replace(spritePath.begin(), spritePath.end(), '\\', '/'); } auto eSprite =
+        if (tryRead(ctx.values, "Sprite", &spritePath)) { stl::replace(spritePath.begin(), spritePath.end(), '\\', '/'); } auto eSprite =
             Sprite::fromPath(spritePath.c_str());
         if (eSprite.isExpected()) {
             sprite.frameSize = eSprite.value().frameSize;
@@ -111,17 +111,17 @@ void ComponentFactory::initTiledLoader() {
     TILED_LOADER(
         DrawRect, DrawRect draw = entity.has<DrawRect>() ? entity.get<DrawRect>() : DrawRect{}; draw.frameSize = ctx.entityData.size;
 
-        tryRead(*ctx.values, "Color", &draw.color);
+        tryRead(ctx.values, "Color", &draw.color);
 
-        f32 brightness; if (tryRead(*ctx.values, "Brightness", &brightness)) { draw.color.scale(brightness); } entity.add(draw);
+        f32 brightness; if (tryRead(ctx.values, "Brightness", &brightness)) { draw.color.scale(brightness); } entity.add(draw);
 
     );
 
     // DrawText
     TILED_LOADER(TextSprite, TextSprite text = entity.has<TextSprite>() ? entity.get<TextSprite>() : TextSprite{};
 
-                 tryRead(*ctx.values, "color", &text.color); tryRead(*ctx.values, "text", &text.text);
-                 tryRead(*ctx.values, "center", &text.isCentered); text.frameSize = ctx.entityData.size; entity.add(text);
+                 tryRead(ctx.values, "color", &text.color); tryRead(ctx.values, "text", &text.text); tryRead(ctx.values, "center", &text.isCentered);
+                 text.frameSize = ctx.entityData.size; entity.add(text);
 
     );
 
@@ -129,10 +129,9 @@ void ComponentFactory::initTiledLoader() {
     TILED_LOADER(
         Trigger, Trigger trigger = entity.has<Trigger>() ? entity.get<Trigger>() : Trigger{};
 
-        std::string layerName;
-        if (tryReadVal(*ctx.values, "Layer", &layerName)) { trigger.layerMask = CollisionLayer::fromString(layerName.c_str()); }
+        std::string layerName; if (tryReadVal(ctx.values, "Layer", &layerName)) { trigger.layerMask = CollisionLayer::fromString(layerName.c_str()); }
 
-        trigger.shape = readShapeOrDefault(ctx, "Shape", &trigger.offset);
+                               trigger.shape = readShapeOrDefault(ctx, "Shape", &trigger.offset);
         entity.add(trigger);
 
     );
@@ -140,16 +139,16 @@ void ComponentFactory::initTiledLoader() {
     // RailsControl
     TILED_LOADER(
         RailsControl, std::vector<RailsControl::CheckPoint> checkpoints; bool isCycle = false;
-        if (ctx.values->contains("Checkpoints")) {
-            s32 id = (*ctx.values)["Checkpoints"];
-            const nlohmann::json checkPointObj = ctx.allObjects.at(ctx.idToIndex.at(id).first);
+        if (ctx.values.contains("Checkpoints")) {
+            s32 id = ctx.values["Checkpoints"].getInt();
+            const JsonValue checkPointObj = ctx.allObjects[ctx.idToIndex.at(id).first];
             isCycle = loadCheckpoints(checkPointObj, checkpoints, ctx);
         }
 
         RailsControl rails = entity.has<RailsControl>() ? entity.get<RailsControl>() : RailsControl{};
         rails.setCheckpoints(checkpoints, entity.get<Transform>(), entity);
 
-        std::string cycleBehavior = "ManualStart"; tryRead(*ctx.values, "CycleBehavior", &cycleBehavior); if (isCycle) {
+        std::string cycleBehavior = "ManualStart"; tryRead(ctx.values, "CycleBehavior", &cycleBehavior); if (isCycle) {
             if (cycleBehavior == "Automatic") {
                 rails.endBehavior = RailsControl::CycleBehavior::AUTOMATIC_LOOP;
             } else if (cycleBehavior == "ManualStart") {
@@ -167,8 +166,8 @@ void ComponentFactory::initTiledLoader() {
             }
         }
 
-        tryRead(*ctx.values, "speed", &rails.speed);
-        tryRead(*ctx.values, "waitTime", &rails.waitTime);
+        tryRead(ctx.values, "speed", &rails.speed);
+        tryRead(ctx.values, "waitTime", &rails.waitTime);
 
         entity.add(rails);
 
@@ -177,9 +176,9 @@ void ComponentFactory::initTiledLoader() {
     // ParticleEmitter
     TILED_LOADER(ParticleEmitter, ParticleEmitter emitter = entity.has<ParticleEmitter>() ? entity.get<ParticleEmitter>() : ParticleEmitter{};
 
-                 tryRead(*ctx.values, "maxSpeed", &emitter.maxSpeed); tryRead(*ctx.values, "particlesPerSecond", &emitter.particlesPerSecond);
-                 tryReadVal(*ctx.values, "Direction", &emitter.direction); tryReadVal(*ctx.values, "Material", &emitter.material);
-                 tryRead(*ctx.values, "Depth", &emitter.depth); tryRead(*ctx.values, "LifetimeMultiplier", &emitter.lifetimeMultiplier);
+                 tryRead(ctx.values, "maxSpeed", &emitter.maxSpeed); tryRead(ctx.values, "particlesPerSecond", &emitter.particlesPerSecond);
+                 tryReadVal(ctx.values, "Direction", &emitter.direction); tryReadVal(ctx.values, "Material", &emitter.material);
+                 tryRead(ctx.values, "Depth", &emitter.depth); tryRead(ctx.values, "LifetimeMultiplier", &emitter.lifetimeMultiplier);
 
                  Shape emitterShape = readShapeOrDefault(ctx, "Shape", &emitter.offset); emitter.aabbHalf = emitterShape.getAABB().getHalf();
                  entity.add(emitter);
@@ -191,12 +190,12 @@ void ComponentFactory::initTiledLoader() {
         Collider, Collider collider = entity.has<Collider>() ? entity.get<Collider>() : Collider{};
         CollisionDir collisionDir = collider.getCollisionDir(); WorldMaterial material = collider.getMaterial();
 
-        if (tryReadVal(*ctx.values, "CollisionDir", &collisionDir)) {
+        if (tryReadVal(ctx.values, "CollisionDir", &collisionDir)) {
             collider.setCollisionDir(collisionDir);
-        } if (tryReadVal(*ctx.values, "Material", &material)) { collider.setMaterial(material); } tryReadVal(*ctx.values, "Type",
-                                                                                                             &collider.mPhysicsBody);
+        } if (tryReadVal(ctx.values, "Material", &material)) { collider.setMaterial(material); } tryReadVal(ctx.values, "Type",
+                                                                                                            &collider.mPhysicsBody);
 
-        std::string layerName; if (tryReadVal(*ctx.values, "Layer", &layerName)) {
+        std::string layerName; if (tryReadVal(ctx.values, "Layer", &layerName)) {
             // can have multiple values. Written as "layername,layername,layername"
             u16 mask = 0;
             size_t curIx = 0;
@@ -222,56 +221,56 @@ void ComponentFactory::initTiledLoader() {
     // Animator
     TILED_LOADER(
         Animator, Sprite sprite = entity.has<Sprite>() ? entity.get<Sprite>() : Sprite{};
-        std::string animatorName = readString(*ctx.values, "Animator");
+        std::string animatorName = readString(ctx.values, "Animator");
         Animator animator = Animator::fromAnimation(AnimationFactory::get(animatorName.c_str())); entity.add(animator);
         sprite.setFrame(animator.getFrame());
 
-        s32 rotation; if (tryRead(*ctx.values, "rotationDegrees", &rotation)) { entity.get<Transform>().rotation = rotation; }
+        s32 rotation; if (tryRead(ctx.values, "rotationDegrees", &rotation)) { entity.get<Transform>().rotation = rotation; }
 
-        tryRead(*ctx.values, "Color", &sprite.color);
+        tryRead(ctx.values, "Color", &sprite.color);
 
-        f32 brightness; if (tryRead(*ctx.values, "Brightness", &brightness)) { sprite.color.scale(brightness); } entity.add(sprite);
+        f32 brightness; if (tryRead(ctx.values, "Brightness", &brightness)) { sprite.color.scale(brightness); } entity.add(sprite);
 
     );
 
     // BoxLight
     TILED_LOADER(BoxLight, BoxLight light = entity.has<BoxLight>() ? entity.get<BoxLight>() : BoxLight{};
 
-                 tryRead(*ctx.values, "color", &light.color); tryRead(*ctx.values, "radius", &light.radius);
+                 tryRead(ctx.values, "color", &light.color); tryRead(ctx.values, "radius", &light.radius);
                  light.halfLen = readShapeOrDefault(ctx, "Shape", &light.offset).getAABB().getHalf(); entity.add(light);
 
     );
 
     // Velocity
     TILED_LOADER(Velocity, Velocity velocity = entity.has<Velocity>() ? entity.get<Velocity>() : Velocity{};
-                 tryRead(*ctx.values, "stable", &velocity.stable);
+                 tryRead(ctx.values, "stable", &velocity.stable);
 
                  entity.add(velocity);
 
     );
 
     TILED_LOADER(
-        TagLoader, bool hasTag = false; if (tryRead(*ctx.values, "Player", &hasTag) && hasTag) {
+        TagLoader, bool hasTag = false; if (tryRead(ctx.values, "Player", &hasTag) && hasTag) {
             entity.add<Player>();
             hasTag = false;
         }
 
-        if (tryRead(*ctx.values, "Wiggle", &hasTag) && hasTag) {
+        if (tryRead(ctx.values, "Wiggle", &hasTag) && hasTag) {
             entity.add<Wiggle>();
             hasTag = false;
         }
 
-        if (tryRead(*ctx.values, "Invisible", &hasTag) && hasTag) {
+        if (tryRead(ctx.values, "Invisible", &hasTag) && hasTag) {
             entity.add<Invisible>();
             hasTag = false;
         }
 
-        if (tryRead(*ctx.values, "BlocksLight", &hasTag) && hasTag) {
+        if (tryRead(ctx.values, "BlocksLight", &hasTag) && hasTag) {
             entity.add<BlocksLight>();
             hasTag = false;
         }
 
-        if (tryRead(*ctx.values, "Inactive", &hasTag) && hasTag) {
+        if (tryRead(ctx.values, "Inactive", &hasTag) && hasTag) {
             // jank shit; i need children to have an independent activity flag!
             // TODO
             Schedule.flow({entity}).addWait(0.05).add([](ecs::Entity self) { self.deactivate(); }, entity);
@@ -282,7 +281,7 @@ void ComponentFactory::initTiledLoader() {
 }
 
 // returns true if checkpoints form a cycle
-static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const LoadContext& ctx) {
+static bool loadCheckpoints(JsonValue checkpointData, std::vector<RailsControl::CheckPoint>& dstCheckpoints, const LoadContext& ctx) {
     static const char* KEY_VALUE = "value";
 
     // generic rewrite:
@@ -292,7 +291,7 @@ static bool loadCheckpoints(const nlohmann::json& checkpointData, std::vector<Ra
     const auto& properties = checkpointData["properties"];
     std::vector<Ease> moveProps;
     for (const auto& moveProperty : properties) {
-        const s32 moveIx = moveProperty[KEY_VALUE];
+        const s32 moveIx = moveProperty[KEY_VALUE].getInt();
         moveProps.push_back(static_cast<Ease>(moveIx));
     }
 
