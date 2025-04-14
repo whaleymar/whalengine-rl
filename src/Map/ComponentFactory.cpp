@@ -21,6 +21,7 @@
 #include "Sys/JobScheduler.h"
 #include "Sys/System.h"
 #include "Util/JsonUtil.h"
+#include "Util/Print.h"
 #include "Util/SerializeUtil.h"
 
 namespace whal {

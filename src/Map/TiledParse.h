@@ -1,8 +1,6 @@
 #pragma once
 
-#include "TypeName.h"
-#include "Util/JsonDoc.h"  // TODO can forward declare after I remove the template
-#include "Util/Print.h"
+#include "Util/JsonDoc.h"
 #include "Util/Types.h"
 
 class JsonValue;
@@ -41,10 +39,10 @@ bool tryReadShape(const LoadContext& ctx, const char* key, Shape* dst, Vector2i*
 Shape readShapeOrDefault(const LoadContext& ctx, const char* key,
                          Vector2i* dstOffset = nullptr);  // tries to get a custom shape, returns default shape if none present
 
-// TODO make this *not* a template. Simple overloads will suffice
+// template required for reflection implementations to compile (they need this stubbed placeholder)
 template <typename T>
 bool tryRead(const JsonValue data, const char* key, T* dst) {
-    print("tryRead not implemented for", type_of<T>());
+    // not implemented
     return false;
 }
 

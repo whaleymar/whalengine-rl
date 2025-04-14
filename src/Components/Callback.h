@@ -10,7 +10,6 @@ class Entity;
 
 using Callback = void (*)(ecs::Entity entity);
 
-// TODO convert this into MonoBehavior component
 struct CustomUpdate {
     Callback callback = nullptr;
     s32 everyNFrame = 1;
