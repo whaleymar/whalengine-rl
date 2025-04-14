@@ -1,11 +1,8 @@
 #include "Gfx/Texture.h"
 
 #include <array>
-#include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <json.hpp>
 #include <raylib.h>
 #include <rlgl.h>
 #include <string>
@@ -16,6 +13,7 @@
 #include "Map/AnimationFactory.h"
 #include "Settings.h"
 #include "Sys/Renderer.h"
+#include "Util/JsonDoc.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
@@ -36,28 +34,36 @@ static std::array<rl::RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT
 
 Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::string& atlasDataPath) {
     mTexture = texture;
+    JsonDoc doc = JsonDoc::fromFile(atlasDataPath);
+    if (!doc.isValid()) {
+        return Error("Failed to parse JSON data");
+    }
 
-    std::ifstream file(atlasDataPath);
-    nlohmann::json doc;
-    file >> doc;
+    JsonValue root = doc.getRoot();
 
-    mIsTrimEnabled = doc["trim"];
-    mIsRotateEnabled = doc["rotate"];
+    // Get trim and rotate flags
+    mIsTrimEnabled = root["trim"].getBool();
+    mIsRotateEnabled = root["rotate"].getBool();
 
-    if (!doc.contains("textures")) {
+    // Get textures
+    if (!root.contains("textures")) {
         return Error("Could not find 'textures'");
     }
-    if (!doc["textures"].contains("atlas0")) {
+
+    JsonValue textures = root["textures"];
+    if (!textures.contains("atlas0")) {
         return Error("Could not find 'atlas0'");
     }
 
-    const nlohmann::json& atlas = doc["textures"]["atlas0"];
-    for (auto it = atlas.begin(); it != atlas.end(); ++it) {
-        std::string name = it.key();
-        s32 x = it.value().at("x");
-        s32 y = it.value().at("y");
-        s32 w = it.value().at("w");
-        s32 h = it.value().at("h");
+    // Process atlas frames
+    JsonValue atlas = textures["atlas0"];
+    for (auto it = atlas.beginObject(); it != atlas.endObject(); ++it) {
+        auto [name, value] = *it;
+
+        s32 x = value["x"].getInt();
+        s32 y = value["y"].getInt();
+        s32 w = value["w"].getInt();
+        s32 h = value["h"].getInt();
 
         // ignoring trim and rotate unless i need them
         rl::Rectangle frame = rl::Rectangle(x, y, w, h);
@@ -66,31 +72,33 @@ Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::stri
 
     mIsValid = true;
 
-    // add animations to the animation factory
-    if (!doc.contains("animations")) {
+    // Add animations to the animation factory
+    if (!root.contains("animations")) {
         return Error("Could not find 'animations'");
     }
 
-    const nlohmann::json& animations = doc["animations"];
-    for (const nlohmann::json& anim : animations) {
-        std::string name = anim["name"];
-        const s32 frameCount = anim["framecount"];
+    JsonValue animations = root["animations"];
+    for (const JsonValue& anim : animations) {
+        std::string name = anim["name"].getString();
+        const s32 frameCount = anim["framecount"].getInt();
+
         std::vector<Animation::FrameExt> frames;
         frames.reserve(frameCount);
 
-        for (const nlohmann::json& frame : anim["frames"]) {
-            f32 frameTime = frame["time"];
-            s32 id = frame["id"];
+        for (const JsonValue& frame : anim["frames"]) {
+            f32 frameTime = frame["time"].getFloat();
+            s32 id = frame["id"].getInt();
+
             frames.push_back(Animation::FrameExt{
                 .frame = *getFrame(whal_format("{}{}", name, id)),
                 .duration = frameTime,
             });
         }
 
-        AnimationFactory::add(std::move(name), Animation{
-                                                   .frames = std::move(frames),
-                                                   .name = name,
-                                               });
+        AnimationFactory::add(name, Animation{
+                                        .frames = std::move(frames),
+                                        .name = name,
+                                    });
     }
 
     return NullOpt;
@@ -114,8 +122,8 @@ Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const std::
         return NullOpt;
     }
 
-    s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_GAME);
-    s32 height = std::max(frameOpt->height, FWINDOW_HEIGHT_GAME);
+    s32 width = frameOpt->width > FWINDOW_WIDTH_GAME ? frameOpt->width : FWINDOW_WIDTH_GAME;
+    s32 height = frameOpt->height > FWINDOW_HEIGHT_GAME ? frameOpt->height : FWINDOW_HEIGHT_GAME;
     rl::RenderTexture2D texture = rl::LoadRenderTexture(width, height);
 
     // want texture to align w/ bottom left of screen, so subtract height difference (since it defaults to top of screen)

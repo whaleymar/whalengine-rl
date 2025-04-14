@@ -19,3 +19,6 @@
 [submodule "lib/imgui"]
 	path = lib/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "lib/yyjson"]
+	path = lib/yyjson
+	url = https://github.com/ibireme/yyjson.git
