@@ -26,13 +26,15 @@
 #include "rfl/enums.hpp"
 #endif
 
-#define NULLOPT Corrade::Containers::NullOpt;
+using Corrade::Containers::NullOpt;
+template <typename T>
+using Optional = Corrade::Containers::Optional<T>;
 
 namespace whal {
 
 static std::array<rl::RenderTexture2D, static_cast<s32>(TextureID::_COUNT_DO_NOT_USE_ME)> S_RENDER_TEXTURES;
 
-Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::string& atlasDataPath) {
+Optional<Error> TextureAtlas::init(const rl::Texture2D& texture, const std::string& atlasDataPath) {
     mTexture = texture;
 
     std::ifstream file(atlasDataPath);
@@ -91,25 +93,25 @@ Corrade::Containers::Optional<Error> TextureAtlas::init(const rl::Texture2D& tex
                                                });
     }
 
-    return NULLOPT;
+    return NullOpt;
 }
 
 Vector2f TextureAtlas::getSize() const {
     return Vector2f(mTexture.width, mTexture.height);
 }
 
-Corrade::Containers::Optional<rl::Rectangle> TextureAtlas::getFrame(const std::string& name) const {
+Optional<rl::Rectangle> TextureAtlas::getFrame(const std::string& name) const {
     auto search = mTable.find(name);
     if (search == mTable.end()) {
-        return NULLOPT;
+        return NullOpt;
     }
     return search->second;
 }
 
-Corrade::Containers::Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const std::string& frameName) const {
-    Corrade::Containers::Optional<rl::Rectangle> frameOpt = getFrame(frameName);
+Optional<rl::RenderTexture2D> TextureAtlas::frameToBackgroundTexture(const std::string& frameName) const {
+    Optional<rl::Rectangle> frameOpt = getFrame(frameName);
     if (!frameOpt) {
-        return NULLOPT;
+        return NullOpt;
     }
 
     s32 width = std::max(frameOpt->width, FWINDOW_WIDTH_GAME);
@@ -260,7 +262,7 @@ void TextureManager::_setTargetTexture() {
 }
 #endif
 
-Corrade::Containers::Optional<Error> TextureManager::registerTexture(const rl::Texture2D texture, const std::string& name) {
+Optional<Error> TextureManager::registerTexture(const rl::Texture2D texture, const std::string& name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
         print(whal_format("Texture with name '{}' already registered", name), ". Replacing it.");
@@ -270,11 +272,10 @@ Corrade::Containers::Optional<Error> TextureManager::registerTexture(const rl::T
         mTextures.push_back(std::move(texture));
         mTextureNames.push_back(name);
     }
-    return NULLOPT;
+    return NullOpt;
 }
 
-Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const rl::Texture2D texture, const std::string& atlasDataPath,
-                                                                          const std::string& name) {
+Optional<Error> TextureManager::registerTextureAtlas(const rl::Texture2D texture, const std::string& atlasDataPath, const std::string& name) {
     s32 ix = getTextureAtlasIndex(name);
     if (ix >= 0) {
         return Error(whal_format("Texture Atlas with name '{}' already registered", name));
@@ -286,14 +287,14 @@ Corrade::Containers::Optional<Error> TextureManager::registerTextureAtlas(const 
     }
     mTextureAtlases.push_back(atlas);
     mTextureAtlasNames.push_back(name);
-    return NULLOPT;
+    return NullOpt;
 }
 
-Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const std::string& imagePath, const std::string& name) {
+Optional<Error> TextureManager::loadAndRegister(const std::string& imagePath, const std::string& name) {
     s32 ix = getTextureIndex(name);
     if (ix >= 0) {
         // already registered
-        return NULLOPT;
+        return NullOpt;
     }
 
     rl::Texture2D texture = rl::LoadTexture(imagePath.c_str());
@@ -303,8 +304,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegister(const std::
     return registerTexture(texture, name);
 }
 
-Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const std::string& imagePath, const std::string& atlasDataPath,
-                                                                          const std::string& name) {
+Optional<Error> TextureManager::loadAndRegisterAtlas(const std::string& imagePath, const std::string& atlasDataPath, const std::string& name) {
     rl::Texture2D texture = rl::LoadTexture(imagePath.c_str());
     if (!IsTextureValid(texture)) {
         return Error(whal_format("Couldn't load image: %s", imagePath));
@@ -312,7 +312,7 @@ Corrade::Containers::Optional<Error> TextureManager::loadAndRegisterAtlas(const 
     return registerTextureAtlas(texture, atlasDataPath, name);
 }
 
-Corrade::Containers::Optional<Error> TextureManager::removeAtlas(const std::string& name) {
+Optional<Error> TextureManager::removeAtlas(const std::string& name) {
     s32 ix = getTextureAtlasIndex(name);
     if (ix == -1) {
         return Error("Atlas not registered");
@@ -320,7 +320,7 @@ Corrade::Containers::Optional<Error> TextureManager::removeAtlas(const std::stri
     UnloadTexture(mTextureAtlases[ix].getTexture());
     mTextureAtlases.erase(mTextureAtlases.begin() + ix);
     mTextureAtlasNames.erase(mTextureAtlasNames.begin() + ix);
-    return NULLOPT;
+    return NullOpt;
 }
 
 rl::RenderTexture2D& TextureManager::_getRenderTexture(TextureID id) {

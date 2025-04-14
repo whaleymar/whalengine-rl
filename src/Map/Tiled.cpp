@@ -23,7 +23,7 @@
 #include "Util/ResourceManager.h"
 #include "json.hpp"
 
-#define NULLOPT Corrade::Containers::NullOpt;
+using Corrade::Containers::NullOpt;
 
 namespace whal {
 
@@ -716,7 +716,7 @@ Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstS
         return Error("Scene is not valid (didn't find world entry point)");
     }
 
-    return NULLOPT;
+    return NullOpt;
 }
 
 Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent) {

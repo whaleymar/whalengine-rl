@@ -15,7 +15,7 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
-#define NULLOPT Corrade::Containers::NullOpt;
+using Corrade::Containers::NullOpt;
 
 namespace whal {
 
@@ -63,7 +63,7 @@ Corrade::Containers::Optional<Error> Scene::setStartLevelIx(s32 ix) {
         return Error("Start level has already been set for scene");
     }
     startLevelIx = ix;
-    return NULLOPT;
+    return NullOpt;
 }
 
 Level Scene::getStartLevel() const {
@@ -84,7 +84,7 @@ Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const 
             return lvl;
         }
     }
-    return NULLOPT;
+    return NullOpt;
 }
 
 Expected<ActiveLevel*> Scene::getLoadedLevelAt(Vector2i worldPos) {
@@ -174,7 +174,7 @@ Corrade::Containers::Optional<Error> loadLevel(const Level level) {
     scene.loadedLevels.emplace_back(ActiveLevel(level, worldOffset, scene.self));
     print("loaded map: ", level.filepath);
 
-    return NULLOPT;
+    return NullOpt;
 }
 
 void unloadAndRemoveLevel(ActiveLevel& level) {

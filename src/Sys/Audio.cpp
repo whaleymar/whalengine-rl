@@ -11,7 +11,7 @@
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
-#define NULLOPT Corrade::Containers::NullOpt;
+using Corrade::Containers::NullOpt;
 
 namespace whal {
 
@@ -46,7 +46,7 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
         auto err = FMOD_ErrorString(result);
         return Error(sprint("Error loading clip:", path, "\nFMOD error:", err));
     }
-    return NULLOPT;
+    return NullOpt;
 }
 
 Corrade::Containers::Optional<Error> AudioPlayer::init() {
@@ -81,7 +81,7 @@ Corrade::Containers::Optional<Error> AudioPlayer::init() {
     }
     FMOD_System_Set3DSettings(mSystem, 0.0f, DIST_UNITS, 1.0f);
 
-    return NULLOPT;
+    return NullOpt;
 }
 
 AudioPlayer::AudioPlayer() {}
