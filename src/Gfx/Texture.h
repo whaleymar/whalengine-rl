@@ -5,8 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "CorradeOptional.h"
-
+#include "Util/Optional.h"
 #include "Util/Singleton.h"
 #include "Util/Vector.h"
 #include "whalECS/src/Expected.h"
@@ -21,12 +20,12 @@ enum class BGTexture { STATIC, FAR, MID, NEAR };
 
 class TextureAtlas {
 public:
-    Corrade::Containers::Optional<Error> init(const rl::Texture2D& texture, const std::string& atlasDataPath);
+    Optional<Error> init(const rl::Texture2D& texture, const std::string& atlasDataPath);
     Vector2f getSize() const;
-    Corrade::Containers::Optional<rl::Rectangle> getFrame(const std::string& name) const;
+    Optional<rl::Rectangle> getFrame(const std::string& name) const;
     bool isValid() const { return mIsValid; }
     const rl::Texture2D& getTexture() const { return mTexture; }
-    Corrade::Containers::Optional<rl::RenderTexture2D> frameToBackgroundTexture(const std::string& frameName) const;
+    Optional<rl::RenderTexture2D> frameToBackgroundTexture(const std::string& frameName) const;
 
 private:
     rl::Texture2D mTexture;
@@ -74,12 +73,11 @@ public:
     s32 selection = 0;
 #endif
 
-    Corrade::Containers::Optional<Error> registerTexture(const rl::Texture2D texture, const std::string& name);
-    Corrade::Containers::Optional<Error> registerTextureAtlas(const rl::Texture2D texture, const std::string& altasDataPath, const std::string& name);
-    Corrade::Containers::Optional<Error> loadAndRegister(const std::string& imagePath, const std::string& name);
-    Corrade::Containers::Optional<Error> loadAndRegisterAtlas(const std::string& imagePath, const std::string& atlasDataPath,
-                                                              const std::string& name);
-    Corrade::Containers::Optional<Error> removeAtlas(const std::string& name);
+    Optional<Error> registerTexture(const rl::Texture2D texture, const std::string& name);
+    Optional<Error> registerTextureAtlas(const rl::Texture2D texture, const std::string& altasDataPath, const std::string& name);
+    Optional<Error> loadAndRegister(const std::string& imagePath, const std::string& name);
+    Optional<Error> loadAndRegisterAtlas(const std::string& imagePath, const std::string& atlasDataPath, const std::string& name);
+    Optional<Error> removeAtlas(const std::string& name);
 
     static const TextureAtlas& getAtlas(const std::string& name) { return instance()._getAtlas(name); }
     static const rl::Texture& getTexture(const std::string& name) { return instance()._getTexture(name); }

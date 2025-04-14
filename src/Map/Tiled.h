@@ -4,14 +4,11 @@
 
 #include "Components/Draw.h"
 #include "Components/Transform.h"
-#include "CorradeOptional.h"
-#include "CorradePointer.h"
-
-#include "whalECS/src/Expected.h"
-
+#include "Util/Optional.h"
 #include "Util/STL_reduce.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
+#include "whalECS/src/Expected.h"
 
 namespace rl {
 typedef struct Color Color;
@@ -36,7 +33,7 @@ class Entity;
 
 Expected<Sprite> getTileSprite(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
-Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
+Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent);
 Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize);
 const TileSet& getTileSet(const TileMap& map, s32 blockId);

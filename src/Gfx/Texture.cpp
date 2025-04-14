@@ -14,6 +14,7 @@
 #include "Settings.h"
 #include "Sys/Renderer.h"
 #include "Util/JsonDoc.h"
+#include "Util/Optional.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
 
@@ -23,10 +24,6 @@
 #include "imgui.h"
 #include "rfl/enums.hpp"
 #endif
-
-using Corrade::Containers::NullOpt;
-template <typename T>
-using Optional = Corrade::Containers::Optional<T>;
 
 namespace whal {
 

@@ -15,8 +15,6 @@
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
 
-using Corrade::Containers::NullOpt;
-
 namespace whal {
 
 AABB Level::getBoundingBox() const {
@@ -58,7 +56,7 @@ bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
 
-Corrade::Containers::Optional<Error> Scene::setStartLevelIx(s32 ix) {
+Optional<Error> Scene::setStartLevelIx(s32 ix) {
     if (startLevelIx != -1) {
         return Error("Start level has already been set for scene");
     }
@@ -76,7 +74,7 @@ Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
     return eActiveLevel;
 }
 
-Corrade::Containers::Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
+Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
     Vector2f worldPosF = worldPos.as<f32>();
     for (Level lvl : allLevels) {
         if (worldPosF.x >= lvl.position.x && worldPosF.x < (lvl.position.x + lvl.size.x) && worldPosF.y < lvl.position.y &&
@@ -168,7 +166,7 @@ void Scene::update() {
     }
 }
 
-Corrade::Containers::Optional<Error> loadLevel(const Level level) {
+Optional<Error> loadLevel(const Level level) {
     Vector2i worldOffset(level.position.x, level.position.y);
     Scene& scene = System::getGame().getScene();
     scene.loadedLevels.emplace_back(ActiveLevel(level, worldOffset, scene.self));

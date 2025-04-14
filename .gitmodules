@@ -4,9 +4,6 @@
 [submodule "lib/raylib"]
 	path = lib/raylib
 	url = https://github.com/whaleymar/raylib.git
-[submodule "lib/magnum-singles"]
-	path = lib/magnum-singles
-	url = https://github.com/whaleymar/magnum-singles.git
 [submodule "lib/expected"]
 	path = lib/expected
 	url = https://github.com/TartanLlama/expected.git

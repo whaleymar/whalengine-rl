@@ -35,7 +35,6 @@ set(FMOD_DIR "${PROJECT_SOURCE_DIR}/lib/fmod")
 #     PUBLIC "${PROJECT_SOURCE_DIR}/lib/reflect-cpp/include"
 #     PUBLIC "${FMOD_DIR}/api/core/inc"
 #     PUBLIC "${FMOD_DIR}/api/studio/inc"
-#     PUBLIC "${PROJECT_SOURCE_DIR}/lib/magnum-singles"
     # PUBLIC "${PROJECT_SOURCE_DIR}/lib/whalECS/src"
 # )
 

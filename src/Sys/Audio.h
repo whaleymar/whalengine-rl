@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CorradeOptional.h"
-
 #include <vector>
+
+#include "Util/Optional.h"
 #include "Util/Singleton.h"
 #include "Util/Types.h"
 #include "whalECS/src/Expected.h"
@@ -30,7 +30,7 @@ class AudioClip {
 public:
     static Expected<AudioClip> from(const char* path);
 
-    Corrade::Containers::Optional<Error> load(const char* path);
+    Optional<Error> load(const char* path);
     void unload();
 
     bool isValid() const { return mSound != nullptr; }
@@ -48,7 +48,7 @@ public:
     friend System;
     friend AudioClip;
 
-    Corrade::Containers::Optional<Error> init();
+    Optional<Error> init();
     void end();
 
     void disable();  // stops all music and sfx, saving their current state.

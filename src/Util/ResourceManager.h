@@ -1,11 +1,11 @@
 #pragma once
 
-#include <algorithm>  // TODO remove this include
 #include <cassert>
 #include <vector>
 #include "Util/FileUtils.h"
 #include "Util/IResource.h"
 #include "Util/Memory/Arc.h"
+#include "Util/STL_reduce.h"
 #include "Util/String.h"
 #include "Util/Types.h"
 
@@ -25,7 +25,7 @@ public:
             if (isEqualString(it->path, filePath)) {
                 // found item in cache, move to back
                 auto resource = it->data;
-                std::rotate(it, it + 1, mCache.end());
+                stl::rotate(it, it + 1, mCache.end());
                 return resource;
             }
         }

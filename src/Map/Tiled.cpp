@@ -21,10 +21,9 @@
 #include "Util/DebugUtil.h"
 #include "Util/JsonDoc.h"
 #include "Util/JsonUtil.h"
+#include "Util/Optional.h"
 #include "Util/Print.h"
 #include "Util/ResourceManager.h"
-
-using Corrade::Containers::NullOpt;
 
 namespace whal {
 
@@ -357,7 +356,7 @@ void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt)
         return;
     }
 
-    for (const auto& object : objects) {
+    for (JsonValue object : objects) {
         EntityMapData entityMapData;
         entityMapData.id = readInt(object, "id");
         ecs::Entity entity = idToIndex.at(entityMapData.id).second;
@@ -495,7 +494,7 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
     std::vector<s32> idToIx(tilecount, -1);
     if (root.contains("tiles")) {
         s32 ix = 0;
-        for (const auto& tiledata : (root)["tiles"]) {
+        for (JsonValue tiledata : (root)["tiles"]) {
             s32 id = readInt(tiledata, "id");
             idToIx[id] = ix++;
         }
@@ -548,7 +547,7 @@ Expected<Sprite> getTileSprite(const TileMap& map, s32 blockId) {
     const TileSet& tset = getTileSet(map, blockId);
     std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
     const auto& texAtlas = TextureManager::getAtlas(TEXNAME_SPRITE);
-    Corrade::Containers::Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
+    Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
 
     if (!tsetFrameOpt) {
         return Error(whal_format("Couldn't find {} in sprite table", spritePath));
@@ -632,7 +631,7 @@ void parseMapProject(const char* mapfile) {
         } else if (dtype == TiledDataType::Class) {
             if (propType.contains("members")) {
                 // parse types of class members
-                for (const auto& member : propType["members"]) {
+                for (JsonValue member : propType["members"]) {
                     std::string memberName = readString(member, "name");
                     memberName = name + ":" + memberName;
                     const TiledDataType memberType = getDtype(member["type"].getString());
@@ -681,7 +680,7 @@ static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
     return Error(whal_format("Map_MapInfo property not found in level: {}", lvlFileName));
 }
 
-Corrade::Containers::Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
+Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
     const Arc<JsonDoc> data = getWorldFile(mapfile);
     JsonValue root = **data;
     dstScene.self.setName(mapfile);

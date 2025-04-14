@@ -8,10 +8,9 @@
 
 #include "Settings.h"
 #include "System.h"
+#include "Util/Optional.h"
 #include "Util/Print.h"
 #include "Util/Vector.h"
-
-using Corrade::Containers::NullOpt;
 
 namespace whal {
 
@@ -37,7 +36,7 @@ void AudioClip::unload() {
     }
 }
 
-Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
+Optional<Error> AudioClip::load(const char* path) {
     unload();
     auto result = FMOD_System_CreateSound(Audio.getSystem(), path, FMOD_LOOP_NORMAL | FMOD_3D, nullptr,
                                           &mSound);  // looping on by default bc documentation recommends it
@@ -49,7 +48,7 @@ Corrade::Containers::Optional<Error> AudioClip::load(const char* path) {
     return NullOpt;
 }
 
-Corrade::Containers::Optional<Error> AudioPlayer::init() {
+Optional<Error> AudioPlayer::init() {
     // Init System
     FMOD_RESULT result = FMOD_System_Create(&mSystem, FMOD_VERSION);
     if (result != FMOD_OK) {

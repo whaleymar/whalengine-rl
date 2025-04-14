@@ -3,14 +3,12 @@
 #include <raylib.h>
 #include <string>
 
-#include "CorradeOptional.h"
-
-#include "whalECS/src/ECS.h"
-#include "whalECS/src/Expected.h"
-
 #include "Components/Relationships.h"
 #include "Gfx/Color.h"
+#include "Util/Optional.h"
 #include "Util/Vector.h"
+#include "whalECS/src/ECS.h"
+#include "whalECS/src/Expected.h"
 
 namespace whal {
 
@@ -40,7 +38,7 @@ struct ActiveLevel : public Level {
 
     ecs::Entity self;
 
-    Corrade::Containers::Optional<Follow> cameraFollow;
+    Optional<Follow> cameraFollow;
     Vector2i cameraFocalPoint;
     std::vector<std::vector<u8>> navGrid;  // 1 == no obstacle at tile. Tile geometry only.
 
@@ -61,10 +59,10 @@ struct Scene {
 
     // TODO instead of optional/expected errors just do asserts. They should never fail.
     bool isValid() const;
-    Corrade::Containers::Optional<Error> setStartLevelIx(s32 ix);
+    Optional<Error> setStartLevelIx(s32 ix);
     Level getStartLevel() const;
     Expected<ActiveLevel*> loadAndGetFirstLevel();
-    Corrade::Containers::Optional<Level> getLevelAt(Vector2i worldPosition) const;
+    Optional<Level> getLevelAt(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevelAt(Vector2i worldPosition);
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
     Expected<ActiveLevel*> getLoadedLevel(Level level);
@@ -72,7 +70,7 @@ struct Scene {
     void update();
 };
 
-Corrade::Containers::Optional<Error> loadLevel(const Level level);
+Optional<Error> loadLevel(const Level level);
 void unloadAndRemoveLevel(ActiveLevel& level);
 
 }  // namespace whal
