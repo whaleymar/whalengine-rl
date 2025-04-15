@@ -32,8 +32,6 @@ public:
     void bind() const;    // binds shader and uniforms. RUN AFTER ALL UNIFORMS R SET.
     void unbind() const;  // issues draw call
 
-    // TODO implement uniform caching. Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached
-    // value. Only send the value to Renderer if it's different than the cached val.
     void setFloat(const char* name, f32 value);
     void setInt(const char* name, s32 value);
     void setTexture(const char* name, rl::Texture value);

@@ -144,7 +144,7 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
     // this list is not exhaustive. see https://en.cppreference.com/w/cpp/language/types
     // I should probably use concepts to group them anyway. ImGui doesn't have separate widgets for similar types like {float, double}
 
-    // TODO custom component handlers for:
+    // RESEARCH custom component handlers for:
     // - IsMapLike
     // - entity/entityID (doing a drag & drop like unity would be cool. Also lookup by name would be nice)
     if constexpr (std::is_same_v<Vector2i, Dtype>) {
@@ -224,8 +224,7 @@ static void imguiRenderPrimitive(Dtype* thing, const std::string& newPrefix, con
         }
     } else if constexpr (IsVectorLike<Dtype>) {
         s32 i = 0;
-        // TODO handle unordered_ structs
-        // RESEARCH `+` button?
+        // RESEARCH handle unordered_ structs
         if (ImGui::TreeNode(newPrefix.c_str())) {
             for (auto& elem : *thing) {
                 ImGui::PushID(i);
