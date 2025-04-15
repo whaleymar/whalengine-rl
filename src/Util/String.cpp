@@ -18,6 +18,22 @@ bool startsWith(const std::string& str, const std::string& prefix) {
     return str.compare(0, prefix.size(), prefix) == 0;
 }
 
+// trim from start (in place)
+inline static void ltrim(std::string& s) {
+    s.erase(s.begin(), stl::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+}
+
+// trim from end (in place)
+inline static void rtrim(std::string& s) {
+    s.erase(stl::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+}
+
+std::string& strip_inplace(std::string& str) {
+    rtrim(str);
+    ltrim(str);
+    return str;
+}
+
 std::string strip(const std::string& inpt) {
     std::string line = inpt;
     line.erase(line.begin(), stl::find_if(line.begin(), line.end(), [](unsigned char ch) { return !std::isspace(ch); }));
@@ -28,7 +44,7 @@ bool contains(const std::string& str, const std::string& substr) {
     return str.find(substr) != std::string::npos;
 }
 
-std::string splitAndGet(const std::string& str, char delimiter, size_t index) {
+std::vector<std::string> split(const std::string& str, char delimiter) {
     std::stringstream ss(str);
     std::string token;
     std::vector<std::string> tokens;
@@ -36,7 +52,11 @@ std::string splitAndGet(const std::string& str, char delimiter, size_t index) {
     while (std::getline(ss, token, delimiter)) {
         tokens.push_back(token);
     }
+    return tokens;
+}
 
+std::string splitAndGet(const std::string& str, char delimiter, size_t index) {
+    auto tokens = split(str, delimiter);
     if (index < tokens.size()) {
         return tokens[index];
     } else {

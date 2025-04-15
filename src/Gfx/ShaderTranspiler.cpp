@@ -186,6 +186,7 @@ Expected<rl::Shader> ShaderTranspiler::compile(const string& vertCode, const str
     const char* fragmentFinal = isDefaultFragment ? 0 : fragmentEdited.c_str();
 
     rl::Shader shader = rl::LoadShaderFromMemory(vertexFinal, fragmentFinal);
+    print(fragmentFinal);  // TEMP
     if (rl::IsShaderValid(shader)) {
         return shader;
     }
@@ -234,6 +235,7 @@ Expected<std::pair<std::string, std::string>> ShaderTranspiler::transpileUnified
 string ShaderTranspiler::preprocess(const string& code) const {
     bool isSeekAccumulate = false;
     bool isAtLineStart = true;
+    bool isAddNewLineAtNextNonWhitespace = false;
     u64 seekIx = 0;
     char prev = '\0';
 
@@ -257,6 +259,10 @@ string ShaderTranspiler::preprocess(const string& code) const {
                 seekIx = 0;
             } else {
                 if (isSeekAccumulate) {
+                    if (isAddNewLineAtNextNonWhitespace) {
+                        result << std::endl;
+                        isAddNewLineAtNextNonWhitespace = false;
+                    }
                     result << c;
                 }
                 prev = c;
@@ -276,7 +282,7 @@ string ShaderTranspiler::preprocess(const string& code) const {
             seekIx = code.find('\n', i + 2) + 1;
             isSeekAccumulate = false;
             // add a newline since we're not accumulating and will lose a line break (would break if next line is a macro)
-            result << '\n';
+            isAddNewLineAtNextNonWhitespace = true;
             continue;
         }
 
@@ -284,10 +290,14 @@ string ShaderTranspiler::preprocess(const string& code) const {
             seekIx = code.find("*/", i + 2) + 2;
             isSeekAccumulate = false;
             // add a newline since we're not accumulating and will lose a line break (would break if next line is a macro)
-            result << '\n';
+            isAddNewLineAtNextNonWhitespace = true;
             continue;
         }
 
+        if (isAddNewLineAtNextNonWhitespace && !std::isspace(c)) {
+            result << std::endl;
+            isAddNewLineAtNextNonWhitespace = false;
+        }
         result << c;
 
         prev = c;
@@ -453,14 +463,21 @@ Expected<void> CompileState::parse(const string& code) {
 }
 
 Expected<void> CompileState::parseMacro(const string& line) {
-    // TODO extend this macro to use custom variable names, e.g. #use mrt FragColor AllDepth OcclColor OcclDepth
-    if (line.starts_with("#use MRT")) {
+    static constexpr std::string multipleRenderTargetMacro = "#pragma mrt ";
+    constexpr u64 mrtPrefixLen = multipleRenderTargetMacro.size();
+    if (line.starts_with(multipleRenderTargetMacro)) {
         if (currentLineNo != 1) {
             // If i don't enfore this, parsing out vars might get messed up
-            return Error("`#use MRT` directive must appear on the first line");
+            return Error("`#pragma mrt` directive must appear on the first line");
         }
         isMrt = true;
-        frag.code << "layout(location = 0) out vec4 FragColor;" << std::endl << "layout(location = 1) out vec4 Depth;" << std::endl;
+        std::string outvarsSingleString = line.substr(mrtPrefixLen);
+        strip_inplace(outvarsSingleString);
+        std::vector<std::string> outVars = split(outvarsSingleString);
+        s32 ix = 0;
+        for (const auto& outVar : outVars) {
+            frag.code << "layout(location = " << ix++ << ") out vec4 " << outVar << ";" << std::endl;
+        }
     } else {
         vert.code << line;
         frag.code << line;
@@ -475,7 +492,7 @@ Expected<void> CompileState::parseInvar(const string& line) {
 
 Expected<void> CompileState::parseOutvar(const string& line) {
     if (isMrt) {
-        return Error("Found a variable marked as `out`, but the `#use MRT` macro was used previously. Must use one or the other.");
+        return Error("Found a variable marked as `out`, but the `#pragma mrt` macro was used previously. Must use one or the other.");
     }
     frag.code << line << std::endl;
     return Expected<void>();

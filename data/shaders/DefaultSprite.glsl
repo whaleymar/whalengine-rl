@@ -1,4 +1,4 @@
-#use MRT
+#pragma mrt FragColor Depth
 
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
