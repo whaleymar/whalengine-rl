@@ -186,7 +186,7 @@ Expected<rl::Shader> ShaderTranspiler::compile(const string& vertCode, const str
     const char* fragmentFinal = isDefaultFragment ? 0 : fragmentEdited.c_str();
 
     rl::Shader shader = rl::LoadShaderFromMemory(vertexFinal, fragmentFinal);
-    print(fragmentFinal);  // TEMP
+    // print(vertexFinal);  // TEMP
     if (rl::IsShaderValid(shader)) {
         return shader;
     }
@@ -599,15 +599,21 @@ Expected<void> CompileState::parseFunc(const string& code) {
     return Expected<void>();
 }
 
-static const char* S_DEFAULT_VERTEX = R"(#version 330
+static const char* S_VERTEX_INVARS = R"(
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
 in vec4 vertexColor;
 in vec4 vertexCustom0;
 in vec4 vertexCustom1;
+)";
+
+static const char* S_VERTEX_UNIFORMS = R"(
 uniform mat4 mvp;
-out vec2 fragTexCoord;
+uniform mat4 matModel;
+)";
+
+static const string S_DEFAULT_VERTEX = string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + R"(out vec2 fragTexCoord;
 out vec4 fragColor;
 out vec2 spriteSize;
 void main() {
@@ -628,14 +634,7 @@ void main() {
     finalColor = texelColor*fragColor;
 })";
 
-static const char* S_DEFAULT_VERTEX_MRT = R"(#version 330
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec3 vertexNormal;
-in vec4 vertexColor;
-in vec4 vertexCustom0;
-in vec4 vertexCustom1;
-uniform mat4 mvp;
+static const string S_DEFAULT_VERTEX_MRT = string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + R"(
 out vec2 fragTexCoord;
 out vec4 fragColor;
 out vec2 spriteSize;
@@ -735,6 +734,8 @@ string CompileState::getShaderString(bool isVertex) const {
     std::stringstream ss;
     ss << "#version 330" << endl;
     if (isVertex) {
+        ss << S_VERTEX_INVARS << endl;
+        ss << S_VERTEX_UNIFORMS << endl;
         ss << vert.code.str();
     } else {
         ss << frag.code.str();

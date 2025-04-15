@@ -1,21 +1,11 @@
 #pragma mrt FragColor Depth
 
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec3 vertexNormal;
-in vec4 vertexColor;
-in vec4 vertexCustom0;
-in vec4 vertexCustom1;
-
 varying vec2 fragTexCoord;
 varying vec4 fragColor;
 varying float fragDepth;
 // varying float isOccluder;
 varying float isUI;
 varying vec2 WorldPosition;
-
-uniform mat4 mvp;
-uniform mat4 matModel;
 
 uniform sampler2D texture0;
 uniform sampler2D _Overlay;
