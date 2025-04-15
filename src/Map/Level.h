@@ -57,16 +57,15 @@ struct Scene {
     s32 startLevelIx = -1;
     ecs::Entity self;
 
-    // TODO instead of optional/expected errors just do asserts. They should never fail.
     bool isValid() const;
-    Optional<Error> setStartLevelIx(s32 ix);
+    void setStartLevelIx(s32 ix);
     Level getStartLevel() const;
-    Expected<ActiveLevel*> loadAndGetFirstLevel();
-    Optional<Level> getLevelAt(Vector2i worldPosition) const;
-    Expected<ActiveLevel*> getLoadedLevelAt(Vector2i worldPosition);
+    ActiveLevel* loadAndGetFirstLevel();
+    Level getLevelAt(Vector2i worldPosition) const;
+    ActiveLevel* getLoadedLevelAt(Vector2i worldPosition);
     Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
-    Expected<ActiveLevel*> getLoadedLevel(Level level);
-    Expected<ActiveLevel*> getLoadedLevel(const std::string& levelPath);
+    ActiveLevel* getLoadedLevel(Level level);
+    ActiveLevel* getLoadedLevel(const std::string& levelPath);
     void update();
 };
 

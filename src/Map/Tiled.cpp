@@ -705,10 +705,7 @@ Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
             Level lvl = {
                 filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo->sizeTiles, eLvlInfo->ambientLight, eLvlInfo->isWorldEntryPoint};
             if (lvl.isWorldEntryPoint) {
-                auto errOpt = dstScene.setStartLevelIx(dstScene.allLevels.size());
-                if (errOpt) {
-                    return *errOpt;
-                }
+                dstScene.setStartLevelIx(dstScene.allLevels.size());
             }
 
             dstScene.allLevels.push_back(lvl);

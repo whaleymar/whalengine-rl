@@ -56,12 +56,9 @@ bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
 
-Optional<Error> Scene::setStartLevelIx(s32 ix) {
-    if (startLevelIx != -1) {
-        return Error("Start level has already been set for scene");
-    }
+void Scene::setStartLevelIx(s32 ix) {
+    assert(startLevelIx == -1 && "Start level has already been set for scene");
     startLevelIx = ix;
-    return NullOpt;
 }
 
 Level Scene::getStartLevel() const {
@@ -69,12 +66,11 @@ Level Scene::getStartLevel() const {
     return allLevels[startLevelIx];
 }
 
-Expected<ActiveLevel*> Scene::loadAndGetFirstLevel() {
-    auto eActiveLevel = getLoadedLevel(getStartLevel());
-    return eActiveLevel;
+ActiveLevel* Scene::loadAndGetFirstLevel() {
+    return getLoadedLevel(getStartLevel());
 }
 
-Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
+Level Scene::getLevelAt(Vector2i worldPos) const {
     Vector2f worldPosF = worldPos.as<f32>();
     for (Level lvl : allLevels) {
         if (worldPosF.x >= lvl.position.x && worldPosF.x < (lvl.position.x + lvl.size.x) && worldPosF.y < lvl.position.y &&
@@ -82,16 +78,12 @@ Optional<Level> Scene::getLevelAt(Vector2i worldPos) const {
             return lvl;
         }
     }
-    return NullOpt;
+    assert(false && "Level not found");
+    return {};
 }
 
-Expected<ActiveLevel*> Scene::getLoadedLevelAt(Vector2i worldPos) {
-    auto lvlOpt = getLevelAt(worldPos);
-    if (!lvlOpt) {
-        return Error("No level at position");
-    }
-
-    return getLoadedLevel(*lvlOpt);
+ActiveLevel* Scene::getLoadedLevelAt(Vector2i worldPos) {
+    return getLoadedLevel(getLevelAt(worldPos));
 }
 
 Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
@@ -114,29 +106,27 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     return closestPosition;
 }
 
-Expected<ActiveLevel*> Scene::getLoadedLevel(Level level) {
+ActiveLevel* Scene::getLoadedLevel(Level level) {
     auto it = ecs::whal_find(loadedLevels.begin(), loadedLevels.end(), level);
     if (it != loadedLevels.end()) {
         return &(*it);
     }
 
     // load it
-    auto errOpt = loadLevel(level);
-    if (errOpt) {
-        return *errOpt;
-    }
+    loadLevel(level);
     ActiveLevel* result = &loadedLevels[loadedLevels.size() - 1];
     assert(result->filepath == level.filepath && "Last active level doesn't match passed arg");
     return result;
 }
 
-Expected<ActiveLevel*> Scene::getLoadedLevel(const std::string& levelPath) {
+ActiveLevel* Scene::getLoadedLevel(const std::string& levelPath) {
     for (const auto& aLvl : allLevels) {
         if (aLvl.filepath == levelPath) {
             return getLoadedLevel(aLvl);
         }
     }
-    return Error(whal_format("Level not found: {}", levelPath));
+    assert(false && "Level not found");
+    return nullptr;
 }
 
 void Scene::update() {
