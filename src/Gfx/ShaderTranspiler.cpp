@@ -581,8 +581,6 @@ Expected<void> CompileState::parseVarying(const string& line) {
 }
 
 Expected<void> CompileState::parseUniform(const string& line, bool isGlobal) {
-    // TODO extension: default values and hints
-
     string name = strip(splitAndGet(line, ' ', 2));
     if (name.length() == 0) {
         return Error("Error parsing uniform declaration: " + line);

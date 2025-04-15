@@ -21,6 +21,9 @@ ACTIVELY WORKING ON:
 - Make TextureManager work with string keys (and give it the ShaderMgr treatment where it loads everything within a dedicated directory at startup)
 - use depth buffers to blend pixel perfect procedurally drawn shapes with the normal render buffer
 - live shader editing
+- Shader Transpiler: 
+    - uniform default values (low priority)
+    - texture repeat/sampling hints 
 
 ## Lighting 
 - PointLight and BoxLight need to use Occlusion Depth map so they can't illuminate things closer to the camera than the light. Difficult because I draw them with UV schenanigans unlike ShadowLight
