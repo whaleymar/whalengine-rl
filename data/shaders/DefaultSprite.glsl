@@ -40,8 +40,6 @@ void vertex() {
     isMaskBlendAdditive = extractBit(bitData, 13);
 
     maskTexCoord = NORMAL.gb + vertexTexCoord;
-
-    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 void fragment() {

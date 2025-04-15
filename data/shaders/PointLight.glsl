@@ -1,5 +1,4 @@
 uniform sampler2D texture0; // occlusion color texture
-uniform mat4 mvp;
 
 out vec4 finalColor;
 

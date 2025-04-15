@@ -3,7 +3,6 @@ varying float radiusPixels;
 varying float lightDepth;
 
 uniform sampler2D texture0; // occlusion color texture
-
 global uniform vec2 _Resolution; // viewport resolution
 
 uniform vec2 _DistanceFieldSize; // also the size of `depthBuf`
@@ -17,7 +16,6 @@ void vertex() {
     lp1 = NORMAL.rg;
     radiusPixels = NORMAL.b;
     lightDepth = CUSTOM0.b;
-    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 #ifndef PLATFORM_WEB

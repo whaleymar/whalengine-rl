@@ -1,20 +1,17 @@
 varying vec2 lightpos;
 varying float lightradius;
-
 uniform sampler2D texture0;
-
 out vec4 finalColor;
 
 void vertex() {
     lightpos = NORMAL.rg;
     lightradius = NORMAL.b;
-    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 void fragment() {
     // Get the position of the current fragment (screen coordinates! y=0 at thebottom)
     vec2 position = vec2(gl_FragCoord.x, gl_FragCoord.y);
-    vec2 lighthalflen = spriteSize * 0.5;
+    vec2 lighthalflen = SPRITE_SIZE * 0.5;
 
     // clamp delta to be on the light's bounds. that is the closest point on the light to the pixel
     vec2 delta = position - lightpos; // vector pointing from light center to cur pixel

@@ -44,8 +44,6 @@ void vertex() {
     // isMask = extractBit(bitData, 11);
     // isSilhouette = extractBit(bitData, 12);
     // isMaskBlendAdditive = extractBit(bitData, 13);
-
-    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 void fragment() {

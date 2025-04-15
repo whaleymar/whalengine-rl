@@ -1,3 +1,67 @@
+/*
+ShaderTranspiler converts a Godot-like shader language into GLSL (3.3 or WebGL) vertex and fragment shaders.
+
+MAIN FEATURES:
+    - Single-file contains both vertex and fragment shaders
+    - global uniforms
+    - Multiple Render Target (MRT) support
+
+DETAILS:
+
+`main` methods:
+
+    define a function named `vertex` for the vertex shader's main method and `fragment` for the fragment shader
+
+Sending variables from vertex to fragment shader
+
+    declare the variable as `varying` instead of `in` or `out`. This will be translated to an `out` variable in the vertex shader and an `in` variable
+in the fragment shader.
+
+Built-in variables:
+
+    Vertex Shaders have the following vertex attributes:
+    VERTEX  (vec3; vertex position)
+    UV      (vec2; texture coordinate)
+    COLOR   (vec4; vertex color)
+    NORMAL  (vec3; user-defined)
+    CUSTOM0 (vec4; .rg internal, .ba user-defined)
+    CUSTOM1 (vec4; user-defined)
+
+    Fragment Shaders have the following fragment attributes:
+    UV          (vec2; texture coordinate)
+    COLOR       (vec4; fragment color)
+    SPRITE_SIZE (vec2; sprite dimensions (pixels))
+
+    These variables are modifiable. The vertex attributes which have a corresponding fragment attribute (i.e. UV and COLOR), editing them in the
+vertex shader will affect their value in the fragment shader. SPRITE_SIZE is derived from CUSTOM0.xy.
+    These variables are defined in each shader's main method. To access them in functions they need to be passed as variables.
+
+Vertex Transformation:
+
+    By default, you don't need to do the model/view/projection matrix transformation in your vertex shader's logic. The following line is added
+automatically: `gl_Position = mvp * vec4(VERTEX, 1.0);`
+
+    If you want to disable this, add the line `#define SKIP_VERTEX_TRANSFORMATION` before the `vertex()` function. This will set gl_Position to the
+value `vec4(VERTEX, 1.0)`
+
+Multiple Render Targets
+
+    The directive `#pragma mrt FragColor Depth` specifies two render targets: FragColor and Depth.
+    This directive must be the first non-empty line of your shader.
+
+Global Uniforms
+
+    Define a global uniform with `global uniform vec4 myUniform;`
+
+Default Uniforms (fragment shader only)
+
+    mvp      (mat4; model-view-projection matrix)
+    matModel (mat4; model matrix)
+
+    note: raylib also defines matView, matProjection, matNormal, and colDiffuse, but I am not forwarding them to the transpiled shaders. You can
+declare them manually to access them. E.g. `uniform mat4 matProjection;`
+*/
+
 #include "ShaderTranspiler.h"
 
 #include <cmath>
@@ -586,6 +650,7 @@ Expected<void> CompileState::parseStruct(const string& code) {
     return Expected<void>();
 }
 
+// these lines are inserted into the START of the VERTEX shader's `main` function
 static const char* S_VERTEX_INOUTGLOBALS = R"(
 vec3 VERTEX=vertexPosition;
 vec2 UV=vertexTexCoord;
@@ -595,16 +660,23 @@ vec4 CUSTOM0=vertexCustom0;
 vec4 CUSTOM1=vertexCustom1;
 )";
 
-// sprite size
+// these lines are inserted into the END of the vertex shader's `main` function
 static const char* S_VERTEX_INOUTGLOBALS_END = R"(
 fragTexCoord = UV;
 fragColor = COLOR;
 spriteSize = CUSTOM0.rg;
+#ifdef SKIP_VERTEX_TRANSFORMATION
+gl_Position = vec4(VERTEX, 1.0);
+#else
+gl_Position = mvp * vec4(VERTEX, 1.0);
+#endif
 )";
 
+// these lines are inserted into the START of the FRAGMENT shader's `main` function
 static const char* S_FRAGMENT_INOUTGLOBALS = R"(
 vec2 UV=fragTexCoord;
 vec4 COLOR=fragColor;
+vec2 SPRITE_SIZE=spriteSize;
 )";
 
 Expected<void> CompileState::parseFunc(const string& code) {
@@ -666,6 +738,13 @@ in vec4 fragColor;
 in vec2 spriteSize;
 )";
 
+// NOT doing this for now because I want to provide texture hints (like repeat/filter settings) and this will make it harder to do that
+// static const char* S_FRAGMENT_UNIFORMS = R"(
+// uniform sampler2D texture0;
+// #define TEXTURE texture0
+// )";
+static const char* S_FRAGMENT_UNIFORMS = "";
+
 static const char* S_FRAGMENT_INVARS_MRT = R"(
 in float fragDepth;
 in float isOccluder;
@@ -683,8 +762,7 @@ static const string S_DEFAULT_VERTEX = string("#version 330") + S_VERTEX_INVARS 
     gl_Position = mvp*vec4(vertexPosition, 1.0);
 })";
 
-static const string S_DEFAULT_FRAGMENT = string("#version 330") + S_FRAGMENT_INVARS + R"(
-uniform sampler2D texture0;
+static const string S_DEFAULT_FRAGMENT = string("#version 330") + S_FRAGMENT_INVARS + S_FRAGMENT_UNIFORMS + R"(
 out vec4 finalColor;
 void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
@@ -729,9 +807,7 @@ void main() {
 static const string S_DEFAULT_FRAGMENT_MRT = string(R"(#version 330
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 Depth;)") + S_FRAGMENT_INVARS +
-                                             S_FRAGMENT_INVARS_MRT + R"(uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-void main() {
+                                             S_FRAGMENT_UNIFORMS + S_FRAGMENT_INVARS_MRT + R"(void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
     if (isMask > 0.) {
         vec4 maskColor = texture(texture0, maskTexCoord);
@@ -782,6 +858,7 @@ string CompileState::getShaderString(bool isVertex) const {
         ss << vert.code.str();
     } else {
         ss << S_FRAGMENT_INVARS << endl;
+        ss << S_FRAGMENT_UNIFORMS << endl;
         if (isMrt) {
             ss << S_FRAGMENT_INVARS_MRT << endl;
         }
