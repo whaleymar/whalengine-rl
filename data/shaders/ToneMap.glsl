@@ -2,7 +2,6 @@ uniform sampler2D texture0; // hdrTexture
 // Exposure level for tone mapping
 // uniform float exposure;
 
-varying vec2 fragTexCoord;
 out vec4 finalColor;
 
 // REFERENCE
@@ -57,7 +56,7 @@ vec3 reinhard_extended_luminance(vec3 v, float max_white_l) {
 
 void fragment() {
     // Sample the HDR texture
-    vec3 hdrColor = texture(texture0, fragTexCoord).rgb;
+    vec3 hdrColor = texture(texture0, UV).rgb;
 
     // vec3 mappedColor = reinhard(hdrColor);
     // vec3 mappedColor = ACESFilm(hdrColor * exposure);

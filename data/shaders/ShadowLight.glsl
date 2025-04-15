@@ -1,5 +1,3 @@
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
 varying vec2 lp1;
 varying float radiusPixels;
 varying float lightDepth;
@@ -16,12 +14,10 @@ uniform sampler2D _AllDepth;
 out vec4 finalColor;
 
 void vertex() {
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
-    lp1 = vertexNormal.rg;
-    radiusPixels = vertexNormal.b;
-    lightDepth = vertexCustom0.b;
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
+    lp1 = NORMAL.rg;
+    radiusPixels = NORMAL.b;
+    lightDepth = CUSTOM0.b;
+    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 #ifndef PLATFORM_WEB
@@ -221,5 +217,5 @@ vec3 processLight(vec2 p, vec2 lightPos) {
 #endif
 
 void fragment() {
-    finalColor = vec4(processLight(fragTexCoord, lp1), 1.) * fragColor;
+    finalColor = vec4(processLight(UV, lp1), 1.) * COLOR;
 }

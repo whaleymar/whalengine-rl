@@ -312,6 +312,17 @@ ShaderMetaData ShaderTranspiler::getMetaData() const {
     };
 }
 
+static string insertInFunction(string func, const string& atFuncStart = "", const string& atFuncEnd = "") {
+    u64 startIx = func.find('{') + 1;
+    func.insert(startIx, atFuncStart);
+
+    if (atFuncEnd.size()) {
+        startIx = func.rfind('}');
+        func.insert(startIx, atFuncEnd);
+    }
+    return func;
+}
+
 static const char* SHADER_TYPENAMES[] = {
     "void",   "int",    "float",  "bool",   "uint",   "double", "vec2",  "vec3",  "vec4",  "bvec2",  "bvec3",  "bvec4",
     "ivec2",  "ivec3",  "ivec4",  "uvec2",  "uvec3",  "uvec4",  "dvec2", "dvec3", "dvec4", "mat2x2", "mat2x3", "mat2x4",
@@ -575,6 +586,27 @@ Expected<void> CompileState::parseStruct(const string& code) {
     return Expected<void>();
 }
 
+static const char* S_VERTEX_INOUTGLOBALS = R"(
+vec3 VERTEX=vertexPosition;
+vec2 UV=vertexTexCoord;
+vec4 COLOR=vertexColor;
+vec3 NORMAL=vertexNormal;
+vec4 CUSTOM0=vertexCustom0;
+vec4 CUSTOM1=vertexCustom1;
+)";
+
+// sprite size
+static const char* S_VERTEX_INOUTGLOBALS_END = R"(
+fragTexCoord = UV;
+fragColor = COLOR;
+spriteSize = CUSTOM0.rg;
+)";
+
+static const char* S_FRAGMENT_INOUTGLOBALS = R"(
+vec2 UV=fragTexCoord;
+vec4 COLOR=fragColor;
+)";
+
 Expected<void> CompileState::parseFunc(const string& code) {
     u64 parenIx = code.find('(');
     if (parenIx == code.npos) {
@@ -585,10 +617,10 @@ Expected<void> CompileState::parseFunc(const string& code) {
     // allFuncs[name] = code;
     if (name == "vertex") {
         vert.isDefault = false;
-        vert.code << replace(code, "vertex()", "main()") << std::endl;
+        vert.code << insertInFunction(replace(code, "vertex()", "main()"), S_VERTEX_INOUTGLOBALS, S_VERTEX_INOUTGLOBALS_END) << std::endl;
     } else if (name == "fragment") {
         frag.isDefault = false;
-        frag.code << replace(code, "fragment()", "main()") << std::endl;
+        frag.code << insertInFunction(replace(code, "fragment()", "main()"), S_FRAGMENT_INOUTGLOBALS) << std::endl;
     } else if (name == "main") {
         return Error("Cannot have function named `main`. Use `vertex` or `fragment`");
     } else {
@@ -613,20 +645,45 @@ uniform mat4 mvp;
 uniform mat4 matModel;
 )";
 
-static const string S_DEFAULT_VERTEX = string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + R"(out vec2 fragTexCoord;
+static const char* S_VERTEX_OUTVARS = R"(
+out vec2 fragTexCoord;
 out vec4 fragColor;
 out vec2 spriteSize;
-void main() {
+)";
+
+static const char* S_VERTEX_OUTVARS_MRT = R"(
+out float fragDepth;
+out float isUI;
+out float isMask;
+out vec2 maskTexCoord;
+out float isSilhouette;
+out float isMaskBlendAdditive;
+)";
+
+static const char* S_FRAGMENT_INVARS = R"(
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in vec2 spriteSize;
+)";
+
+static const char* S_FRAGMENT_INVARS_MRT = R"(
+in float fragDepth;
+in float isOccluder;
+in float isUI;
+in float isMask;
+in vec2 maskTexCoord;
+in float isSilhouette;
+in float isMaskBlendAdditive;
+)";
+
+static const string S_DEFAULT_VERTEX = string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + S_VERTEX_OUTVARS + R"(void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     spriteSize = vertexCustom0.xy;
     gl_Position = mvp*vec4(vertexPosition, 1.0);
 })";
 
-static const char* S_DEFAULT_FRAGMENT = R"(#version 330
-in vec2 fragTexCoord;
-in vec4 fragColor;
-in vec2 spriteSize;
+static const string S_DEFAULT_FRAGMENT = string("#version 330") + S_FRAGMENT_INVARS + R"(
 uniform sampler2D texture0;
 out vec4 finalColor;
 void main() {
@@ -634,16 +691,8 @@ void main() {
     finalColor = texelColor*fragColor;
 })";
 
-static const string S_DEFAULT_VERTEX_MRT = string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + R"(
-out vec2 fragTexCoord;
-out vec4 fragColor;
-out vec2 spriteSize;
-out float fragDepth;
-out float isUI;
-out float isMask;
-out vec2 maskTexCoord;
-out float isSilhouette;
-out float isMaskBlendAdditive;
+static const string S_DEFAULT_VERTEX_MRT =
+    string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + S_VERTEX_OUTVARS + S_VERTEX_OUTVARS_MRT + R"(
 #ifdef PLATFORM_WEB
 float extractBit(int value, int bitPos) {
     return 0.;
@@ -677,20 +726,10 @@ void main() {
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 })";
 
-static const char* S_DEFAULT_FRAGMENT_MRT = R"(#version 330
+static const string S_DEFAULT_FRAGMENT_MRT = string(R"(#version 330
 layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 Depth;
-in vec2 fragTexCoord;
-in vec4 fragColor;
-in vec2 spriteSize;
-in float fragDepth;
-in float isOccluder;
-in float isUI;
-in float isMask;
-in vec2 maskTexCoord;
-in float isSilhouette;
-in float isMaskBlendAdditive;
-uniform sampler2D texture0;
+layout(location = 1) out vec4 Depth;)") + S_FRAGMENT_INVARS +
+                                             S_FRAGMENT_INVARS_MRT + R"(uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
@@ -736,8 +775,16 @@ string CompileState::getShaderString(bool isVertex) const {
     if (isVertex) {
         ss << S_VERTEX_INVARS << endl;
         ss << S_VERTEX_UNIFORMS << endl;
+        ss << S_VERTEX_OUTVARS << endl;
+        if (isMrt) {
+            ss << S_VERTEX_OUTVARS_MRT << endl;
+        }
         ss << vert.code.str();
     } else {
+        ss << S_FRAGMENT_INVARS << endl;
+        if (isMrt) {
+            ss << S_FRAGMENT_INVARS_MRT << endl;
+        }
         ss << frag.code.str();
     }
 

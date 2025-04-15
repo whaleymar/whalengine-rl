@@ -1,10 +1,5 @@
 #pragma mrt FragColor Depth
 
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-varying float fragDepth;
-// varying float isOccluder;
-varying float isUI;
 varying vec2 WorldPosition;
 
 uniform sampler2D texture0;
@@ -28,21 +23,17 @@ float extractBit(uint bitData, int bitPosition) {
 }
 #endif
 
-void vertex()
-{
-    // Send vertex attributes to fragment shader
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
-    WorldPosition = (matModel * vec4(vertexPosition.xy, 0.0, 1.0)).xy;
+void vertex() {
+    WorldPosition = (matModel * vec4(VERTEX.xy, 0.0, 1.0)).xy;
 
     // Write the color buffer data
     #ifdef PLATFORM_WEB
     // nothing is working
-    int bitData = int(floor(vertexNormal.r + 0.5));
+    int bitData = int(floor(NORMAL.r + 0.5));
     fragDepth = 0.;
 
     #else
-    uint bitData = floatBitsToUint(vertexNormal.r);
+    uint bitData = floatBitsToUint(NORMAL.r);
 
     // Extract the depth (first 8 bits) and normalize
     fragDepth = float(bitData & 0xFFu) / 255.0;
@@ -54,11 +45,11 @@ void vertex()
     // isSilhouette = extractBit(bitData, 12);
     // isMaskBlendAdditive = extractBit(bitData, 13);
 
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
+    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 void fragment() {
-    vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 texelColor = texture(texture0, UV);
     vec4 overlayColor = texture(_Overlay, WorldPosition * _Scale);
     FragColor = texelColor * overlayColor;
 

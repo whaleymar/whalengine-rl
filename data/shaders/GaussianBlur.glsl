@@ -1,8 +1,4 @@
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
 uniform vec2 _Resolution;
 
 out vec4 finalColor;
@@ -13,7 +9,7 @@ float normpdf(in float x, in float sigma)
 }
 
 void fragment() {
-    vec3 c = texture(texture0, fragTexCoord).rgb;
+    vec3 c = texture(texture0, UV).rgb;
 
     // can't make this a uniform because it needs to be const...
     const int mSize = 3;
@@ -35,7 +31,7 @@ void fragment() {
         Z += kernel[j];
     }
 
-    vec2 coord = fragTexCoord * _Resolution;
+    vec2 coord = UV * _Resolution;
     //read out the texels
     for (int i = -kSize; i <= kSize; ++i)
     {

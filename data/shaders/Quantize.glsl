@@ -1,6 +1,3 @@
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-
 uniform sampler2D texture0;
 uniform sampler2D _Palette;
 
@@ -47,12 +44,11 @@ vec3 applyPalette(vec3 px) {
 
     vec4 graded_color = mix(graded_color_l, graded_color_h, fract(cell));
 
-    // return graded_color * fragColor.rgb;
     return graded_color.rgb;
 }
 
 void fragment() {
-    vec4 texelColor = texture(texture0, fragTexCoord.xy);
+    vec4 texelColor = texture(texture0, UV.xy);
 
     // get brightest channel
     float r = texelColor.r;

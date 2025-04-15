@@ -1,6 +1,3 @@
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-
 uniform sampler2D texture0;
 uniform float _Threshold;
 uniform float _SoftThreshold;
@@ -25,7 +22,7 @@ vec3 prefilter(vec3 color) {
 }
 
 void fragment() {
-    vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 texelColor = texture(texture0, UV);
 
     finalColor = vec4(prefilter(texelColor.rgb), 1.);
 }

@@ -1,6 +1,3 @@
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-
 uniform sampler2D texture0;
 #ifdef PLATFORM_WEB
 uniform vec2 _TextureSize;
@@ -36,5 +33,5 @@ return sample * 0.25 ;
 
 void fragment() {
     const float delta = 1.;
-    finalColor = vec4(SampleBox(fragTexCoord, delta), 1.0);
+    finalColor = vec4(SampleBox(UV, delta), 1.0);
 }

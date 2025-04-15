@@ -1,14 +1,5 @@
 #pragma mrt FragColor Depth
 
-varying vec2 fragTexCoord;
-varying vec4 fragColor;
-varying float fragDepth;
-varying float isUI;
-varying float isMask;
-varying vec2 maskTexCoord;
-varying float isSilhouette;
-varying float isMaskBlendAdditive;
-
 uniform sampler2D texture0;
 
 #ifdef PLATFORM_WEB
@@ -27,18 +18,14 @@ float extractBit(uint intData, int bitPosition) {
 #endif
 
 void vertex() {
-    // Send vertex attributes to fragment shader
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
-
     #ifdef PLATFORM_WEB
     // nothing is working :(
-    int bitData = int(floor(vertexNormal.r + 0.5));
+    int bitData = int(floor(NORMAL.r + 0.5));
     fragDepth = 0.;
 
     #else
     // Write the color buffer data
-    uint bitData = floatBitsToUint(vertexNormal.r);
+    uint bitData = floatBitsToUint(NORMAL.r);
 
     // Extract the depth (first 8 bits) and normalize
     fragDepth = float(bitData & 0xFFu) / 255.0;
@@ -52,14 +39,14 @@ void vertex() {
     isSilhouette = extractBit(bitData, 12);
     isMaskBlendAdditive = extractBit(bitData, 13);
 
-    maskTexCoord = vertexNormal.gb + vertexTexCoord;
+    maskTexCoord = NORMAL.gb + vertexTexCoord;
 
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
+    gl_Position = mvp * vec4(VERTEX, 1.0);
 }
 
 void fragment() {
     // Texel color fetching from texture sampler
-    vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 texelColor = texture(texture0, UV);
 
     if (isMask > 0.) {
         vec4 maskColor = texture(texture0, maskTexCoord);
@@ -71,15 +58,15 @@ void fragment() {
     }
 
     if (isSilhouette > 0.) {
-        FragColor = fragColor * vec4(1., 1., 1., texelColor.a);
+        FragColor = COLOR * vec4(1., 1., 1., texelColor.a);
     } else {
-        FragColor = fragColor * texelColor;
+        FragColor = COLOR * texelColor;
     }
 
     // To make things more visible when debugging, scale the colors
     // During release, this can just be 1.0
     const float scalar = 20.0;
     if (isUI < 0.5) {
-        Depth = vec4(fragDepth * scalar, 0., 0., texelColor.a * fragColor.a);
+        Depth = vec4(fragDepth * scalar, 0., 0., texelColor.a * COLOR.a);
     }
 }

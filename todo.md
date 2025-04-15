@@ -16,8 +16,7 @@ ACTIVELY WORKING ON:
 ## Gfx 
 - shader uniform caching
     - Basically store a vec of UniformVariants & each time a uniform is set, check if it's different from the cached value. Only send the value to Renderer if it's different than the cached val.
-- shaders: automatically add builtins like fragTexCoord, fragTexColor
-    - make vertex/fragment shaders use same names (COLOR, UV, VERTEX, etc.) like godot
+- vertex shader boilerplate reduction: if gl_Position is not set, then add calculation automatically 
 - i would like a convenient way for a drawable entity to stay in the same screen location even when the camera moves
 - Make TextureManager work with string keys (and give it the ShaderMgr treatment where it loads everything within a dedicated directory at startup)
 - use depth buffers to blend pixel perfect procedurally drawn shapes with the normal render buffer
