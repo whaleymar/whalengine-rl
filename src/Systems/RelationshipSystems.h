@@ -12,12 +12,12 @@ namespace whal {
 class FollowSystem : public ecs::ISystem<Follow, Velocity, Transform>,
                      public ecs::IUpdate,
                      public ecs::IMonitorSystem,
-                     public IListen<evt::Death, true, ecs::Entity> {
+                     public IListen<evt::EntityDestroyed, true, ecs::Entity> {
 public:
     void update() override;
     void onAdd(ecs::Entity entity) override {}
     void onRemove(ecs::Entity entity) override;
-    void onEvent(evt::Death, ecs::Entity entity) override;
+    void onEvent(evt::EntityDestroyed, ecs::Entity entity) override;
 };
 
 }  // namespace whal

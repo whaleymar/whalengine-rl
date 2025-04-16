@@ -1,4 +1,4 @@
-#include "Level.h"
+#include "Scene.h"
 
 #include "Components/Collider.h"
 #include "Components/Draw.h"
@@ -8,7 +8,6 @@
 #include "Sys/Time.h"
 #include "Systems/ColliderSystem.h"
 
-#include "Gfx/Coordinates.h"
 #include "IGame.h"
 #include "Sys/System.h"
 #include "Tiled.h"
@@ -18,47 +17,12 @@
 
 namespace whal {
 
-AABB Level::getBoundingBox() const {
-    return AABB((position + size * Vector2f(0.5, -0.5)).as<s32>(), (size * 0.5).as<s32>());
-}
-
-Vector2i Level::worldPositionToTileClamped(Vector2i worldPosition) const {
-    return ((worldToTileCoords(worldPosition) - worldToTileCoords(position.as<s32>())) * Vector2i(1, -1))
-        .clamp({0, 0}, {sizeTiles.x - 1, sizeTiles.y - 1});
-}
-
-ActiveLevel::ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent) : Level(base) {
-    self = parent.createChild(base.filepath.c_str());
-    self.set(TransformBuilder(self.get<Transform>()).translate(worldOffset.as<f32>()).build());
-    TileMap::load(base.filepath.c_str(), *this);
-}
-
-static ecs::Entity findChild(ecs::Entity parent, const std::string& name) {
-    for (const ecs::Entity& child : parent.children()) {
-        if (name == child.name()) {
-            return child;
-        }
-
-        if (child.has<TiledObjectLayer>()) {
-            ecs::Entity maybe = findChild(child, name);
-            if (maybe.isValid()) {
-                return maybe;
-            }
-        }
-    }
-    return ecs::Entity{};
-}
-
-ecs::Entity ActiveLevel::getChild(const std::string& name) {
-    return findChild(self, name);
-}
-
 bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
 
-bool Scene::isLevelLoaded(const Level& level) const {
-    for (const Arc<ActiveLevel>& lvl : loadedLevels) {
+bool Scene::isLevelLoaded(const TileMapInfo& level) const {
+    for (const Arc<TileMap>& lvl : loadedLevels) {
         if (*lvl == level) {
             return true;
         }
@@ -71,18 +35,18 @@ void Scene::setStartLevelIx(s32 ix) {
     startLevelIx = ix;
 }
 
-const Level& Scene::getStartLevel() const {
+const TileMapInfo& Scene::getStartLevel() const {
     assert(isValid());
     return allLevels[startLevelIx];
 }
 
-ActiveLevel& Scene::loadAndGetFirstLevel() {
+TileMap& Scene::loadAndGetFirstLevel() {
     return getLoadedLevel(getStartLevel());
 }
 
-const Level& Scene::getLevelAt(Vector2i worldPos) const {
+const TileMapInfo& Scene::getLevelAt(Vector2i worldPos) const {
     Vector2f worldPosF = worldPos.as<f32>();
-    for (const Level& lvl : allLevels) {
+    for (const TileMapInfo& lvl : allLevels) {
         if (worldPosF.x >= lvl.position.x && worldPosF.x < (lvl.position.x + lvl.size.x) && worldPosF.y < lvl.position.y &&
             worldPosF.y >= (lvl.position.y - lvl.size.y)) {
             return lvl;
@@ -91,14 +55,14 @@ const Level& Scene::getLevelAt(Vector2i worldPos) const {
     assert(false && "Level not found");
 }
 
-ActiveLevel& Scene::getLoadedLevelAt(Vector2i worldPos) {
+TileMap& Scene::getLoadedLevelAt(Vector2i worldPos) {
     return getLoadedLevel(getLevelAt(worldPos));
 }
 
 Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     s32 minDistance = 999999;
     Vector2i closestPosition;
-    for (const Level& lvl : allLevels) {
+    for (const TileMapInfo& lvl : allLevels) {
         const AABB lvlBox = lvl.getBoundingBox();
 
         const auto delta = worldPos - lvlBox.getPosition();
@@ -115,8 +79,8 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     return closestPosition;
 }
 
-ActiveLevel* Scene::tryGetLoadedLevel(const Level& level) {
-    for (Arc<ActiveLevel>& lvl : loadedLevels) {
+TileMap* Scene::tryGetLoadedLevel(const TileMapInfo& level) {
+    for (Arc<TileMap>& lvl : loadedLevels) {
         if (*lvl == level) {
             return lvl.get();
         }
@@ -124,8 +88,8 @@ ActiveLevel* Scene::tryGetLoadedLevel(const Level& level) {
     return nullptr;
 }
 
-ActiveLevel& Scene::getLoadedLevel(const Level& level) {
-    ActiveLevel* result = tryGetLoadedLevel(level);
+TileMap& Scene::getLoadedLevel(const TileMapInfo& level) {
+    TileMap* result = tryGetLoadedLevel(level);
     if (result) {
         return *result;
     }
@@ -137,7 +101,7 @@ ActiveLevel& Scene::getLoadedLevel(const Level& level) {
     return *result;
 }
 
-ActiveLevel& Scene::getLoadedLevel(const std::string& levelPath) {
+TileMap& Scene::getLoadedLevel(const std::string& levelPath) {
     for (const auto& aLvl : allLevels) {
         if (aLvl.filepath == levelPath) {
             return getLoadedLevel(aLvl);
@@ -148,8 +112,8 @@ ActiveLevel& Scene::getLoadedLevel(const std::string& levelPath) {
 
 void Scene::update() {
     // RESEARCH extension: navigation grid stores a u16 with collision layer information
-    for (Arc<ActiveLevel>& pLvl : loadedLevels) {
-        ActiveLevel& lvl = *pLvl;
+    for (Arc<TileMap>& pLvl : loadedLevels) {
+        TileMap& lvl = *pLvl;
         lvl.navGridDynamic = std::vector<std::vector<u32>>(lvl.sizeTiles.x, std::vector<u32>(lvl.sizeTiles.y, 0));
         AABB lvlBox = lvl.getBoundingBox();
         std::vector<ecs::Entity> colliders = ColliderSystem::query(lvlBox);
@@ -189,6 +153,7 @@ void Scene::update() {
 }
 
 void Scene::unload() {
+    // setting quiet paused so system callbacks don't run? Dunno if this is still necessary
     const bool wasPaused = System::isQuietPaused();
     System::setQuietPaused(true);
     self.kill();
@@ -202,31 +167,23 @@ void Scene::unload() {
     System::setQuietPaused(wasPaused);
 }
 
-void Scene::loadLevel(const Level& level) {
+void Scene::loadLevel(const TileMapInfo& level) {
     Vector2i worldOffset(level.position.x, level.position.y);
-    loadedLevels.emplace_back(Arc<ActiveLevel>::New(level, worldOffset, self));
+    Arc<TileMap> loaded = Arc<TileMap>(new TileMap(level, worldOffset, self));
+    loadedLevels.emplace_back(loaded);
     print("loaded map: ", level.filepath);
 }
 
-void Scene::unloadAndRemoveLevel(ActiveLevel& level) {
-    // remove from Scene's list of loaded levels first,
-    // so the EntityKilled listener doesn't mutate the list we're iterating
-    // also copy it so erasing it doesn't invalidate our pointer
-
+void Scene::unloadAndRemoveLevel(TileMap& level) {
     print("unloading level from scene: ", level.filepath);
-    ecs::Entity e = level.self;  // copy entity before `level` is deleted (and pointer is invalidated)
+    level.self.kill();
     for (auto it = loadedLevels.begin(); it != loadedLevels.end(); ++it) {
-        Arc<ActiveLevel>& lvl = *it;
+        Arc<TileMap>& lvl = *it;
         if (*lvl == level) {
             loadedLevels.erase(it);
             break;
         }
     }
-
-    const bool wasPaused = System::isQuietPaused();
-    System::setQuietPaused(true);
-    e.kill();
-    System::setQuietPaused(wasPaused);
 }
 
 }  // namespace whal

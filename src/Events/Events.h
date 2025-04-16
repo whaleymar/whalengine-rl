@@ -13,14 +13,14 @@ class Entity;
 
 struct InputEvent;
 struct HitInfo;
-struct ActiveLevel;
+struct TileMap;
 
 namespace evt {
-class Death : public IEvent<ecs::Entity> {};
+class EntityDestroyed : public IEvent<ecs::Entity> {};  // do NOT use for game-logic death
 class Collision : public IEvent<ecs::Entity, HitInfo> {};
 class Input : public IEvent<InputEvent> {};
 class Landing : public IEvent<ecs::Entity> {};
-class EnteredLevel : public IEvent<ecs::Entity, ActiveLevel&> {};
+class EnteredLevel : public IEvent<ecs::Entity, TileMap&> {};
 class ShaderReload : public IEvent<> {};
 class Restart : public IEvent<bool> {};
 class Pause : public IEvent<bool> {};                   // game pause

@@ -3,7 +3,9 @@
 #include <vector>
 
 #include "Components/Draw.h"
+#include "Components/Relationships.h"
 #include "Components/Transform.h"
+#include "ECS.h"
 #include "Util/Memory/Arc.h"
 #include "Util/Optional.h"
 #include "Util/STL_reduce.h"
@@ -17,11 +19,10 @@ typedef struct Color Color;
 
 namespace whal {
 
-struct TileMap;
+class AABB;
 struct TileSet;
 struct TileSetRef;
 struct Scene;
-struct ActiveLevel;
 
 struct TileRenderInfo {
     Sprite sprite;
@@ -33,12 +34,10 @@ namespace ecs {
 class Entity;
 }
 
-Expected<Sprite> getTileSprite(const TileMap& map, s32 blockIx);
 void parseMapProject(const char* projectfile);
 Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent);
 Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize);
-const TileSetRef& getTileSet(const TileMap& map, s32 blockId);
 void clearMapCache();
 
 struct EntityMapData {
@@ -85,20 +84,45 @@ struct TileSetRef {
     Arc<TileSet> tileset;
 };
 
-// TODO i would like to merge this with ActiveLevel.
-// ActiveLevel would need the tilesets and spriteCache variables, and everything holding a shared ptr to
-// TileMap would need to point to ActiveLevel instead.
-struct TileMap {
-    // loads tile layers and objects as entities & adds them as children of the level
-    static void load(const char* file, ActiveLevel& level);
+struct TileMapInfo {
+    struct ParsedData {
+        Vector2i sizeTiles;
+        Color ambientLight = Colors::White;
+        bool isWorldEntryPoint = false;
+    };
 
-    s32 widthTiles;
-    s32 heightTiles;
-    s32 tileSize;
+    std::string filepath;  // used for level comparisons
+    Vector2f position;     // top left
+    Vector2f size;         // in pixels
+    Vector2i sizeTiles;
+    Color ambientLight = Colors::White;
+    bool isWorldEntryPoint = false;
 
+    AABB getBoundingBox() const;
+    Vector2i worldPositionToTileClamped(Vector2i worldPosition) const;
+    bool operator==(const TileMapInfo& other) const { return filepath == other.filepath; }
+};
+
+struct TileMap : public TileMapInfo {
+    friend Scene;
+
+    ecs::Entity self;
+    Optional<Follow> cameraFollow;
+    Vector2i cameraFocalPoint;
+    std::vector<std::vector<u8>> navGrid;  // 1 == no obstacle at tile. Tile geometry only.
+
+    // Holds IDs of collider entities on the map (excluding tiles).
+    // Entity IDs are bitwise OR'd if multiple entities are on the tile.
+    std::vector<std::vector<u32>> navGridDynamic;
     std::vector<TileSetRef> tilesets;
-
     stl::Map<u32, TileRenderInfo> spriteCache;  // key is GID
+
+    ecs::Entity getChild(const std::string& name);
+    const TileSetRef& getTileSet(s32 blockId) const;
+    Sprite getTileSprite(s32 blockId) const;
+
+private:
+    TileMap(const TileMapInfo& base, Vector2i worldOffset, ecs::Entity parent);
 };
 
 // Supported data types in Tiled

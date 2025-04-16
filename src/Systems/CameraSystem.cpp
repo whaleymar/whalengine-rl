@@ -2,14 +2,15 @@
 
 #include "Components/Tags.h"
 #include "Components/Transform.h"
-#include "Map/Level.h"
+#include "Map/Scene.h"
+#include "Map/Tiled.h"
 #include "Sys/JobScheduler.h"
 #include "Sys/Time.h"
 #include "Sys/Tween.h"
 
 namespace whal {
 
-void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, ActiveLevel& activeLevel) {
+void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, TileMap& activeLevel) {
     auto camera = first();
     if (activeLevel.cameraFollow) {
         Follow follow = *activeLevel.cameraFollow;

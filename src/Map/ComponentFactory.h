@@ -8,7 +8,7 @@
 
 namespace whal {
 
-struct ActiveLevel;
+struct TileMap;
 struct EntityMapData;
 struct PropertyType;
 enum class TiledDataType;

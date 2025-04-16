@@ -4,7 +4,7 @@
 #include "Gfx/ShaderManager.h"
 #include "IGame.h"
 #include "Map/ComponentFactory.h"
-#include "Map/Level.h"
+#include "Map/Scene.h"
 #include "Settings.h"
 #include "Sys/Audio.h"
 #include "Sys/Cursor.h"
@@ -174,7 +174,7 @@ bool System::start() {
         Graphics.end();
         return true;
     }
-    World.setEntityDeathCallback(&emitEntityDeathEvent);
+    World.setEntityDeathCallback(&emitEntityDestroyedEvent);
     World.setEntityCreateCallback(&onTopLevelEntityCreated);
     World.setEntityChildCreateCallback(&onChildEntityCreated);
     World.setEntityAdoptCallback(&onEntityAdopted);

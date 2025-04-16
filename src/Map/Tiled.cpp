@@ -7,13 +7,14 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "ECS.h"
+#include "Gfx/Coordinates.h"
 #include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
 #include "IGame.h"
 #include "Map/ComponentFactory.h"
 #include "Map/EntityFactory.h"
-#include "Map/Level.h"
+#include "Map/Scene.h"
 #include "Settings.h"
 #include "Sys/Prefab.h"
 #include "Sys/System.h"
@@ -36,7 +37,7 @@ std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = 
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
 static TileSet loadTileset(const std::string& basename);
-static void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
+static void loadObjectLayer(JsonValue layer, ecs::Entity parent, TileMap* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const Arc<JsonValue> getTemplate(std::string_view templateFile);
 static const Arc<JsonDoc> getMapFile(std::string_view mapFile);
@@ -94,7 +95,7 @@ static void addComponents(ecs::Entity entity, EntityMapData entityData, JsonValu
     }
 }
 
-static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& level) {
+static void createTileMapLayerEntities(ecs::Entity layerEntity, TileMap& level) {
     TileMapLayer& layer = layerEntity.get<TileMapLayer>();
 
     // dummy objects that tiles don't need because they are standalone entities
@@ -111,7 +112,7 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 continue;  // empty tile
             }
 
-            const TileSetRef& tsetRef = getTileSet(*layer.tilemap.get(), tile.gid);
+            const TileSetRef& tsetRef = level.getTileSet(tile.gid);
             const s32 localId = tile.gid - tsetRef.firstgid;
             const TileSet& tset = *tsetRef.tileset;
             const s32 propsIx = tset.localIDToPropsIndex[localId];
@@ -177,31 +178,36 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
     }
 }
 
-void TileMap::load(const char* path, ActiveLevel& level) {
-    const Arc<JsonDoc> data = getMapFile(path);
+AABB TileMapInfo::getBoundingBox() const {
+    return AABB((position + size * Vector2f(0.5, -0.5)).as<s32>(), (size * 0.5).as<s32>());
+}
 
-    Arc<TileMap> map = Arc<TileMap>::New();
-    JsonValue root = data->getRoot();
-    map->widthTiles = readInt(root, "width");
-    map->heightTiles = readInt(root, "height");
-    map->tileSize = readInt(root, "tilewidth");
+Vector2i TileMapInfo::worldPositionToTileClamped(Vector2i worldPosition) const {
+    return ((worldToTileCoords(worldPosition) - worldToTileCoords(position.as<s32>())) * Vector2i(1, -1))
+        .clamp({0, 0}, {sizeTiles.x - 1, sizeTiles.y - 1});
+}
 
+TileMap::TileMap(const TileMapInfo& base, Vector2i worldOffset, ecs::Entity parent) : TileMapInfo(base) {
     // initialize the navigation grid
-    level.navGrid.clear();
-    for (s32 x = 0; x < level.sizeTiles.x; x++) {
-        level.navGrid.push_back(std::vector<u8>(level.sizeTiles.y, 1));
+    navGrid.clear();
+    for (s32 x = 0; x < sizeTiles.x; x++) {
+        navGrid.push_back(std::vector<u8>(sizeTiles.y, 1));
     }
 
+    self = parent.createChild(base.filepath.c_str());
+    self.set(TransformBuilder(self.get<Transform>()).translate(worldOffset.as<f32>()).build());
+    const Arc<JsonDoc> data = getMapFile(base.filepath);
+    JsonValue root = data->getRoot();
     Scene& scene = System::getGame().getScene();
     for (JsonValue tileset : root["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
         if (scene.tilesets.contains(fileName)) {
-            map->tilesets.emplace_back(firstgid, scene.tilesets.get(fileName));
+            tilesets.push_back({firstgid, scene.tilesets.get(fileName)});
         } else {
             Arc<TileSet> tset = Arc<TileSet>::New(loadTileset(fileName));
             scene.tilesets.insert({fileName, tset});
-            map->tilesets.emplace_back(firstgid, tset);
+            tilesets.push_back({firstgid, tset});
         }
     }
 
@@ -214,14 +220,14 @@ void TileMap::load(const char* path, ActiveLevel& level) {
 
         if (type == "tilelayer") {
             // create an entity with a TileMapLayer component
-            ecs::Entity layerEntity = level.self.createChild(readString(layer, "name").c_str(), false);
+            ecs::Entity layerEntity = self.createChild(readString(layer, "name").c_str(), false);
             auto _ = ecs::DeferActivate(layerEntity);
             const Vector2i sizeTiles = {readInt(layer, "width"), readInt(layer, "height")};
             layerEntity.add(TileMapLayer{
                 .sizeTiles = sizeTiles,
                 // .ids = layer["data"].get<std::vector<s32>>(),
                 .ids = jsonPropertyToVector<s32>(layer, "data"),
-                .tilemap = map,
+                .tilemap = this,
                 .occlusionMask = std::vector<bool>(sizeTiles.x * sizeTiles.y, false),
             });
 
@@ -236,7 +242,7 @@ void TileMap::load(const char* path, ActiveLevel& level) {
                 trans.translate(Vector2f(0, -positionOffset), layerEntity);
                 trans.setFloatHeight(positionOffset / FLOAT_HEIGHT_MULT, layerEntity);
             }
-            createTileMapLayerEntities(layerEntity, level);
+            createTileMapLayerEntities(layerEntity, *this);
 
             // proof of concept for a fun little stage transition:
             // this would look even cooler if the effect went right to left but that would be extra work
@@ -244,9 +250,9 @@ void TileMap::load(const char* path, ActiveLevel& level) {
             // Schedule.tween(layerEntity, Vector2f::ONE, 1, &Transform::scale).from(Vector2f::ZERO);
 
         } else if (type == "objectgroup") {
-            ecs::Entity layerEntity = level.self.createChild(readString(layer, "name").c_str());
+            ecs::Entity layerEntity = self.createChild(readString(layer, "name").c_str());
             layerEntity.add<TiledObjectLayer>();
-            loadObjectLayer(layer, layerEntity, &level);
+            loadObjectLayer(layer, layerEntity, this);
 
         } else if (type == "imagelayer") {
             // parseImageLayer(layer, level);
@@ -258,19 +264,98 @@ void TileMap::load(const char* path, ActiveLevel& level) {
     }
 
     // add ambient lighting for the level
-    ecs::Entity lightEntity = level.self.createChild("BoxLight");
+    ecs::Entity lightEntity = self.createChild("BoxLight");
     if (lightEntity.isValid()) {
         lightEntity.set(TransformBuilder(lightEntity.get<Transform>())
-                            .translate(getMapTranslation(Vector2i::ZERO, level.size.as<s32>()))
+                            .translate(getMapTranslation(Vector2i::ZERO, size.as<s32>()))
                             .depth(Depth::Foreground2)
                             .build());
 
         BoxLight boxLight = {
-            .radius = 3 * PIXELS_PER_TILE, .offset = Vector2i::ZERO, .color = level.ambientLight, .halfLen = (level.size * 0.5).as<s32>()};
+            .radius = 3 * PIXELS_PER_TILE,
+            .offset = Vector2i::ZERO,
+            .color = ambientLight,
+            .halfLen = (size * 0.5).as<s32>(),
+        };
         lightEntity.add(boxLight);
     } else {
         print("Couldn't allocate entity for level lighting");
     }
+}
+
+static ecs::Entity findChild(ecs::Entity parent, const std::string& name) {
+    for (const ecs::Entity& child : parent.children()) {
+        if (name == child.name()) {
+            return child;
+        }
+
+        if (child.has<TiledObjectLayer>()) {
+            ecs::Entity maybe = findChild(child, name);
+            if (maybe.isValid()) {
+                return maybe;
+            }
+        }
+    }
+    return ecs::Entity{};
+}
+
+ecs::Entity TileMap::getChild(const std::string& name) {
+    return findChild(self, name);
+}
+
+const TileSetRef& TileMap::getTileSet(s32 blockId) const {
+    for (size_t i = 0; i < tilesets.size(); i++) {
+        s32 firstgid = tilesets[i].firstgid;
+        if (firstgid <= blockId && blockId < firstgid + tilesets[i].tileset->tilecount) {
+            return tilesets[i];
+        }
+    }
+    print("error getting tileset for blockIx", blockId, "\nReturning first tileset instead");
+    return tilesets[0];
+}
+
+Sprite TileMap::getTileSprite(s32 blockId) const {
+    const TileSetRef& tsetRef = getTileSet(blockId);
+    const TileSet& tset = *tsetRef.tileset;
+    std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
+    const auto& texAtlas = TextureManager::getAtlas(TEXNAME_SPRITE);
+    Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
+
+    if (!tsetFrameOpt) {
+        print("Couldn't find", spritePath, "in sprite table. Returning empty sprite");
+        return Sprite();
+    }
+
+    // ASSUMING 0 MARGIN && SPACING
+
+    s32 blockIx = blockId - tsetRef.firstgid;
+
+    s32 rowIx = blockIx / tset.widthTiles;
+    s32 colIx = blockIx % tset.widthTiles;
+
+    Frame fullFrame = *tsetFrameOpt;
+    Frame newFrame = {{fullFrame.atlasPosition.x + colIx * tset.tileWidth, fullFrame.atlasPosition.y + rowIx * tset.tileHeight},
+                      {tset.tileWidth, tset.tileHeight}};
+
+    Sprite sprite = Sprite::fromFrame(newFrame);
+
+    // check if there's a sprite mask for this tileset
+    if (tset.spriteMaskFileName != "") {
+        auto maskFrameOpt = texAtlas.getFrame(tset.spriteMaskFileName.c_str());
+        if (!maskFrameOpt) {
+            print("Couldn't find", tset.spriteMaskFileName, "in texture atlas");
+        } else {
+            Frame fullMaskFrame = *maskFrameOpt;
+            Frame maskFrame = {{fullMaskFrame.atlasPosition.x + colIx * tset.tileWidth, fullMaskFrame.atlasPosition.y + rowIx * tset.tileHeight},
+                               {tset.tileWidth, tset.tileHeight}};
+            sprite.setMask(maskFrame);
+            if (tset.isAdditiveSpriteMask) {
+                sprite.setFlag(Sprite::MaskBlendAdditive);
+            }
+        }
+    }
+
+    return sprite;
 }
 
 Depth loadTileLayerInfo(JsonValue data, ecs::Entity entity, TileMapLayer& layer) {
@@ -321,7 +406,7 @@ Depth loadTileLayerInfo(JsonValue data, ecs::Entity entity, TileMapLayer& layer)
 // parses Tiled object info to create entities as children of the given parent.
 // If levelOpt is not null*, then metadata will be parsed for the level as well.
 // *should not be null when parsing a true object layer. Can be null when parsing a nested objectgroup (like tile collision data).
-void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt) {
+void loadObjectLayer(JsonValue layer, ecs::Entity parent, TileMap* levelOpt) {
     Transform& parentTrans = parent.get<Transform>();
 
     // only need to parse depth for real layers (not tile collision data)
@@ -538,60 +623,6 @@ TileSet loadTileset(const std::string& basename) {
     };
 }
 
-const TileSetRef& getTileSet(const TileMap& map, s32 blockId) {
-    for (size_t i = 0; i < map.tilesets.size(); i++) {
-        s32 firstgid = map.tilesets[i].firstgid;
-        if (firstgid <= blockId && blockId < firstgid + map.tilesets[i].tileset->tilecount) {
-            return map.tilesets[i];
-        }
-    }
-    print("error getting tileset for blockIx", blockId, "\nReturning first tileset instead");
-    return map.tilesets[0];
-}
-
-Expected<Sprite> getTileSprite(const TileMap& map, s32 blockId) {
-    const TileSetRef& tsetRef = getTileSet(map, blockId);
-    const TileSet& tset = *tsetRef.tileset;
-    std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
-    const auto& texAtlas = TextureManager::getAtlas(TEXNAME_SPRITE);
-    Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
-
-    if (!tsetFrameOpt) {
-        return Error(whal_format("Couldn't find {} in sprite table", spritePath));
-    }
-
-    // ASSUMING 0 MARGIN && SPACING
-
-    s32 blockIx = blockId - tsetRef.firstgid;
-
-    s32 rowIx = blockIx / tset.widthTiles;
-    s32 colIx = blockIx % tset.widthTiles;
-
-    Frame fullFrame = *tsetFrameOpt;
-    Frame newFrame = {{fullFrame.atlasPosition.x + colIx * tset.tileWidth, fullFrame.atlasPosition.y + rowIx * tset.tileHeight},
-                      {tset.tileWidth, tset.tileHeight}};
-
-    Sprite sprite = Sprite::fromFrame(newFrame);
-
-    // check if there's a sprite mask for this tileset
-    if (tset.spriteMaskFileName != "") {
-        auto maskFrameOpt = texAtlas.getFrame(tset.spriteMaskFileName.c_str());
-        if (!maskFrameOpt) {
-            print("Couldn't find", tset.spriteMaskFileName, "in texture atlas");
-        } else {
-            Frame fullMaskFrame = *maskFrameOpt;
-            Frame maskFrame = {{fullMaskFrame.atlasPosition.x + colIx * tset.tileWidth, fullMaskFrame.atlasPosition.y + rowIx * tset.tileHeight},
-                               {tset.tileWidth, tset.tileHeight}};
-            sprite.setMask(maskFrame);
-            if (tset.isAdditiveSpriteMask) {
-                sprite.setFlag(Sprite::MaskBlendAdditive);
-            }
-        }
-    }
-
-    return sprite;
-}
-
 static TiledDataType getDtype(const std::string& name) {
     if (name == "int") {
         return TiledDataType::Int;
@@ -669,10 +700,10 @@ void parseMapProject(const char* mapfile) {
 }
 
 // parses a level's parameters and returns its LevelInfo struct
-static Expected<Level::ParsedData> parseLevelInfo(const char* lvlFileName) {
+static Expected<TileMapInfo::ParsedData> parseLevelInfo(const char* lvlFileName) {
     const Arc<JsonDoc> data = getMapFile(lvlFileName);
     JsonValue root = **data;
-    Level::ParsedData lvlInfo;
+    TileMapInfo::ParsedData lvlInfo;
     tryRead(root, "width", "height", &lvlInfo.sizeTiles);
     for (JsonValue property : root["properties"]) {
         std::string propType = readString(property, "propertytype");
@@ -706,10 +737,10 @@ Optional<Error> parseWorld(const char* mapfile, Scene& dstScene) {
         s32 y = readInt(map, "y");
         s32 width = readInt(map, "width");
         s32 height = readInt(map, "height");
-        Expected<Level::ParsedData> eLvlInfo = parseLevelInfo(filename.c_str());
+        Expected<TileMapInfo::ParsedData> eLvlInfo = parseLevelInfo(filename.c_str());
         if (eLvlInfo.isExpected()) {
             // NOTE: the world file stores map dimensions in PIXELS
-            Level lvl = {
+            TileMapInfo lvl = {
                 filename, Vector2f(x, -y), Vector2f(width, height), eLvlInfo->sizeTiles, eLvlInfo->ambientLight, eLvlInfo->isWorldEntryPoint};
             if (lvl.isWorldEntryPoint) {
                 dstScene.setStartLevelIx(dstScene.allLevels.size());

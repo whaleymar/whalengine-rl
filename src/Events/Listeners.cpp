@@ -3,14 +3,14 @@
 #include "Components/Transform.h"
 #include "Events/Events.h"
 #include "IGame.h"
-#include "Map/Level.h"
+#include "Map/Scene.h"
 #include "Sys/System.h"
 
 namespace whal {
 
 // ECS callback
-void emitEntityDeathEvent(ecs::Entity entity) {
-    Event.emit<evt::Death>(entity);
+void emitEntityDestroyedEvent(ecs::Entity entity) {
+    Event.emit<evt::EntityDestroyed>(entity);
 }
 
 void onTopLevelEntityCreated(ecs::Entity entity) {

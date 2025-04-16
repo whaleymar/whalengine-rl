@@ -219,17 +219,15 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         // const Vector2i viewHalfTiles = ctx.cameraViewHalf / PIXELS_PER_TILE;
 
         // caching these values once. Thousands of calls to shared_ptr_access really add up
-        const s32 widthTiles = layer.tilemap->widthTiles;
-        const s32 heightTiles = layer.tilemap->heightTiles;
         const stl::Map<u32, TileRenderInfo>& spriteCache = layer.tilemap->spriteCache;
 
         // these can be outside of the range ((0, widthTiles), (0, heightTiles))
         const s32 cameraTileX = static_cast<s32>(ctx.cameraPosition.x - layerPositionX) / PIXELS_PER_TILE;
         const s32 cameraTileY = static_cast<s32>(layerPositionY - ctx.cameraPosition.y) / PIXELS_PER_TILE;
         const s32 minX = std::max(0, cameraTileX - viewHalfTiles.x);
-        const s32 maxX = std::min(widthTiles, cameraTileX + viewHalfTiles.x + 1);
+        const s32 maxX = std::min(layer.sizeTiles.x, cameraTileX + viewHalfTiles.x + 1);
         const s32 minY = std::max(0, cameraTileY - viewHalfTiles.y);
-        const s32 maxY = std::min(heightTiles, cameraTileY + viewHalfTiles.y + 1);
+        const s32 maxY = std::min(layer.sizeTiles.y, cameraTileY + viewHalfTiles.y + 1);
 
         // group identical tiles so we can cache the complicated stuff
         rl::rlSetTexture(ctx.atlas.getTexture().id);
@@ -326,9 +324,8 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
 void TileRenderSystem::onAdd(ecs::Entity e) {
     // make sure all the tile sprites for this layer are in the cache
     const TileMapLayer& layer = e.get<TileMapLayer>();
-    // caching these values once. Thousands of calls to shared_ptr_access really add up
-    const s32 widthTiles = layer.tilemap->widthTiles;
-    const s32 heightTiles = layer.tilemap->heightTiles;
+    const s32 widthTiles = layer.tilemap->sizeTiles.x;
+    const s32 heightTiles = layer.tilemap->sizeTiles.y;
     mDrawQueue.clear();
     for (s32 x = 0; x < widthTiles; x++) {
         for (s32 y = 0; y < heightTiles; y++) {
@@ -343,7 +340,7 @@ void TileRenderSystem::onAdd(ecs::Entity e) {
             mDrawQueue.emplace_back(tileMask, x, y);
 
             if (!layer.tilemap->spriteCache.contains(tileMask)) {
-                const auto sprite = getTileSprite(*layer.tilemap.get(), tile.gid).value();
+                Sprite sprite = layer.tilemap->getTileSprite(tile.gid);
                 const auto orient = getOrientation(tile);
                 layer.tilemap->spriteCache.insert({tileMask, TileRenderInfo{
                                                                  .sprite = sprite,
@@ -413,8 +410,8 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
     const stl::Map<u32, TileRenderInfo>& spriteCache = tml.tilemap->spriteCache;
 
     // caching these values once. Thousands of calls to shared_ptr_access really add up
-    const s32 widthTiles = tml.tilemap->widthTiles;
-    const s32 heightTiles = tml.tilemap->heightTiles;
+    const s32 widthTiles = tml.tilemap->sizeTiles.x;
+    const s32 heightTiles = tml.tilemap->sizeTiles.y;
     for (s32 x = 0; x < widthTiles; x++) {
         for (s32 y = 0; y < heightTiles; y++) {
             const s32 ix = widthTiles * y + x;

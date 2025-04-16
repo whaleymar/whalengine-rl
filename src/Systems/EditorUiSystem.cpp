@@ -10,7 +10,7 @@
 #include "Gfx/Coordinates.h"
 #include "IGame.h"
 #include "InspectorComponents.h"  // DEFINED IN GAME REPO
-#include "Map/Level.h"
+#include "Map/Scene.h"
 #include "Settings.h"
 #include "Sys/InputHandler.h"
 #include "Systems/ColliderSystem.h"

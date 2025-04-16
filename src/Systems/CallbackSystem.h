@@ -12,6 +12,7 @@ public:
 
 // this assumes that by removing the onDeath component it is "dying", but it might make more sense to add an actual "onDeath" function into IMonitor
 // (or another interface)
+// TODO give this the RespawnSystem treatment (stop using engine-level entity deallocation for game logic events)
 class OnDeathSystem : public ecs::ISystem<OnDeath>, public ecs::IMonitorSystem {
 public:
     void onAdd(ecs::Entity) override {}

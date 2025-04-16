@@ -47,8 +47,6 @@ ACTIVELY WORKING ON:
 - put tiled project in game's `data` directory so paths are easier to work with
     - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?
 - respawn map objects
-- refactor the Scene/Level hierarchy to use entities
-    - (maybe) keep scenes as is, but levels could be entities
 - Animated tile support
 
 ## Camera 

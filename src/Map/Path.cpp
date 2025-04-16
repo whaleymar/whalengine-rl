@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <queue>
 
-#include "Map/Level.h"
+#include "Map/Scene.h"
+#include "Map/Tiled.h"
 
 namespace whal {
 
@@ -90,7 +91,7 @@ static inline bool isValidTileDiagonal(const Vector2i& v1, const std::vector<std
     return true;
 }
 
-Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height) {
+Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const TileMap& level, s32 height) {
     using namespace std;
 
     static const Vector2i directions[] = {Vector2i::RIGHT, Vector2i::LEFT,  Vector2i::UP,    Vector2i::DOWN,

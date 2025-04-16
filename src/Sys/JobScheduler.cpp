@@ -88,7 +88,7 @@ void checkEventFlows(ecs::Entity entity) {
 }
 
 JobScheduler::JobScheduler() : mDeathListener(&checkEventFlows) {
-    Event.registerListener<evt::Death>(mDeathListener);
+    Event.registerListener<evt::EntityDestroyed>(mDeathListener);
 }
 
 void JobScheduler::start() {

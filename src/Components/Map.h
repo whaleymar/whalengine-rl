@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include "Components/Transform.h"
-#include "Util/Memory/Arc.h"
 #include "Util/Vector.h"
 
 namespace whal {
@@ -13,7 +12,7 @@ struct TileMap;
 struct TileMapLayer {
     Vector2i sizeTiles;
     std::vector<s32> ids;
-    Arc<TileMap> tilemap;
+    TileMap* tilemap;
     std::vector<bool> occlusionMask;
     std::string overlayTex = "";
     s32 chunkSize = 16;

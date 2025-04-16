@@ -8,7 +8,7 @@ class Entity;
 // These callbacks are registered with the ECS World
 
 // This runs when an entity dies
-void emitEntityDeathEvent(ecs::Entity entity);
+void emitEntityDestroyedEvent(ecs::Entity entity);
 
 // This runs when an entity is created without a parent. It adds a default Transform component.
 void onTopLevelEntityCreated(ecs::Entity entity);

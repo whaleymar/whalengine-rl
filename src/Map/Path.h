@@ -5,7 +5,7 @@
 
 namespace whal {
 
-struct ActiveLevel;
+struct TileMap;
 
 // A path is a sequential list of movement steps.
 // Each step is a tile movement in an ordinal direction
@@ -15,6 +15,6 @@ struct Path {
     Vector2i target;
 };
 
-Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const ActiveLevel& level, s32 height);
+Path findPath(u32 entityID, const Vector2i startWorldPosition, const Vector2i targetWorldPosition, const TileMap& level, s32 height);
 
 }  // namespace whal
