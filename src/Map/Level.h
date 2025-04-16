@@ -35,6 +35,7 @@ struct Level {
 };
 
 struct ActiveLevel : public Level {
+    // TODO private this and friend Scene?
     ActiveLevel(const Level& base, Vector2i worldOffset, ecs::Entity parent);
 
     ecs::Entity self;
@@ -53,25 +54,30 @@ struct ActiveLevel : public Level {
 struct Scene {
     std::string name;
     std::vector<Level> allLevels;
-    std::vector<ActiveLevel> loadedLevels;  // TODO Box so loading/unloading others doesn't cause errors
+    std::vector<Arc<ActiveLevel>> loadedLevels;  // TODO Box so loading/unloading others doesn't cause errors
     stl::Map<std::string, Arc<TileSet>> tilesets;
     Vector2f startPos;
     s32 startLevelIx = -1;
     ecs::Entity self;
 
-    bool isValid() const;
-    void setStartLevelIx(s32 ix);
-    Level getStartLevel() const;
-    ActiveLevel* loadAndGetFirstLevel();
-    Level getLevelAt(Vector2i worldPosition) const;
-    ActiveLevel* getLoadedLevelAt(Vector2i worldPosition);
-    Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
-    ActiveLevel* getLoadedLevel(Level level);
-    ActiveLevel* getLoadedLevel(const std::string& levelPath);
     void update();
     void unload();
-    void loadLevel(const Level level);
+    bool isValid() const;
+
+    void setStartLevelIx(s32 ix);
+    const Level& getStartLevel() const;
+    const Level& getLevelAt(Vector2i worldPosition) const;
+    Vector2i getClosestPositionInBounds(Vector2i worldPosition) const;
+
+    void loadLevel(const Level& level);
     void unloadAndRemoveLevel(ActiveLevel& level);
+    ActiveLevel* tryGetLoadedLevel(const Level& level);
+    // TODO return references since these aren't nullable?
+    ActiveLevel* getLoadedLevelAt(Vector2i worldPosition);      // loads level if not already loaded
+    ActiveLevel* getLoadedLevel(const Level& level);            // loads level if not already loaded
+    ActiveLevel* getLoadedLevel(const std::string& levelPath);  // loads level if not already loaded
+    ActiveLevel* loadAndGetFirstLevel();                        // loads level if not already loaded
+    bool isLevelLoaded(const Level& level) const;
 };
 
 }  // namespace whal

@@ -57,12 +57,21 @@ bool Scene::isValid() const {
     return startLevelIx >= 0;
 }
 
+bool Scene::isLevelLoaded(const Level& level) const {
+    for (const Arc<ActiveLevel>& lvl : loadedLevels) {
+        if (*lvl == level) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Scene::setStartLevelIx(s32 ix) {
     assert(startLevelIx == -1 && "Start level has already been set for scene");
     startLevelIx = ix;
 }
 
-Level Scene::getStartLevel() const {
+const Level& Scene::getStartLevel() const {
     assert(isValid());
     return allLevels[startLevelIx];
 }
@@ -71,16 +80,15 @@ ActiveLevel* Scene::loadAndGetFirstLevel() {
     return getLoadedLevel(getStartLevel());
 }
 
-Level Scene::getLevelAt(Vector2i worldPos) const {
+const Level& Scene::getLevelAt(Vector2i worldPos) const {
     Vector2f worldPosF = worldPos.as<f32>();
-    for (Level lvl : allLevels) {
+    for (const Level& lvl : allLevels) {
         if (worldPosF.x >= lvl.position.x && worldPosF.x < (lvl.position.x + lvl.size.x) && worldPosF.y < lvl.position.y &&
             worldPosF.y >= (lvl.position.y - lvl.size.y)) {
             return lvl;
         }
     }
     assert(false && "Level not found");
-    return {};
 }
 
 ActiveLevel* Scene::getLoadedLevelAt(Vector2i worldPos) {
@@ -107,15 +115,24 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
     return closestPosition;
 }
 
-ActiveLevel* Scene::getLoadedLevel(Level level) {
-    auto it = stl::find(loadedLevels.begin(), loadedLevels.end(), level);
-    if (it != loadedLevels.end()) {
-        return &(*it);
+ActiveLevel* Scene::tryGetLoadedLevel(const Level& level) {
+    for (Arc<ActiveLevel>& lvl : loadedLevels) {
+        if (*lvl == level) {
+            return lvl.get();
+        }
+    }
+    return nullptr;
+}
+
+ActiveLevel* Scene::getLoadedLevel(const Level& level) {
+    ActiveLevel* result = tryGetLoadedLevel(level);
+    if (result) {
+        return result;
     }
 
-    // load it
+    // need to load it
     loadLevel(level);
-    ActiveLevel* result = &loadedLevels[loadedLevels.size() - 1];
+    result = loadedLevels[loadedLevels.size() - 1].get();
     assert(result->filepath == level.filepath && "Last active level doesn't match passed arg");
     return result;
 }
@@ -127,12 +144,12 @@ ActiveLevel* Scene::getLoadedLevel(const std::string& levelPath) {
         }
     }
     assert(false && "Level not found");
-    return nullptr;
 }
 
 void Scene::update() {
     // RESEARCH extension: navigation grid stores a u16 with collision layer information
-    for (ActiveLevel& lvl : loadedLevels) {
+    for (Arc<ActiveLevel>& pLvl : loadedLevels) {
+        ActiveLevel& lvl = *pLvl;
         lvl.navGridDynamic = std::vector<std::vector<u32>>(lvl.sizeTiles.x, std::vector<u32>(lvl.sizeTiles.y, 0));
         AABB lvlBox = lvl.getBoundingBox();
         std::vector<ecs::Entity> colliders = ColliderSystem::query(lvlBox);
@@ -185,9 +202,9 @@ void Scene::unload() {
     System::setQuietPaused(wasPaused);
 }
 
-void Scene::loadLevel(const Level level) {
+void Scene::loadLevel(const Level& level) {
     Vector2i worldOffset(level.position.x, level.position.y);
-    loadedLevels.emplace_back(ActiveLevel(level, worldOffset, self));
+    loadedLevels.emplace_back(Arc<ActiveLevel>::New(level, worldOffset, self));
     print("loaded map: ", level.filepath);
 }
 
@@ -199,8 +216,8 @@ void Scene::unloadAndRemoveLevel(ActiveLevel& level) {
     print("unloading level from scene: ", level.filepath);
     ecs::Entity e = level.self;  // copy entity before `level` is deleted (and pointer is invalidated)
     for (auto it = loadedLevels.begin(); it != loadedLevels.end(); ++it) {
-        auto& lvl = *it;
-        if (lvl == level) {
+        Arc<ActiveLevel>& lvl = *it;
+        if (*lvl == level) {
             loadedLevels.erase(it);
             break;
         }
