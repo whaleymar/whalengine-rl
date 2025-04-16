@@ -4,6 +4,7 @@
 
 #include "Components/Draw.h"
 #include "Components/Transform.h"
+#include "Util/Memory/Arc.h"
 #include "Util/Optional.h"
 #include "Util/STL_reduce.h"
 #include "Util/Types.h"
@@ -18,6 +19,7 @@ namespace whal {
 
 struct TileMap;
 struct TileSet;
+struct TileSetRef;
 struct Scene;
 struct ActiveLevel;
 
@@ -36,7 +38,7 @@ void parseMapProject(const char* projectfile);
 Optional<Error> parseWorld(const char* mapfile, Scene& dstScene);
 Transform getMapTransform(Vector2i mapPosition, Vector2i entitySize, ecs::Entity parent);
 Vector2f getMapTranslation(Vector2i mapPosition, Vector2i entitySize);
-const TileSet& getTileSet(const TileMap& map, s32 blockId);
+const TileSetRef& getTileSet(const TileMap& map, s32 blockId);
 void clearMapCache();
 
 struct EntityMapData {
@@ -64,7 +66,6 @@ inline TileInfo getTile(u32 tileMask) {
 }
 
 struct TileSet {
-    s32 firstgid;
     s32 tilecount;
     s32 tileWidth;
     s32 tileHeight;
@@ -79,6 +80,11 @@ struct TileSet {
     bool isAdditiveSpriteMask = false;
 };
 
+struct TileSetRef {
+    s32 firstgid;
+    Arc<TileSet> tileset;
+};
+
 // TODO i would like to merge this with ActiveLevel.
 // ActiveLevel would need the tilesets and spriteCache variables, and everything holding a shared ptr to
 // TileMap would need to point to ActiveLevel instead.
@@ -90,7 +96,8 @@ struct TileMap {
     s32 heightTiles;
     s32 tileSize;
 
-    std::vector<TileSet> tilesets;
+    std::vector<TileSetRef> tilesets;
+
     stl::Map<u32, TileRenderInfo> spriteCache;  // key is GID
 };
 

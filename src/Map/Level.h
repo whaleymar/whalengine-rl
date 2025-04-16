@@ -5,10 +5,11 @@
 
 #include "Components/Relationships.h"
 #include "Gfx/Color.h"
+#include "Map/Tiled.h"
+#include "Util/Memory/Arc.h"
 #include "Util/Optional.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
-#include "whalECS/src/Expected.h"
 
 namespace whal {
 
@@ -52,7 +53,8 @@ struct ActiveLevel : public Level {
 struct Scene {
     std::string name;
     std::vector<Level> allLevels;
-    std::vector<ActiveLevel> loadedLevels;
+    std::vector<ActiveLevel> loadedLevels;  // TODO Box so loading/unloading others doesn't cause errors
+    stl::Map<std::string, Arc<TileSet>> tilesets;
     Vector2f startPos;
     s32 startLevelIx = -1;
     ecs::Entity self;
@@ -67,9 +69,9 @@ struct Scene {
     ActiveLevel* getLoadedLevel(Level level);
     ActiveLevel* getLoadedLevel(const std::string& levelPath);
     void update();
+    void unload();
+    void loadLevel(const Level level);
+    void unloadAndRemoveLevel(ActiveLevel& level);
 };
-
-Optional<Error> loadLevel(const Level level);
-void unloadAndRemoveLevel(ActiveLevel& level);
 
 }  // namespace whal

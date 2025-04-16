@@ -156,27 +156,37 @@ void Scene::update() {
     }
 }
 
-Optional<Error> loadLevel(const Level level) {
-    Vector2i worldOffset(level.position.x, level.position.y);
-    Scene& scene = System::getGame().getScene();
-    scene.loadedLevels.emplace_back(ActiveLevel(level, worldOffset, scene.self));
-    print("loaded map: ", level.filepath);
+void Scene::unload() {
+    const bool wasPaused = System::isQuietPaused();
+    System::setQuietPaused(true);
+    self.kill();
+    startLevelIx = -1;
+    allLevels.clear();
+    loadedLevels.clear();
+    tilesets.clear();
 
-    return NullOpt;
+    World.killEntities();
+    self = ecs::Entity{};  // invalidate scene root
+    System::setQuietPaused(wasPaused);
 }
 
-void unloadAndRemoveLevel(ActiveLevel& level) {
+void Scene::loadLevel(const Level level) {
+    Vector2i worldOffset(level.position.x, level.position.y);
+    loadedLevels.emplace_back(ActiveLevel(level, worldOffset, self));
+    print("loaded map: ", level.filepath);
+}
+
+void Scene::unloadAndRemoveLevel(ActiveLevel& level) {
     // remove from Scene's list of loaded levels first,
     // so the EntityKilled listener doesn't mutate the list we're iterating
     // also copy it so erasing it doesn't invalidate our pointer
 
     print("unloading level from scene: ", level.filepath);
     ecs::Entity e = level.self;  // copy entity before `level` is deleted (and pointer is invalidated)
-    Scene& scene = System::getGame().getScene();
-    for (auto it = scene.loadedLevels.begin(); it != scene.loadedLevels.end(); ++it) {
+    for (auto it = loadedLevels.begin(); it != loadedLevels.end(); ++it) {
         auto& lvl = *it;
         if (lvl == level) {
-            scene.loadedLevels.erase(it);
+            loadedLevels.erase(it);
             break;
         }
     }

@@ -84,6 +84,8 @@ public:
         return mPairs[ix].value;
     }
 
+    void clear() { mPairs.clear(); }
+
 private:
     int _getIndex(const K& key) const {
         for (size_t i = 0; i < mPairs.size(); ++i) {

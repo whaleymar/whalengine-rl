@@ -10,6 +10,7 @@
 #include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
 #include "Gfx/Texture.h"
+#include "IGame.h"
 #include "Map/ComponentFactory.h"
 #include "Map/EntityFactory.h"
 #include "Map/Level.h"
@@ -34,7 +35,7 @@ static ResourceManager<JsonDoc, 250> S_MAP_MANAGER;
 std::unordered_map<std::string, PropertyType> ComponentFactory::propertyTypes = {};
 std::unordered_map<std::string, std::pair<TiledDataType, std::string>> ComponentFactory::memberTypes = {};
 
-static TileSet loadTileset(const std::string& basename, s32 firstgid);
+static TileSet loadTileset(const std::string& basename);
 static void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt = nullptr);
 // static std::string getSpriteKeyFromPath(const std::string& spritePath);
 static const Arc<JsonValue> getTemplate(std::string_view templateFile);
@@ -110,8 +111,9 @@ static void createTileMapLayerEntities(ecs::Entity layerEntity, ActiveLevel& lev
                 continue;  // empty tile
             }
 
-            const TileSet& tset = getTileSet(*layer.tilemap.get(), tile.gid);
-            const s32 localId = tile.gid - tset.firstgid;
+            const TileSetRef& tsetRef = getTileSet(*layer.tilemap.get(), tile.gid);
+            const s32 localId = tile.gid - tsetRef.firstgid;
+            const TileSet& tset = *tsetRef.tileset;
             const s32 propsIx = tset.localIDToPropsIndex[localId];
 
             if (propsIx == -1) {
@@ -190,12 +192,17 @@ void TileMap::load(const char* path, ActiveLevel& level) {
         level.navGrid.push_back(std::vector<u8>(level.sizeTiles.y, 1));
     }
 
+    Scene& scene = System::getGame().getScene();
     for (JsonValue tileset : root["tilesets"]) {
         s32 firstgid = readInt(tileset, "firstgid");
         std::string fileName = readString(tileset, "source");
-
-        TileSet tset = loadTileset(fileName, firstgid);
-        map->tilesets.push_back(tset);
+        if (scene.tilesets.contains(fileName)) {
+            map->tilesets.emplace_back(firstgid, scene.tilesets.get(fileName));
+        } else {
+            Arc<TileSet> tset = Arc<TileSet>::New(loadTileset(fileName));
+            scene.tilesets.insert({fileName, tset});
+            map->tilesets.emplace_back(firstgid, tset);
+        }
     }
 
     for (JsonValue layer : root["layers"]) {
@@ -472,7 +479,7 @@ void loadObjectLayer(JsonValue layer, ecs::Entity parent, ActiveLevel* levelOpt)
     }
 }
 
-TileSet loadTileset(const std::string& basename, s32 firstgid) {
+TileSet loadTileset(const std::string& basename) {
     const Arc<JsonDoc> data = getMapFile(basename);
     JsonValue root = **data;
 
@@ -516,7 +523,6 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
     }
 
     return TileSet{
-        .firstgid = firstgid,
         .tilecount = tilecount,
         .tileWidth = tileWidth,
         .tileHeight = tileHeight,
@@ -532,10 +538,10 @@ TileSet loadTileset(const std::string& basename, s32 firstgid) {
     };
 }
 
-const TileSet& getTileSet(const TileMap& map, s32 blockId) {
+const TileSetRef& getTileSet(const TileMap& map, s32 blockId) {
     for (size_t i = 0; i < map.tilesets.size(); i++) {
         s32 firstgid = map.tilesets[i].firstgid;
-        if (firstgid <= blockId && blockId < firstgid + map.tilesets[i].tilecount) {
+        if (firstgid <= blockId && blockId < firstgid + map.tilesets[i].tileset->tilecount) {
             return map.tilesets[i];
         }
     }
@@ -544,7 +550,8 @@ const TileSet& getTileSet(const TileMap& map, s32 blockId) {
 }
 
 Expected<Sprite> getTileSprite(const TileMap& map, s32 blockId) {
-    const TileSet& tset = getTileSet(map, blockId);
+    const TileSetRef& tsetRef = getTileSet(map, blockId);
+    const TileSet& tset = *tsetRef.tileset;
     std::string spritePath = whal_format("{}/{}", "map", tset.spriteFileName);
     const auto& texAtlas = TextureManager::getAtlas(TEXNAME_SPRITE);
     Optional<rl::Rectangle> tsetFrameOpt = texAtlas.getFrame(spritePath.c_str());
@@ -555,7 +562,7 @@ Expected<Sprite> getTileSprite(const TileMap& map, s32 blockId) {
 
     // ASSUMING 0 MARGIN && SPACING
 
-    s32 blockIx = blockId - tset.firstgid;
+    s32 blockIx = blockId - tsetRef.firstgid;
 
     s32 rowIx = blockIx / tset.widthTiles;
     s32 colIx = blockIx % tset.widthTiles;
