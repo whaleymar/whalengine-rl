@@ -76,7 +76,7 @@ const Level& Scene::getStartLevel() const {
     return allLevels[startLevelIx];
 }
 
-ActiveLevel* Scene::loadAndGetFirstLevel() {
+ActiveLevel& Scene::loadAndGetFirstLevel() {
     return getLoadedLevel(getStartLevel());
 }
 
@@ -91,7 +91,7 @@ const Level& Scene::getLevelAt(Vector2i worldPos) const {
     assert(false && "Level not found");
 }
 
-ActiveLevel* Scene::getLoadedLevelAt(Vector2i worldPos) {
+ActiveLevel& Scene::getLoadedLevelAt(Vector2i worldPos) {
     return getLoadedLevel(getLevelAt(worldPos));
 }
 
@@ -124,20 +124,20 @@ ActiveLevel* Scene::tryGetLoadedLevel(const Level& level) {
     return nullptr;
 }
 
-ActiveLevel* Scene::getLoadedLevel(const Level& level) {
+ActiveLevel& Scene::getLoadedLevel(const Level& level) {
     ActiveLevel* result = tryGetLoadedLevel(level);
     if (result) {
-        return result;
+        return *result;
     }
 
     // need to load it
     loadLevel(level);
     result = loadedLevels[loadedLevels.size() - 1].get();
     assert(result->filepath == level.filepath && "Last active level doesn't match passed arg");
-    return result;
+    return *result;
 }
 
-ActiveLevel* Scene::getLoadedLevel(const std::string& levelPath) {
+ActiveLevel& Scene::getLoadedLevel(const std::string& levelPath) {
     for (const auto& aLvl : allLevels) {
         if (aLvl.filepath == levelPath) {
             return getLoadedLevel(aLvl);

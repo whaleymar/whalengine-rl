@@ -72,11 +72,10 @@ struct Scene {
     void loadLevel(const Level& level);
     void unloadAndRemoveLevel(ActiveLevel& level);
     ActiveLevel* tryGetLoadedLevel(const Level& level);
-    // TODO return references since these aren't nullable?
-    ActiveLevel* getLoadedLevelAt(Vector2i worldPosition);      // loads level if not already loaded
-    ActiveLevel* getLoadedLevel(const Level& level);            // loads level if not already loaded
-    ActiveLevel* getLoadedLevel(const std::string& levelPath);  // loads level if not already loaded
-    ActiveLevel* loadAndGetFirstLevel();                        // loads level if not already loaded
+    ActiveLevel& getLoadedLevelAt(Vector2i worldPosition);      // loads level if not already loaded
+    ActiveLevel& getLoadedLevel(const Level& level);            // loads level if not already loaded
+    ActiveLevel& getLoadedLevel(const std::string& levelPath);  // loads level if not already loaded
+    ActiveLevel& loadAndGetFirstLevel();                        // loads level if not already loaded
     bool isLevelLoaded(const Level& level) const;
 };
 
