@@ -50,6 +50,16 @@ constexpr ForwardIt rotate(ForwardIt first, ForwardIt middle, ForwardIt last) {
     return write;
 }
 
+template <class ForwardIt, class UnaryPred>
+ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPred p) {
+    first = stl::find_if(first, last, p);
+    if (first != last)
+        for (ForwardIt i = first; ++i != last;)
+            if (!p(*i))
+                *first++ = std::move(*i);
+    return first;
+}
+
 // a SIMPLE Map implementation that stores pairs in an array. Should be faster for N < 40, maybe more due to cache shit.
 // requires default constructible V, comparable K
 // get() is CONST so key should be IN THERE
@@ -85,6 +95,7 @@ public:
     }
 
     void clear() { mPairs.clear(); }
+    std::vector<Pair>& getData() { return mPairs; }
 
 private:
     int _getIndex(const K& key) const {

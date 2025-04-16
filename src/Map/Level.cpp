@@ -5,6 +5,7 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 
+#include "Sys/Time.h"
 #include "Systems/ColliderSystem.h"
 
 #include "Gfx/Coordinates.h"
@@ -107,7 +108,7 @@ Vector2i Scene::getClosestPositionInBounds(Vector2i worldPos) const {
 }
 
 ActiveLevel* Scene::getLoadedLevel(Level level) {
-    auto it = ecs::whal_find(loadedLevels.begin(), loadedLevels.end(), level);
+    auto it = stl::find(loadedLevels.begin(), loadedLevels.end(), level);
     if (it != loadedLevels.end()) {
         return &(*it);
     }
@@ -151,6 +152,20 @@ void Scene::update() {
                 for (s32 j = topLeftTile.y; j <= bottomRightTile.y; j++) {
                     lvl.navGridDynamic[i][j] |= e.id();
                 }
+            }
+        }
+    }
+
+    if (Time.getFrame() % 60 == 1) {
+        // check if any tilesets can be unloaded
+        // if it has a refcnt of 1 we hold the only reference
+        auto& tsData = tilesets.getData();
+        auto it = tsData.begin();
+        while (it != tsData.end()) {
+            if (it->value.use_count() == 1) {
+                it = tsData.erase(it);
+            } else {
+                ++it;
             }
         }
     }

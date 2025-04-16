@@ -5,6 +5,7 @@
 #include "Components/Trigger.h"
 #include "Physics/CollisionLayer.h"
 #include "Systems/ColliderSystem.h"
+#include "Util/STL_reduce.h"
 
 namespace whal {
 
@@ -23,7 +24,7 @@ void TriggerSystem::update() {
             if ((trigger.layerMask & collider.getLayerMask()) == 0) {
                 continue;
             }
-            auto it = whal_find(trigger.insideEntities.begin(), trigger.insideEntities.end(), other);
+            auto it = stl::find(trigger.insideEntities.begin(), trigger.insideEntities.end(), other);
             const bool wasInside = it != trigger.insideEntities.end();
             if (wasInside)
                 trigger.insideEntities.erase(it);  // so I can run onTriggerExit on entities outside BB

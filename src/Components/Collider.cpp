@@ -21,6 +21,7 @@
 #include "Sys/System.h"
 
 #include "Util/MathUtil.h"
+#include "Util/STL_reduce.h"
 
 namespace whal {
 
@@ -520,7 +521,7 @@ void Collider::_pushAndCarry(s32 toMoveRounded, f32 toMoveUnrounded, bool isXDir
         if (other->mPhysicsBody != PhysicsBody::Heavy && prevColliderState.isCollisionPossibleReversed(other, moveVec * -1)) {
             if constexpr (WORLD_TYPE == WorldType2D::SideScroller) {
                 // push takes priority over carry
-                auto it = ecs::whal_find(toCarry.begin(), toCarry.end(), other);
+                auto it = stl::find(toCarry.begin(), toCarry.end(), other);
                 if (it != toCarry.end()) {
                     toCarry.erase(it);
                 }

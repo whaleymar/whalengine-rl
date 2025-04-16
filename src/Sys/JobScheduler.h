@@ -2,6 +2,7 @@
 
 #include "Settings.h"
 #include "Util/Memory/Box.h"
+#include "Util/STL_reduce.h"
 #include "Util/Singleton.h"
 
 #ifdef USE_THREADS
@@ -80,7 +81,7 @@ public:
     u32 getId() const { return mId; }
 
     bool requiresEntity(ecs::Entity entity) {
-        if (ecs::whal_find(mRequiredEntities.begin(), mRequiredEntities.end(), entity) != mRequiredEntities.end()) {
+        if (stl::find(mRequiredEntities.begin(), mRequiredEntities.end(), entity) != mRequiredEntities.end()) {
             return true;
         }
         return false;

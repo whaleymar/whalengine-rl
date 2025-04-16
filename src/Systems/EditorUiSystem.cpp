@@ -183,7 +183,7 @@ void EditorUiSystem::onAdd(ecs::Entity entity) {}
 
 void EditorUiSystem::onRemove(ecs::Entity entity) {
     // remove entity from clicked list
-    auto it = ecs::whal_find(mClickedEntities.begin(), mClickedEntities.end(), entity);
+    auto it = stl::find(mClickedEntities.begin(), mClickedEntities.end(), entity);
     if (it != mClickedEntities.end()) {
         print("removed entity id", entity.id(), "from clickedEntityies because DIE");
         mClickedEntities.erase(it);
@@ -298,7 +298,7 @@ void EditorUiSystem::drawHierarchyRecursive(ecs::Entity rootEntity, const std::v
         checkIfEntitySelected();
 
     } else {
-        auto it = ecs::whal_find(openEntities.begin(), openEntities.end(), rootEntity);
+        auto it = stl::find(openEntities.begin(), openEntities.end(), rootEntity);
         if (rootEntity != selectedEntity && it != openEntities.end()) {
             // make sure the parent hierarchy above `selectedEntity` is open by default
             // flags |= ImGuiTreeNodeFlags_DefaultOpen; // not persistent
