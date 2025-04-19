@@ -46,7 +46,6 @@ ACTIVELY WORKING ON:
 ## Map 
 - put tiled project in game's `data` directory so paths are easier to work with
     - this will let me export on save, which will fully resolve templates -> I can get rid of my shitty template code?
-- respawn map objects
 - Animated tile support
 
 ## Camera 

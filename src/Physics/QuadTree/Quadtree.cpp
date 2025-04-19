@@ -12,7 +12,11 @@ namespace whal::qtree {
 static constexpr s32 THRESHOLD = 16;  // number of entities in a node before we try splitting
 static constexpr s32 MAX_DEPTH = 8;
 
-QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRootIx(allocateNode()) {}
+QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRootIx(allocateNode()) {
+    // pre-allocate node lists so we don't need to re-allocate during level loads
+    mNodes.reserve(2000);
+    mFreeIndices.reserve(2000);
+}
 
 s32 QuadTree::allocateNode() {
     // get a free index
