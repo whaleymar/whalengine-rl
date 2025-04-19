@@ -19,21 +19,34 @@ QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRootIx
 }
 
 s32 QuadTree::allocateNode() {
-    // get a free index
+    // get 4 free indices
     if (!mFreeIndices.empty()) {
+        mFreeIndices.pop_back();
+        mFreeIndices.pop_back();
+        mFreeIndices.pop_back();
         s32 ix = mFreeIndices.back();
         mFreeIndices.pop_back();
         return ix;
     }
 
-    // or make a new one
+    // or make 4 new ones
+    s32 firstChildIx = static_cast<s32>(mNodes.size());
     mNodes.emplace_back();
-    return static_cast<s32>(mNodes.size() - 1);
+    mNodes.emplace_back();
+    mNodes.emplace_back();
+    mNodes.emplace_back();
+    return firstChildIx;
 }
 
 void QuadTree::freeNode(s32 ix) {
     mNodes[ix].reset();
+    mNodes[ix + 1].reset();
+    mNodes[ix + 2].reset();
+    mNodes[ix + 3].reset();
     mFreeIndices.push_back(ix);
+    mFreeIndices.push_back(ix + 1);
+    mFreeIndices.push_back(ix + 2);
+    mFreeIndices.push_back(ix + 3);
 }
 
 void QuadTree::add(const ecs::Entity value) {
@@ -73,38 +86,6 @@ AABB QuadTree::computeBox(const AABB& box, s32 i) const {
 
     const Vector2i half = (box.getHalf().as<f32>() / 2.0f).round();
     return AABB(box.getPosition() + half * mults[i], half);
-
-    // old code (delete once I've confirmed the new code is stable):
-    // if the current quadrant's half is an odd number on either axis, give the extra pixel to the West/South halves.
-    // auto center = box.getPosition();
-    // const Vector2f exactHalf = box.getHalf().as<f32>() / 2;
-    // const Vector2i biggerHalf(std::round(exactHalf.x), std::round(exactHalf.y));
-    // const Vector2i smallerHalf = box.getHalf() - biggerHalf;
-
-    // switch (i) {
-    // // North West
-    // case 0: {
-    //     Vector2i halflen(biggerHalf.x, smallerHalf.y);
-    //     return AABB(center + Vector2i(-halflen.x, halflen.y), halflen);
-    // }
-    // // North East
-    // case 1: {
-    //     Vector2i halflen(smallerHalf.x, smallerHalf.y);
-    //     return AABB(center + Vector2i(halflen.x, halflen.y), halflen);
-    // }
-    // // South West
-    // case 2: {
-    //     Vector2i halflen(biggerHalf.x, biggerHalf.y);
-    //     return AABB(center + Vector2i(-halflen.x, -halflen.y), halflen);
-    // }
-    // // South East
-    // case 3: {
-    //     Vector2i halflen(smallerHalf.x, biggerHalf.y);
-    //     return AABB(center + Vector2i(halflen.x, -halflen.y), halflen);
-    // }
-    // default:
-    //     return AABB();  // should never run due to assert
-    // }
 }
 
 // returns quadrant index
@@ -167,10 +148,10 @@ void QuadTree::_add(s32 nodeIx, s32 depth, const AABB& parentBox, const Value va
             _add(nodeIx, depth, parentBox, value);
         }
     } else {
-        const auto i = getQuadrant(parentBox, value.shape);
+        const s32 i = getQuadrant(parentBox, value.shape);
         // Add the value in a child if the value is entirely contained in it
         if (i != -1) {
-            _add(node.children[static_cast<std::size_t>(i)], depth + 1, computeBox(parentBox, i), value);
+            _add(node.firstChildIx + i, depth + 1, computeBox(parentBox, i), value);
         }
         // Otherwise, we add the value in the current node
         else {
@@ -183,17 +164,15 @@ void QuadTree::split(const s32 nodeIx, const AABB& parentBox) {
     assert(mNodes[nodeIx].isLeaf() && "Only leaves can be split");
 
     // Create children
-    for (size_t i = 0; i < 4; i++) {
-        mNodes[nodeIx].children[i] = allocateNode();
-    }
+    mNodes[nodeIx].firstChildIx = allocateNode();
 
     // Assign values to children
     auto newValues = std::vector<Value>();  // New values for this node
     Node& node = mNodes[nodeIx];            // can hold a reference now that I'm done adding stuff
     for (const auto& value : node.values) {
-        auto i = getQuadrant(parentBox, value.shape);
+        const s32 i = getQuadrant(parentBox, value.shape);
         if (i != -1)
-            mNodes[node.children[i]].values.push_back(value);
+            mNodes[node.firstChildIx + i].values.push_back(value);
         else
             newValues.push_back(value);
     }
@@ -211,9 +190,9 @@ bool QuadTree::_remove(s32 nodeIx, const AABB& parentBox, const Value value) {
         return true;
     } else {
         // Remove the value in a child if the value is entirely contained in it
-        auto i = getQuadrant(parentBox, value.shape);
+        const s32 i = getQuadrant(parentBox, value.shape);
         if (i != -1) {
-            if (_remove(node.children[i], computeBox(parentBox, i), value))
+            if (_remove(node.firstChildIx + i, computeBox(parentBox, i), value))
                 return tryMerge(nodeIx);
         }
         // Otherwise, we remove the value from the current node
@@ -237,8 +216,9 @@ void QuadTree::removeValue(const s32 nodeIx, const Value value) {
 
 bool QuadTree::tryMerge(const s32 nodeIx) {
     assert(!mNodes[nodeIx].isLeaf() && "Only interior nodes can be merged");
-    auto nbValues = mNodes[nodeIx].values.size();
-    for (const s32 childIx : mNodes[nodeIx].children) {
+    u64 nbValues = mNodes[nodeIx].values.size();
+    const s32 firstChildIx = mNodes[nodeIx].firstChildIx;
+    for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; childIx++) {
         const Node& child = mNodes[childIx];
         if (!child.isLeaf()) {
             return false;
@@ -248,17 +228,15 @@ bool QuadTree::tryMerge(const s32 nodeIx) {
     if (nbValues <= THRESHOLD) {
         mNodes[nodeIx].values.reserve(nbValues);
         // Merge the values of all the children
-        for (const s32 childIx : mNodes[nodeIx].children) {
+        for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; childIx++) {
             const Node& child = mNodes[childIx];
             for (const auto& value : child.values) {
                 mNodes[nodeIx].values.push_back(value);
             }
         }
         // Remove the children
-        for (const s32 childIx : mNodes[nodeIx].children) {
-            freeNode(childIx);
-        }
-        mNodes[nodeIx].children.fill(-1);
+        freeNode(mNodes[nodeIx].firstChildIx);
+        mNodes[nodeIx].firstChildIx = -1;  // make this a leaf node
         return true;
     } else
         return false;
@@ -271,10 +249,10 @@ void QuadTree::_query(const s32 nodeIx, const AABB& box, const AABB& queryBox, s
             values.push_back(value.entity);
     }
     if (!node.isLeaf()) {
-        for (auto i = std::size_t(0); i < node.children.size(); ++i) {
-            const auto childBox = computeBox(box, static_cast<s32>(i));
+        for (s32 i = 0; i < 4; ++i) {
+            const AABB childBox = computeBox(box, i);
             if (queryBox.isOverlapping(childBox))
-                _query(node.children[i], childBox, queryBox, values);
+                _query(node.firstChildIx + i, childBox, queryBox, values);
         }
     }
 }
@@ -286,10 +264,10 @@ void QuadTree::_querySegment(const s32 nodeIx, const AABB& box, const Segment& s
             values.push_back(value.entity);
     }
     if (!node.isLeaf()) {
-        for (auto i = std::size_t(0); i < node.children.size(); ++i) {
+        for (s32 i = 0; i < 4; ++i) {
             const auto childBox = computeBox(box, static_cast<int>(i));
             if (segment.isIntersecting(childBox))
-                _querySegment(node.children[i], childBox, segment, values);
+                _querySegment(node.firstChildIx + i, childBox, segment, values);
         }
     }
 }
@@ -306,12 +284,13 @@ void QuadTree::_findAllIntersections(const s32 nodeIx, std::vector<std::pair<ecs
     }
     if (node.isLeaf()) {
         // Values in this node can intersect values in descendants
-        for (const s32 childIx : node.children) {
+        const s32 firstChildIx = node.firstChildIx;
+        for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; ++childIx) {
             for (const auto& value : node.values)
                 _findIntersectionsInDescendants(childIx, value, intersections);
         }
         // Find intersections in children
-        for (const s32 childIx : node.children)
+        for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; ++childIx)
             _findAllIntersections(childIx, intersections);
     }
 }
@@ -326,7 +305,8 @@ void QuadTree::_findIntersectionsInDescendants(const s32 nodeIx, const Value val
     }
     // Test against values stored into descendants of this node
     if (!node.isLeaf()) {
-        for (const s32 childIx : node.children)
+        const s32 firstChildIx = node.firstChildIx;
+        for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; ++childIx)
             _findIntersectionsInDescendants(childIx, value, intersections);
     }
 }

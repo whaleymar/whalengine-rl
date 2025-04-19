@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cassert>
 #include <vector>
 
@@ -22,14 +21,14 @@ class QuadTree {
     };
 
     struct Node {
-        std::array<s32, 4> children = {-1, -1, -1, -1};  // -1 if no child
+        // points to the first child, or -1 if none
+        s32 firstChildIx = -1;
         std::vector<Value> values;
-        s32 parentIx = -1;
 
-        bool isLeaf() const { return children[0] == -1 && children[1] == -1 && children[2] == -1 && children[3] == -1; }
+        bool isLeaf() const { return firstChildIx == -1; }
 
         void reset() {
-            children.fill(-1);
+            firstChildIx = -1;
             values.clear();
         }
     };
