@@ -326,7 +326,7 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
-            mXRemainder = 0;
+            mXRemainder = 0.5f * static_cast<f32>(moveSign);
             return hitInfo;
         }
     }
@@ -385,7 +385,7 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
-            mYRemainder = 0;
+            mYRemainder = 0.5f * static_cast<f32>(moveSign);
             return hitInfo;
         }
     }
