@@ -111,6 +111,9 @@ TileMap& Scene::getLoadedLevel(const std::string& levelPath) {
 }
 
 void Scene::update() {
+    if (System::isPaused()) {
+        return;
+    }
     // RESEARCH extension: navigation grid stores a u16 with collision layer information
     for (Arc<TileMap>& pLvl : loadedLevels) {
         TileMap& lvl = *pLvl;
