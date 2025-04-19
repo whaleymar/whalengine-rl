@@ -94,7 +94,8 @@ void ShadowLightSystem::draw(const gfx::RenderContext& ctx) const {
         const ShadowLight& light = entity.get<ShadowLight>();
         const Transform& trans = entity.get<Transform>();
 
-        const Vector2f screenPos = worldToUVcoords((trans.positionPx + Vector2i(0, light.heightOffset)).as<f32>());
+        Vector2f worldPosition = trans.apply(Vector2f(0, light.heightOffset));
+        const Vector2f screenPos = worldToUVcoords(worldPosition).as<f32>();
         const f32 lightDepth = static_cast<f32>(trans.depth) / 255.0f * depthScalar;
 
         rl::Texture tex = colorTex.texture;

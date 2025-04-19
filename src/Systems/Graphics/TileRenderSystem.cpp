@@ -173,7 +173,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
     const f32 invTexSizeX = 1.0f / static_cast<f32>(ctx.atlas.getTexture().width);
     const f32 invTexSizeY = 1.0f / static_cast<f32>(ctx.atlas.getTexture().height);
     const f32 layerPositionX = eCtx.transform->position.x;
-    const f32 layerPositionY = eCtx.transform->position.y + eCtx.transform->floatHeight * FLOAT_HEIGHT_MULT;
+    const f32 layerPositionY = eCtx.transform->position.y + eCtx.transform->z * FLOAT_HEIGHT_MULT;
 
     // if internal is nonzero, we have a ysorted tile
     if (eCtx.internal) {
@@ -306,13 +306,13 @@ void TileRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
             }
         } else {
             const Vector2i half = tml.sizeTiles * Vector2i(PIXELS_PER_TILE / 2, PIXELS_PER_TILE / 2);
-            const Vector2i center = trans.positionPx + half * Vector2i(1, -1) + Vector2i(0, trans.floatHeight * FLOAT_HEIGHT_MULT);
+            const Vector2i center = trans.positionPx + half * Vector2i(1, -1) + Vector2i(0, trans.z * FLOAT_HEIGHT_MULT);
             const auto bb = AABB(center, half);
             // occlusion calced at draw time. Pass MaybeInChildren so RenderQueue knows.
             queue.add(gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
                 .transform = &trans,
-                .ysortPosition = bb.bottom() - static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT),
+                .ysortPosition = bb.bottom() - static_cast<s32>(trans.z * FLOAT_HEIGHT_MULT),
                 .entity = entity,
                 .isOccluder = gfx::EntityPreRenderInfo::IsOccluder::MaybeInChildren,
                 .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,
@@ -423,13 +423,13 @@ void buildYsortList(ecs::Entity e, const TileMapLayer& tml) {
 
             const TileRenderInfo& tileRenderInfo = spriteCache.get(tml.ids[ix]);
             Vector2f worldPosition =
-                Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position + Vector2f(0, parentTrans.floatHeight * FLOAT_HEIGHT_MULT);
+                Vector2f(x * PIXELS_PER_TILE, -y * PIXELS_PER_TILE) + parentTrans.position + Vector2f(0, parentTrans.z * FLOAT_HEIGHT_MULT);
             const AABB bb = AABB(worldPosition.round(), halflen);
 
             const auto ri = gfx::EntityPreRenderInfo{
                 .boundingBox = bb,
                 .transform = &parentTrans,
-                .ysortPosition = bb.bottom() - static_cast<s32>(parentTrans.floatHeight * FLOAT_HEIGHT_MULT),
+                .ysortPosition = bb.bottom() - static_cast<s32>(parentTrans.z * FLOAT_HEIGHT_MULT),
                 .entity = e,
                 .isOccluder = tileRenderInfo.isOccluder ? gfx::EntityPreRenderInfo::IsOccluder::Yes : gfx::EntityPreRenderInfo::IsOccluder::No,
                 .shader = tml.overlayTex.size() > 0 ? &ShaderMgr::get("TileOverlay") : nullptr,

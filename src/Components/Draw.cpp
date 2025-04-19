@@ -70,7 +70,7 @@ void Sprite::resetFlag(flag f) {
 void Sprite::setYsortPriority(ecs::Entity self, f32 priority) const {
     Transform& trans = self.get<Transform>();
     trans.translate(Vector2f(0, -priority), self);
-    trans.setFloatHeight(priority / FLOAT_HEIGHT_MULT, self);
+    trans.setZ(priority / FLOAT_HEIGHT_MULT, self);
 }
 
 DrawRect DrawRect::create(Color color, Vector2i frameSize) {

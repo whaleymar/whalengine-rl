@@ -530,16 +530,24 @@ void Renderer::drawUI(const gfx::RenderContext ctx) const {
     rl::EndMode2D();
 }
 
+// sort by depth, then y coord, then shader, then entity id
 static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
     if (entity1.transform->depth != entity2.transform->depth) {
         return entity1.transform->depth < entity2.transform->depth;
     }
 
     if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        return entity1.ysortPosition == entity2.ysortPosition ? entity1.shader < entity2.shader : entity1.ysortPosition > entity2.ysortPosition;
-    } else {
+        if (entity1.ysortPosition != entity2.ysortPosition) {
+            return entity1.ysortPosition > entity2.ysortPosition;
+        }
+    }
+
+    if (entity1.shader != entity2.shader) {
         return entity1.shader < entity2.shader;
     }
+
+    // final tie breaker: use entity id for consistency
+    return entity1.entity.id() < entity2.entity.id();
 }
 
 void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf) {

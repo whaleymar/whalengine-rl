@@ -326,7 +326,8 @@ HitInfo Collider::moveX(const Vector2f amount, const Vector2i amountRounded, con
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
-            mXRemainder = 0.5f * static_cast<f32>(moveSign);
+            // allow pushing up to half a pixel into collider to avoid jitter (but not quite 0.5 so rounding doesn't cause phantom movement)
+            mXRemainder = 0.48f * static_cast<f32>(moveSign);
             return hitInfo;
         }
     }
@@ -385,7 +386,8 @@ HitInfo Collider::moveY(const Vector2f amount, const Vector2i amountRounded, con
             if (callback != nullptr) {
                 callback(getEntity(), hitInfo.getOther(), moveNormal);
             }
-            mYRemainder = 0.5f * static_cast<f32>(moveSign);
+            // allow pushing up to half a pixel into collider to avoid jitter (but not quite 0.5 so rounding doesn't cause phantom movement)
+            mYRemainder = 0.48f * static_cast<f32>(moveSign);
             return hitInfo;
         }
     }

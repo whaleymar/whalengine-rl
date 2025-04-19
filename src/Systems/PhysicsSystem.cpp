@@ -179,7 +179,7 @@ void PhysicsSystem::update() {
                 }
 
                 if (!math::isNearZero(move.y, 0.001)) {
-                    f32 newFloatHeight = move.y + trans.floatHeight;
+                    f32 newFloatHeight = move.y + trans.z;
                     // don't ground or zero y vel for things that float upward
                     if (newFloatHeight <= 0.0f && (!rbOpt || rbOpt->gravityMultiplier > 0.0f)) {
                         if (rbOpt) {
@@ -197,7 +197,7 @@ void PhysicsSystem::update() {
                             vel.stable.y = 0.0f;
                         }
                     }
-                    trans.setFloatHeight(newFloatHeight, entity);
+                    trans.setZ(newFloatHeight, entity);
                 }
             }
         }

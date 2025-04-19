@@ -17,9 +17,7 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
     silhouette.setFlag(Sprite::Silhouette);
     silhouette.color = outlineCmp.color;
 
-    // outline depth is one layer below the parent entity
-    const Depth outlineDepth = static_cast<Depth>(static_cast<u8>(entity.get<Transform>().depth) - 1);
-    // const Depth outlineDepth = entity.get<Transform>().depth;
+    const Depth outlineDepth = entity.get<Transform>().depth;
 
     for (auto dir : outlineDirs) {
         ecs::Entity outline = entity.createChild("OutlineSprite");
@@ -28,23 +26,28 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
         }
         outline.get<Transform>().depth = outlineDepth;
         outline.get<Transform>().translate(directionToVector(dir).as<f32>(), outline);
-        // TODO looks weird after portal teleport BECAUSE I am not storing local floatHeight separately in transform, so reparenting an entity fucks
-        // with its float height silhouette.setYsortPriority(outline, -2);
+        silhouette.setYsortPriority(outline, -2);
         outline.add(silhouette);
     }
 }
 
-void sync(ecs::Entity child) {
+void sync(ecs::Entity child, Sprite parentSprite) {
     if (!isEqualString(child.name(), "OutlineSprite") || !child.has<Sprite>()) {
         return;
     }
-    child.get<Sprite>().setFrame(child.parent().get<Sprite>().getFrame());
+    Sprite& sprite = child.get<Sprite>();
+    sprite.setFrame(parentSprite.getFrame());
+
+    // sync custom shader stuff
+    sprite.shader = parentSprite.shader;
+    sprite.flags = parentSprite.flags | Sprite::Silhouette;
+    sprite.custom0b = parentSprite.custom0b;
 }
 
 void SpriteOutlineSystem::update() {
     for (const auto [entityid, entity] : getEntities()) {
-        // sync the outline entity sprite frames to the parent
-        entity.forChild(&sync, false);
+        // sync the outline entity sprite frames and shader to the parent
+        entity.forChild(&sync, false, entity.get<Sprite>());
     }
 }
 

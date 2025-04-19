@@ -111,12 +111,13 @@ struct Transform {
     Vector2i positionPx;             // rounded replica of position, for convenience
     Vector2f scale = Vector2f::ONE;  // negative scale to flip sprites
     f32 rotation = 0.0f;             // degrees
-    f32 floatHeight = 0.0f;          // RESEARCH make position Vector3f?
+    f32 z = 0.0f;
 
     // local transform (don't edit these):
     Vector2f _localPosition = Vector2f::ZERO;
     Vector2f _localScale = Vector2f::ONE;
-    f32 _localRotation = 0.0;
+    f32 _localRotation = 0.0f;
+    f32 _localZ = 0.0f;
 
     bool isManuallyMoved = true;  // if true, updates collider position without calling Collider.move
     bool isDirty = true;          // true if entity has moved since the last frame was rendered (Renderer is in charge of clearing this)
@@ -139,13 +140,14 @@ struct Transform {
     void setParentPosition(Vector2f parentPosition, ecs::Entity self);
     void setParentScale(Vector2f parentScale, ecs::Entity self);
     void setParentRotation(f32 parentDegrees, ecs::Entity self);
+    void setParentZ(f32 parentZ, ecs::Entity self);
 
     // these work in reverse, computing the local transform needed to get the desired global state
     void set(const Transform& trans, ecs::Entity self);
     void setPosition(Vector2f globalPosition, ecs::Entity self);
     void setScale(Vector2f globalScale, ecs::Entity self);
     void setRotation(f32 globalRotation, ecs::Entity self);
-    void setFloatHeight(f32 globalFloatHeight, ecs::Entity self);
+    void setZ(f32 globalZ, ecs::Entity self);
 
     void setFacing(Facing dir, ecs::Entity self);
 
@@ -192,7 +194,7 @@ public:
     TransformBuilder& position(Vector2f globalPosition);
     TransformBuilder& scale(Vector2f globalScale);
     TransformBuilder& rotation(f32 globalRotation);
-    TransformBuilder& height(f32 globalHeight);
+    TransformBuilder& z(f32 globalHeight);
     TransformBuilder& depth(Depth depth);
     TransformBuilder& facing(Facing facing);
     Transform build() const;

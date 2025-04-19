@@ -240,7 +240,7 @@ TileMap::TileMap(const TileMapInfo& base, Vector2i worldOffset, ecs::Entity pare
                 // "Float" so it's still rendered in the correct spot
                 f32 positionOffset = static_cast<f32>(layerComponent.zOffset) * FPIXELS_PER_TILE;
                 trans.translate(Vector2f(0, -positionOffset), layerEntity);
-                trans.setFloatHeight(positionOffset / FLOAT_HEIGHT_MULT, layerEntity);
+                trans.setZ(positionOffset / FLOAT_HEIGHT_MULT, layerEntity);
             }
             createTileMapLayerEntities(layerEntity, *this);
 
@@ -420,7 +420,7 @@ void loadObjectLayer(JsonValue layer, ecs::Entity parent, TileMap* levelOpt) {
             // "Float" so it's still rendered in the correct spot
             f32 positionOffset = static_cast<f32>(tmpLayer.zOffset) * FPIXELS_PER_TILE;
             parentTrans.translate(Vector2f(0, -positionOffset), parent);
-            parentTrans.setFloatHeight(positionOffset / FLOAT_HEIGHT_MULT, parent);
+            parentTrans.setZ(positionOffset / FLOAT_HEIGHT_MULT, parent);
         }
     }
 

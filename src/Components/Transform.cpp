@@ -88,7 +88,7 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     positionPx = position.round();
     scale = parentTrans.scale * _localScale;
     rotation = parentTrans.rotation + _localRotation;
-    floatHeight = parentTrans.floatHeight;
+    z = parentTrans.z + _localZ;
     isDirty = true;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
@@ -128,6 +128,13 @@ void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
     }
 }
 
+void Transform::setParentZ(f32 parentZ, ecs::Entity self) {
+    z = parentZ + _localZ;
+    for (const ecs::Entity child : self.children()) {
+        child.get<Transform>().setParentZ(z, child);
+    }
+}
+
 void Transform::set(const Transform& trans, ecs::Entity self) {
     const Vector2f parentPosition = position - _localPosition;
     position = trans.position;
@@ -153,7 +160,10 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
     rotation = trans.rotation;
     _localRotation = rotation - parentRotation;
 
-    floatHeight = trans.floatHeight;
+    const f32 parentZ = z - _localZ;
+    z = trans.z;
+    _localZ = z - parentZ;
+
     isDirty = true;
     depth = trans.depth;
     pivotOffset = trans.pivotOffset;
@@ -227,15 +237,16 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
     }
 }
 
-void Transform::setFloatHeight(f32 globalFloatHeight, ecs::Entity self) {
-    if (globalFloatHeight == floatHeight) {
+void Transform::setZ(f32 globalZ, ecs::Entity self) {
+    if (globalZ == z) {
         return;
     }
 
-    // local float height is not a thing
-    floatHeight = globalFloatHeight;
+    const f32 parentZ = z - _localZ;
+    z = globalZ;
+    _localZ = z - parentZ;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(getRotatedPosition(), child);
+        child.get<Transform>().setParentZ(globalZ, child);
     }
 }
 
@@ -247,11 +258,11 @@ void Transform::setFacing(Facing dir, ecs::Entity self) {
 }
 
 Vector2f Transform::getRotatedPosition() const {
-    return _getRotatedPosition(position, scale, pivotOffset, rotation, floatHeight);
+    return _getRotatedPosition(position, scale, pivotOffset, rotation, z);
 }
 
 Vector2i Transform::getRotatedPositionInt() const {
-    return _getRotatedPosition(positionPx.as<f32>(), scale, pivotOffset, rotation, floatHeight).round();
+    return _getRotatedPosition(positionPx.as<f32>(), scale, pivotOffset, rotation, z).round();
 }
 
 Vector2f Transform::getRotatedPosition2D() const {
@@ -266,7 +277,7 @@ Vector2f Transform::apply(Vector2f relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
-        return position + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) + relOffset + scaleAdjustment;
+        return position + Vector2f(0, z * FLOAT_HEIGHT_MULT) + relOffset + scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -277,8 +288,7 @@ Vector2f Transform::apply(Vector2f relOffset) const {
 Vector2i Transform::apply(Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAndFloatAdjustment =
-            (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT)).round();
+        const auto scaleAndFloatAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, z * FLOAT_HEIGHT_MULT)).round();
         return positionPx + relOffset + scaleAndFloatAdjustment;
     }
 
@@ -315,7 +325,7 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
     // optimize for most common case
     if (rotation == 0.0) {
         const auto scaleAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()));
-        return transformedPosition - Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT) - relOffset - scaleAdjustment;
+        return transformedPosition - Vector2f(0, z * FLOAT_HEIGHT_MULT) - relOffset - scaleAdjustment;
     }
 
     // RESEARCH might want to use fast variants of these functions
@@ -327,8 +337,7 @@ Vector2f Transform::applyInverse(Vector2f transformedPosition, Vector2f relOffse
 Vector2i Transform::applyInverse(Vector2i transformedPosition, Vector2i relOffset) const {
     // optimize for most common case
     if (rotation == 0.0) {
-        const auto scaleAndFloatAdjustment =
-            (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, floatHeight * FLOAT_HEIGHT_MULT)).round();
+        const auto scaleAndFloatAdjustment = (pivotOffset * (Vector2f::ONE - scale.absolute()) + Vector2f(0, z * FLOAT_HEIGHT_MULT)).round();
         return transformedPosition - relOffset - scaleAndFloatAdjustment;
     }
 
@@ -421,8 +430,8 @@ TransformBuilder& TransformBuilder::rotation(f32 globalRotation) {
     return *this;
 }
 
-TransformBuilder& TransformBuilder::height(f32 height) {
-    mTrans.floatHeight = height;
+TransformBuilder& TransformBuilder::z(f32 height) {
+    mTrans.z = height;
     return *this;
 }
 

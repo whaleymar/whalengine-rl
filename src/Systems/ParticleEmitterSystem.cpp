@@ -86,11 +86,8 @@ void ParticleEmitterSystem::update() {
                 // add some random float value
                 s32 floatToAdd = Rng.range(0, PIXELS_PER_TILE);
                 spawnLocation.y -= floatToAdd;
-                particle.set(TransformBuilder(trans)
-                                 .position(spawnLocation.as<f32>())
-                                 .height(trans.floatHeight + static_cast<f32>(floatToAdd))
-                                 .depth(emitter.depth)
-                                 .build());
+                particle.set(
+                    TransformBuilder(trans).position(spawnLocation.as<f32>()).z(trans.z + static_cast<f32>(floatToAdd)).depth(emitter.depth).build());
             } else {
                 particle.set(TransformBuilder(trans).position(spawnLocation.as<f32>()).depth(emitter.depth).build());
             }

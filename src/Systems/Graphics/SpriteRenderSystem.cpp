@@ -31,7 +31,7 @@ void SpriteRenderSystem::addToQueue(gfx::RenderQueue& queue) const {
                                            OBB(trans.getRotatedPosition().round(), sprite.frameSize.as<s32>() / 2, trans.rotation).getBoundingAABB();
 
         // float height should affect bounding box (for culling) but not Y sorting
-        s32 floatOffset = static_cast<s32>(trans.floatHeight * FLOAT_HEIGHT_MULT);
+        s32 floatOffset = static_cast<s32>(trans.z * FLOAT_HEIGHT_MULT);
         bb.getPositionMut().y += floatOffset;
         queue.add(gfx::EntityPreRenderInfo{
             .boundingBox = bb,

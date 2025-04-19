@@ -75,7 +75,6 @@ ACTIVELY WORKING ON:
         - that last part is annoying cause I have to recursively remove the invisible tag in children, change the particleemitter params, and change the layer mask
         - ideally there is a parent with the CustomUpdate method, but once the enemy count condition is met, I just activate a child entity holding the portal components
 - more convenient Audio.playClip method for adding sound position -- then go add sound position to all the places i forgot
-- add local floatHeight to transforms (or just don't have parents affect children?)
 
 ## Misc (low priority)
 - ECS parallelization (low priority)
