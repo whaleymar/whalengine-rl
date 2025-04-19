@@ -18,18 +18,23 @@ class QuadTree {
     struct Value {
         ecs::Entity entity;
         AABB shape;
+        s32 next = -1;
     };
 
     struct Node {
         // points to the first child, or -1 if none
         s32 firstChildIx = -1;
-        std::vector<Value> values;
+        s32 count = 0;
+        s32 firstValueIx = -1;
+        s32 lastValueIx = -1;
 
         bool isLeaf() const { return firstChildIx == -1; }
 
         void reset() {
             firstChildIx = -1;
-            values.clear();
+            count = 0;
+            firstValueIx = -1;
+            lastValueIx = -1;
         }
     };
 
@@ -55,6 +60,10 @@ private:
     // creates a new one if all are used
     s32 allocateNode();
     void freeNode(s32 ix);
+    s32 allocateValue();
+    void freeValue(Node* node, s32 valIx, s32 parentIx);  // parentIx is the index of the value which points to valIx
+    void pushValue(Node* node, Value value);
+    void moveValue(Node* node, Value value, s32 elemIx);
     AABB computeBox(const AABB& box, s32 i) const;
 
     // returns quadrant index
@@ -74,6 +83,8 @@ private:
 
     std::vector<Node> mNodes;       // dense node storage
     std::vector<s32> mFreeIndices;  // stack of free node indices
+    std::vector<Value> mElements;
+    std::vector<s32> mFreeElementIndices;
     AABB mBoundingBox;
     s32 mRootIx = -1;
 };

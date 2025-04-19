@@ -1,7 +1,5 @@
 #include "Quadtree.h"
 
-#include <algorithm>
-
 #include "Components/Collider.h"
 #include "Physics/HitInfo.h"
 #include "Physics/Segment.h"
@@ -16,6 +14,8 @@ QuadTree::QuadTree(const AABB& boundingBox) : mBoundingBox(boundingBox), mRootIx
     // pre-allocate node lists so we don't need to re-allocate during level loads
     mNodes.reserve(2000);
     mFreeIndices.reserve(2000);
+    mElements.reserve(2000);
+    mFreeElementIndices.reserve(2000);
 }
 
 s32 QuadTree::allocateNode() {
@@ -47,6 +47,65 @@ void QuadTree::freeNode(s32 ix) {
     mFreeIndices.push_back(ix + 1);
     mFreeIndices.push_back(ix + 2);
     mFreeIndices.push_back(ix + 3);
+}
+
+s32 QuadTree::allocateValue() {
+    if (!mFreeElementIndices.empty()) {
+        s32 ix = mFreeElementIndices.back();
+        mFreeElementIndices.pop_back();
+        return ix;
+    }
+    s32 ix = static_cast<s32>(mElements.size());
+    mElements.emplace_back();
+    return ix;
+}
+
+void QuadTree::freeValue(Node* node, s32 valIx, s32 parentIx) {
+    if (parentIx == -1) {
+        // removing the first value in node's linked list
+        node->firstValueIx = mElements[valIx].next;
+    } else if (valIx == node->lastValueIx) {
+        // removing the last value in the linked list
+        mElements[parentIx].next = -1;
+        node->lastValueIx = parentIx;
+    } else {
+        // removing a middle element
+        mElements[parentIx].next = mElements[valIx].next;
+    }
+    // reset value in mElements and free the index
+    mElements[valIx].next = -1;
+    mFreeElementIndices.push_back(valIx);
+
+    // decrement the count
+    node->count--;
+}
+
+void QuadTree::pushValue(Node* node, Value value) {
+    s32 newIx = allocateValue();
+    if (node->firstValueIx == -1) {
+        // first value added to node
+        node->firstValueIx = newIx;
+    } else {
+        // appending
+        mElements[node->lastValueIx].next = newIx;
+    }
+    mElements[newIx] = value;
+    node->lastValueIx = newIx;
+    node->count++;
+}
+
+void QuadTree::moveValue(Node* node, Value value, s32 elemIx) {
+    value.next = -1;
+    if (node->firstValueIx == -1) {
+        // first value added to node
+        node->firstValueIx = elemIx;
+    } else {
+        // appending
+        mElements[node->lastValueIx].next = elemIx;
+    }
+    mElements[elemIx] = value;
+    node->lastValueIx = elemIx;
+    node->count++;
 }
 
 void QuadTree::add(const ecs::Entity value) {
@@ -139,8 +198,8 @@ void QuadTree::_add(s32 nodeIx, s32 depth, const AABB& parentBox, const Value va
     Node& node = mNodes[nodeIx];
     if (node.isLeaf()) {
         // Insert the value in this node if possible
-        if (depth >= MAX_DEPTH || node.values.size() < THRESHOLD) {
-            node.values.push_back(value);
+        if (depth >= MAX_DEPTH || node.count < THRESHOLD) {
+            pushValue(&node, value);
         }
         // Otherwise, we split and we try again
         else {
@@ -155,7 +214,7 @@ void QuadTree::_add(s32 nodeIx, s32 depth, const AABB& parentBox, const Value va
         }
         // Otherwise, we add the value in the current node
         else {
-            node.values.push_back(value);
+            pushValue(&node, value);
         }
     }
 }
@@ -169,14 +228,21 @@ void QuadTree::split(const s32 nodeIx, const AABB& parentBox) {
     // Assign values to children
     auto newValues = std::vector<Value>();  // New values for this node
     Node& node = mNodes[nodeIx];            // can hold a reference now that I'm done adding stuff
-    for (const auto& value : node.values) {
-        const s32 i = getQuadrant(parentBox, value.shape);
+    s32 valIx = node.firstValueIx;
+    // "reset" the current node's value pointers
+    node.firstValueIx = -1;
+    node.lastValueIx = -1;
+    while (valIx > -1) {
+        Value& val = mElements[valIx];
+        s32 next = val.next;
+        const s32 i = getQuadrant(parentBox, val.shape);
         if (i != -1)
-            mNodes[node.firstChildIx + i].values.push_back(value);
+            moveValue(&mNodes[node.firstChildIx + i], val, valIx);
         else
-            newValues.push_back(value);
+            moveValue(&node, val, valIx);
+
+        valIx = next;
     }
-    node.values = std::move(newValues);
 }
 
 bool QuadTree::_remove(s32 nodeIx, const AABB& parentBox, const Value value) {
@@ -207,31 +273,40 @@ bool QuadTree::_remove(s32 nodeIx, const AABB& parentBox, const Value value) {
 void QuadTree::removeValue(const s32 nodeIx, const Value value) {
     // Find the value in node.values
     Node& node = mNodes[nodeIx];
-    auto it = std::find_if(std::begin(node.values), std::end(node.values), [value](const Value other) { return value.entity == other.entity; });
-    assert(it != std::end(node.values) && "Trying to remove a value that is not present in the node");
-    // Swap with the last element and pop back
-    *it = std::move(node.values.back());
-    node.values.pop_back();
+    s32 valIx = node.firstValueIx;
+    s32 parentIx = -1;
+    while (valIx > -1) {
+        Value& val = mElements[valIx];
+        if (val.entity.id() == value.entity.id()) {
+            freeValue(&node, valIx, parentIx);
+            return;
+        }
+
+        parentIx = valIx;
+        valIx = val.next;
+    }
 }
 
 bool QuadTree::tryMerge(const s32 nodeIx) {
     assert(!mNodes[nodeIx].isLeaf() && "Only interior nodes can be merged");
-    u64 nbValues = mNodes[nodeIx].values.size();
+    u64 nbValues = mNodes[nodeIx].count;
     const s32 firstChildIx = mNodes[nodeIx].firstChildIx;
     for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; childIx++) {
         const Node& child = mNodes[childIx];
         if (!child.isLeaf()) {
             return false;
         }
-        nbValues += child.values.size();
+        nbValues += child.count;
     }
     if (nbValues <= THRESHOLD) {
-        mNodes[nodeIx].values.reserve(nbValues);
         // Merge the values of all the children
         for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; childIx++) {
             const Node& child = mNodes[childIx];
-            for (const auto& value : child.values) {
-                mNodes[nodeIx].values.push_back(value);
+            s32 valIx = child.firstValueIx;
+            while (valIx > -1) {
+                Value& value = mElements[valIx];
+                pushValue(&mNodes[nodeIx], value);
+                valIx = value.next;
             }
         }
         // Remove the children
@@ -244,9 +319,13 @@ bool QuadTree::tryMerge(const s32 nodeIx) {
 
 void QuadTree::_query(const s32 nodeIx, const AABB& box, const AABB& queryBox, std::vector<ecs::Entity>& values) const {
     const Node& node = mNodes[nodeIx];
-    for (const auto& value : node.values) {
+    s32 valIx = node.firstValueIx;
+    while (valIx > -1) {
+        const Value& value = mElements[valIx];
         if (queryBox.isOverlapping(value.shape))
             values.push_back(value.entity);
+
+        valIx = value.next;
     }
     if (!node.isLeaf()) {
         for (s32 i = 0; i < 4; ++i) {
@@ -259,9 +338,13 @@ void QuadTree::_query(const s32 nodeIx, const AABB& box, const AABB& queryBox, s
 
 void QuadTree::_querySegment(const s32 nodeIx, const AABB& box, const Segment& segment, std::vector<ecs::Entity>& values) const {
     const Node& node = mNodes[nodeIx];
-    for (const auto& value : node.values) {
+    s32 valIx = node.firstValueIx;
+    while (valIx > -1) {
+        const Value& value = mElements[valIx];
         if (segment.isIntersecting(value.shape))
             values.push_back(value.entity);
+
+        valIx = value.next;
     }
     if (!node.isLeaf()) {
         for (s32 i = 0; i < 4; ++i) {
@@ -276,18 +359,42 @@ void QuadTree::_findAllIntersections(const s32 nodeIx, std::vector<std::pair<ecs
     // Find intersections between values stored in this node
     // Make sure to not report the same intersection twice
     const Node& node = mNodes[nodeIx];
-    for (auto i = std::size_t(0); i < node.values.size(); ++i) {
-        for (auto j = std::size_t(0); j < i; ++j) {
-            if (node.values[i].shape.isOverlapping(node.values[j].shape))
-                intersections.emplace_back(node.values[i].entity, node.values[j].entity);
+    s32 i = node.firstValueIx;
+    while (true) {
+        const Value& valueI = mElements[i];
+
+        s32 j = node.firstValueIx;
+        while (true) {
+            const Value& valueJ = mElements[j];
+            if (valueI.shape.isOverlapping(valueJ.shape)) {
+                intersections.emplace_back(valueI.entity, valueJ.entity);
+            }
+
+            if (j == node.lastValueIx) {
+                break;
+            } else {
+                j = valueJ.next;
+            }
+        }
+
+        if (i == node.lastValueIx) {
+            break;
+        } else {
+            i = valueI.next;
         }
     }
+
     if (node.isLeaf()) {
         // Values in this node can intersect values in descendants
         const s32 firstChildIx = node.firstChildIx;
         for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; ++childIx) {
-            for (const auto& value : node.values)
+            s32 valIx = node.firstValueIx;
+            while (valIx > -1) {
+                const Value& value = mElements[valIx];
                 _findIntersectionsInDescendants(childIx, value, intersections);
+
+                valIx = value.next;
+            }
         }
         // Find intersections in children
         for (s32 childIx = firstChildIx; childIx < firstChildIx + 4; ++childIx)
@@ -299,9 +406,13 @@ void QuadTree::_findIntersectionsInDescendants(const s32 nodeIx, const Value val
                                                std::vector<std::pair<ecs::Entity, ecs::Entity>>& intersections) const {
     // Test against the values stored in this node
     const Node& node = mNodes[nodeIx];
-    for (const auto& other : node.values) {
+    s32 valIx = node.firstValueIx;
+    while (valIx > -1) {
+        const Value& other = mElements[valIx];
         if (value.shape.isOverlapping(other.shape))
             intersections.emplace_back(value.entity, other.entity);
+
+        valIx = value.next;
     }
     // Test against values stored into descendants of this node
     if (!node.isLeaf()) {
