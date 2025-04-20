@@ -33,7 +33,6 @@ struct RenderContext {
 // Stores arbitrary per-pixel information into a separate buffer when drawing.
 struct DrawMetaData {
     u8 depth;
-    bool isOccluder;
     bool isUI;
 
     rl::Vector3 asRL() const;
@@ -82,6 +81,7 @@ public:
     void setViewBox(const AABB& viewBox) { mCameraViewBox = viewBox; }
     void setGIViewBox(const AABB& viewBox) { mGlobalIlluminationViewBox = viewBox; }
     void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
+    void sort();
     void clear();
 
 private:

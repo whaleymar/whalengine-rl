@@ -1,9 +1,9 @@
 #include "Tween.h"
 
-#include <algorithm>
 #include "Settings.h"
 #include "Sys/System.h"
 #include "Sys/Time.h"
+#include "Util/STL_reduce.h"
 
 namespace whal {
 
@@ -14,7 +14,7 @@ void TweenManager::onEntityKilled(ecs::Entity entity) {
 void TweenManager::update() {
     // fastest way of removing finished tweens from the vector
     if (mTweens.size() > 0) {
-        mTweens.erase(std::remove_if(mTweens.begin(), mTweens.end(),
+        mTweens.erase(stl::remove_if(mTweens.begin(), mTweens.end(),
                                      [this](Arc<ITween>& pTween) {
                                          if (mKilledEntities.contains(pTween->getEntity())) {
                                              return true;

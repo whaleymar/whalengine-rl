@@ -1,6 +1,5 @@
 #include "Renderer.h"
 
-#include <algorithm>
 #include <raylib.h>
 
 #include "Events/Events.h"
@@ -530,26 +529,6 @@ void Renderer::drawUI(const gfx::RenderContext ctx) const {
     rl::EndMode2D();
 }
 
-// sort by depth, then y coord, then shader, then entity id
-static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
-    if (entity1.colorBuf.depth != entity2.colorBuf.depth) {
-        return entity1.colorBuf.depth < entity2.colorBuf.depth;
-    }
-
-    if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
-        if (entity1.ysortPosition != entity2.ysortPosition) {
-            return entity1.ysortPosition > entity2.ysortPosition;
-        }
-    }
-
-    if (entity1.shader != entity2.shader) {
-        return entity1.shader < entity2.shader;
-    }
-
-    // final tie breaker: use entity id for consistency
-    return entity1.entity.id() < entity2.entity.id();
-}
-
 void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf) {
     mRenderQueue.clear();
 
@@ -565,10 +544,7 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf
         renderSystem.pIRender->addToQueue(mRenderQueue);
     }
 
-    std::sort(mRenderQueue.mNormalQueue.begin(), mRenderQueue.mNormalQueue.end(), isBelow);
-    std::sort(mRenderQueue.mUIQueue.begin(), mRenderQueue.mUIQueue.end(), isBelow);
-    std::sort(mRenderQueue.mOccluderQueue.begin(), mRenderQueue.mOccluderQueue.end(), isBelow);
-    std::sort(mRenderQueue.mOccluderQueueCamera.begin(), mRenderQueue.mOccluderQueueCamera.end(), isBelow);
+    mRenderQueue.sort();
 }
 
 void Renderer::queueUniform(ShaderUniform uniform) {

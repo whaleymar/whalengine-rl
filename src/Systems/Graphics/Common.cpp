@@ -1,4 +1,6 @@
 #include "Common.h"
+
+#include <algorithm>
 #include <cstring>
 #include <raylib.h>
 
@@ -9,15 +11,13 @@
 
 namespace whal::gfx {
 
-const DrawMetaData DrawMetaData::NONE = {0, false, false};
+static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2);
+
+const DrawMetaData DrawMetaData::NONE = {.depth = 0, .isUI = false};
 
 rl::Vector3 DrawMetaData::asRL() const {
     u32 packed = 0;
     packed |= static_cast<u32>(depth);
-
-    // if (isOccluder) {
-    //     packed |= (1 << 8);
-    // }
 
     if (isUI) {
         packed |= (1 << 9);
@@ -30,10 +30,6 @@ rl::Vector3 DrawMetaData::asRL() const {
 
 rl::Vector3 DrawMetaData::asRL(const Sprite& sprite, Vector2f textureDims) const {
     u32 packed = static_cast<u32>(depth);
-
-    // if (isOccluder) {
-    //     packed |= (1 << 8);
-    // }
 
     if (isUI) {
         packed |= (1 << 9);
@@ -76,7 +72,6 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
             mOccluderQueueCamera.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                               gfx::DrawMetaData{
                                                   .depth = static_cast<u8>(renderInfo.transform->depth),
-                                                  .isOccluder = true,
                                                   .isUI = true,
                                               },
                                               renderInfo.internal, renderInfo.shader);
@@ -86,7 +81,6 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
             mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
                                             .depth = static_cast<u8>(renderInfo.transform->depth),
-                                            .isOccluder = true,
                                             .isUI = true,
                                         },
                                         renderInfo.internal, renderInfo.shader);
@@ -109,7 +103,6 @@ bool RenderQueue::add(const EntityPreRenderInfo& renderInfo) {
             mOccluderQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                         gfx::DrawMetaData{
                                             .depth = static_cast<u8>(renderInfo.transform->depth),
-                                            .isOccluder = true,
                                             .isUI = true,
                                         },
                                         renderInfo.internal, renderInfo.shader);
@@ -136,7 +129,6 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
         mUIQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                               gfx::DrawMetaData{
                                   .depth = static_cast<u8>(renderInfo.transform->depth),
-                                  .isOccluder = isOccluder,
                                   .isUI = true,
                               },
                               renderInfo.internal, renderInfo.shader);
@@ -144,12 +136,18 @@ bool RenderQueue::addPrecalculated(const EntityPreRenderInfo& renderInfo) {
         mNormalQueue.emplace_back(renderInfo.transform, renderInfo.ysortPosition, renderInfo.entity, mpIRender,
                                   gfx::DrawMetaData{
                                       .depth = static_cast<u8>(renderInfo.transform->depth),
-                                      .isOccluder = isOccluder,
                                       .isUI = false,
                                   },
                                   renderInfo.internal, renderInfo.shader);
     }
     return isOccluder;
+}
+
+void RenderQueue::sort() {
+    std::sort(mNormalQueue.begin(), mNormalQueue.end(), isBelow);
+    std::sort(mUIQueue.begin(), mUIQueue.end(), isBelow);
+    std::sort(mOccluderQueue.begin(), mOccluderQueue.end(), isBelow);
+    std::sort(mOccluderQueueCamera.begin(), mOccluderQueueCamera.end(), isBelow);
 }
 
 void RenderQueue::clear() {
@@ -237,6 +235,26 @@ AABB getGIViewBox(Vector2i cameraPosition, s32 sector) {
     // }
     // #endif
     return AABB(giSectorCenter, giSectorSize);
+}
+
+// sort by depth, then y coord, then shader, then entity id
+static bool isBelow(const gfx::EntityRenderInfo& entity1, const gfx::EntityRenderInfo& entity2) {
+    if (entity1.colorBuf.depth != entity2.colorBuf.depth) {
+        return entity1.colorBuf.depth < entity2.colorBuf.depth;
+    }
+
+    if constexpr (WORLD_TYPE == WorldType2D::TopDown) {
+        if (entity1.ysortPosition != entity2.ysortPosition) {
+            return entity1.ysortPosition > entity2.ysortPosition;
+        }
+    }
+
+    if (entity1.shader != entity2.shader) {
+        return entity1.shader < entity2.shader;
+    }
+
+    // final tie breaker: use entity id for consistency
+    return entity1.entity.id() < entity2.entity.id();
 }
 
 }  // namespace whal::gfx
