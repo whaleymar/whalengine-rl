@@ -26,7 +26,6 @@ void SpriteOutlineSystem::onAdd(ecs::Entity entity) {
         }
         outline.get<Transform>().depth = outlineDepth;
         outline.get<Transform>().translate(directionToVector(dir).as<f32>(), outline);
-        silhouette.setYsortPriority(outline, -2);
         outline.add(silhouette);
     }
 }

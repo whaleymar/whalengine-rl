@@ -11,6 +11,7 @@ struct BlocksLight {};
 struct MouseCursor {};
 struct TileTag {};
 struct TiledObjectLayer {};
+struct DrawOnTopOfParent {};
 
 // Meta component for loading tags
 struct TagLoader {};

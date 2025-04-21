@@ -7,7 +7,7 @@
 
 namespace whal {
 
-class SpriteRenderSystem : public ecs::ISystem<Sprite, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
+class SpriteRenderSystem : public ecs::ISystem<Sprite, Transform, ecs::Exclude<Invisible>>, public ecs::IRender, public ecs::AttrExcludeChildren {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(gfx::RenderQueue&) const override;
