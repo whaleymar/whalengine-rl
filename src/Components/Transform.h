@@ -123,6 +123,8 @@ struct Transform {
     bool isDirty = true;          // true if entity has moved since the last frame was rendered (Renderer is in charge of clearing this)
     Depth depth = Depth::Level;
     bool isIgnoreParentTranslation = false;
+    bool isIgnoreParentRotation = false;
+    bool isIgnoreParentScale = false;
     Vector2f pivotOffset = Vector2f::ZERO;  // used for rotation // RESEARCH maybe can get rid of this by using a parent entity for the offset?
 
     static Transform world(s32 x, s32 y);

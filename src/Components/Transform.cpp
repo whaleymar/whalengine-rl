@@ -90,9 +90,22 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
         position = parentTrans.getRotatedPosition2D() + _localPosition;
         positionPx = position.round();
     }
-    scale = parentTrans.scale * _localScale;
-    rotation = parentTrans.rotation + _localRotation;
+
+    if (isIgnoreParentScale) {
+        _localScale.x = math::isNearZero(parentTrans.scale.x, 0.0001) ? _localScale.x : scale.x / parentTrans.scale.x;
+        _localScale.y = math::isNearZero(parentTrans.scale.y, 0.0001) ? _localScale.y : scale.y / parentTrans.scale.y;
+    } else {
+        scale = parentTrans.scale * _localScale;
+    }
+
+    if (isIgnoreParentRotation) {
+        _localRotation = rotation - parentTrans.rotation;
+    } else {
+        rotation = parentTrans.rotation + _localRotation;
+    }
+
     z = parentTrans.z + _localZ;
+
     isDirty = true;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
@@ -114,7 +127,12 @@ void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entit
 }
 
 void Transform::setParentScale(Vector2f parentScale, ecs::Entity self) {
-    scale = parentScale * _localScale;
+    if (isIgnoreParentScale) {
+        _localScale.x = math::isNearZero(parentScale.x, 0.0001) ? _localScale.x : scale.x / parentScale.x;
+        _localScale.y = math::isNearZero(parentScale.y, 0.0001) ? _localScale.y : scale.y / parentScale.y;
+    } else {
+        scale = parentScale * _localScale;
+    }
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentScale(scale, child);
     }
@@ -129,7 +147,11 @@ void Transform::setParentRotation(f32 parentDegrees, ecs::Entity self) {
         position += (_localPosition - oldLocalPos);
         positionPx = position.round();
     }
-    rotation = parentDegrees + _localRotation;
+    if (isIgnoreParentRotation) {
+        _localRotation = rotation - parentDegrees;
+    } else {
+        rotation = parentDegrees + _localRotation;
+    }
     // isDirty = true; // RESEARCH
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParentRotation(rotation, child);
@@ -174,6 +196,9 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
 
     isDirty = true;
     depth = trans.depth;
+    isIgnoreParentTranslation = trans.isIgnoreParentTranslation;
+    isIgnoreParentRotation = trans.isIgnoreParentRotation;
+    isIgnoreParentScale = trans.isIgnoreParentScale;
     pivotOffset = trans.pivotOffset;
 
     for (const ecs::Entity& child : self.children()) {

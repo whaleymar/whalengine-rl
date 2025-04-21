@@ -30,7 +30,7 @@ static void drawEntity(ecs::Entity child, const gfx::RenderContext& ctx) {
 }
 
 static bool isChildDrawable(ecs::Entity child, const ecs::SystemBase* system) {
-    return !SpriteRenderSystem::getEntities().contains(child.id()) && system->isMatch(child);
+    return !SpriteRenderSystem::getEntities().contains(child.id()) && !child.has<Invisible>() && system->isMatch(child);
 }
 
 static void tryDrawBehind(ecs::Entity child, const gfx::RenderContext& ctx, const ecs::SystemBase* system) {
