@@ -84,8 +84,12 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     //     localPosition = pivotOffset.rotate(parentTrans.rotation - oldParentRotation, Vector2f::ZERO);
     // }
 
-    position = parentTrans.getRotatedPosition2D() + _localPosition;
-    positionPx = position.round();
+    if (isIgnoreParentTranslation) {
+        _localPosition = position - parentTrans.getRotatedPosition2D();
+    } else {
+        position = parentTrans.getRotatedPosition2D() + _localPosition;
+        positionPx = position.round();
+    }
     scale = parentTrans.scale * _localScale;
     rotation = parentTrans.rotation + _localRotation;
     z = parentTrans.z + _localZ;
@@ -97,6 +101,10 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
 }
 
 void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entity self) {
+    if (isIgnoreParentTranslation) {
+        _localPosition = position - parentPositionTransformed;
+        return;
+    }
     position = parentPositionTransformed + _localPosition;
     positionPx = position.round();
     isDirty = true;
