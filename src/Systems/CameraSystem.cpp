@@ -31,7 +31,7 @@ void CameraSystem::onEvent(evt::EnteredLevel, ecs::Entity player, TileMap& activ
             return;
         }
 
-        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position, &Transform::setPosition)
+        Schedule.tween(camera, focalPoint.as<f32>(), 0.5, &Transform::position, &Transform::setPositionManually)
             .setTransition(Ease::InOutQuad)
             .asIgnoreSlowdown()
             .setOnEnd([](ecs::Entity self, const Tween<Vector2f>&) { Time.setMultiplier(1.0); });

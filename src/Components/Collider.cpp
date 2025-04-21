@@ -80,7 +80,7 @@ void Collider::setEntity(ecs::Entity entity) {
     mSelf = entity;
 }
 
-// syncs other engine components (Transform, and Trigger) with collider position
+// syncs Transform with collider position
 void Collider::updateEntityPosition() {
     Transform& trans = mSelf.get<Transform>();
     auto const shape = getShape();

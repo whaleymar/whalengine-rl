@@ -12,7 +12,7 @@ void MouseCursorSystem::update() {
     }
     for (auto [id, entity] : getEntities()) {
         // update transform
-        entity.get<Transform>().setPosition(Input.getMouseWorld(), entity);
+        entity.get<Transform>().setPositionManually(Input.getMouseWorld(), entity);
 
         // hack: make cursor invisible if gamepad is enabled
         if (Input.getIsGamepadAllowed() && !entity.has<Invisible>()) {

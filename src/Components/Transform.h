@@ -140,14 +140,18 @@ struct Transform {
 
     // called when parent transforms are updated
     void setParent(const Transform& parentTrans, ecs::Entity self);
-    void setParentPosition(Vector2f parentPosition, ecs::Entity self);
+    void setParentPosition(Vector2f parentPosition, ecs::Entity self, bool isManualMove = true);
     void setParentScale(Vector2f parentScale, ecs::Entity self);
     void setParentRotation(f32 parentDegrees, ecs::Entity self);
     void setParentZ(f32 parentZ, ecs::Entity self);
 
     // these work in reverse, computing the local transform needed to get the desired global state
     void set(const Transform& trans, ecs::Entity self);
+    void setManually(const Transform& trans, ecs::Entity self);
+    void _internalSet(const Transform& trans, ecs::Entity self, bool isManualMove);
     void setPosition(Vector2f globalPosition, ecs::Entity self);
+    void setPositionManually(Vector2f globalPosition, ecs::Entity self);
+    void _internalSetPosition(Vector2f globalPosition, ecs::Entity self, bool isManualMove);
     void setScale(Vector2f globalScale, ecs::Entity self);
     void setRotation(f32 globalRotation, ecs::Entity self);
     void setZ(f32 globalZ, ecs::Entity self);

@@ -159,33 +159,33 @@ void ColliderSystem::onRemove(ecs::Entity entity) {
     }
 }
 
-void ColliderSystem::syncColliders() {
-    for (const auto [entityid, entity] : getEntities()) {
-        Transform& trans = entity.get<Transform>();
-        if (!trans.isDirty) {
-            continue;
-        }
-        const bool isManuallyMoved = trans.isManuallyMoved;
-        trans.isManuallyMoved = false;
-
-        auto& collider = entity.get<Collider>();
-        if (isManuallyMoved) {
-            // Sync collider position without checking collision
-            if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
-                updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
-            }
-
-        } else {
-            // Move collider within physics engine
-            const Vector2i targetColliderPosition = trans.apply(collider.getOffset());
-            if (collider.getShape().getPosition() != targetColliderPosition) {
-                const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
-
-                // IsManualMove=true, so transform and QuadTree are synced automatically
-                collider.move(toMove, nullptr, false, true);
-            }
-        }
-    }
-}
+// void ColliderSystem::syncColliders() {
+//     for (const auto [entityid, entity] : getEntities()) {
+//         Transform& trans = entity.get<Transform>();
+//         if (!trans.isDirty) {
+//             continue;
+//         }
+//         const bool isManuallyMoved = trans.isManuallyMoved;
+//         trans.isManuallyMoved = false;
+//
+//         auto& collider = entity.get<Collider>();
+//         if (isManuallyMoved) {
+//             // Sync collider position without checking collision
+//             if (collider.getShape().getPosition() != trans.apply(collider.getOffset())) {
+//                 updatePosition(entity, collider.getShapeMutable(), trans, collider.getOffset());
+//             }
+//
+//         } else {
+//             // Move collider within physics engine
+//             const Vector2i targetColliderPosition = trans.apply(collider.getOffset());
+//             if (collider.getShape().getPosition() != targetColliderPosition) {
+//                 const Vector2f toMove = (targetColliderPosition - collider.getShape().getPosition()).as<f32>();
+//
+//                 // IsManualMove=true, so transform and QuadTree are synced automatically
+//                 collider.move(toMove, nullptr, false, true);
+//             }
+//         }
+//     }
+// }
 
 }  // namespace whal

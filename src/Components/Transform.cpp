@@ -48,7 +48,7 @@ void Transform::translate(Vector2f moveAmount, ecs::Entity self) {
     _localPosition += moveAmount;
     isDirty = true;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child);
+        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child, false);
     }
 }
 
@@ -107,13 +107,14 @@ void Transform::setParent(const Transform& parentTrans, ecs::Entity self) {
     z = parentTrans.z + _localZ;
 
     isDirty = true;
+    isManuallyMoved = isManuallyMoved || parentTrans.isManuallyMoved;
     // depth = parentTrans.depth; // annoying
     for (const ecs::Entity& child : self.children()) {
         child.get<Transform>().setParent(*this, child);
     }
 }
 
-void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entity self) {
+void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entity self, bool isManualMove) {
     if (isIgnoreParentTranslation) {
         _localPosition = position - parentPositionTransformed;
         return;
@@ -121,8 +122,9 @@ void Transform::setParentPosition(Vector2f parentPositionTransformed, ecs::Entit
     position = parentPositionTransformed + _localPosition;
     positionPx = position.round();
     isDirty = true;
+    isManuallyMoved = isManuallyMoved || isManualMove;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child);
+        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child, isManualMove);
     }
 }
 
@@ -166,6 +168,14 @@ void Transform::setParentZ(f32 parentZ, ecs::Entity self) {
 }
 
 void Transform::set(const Transform& trans, ecs::Entity self) {
+    _internalSet(trans, self, false);
+}
+
+void Transform::setManually(const Transform& trans, ecs::Entity self) {
+    _internalSet(trans, self, true);
+}
+
+void Transform::_internalSet(const Transform& trans, ecs::Entity self, bool isManualMove) {
     const Vector2f parentPosition = position - _localPosition;
     position = trans.position;
     positionPx = position.round();
@@ -195,6 +205,7 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
     _localZ = z - parentZ;
 
     isDirty = true;
+    isManuallyMoved = isManuallyMoved || isManualMove;
     depth = trans.depth;
     isIgnoreParentTranslation = trans.isIgnoreParentTranslation;
     isIgnoreParentRotation = trans.isIgnoreParentRotation;
@@ -207,6 +218,14 @@ void Transform::set(const Transform& trans, ecs::Entity self) {
 }
 
 void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
+    _internalSetPosition(globalPosition, self, false);
+}
+
+void Transform::setPositionManually(Vector2f globalPosition, ecs::Entity self) {
+    _internalSetPosition(globalPosition, self, true);
+}
+
+void Transform::_internalSetPosition(Vector2f globalPosition, ecs::Entity self, bool isManualMove) {
     if (globalPosition == position) {
         return;
     }
@@ -217,8 +236,9 @@ void Transform::setPosition(Vector2f globalPosition, ecs::Entity self) {
     _localPosition = position - parentPosition;
 
     isDirty = true;
+    isManuallyMoved = isManuallyMoved || isManualMove;
     for (const ecs::Entity& child : self.children()) {
-        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child);
+        child.get<Transform>().setParentPosition(getRotatedPosition2D(), child, isManualMove);
     }
 }
 
@@ -265,7 +285,7 @@ void Transform::setRotation(f32 globalRotation, ecs::Entity self) {
         for (const ecs::Entity& child : self.children()) {
             auto& childTrans = child.get<Transform>();
             childTrans.setParentRotation(rotation, child);
-            childTrans.setParentPosition(transformedPos, child);
+            childTrans.setParentPosition(transformedPos, child, false);
         }
     }
 }

@@ -57,7 +57,7 @@ private:
     // stopped by another physics object, the transform is updated to its new position.
 
     // unused because it's slow. Even when checking Transform dirty flags.
-    static void syncColliders();
+    // static void syncColliders();
 };
 
 }  // namespace whal
