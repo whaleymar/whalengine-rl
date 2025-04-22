@@ -1,36 +1,6 @@
 #pragma once
 
-#include "Util/Singleton.h"
 #ifndef NDEBUG
-#include <unordered_set>
-
-namespace whal {
-
-class IRenderDebug;
-class DebugRenderMgr {
-    SINGLETON(DebugRenderMgr)
-public:
-    static void add(IRenderDebug* obj) { instance().mObjs.insert(obj); }
-    static void remove(IRenderDebug* obj) { instance().mObjs.erase(obj); };
-    static void drawEditor();
-    static void drawDebug();
-
-private:
-    std::unordered_set<IRenderDebug*> mObjs;
-};
-
-// make sure an empty class definition exists for inheritance reasons
-class IRenderDebug {
-public:
-    virtual ~IRenderDebug();
-    virtual void drawDebug() {}
-    virtual void drawEditor() {}
-
-protected:
-    IRenderDebug();
-};
-
-}  // namespace whal
 
 typedef int ImGuiDataType;     // -> enum ImGuiDataType_        // Enum: A primary data type
 typedef int ImGuiSliderFlags;  // -> enum ImGuiSliderFlags_     // Flags: for DragFloat(), DragInt(), SliderFloat(), SliderInt() etc.

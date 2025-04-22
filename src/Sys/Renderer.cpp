@@ -6,7 +6,6 @@
 #include "Gfx/ShaderManager.h"
 #include "Gfx/Shaders/DistanceField.h"
 #include "Sys/Time.h"
-#include "Util/ImguiUtil.h"
 #include "raylib/src/rlgl.h"
 #include "whalECS/src/ECS.h"
 
@@ -355,7 +354,7 @@ void Renderer::render() {
 #ifndef NDEBUG
     gfx::BeginTextureMode(mainTex);
     rl::BeginMode2D(renderContext.camera);
-    DebugRenderMgr::drawDebug();
+    drawDebug();
     rl::EndMode2D();
     gfx::EndTextureMode();
 #endif
@@ -460,8 +459,8 @@ void Renderer::drawLights(gfx::RenderContext renderContext) {
     rl::ClearBackground(rl::BLACK);
 
     rl::BeginBlendMode(rl::BLEND_ADDITIVE);
-    for (const ecs::IRenderLight* pLightSystem : World.getLightSystems()) {
-        pLightSystem->draw(renderContext);
+    for (IRenderLight* pObj : mRenderRegistryLights) {
+        pObj->draw(renderContext);
     }
 
     rl::EndBlendMode();
@@ -539,9 +538,9 @@ void Renderer::buildRenderQueue(Vector2i cameraPosition, Vector2i cameraViewHalf
     s32 giSector = Time.getFrame() % 8;
     mRenderQueue.setGIViewBox(gfx::getGIViewBox(cameraPosition, giSector));
 
-    for (const ecs::RenderSystemPair& renderSystem : World.getRenderSystems()) {
-        mRenderQueue.setActiveRenderer(renderSystem.pIRender);
-        renderSystem.pIRender->addToQueue(mRenderQueue);
+    for (IRender* pIRender : mRenderRegistry) {
+        mRenderQueue.setActiveRenderer(pIRender);
+        pIRender->addToQueue(mRenderQueue);
     }
 
     mRenderQueue.sort();
@@ -790,6 +789,20 @@ void Renderer::globalUniformSetVec4(const std::string& name, rl::Vector4 val) {
     assert(it != mGlobalUniformNameToIndex.end() && "Setting value for unregistered global uniform");
     mGlobalUniforms[it->second].val.uniVec4 = val;
 }
+
+#ifndef NDEBUG
+void Renderer::drawDebug() const {
+    for (IRenderDebug* pObj : mRenderRegistryDebug) {
+        pObj->drawDebug();
+    }
+}
+
+void Renderer::drawEditor() const {
+    for (IRenderDebug* pObj : mRenderRegistryDebug) {
+        pObj->drawEditor();
+    }
+}
+#endif
 
 void UniformVariant::set(rl::Shader handle, s32 uniformLoc) const {
     switch (tag) {

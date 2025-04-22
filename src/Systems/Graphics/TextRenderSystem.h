@@ -3,6 +3,7 @@
 #include "Components/Draw.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
+#include "Gfx/IRender.h"
 #include "whalECS/src/ECS.h"
 
 namespace rl {
@@ -11,7 +12,7 @@ typedef struct Font Font;
 
 namespace whal {
 
-class TextRenderSystem : public ecs::ISystem<TextSprite, Transform, ecs::Exclude<Invisible>>, public ecs::IRender {
+class TextRenderSystem : public ecs::ISystem<TextSprite, Transform, ecs::Exclude<Invisible>>, public IRender {
 public:
     TextRenderSystem();
     ~TextRenderSystem();

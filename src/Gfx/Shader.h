@@ -2,12 +2,9 @@
 
 #include <string>
 #include <vector>
+#include "Gfx/IRender.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
-
-#ifndef NDEBUG
-#include "Util/ImguiUtil.h"
-#endif
 
 namespace whal {
 

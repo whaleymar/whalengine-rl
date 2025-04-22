@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Gfx/IRender.h"
 #include "Systems/Graphics/Common.h"
 #include "Util/Singleton.h"
 #include "raylib.h"
@@ -139,6 +140,10 @@ public:
     void globalUniformSetVec3(const std::string& name, rl::Vector3 val);
     void globalUniformSetVec4(const std::string& name, rl::Vector4 val);
 
+#ifndef NDEBUG
+    void drawEditor() const;
+#endif
+
 private:
     bool init();    // called after OpenGL context established. Returns true on error.
     void update();  // called once per frame
@@ -180,6 +185,27 @@ private:
     std::unordered_map<u32, std::vector<GlobalUniformTracker>> mGlobalUniformSubscribers;
     std::unordered_map<std::string, u64> mGlobalUniformNameToIndex;
     std::vector<UniformVariant> mGlobalUniforms;
+
+    ///////////////////////////
+    // Render System Tracking//
+    ///////////////////////////
+    friend IRender;
+    void registerRenderer(IRender* pRenderer) { mRenderRegistry.insert(pRenderer); }
+    void unregisterRenderer(IRender* pRenderer) { mRenderRegistry.erase(pRenderer); }
+    std::unordered_set<IRender*> mRenderRegistry;
+
+    friend IRenderLight;
+    void registerLightRenderer(IRenderLight* pRenderer) { mRenderRegistryLights.insert(pRenderer); }
+    void unregisterLightRenderer(IRenderLight* pRenderer) { mRenderRegistryLights.erase(pRenderer); }
+    std::unordered_set<IRenderLight*> mRenderRegistryLights;
+
+#ifndef NDEBUG
+    friend IRenderDebug;
+    void drawDebug() const;
+    void registerDebugRenderer(IRenderDebug* pRenderer) { mRenderRegistryDebug.insert(pRenderer); }
+    void unregisterDebugRenderer(IRenderDebug* pRenderer) { mRenderRegistryDebug.erase(pRenderer); }
+    std::unordered_set<IRenderDebug*> mRenderRegistryDebug;
+#endif
 
     bool mIsFixedShaderMode = false;
     bool mIsPersistUniforms = false;

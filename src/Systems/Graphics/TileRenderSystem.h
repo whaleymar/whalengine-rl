@@ -4,6 +4,7 @@
 #include "Components/Tags.h"
 #include "Components/Transform.h"
 #include "ECS.h"
+#include "Gfx/IRender.h"
 #include "Util/Types.h"
 
 namespace whal {
@@ -16,7 +17,7 @@ struct TileInstance {
     s32 y;
 };
 
-class TileRenderSystem : public ecs::ISystem<Transform, TileMapLayer, ecs::Exclude<Invisible>>, public ecs::IRender, public ecs::IMonitorSystem {
+class TileRenderSystem : public ecs::ISystem<Transform, TileMapLayer, ecs::Exclude<Invisible>>, public IRender, public ecs::IMonitorSystem {
 public:
     void draw(const gfx::EntityRenderInfo& entity, const gfx::RenderContext& ctx) const override;
     void addToQueue(gfx::RenderQueue&) const override;

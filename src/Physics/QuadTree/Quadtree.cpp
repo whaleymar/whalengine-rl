@@ -449,7 +449,6 @@ RaycastHit QuadTree::_raycast(Segment ray, u16 layerMask) const {
     // Get closest entity whose collider doesn't contain the origin point
     const Vector2i originI = ray.origin.as<s32>();
     f32 closestDistance = 1e10;
-    // research should i get a vector of Value structs instead so I already have the colliders?
     // NOTE: this assumes everything in the quadtree has a collider component, which i may regret later
     for (auto entity : values) {
         const auto collider = entity.get<Collider>();

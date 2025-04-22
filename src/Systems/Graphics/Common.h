@@ -1,6 +1,7 @@
 #pragma once
 
 #include <raylib.h>
+#include "Gfx/IRender.h"
 #include "Physics/Shapes.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
@@ -44,7 +45,7 @@ struct EntityRenderInfo {
     const Transform* transform;
     s32 ysortPosition;
     ecs::Entity entity;
-    const ecs::IRender* piRender;
+    const IRender* piRender;
     DrawMetaData colorBuf = {};
     void* internal;
     Shader* shader;
@@ -80,7 +81,7 @@ public:
 
     void setViewBox(const AABB& viewBox) { mCameraViewBox = viewBox; }
     void setGIViewBox(const AABB& viewBox) { mGlobalIlluminationViewBox = viewBox; }
-    void setActiveRenderer(ecs::IRender* pIRender) { mpIRender = pIRender; }
+    void setActiveRenderer(IRender* pIRender) { mpIRender = pIRender; }
     void sort();
     void clear();
 
@@ -91,7 +92,7 @@ private:
     std::vector<EntityRenderInfo> mOccluderQueueCamera;  // occluders which ARE visible to the camera
 
     // draw state:
-    ecs::IRender* mpIRender;
+    IRender* mpIRender;
     AABB mCameraViewBox;
     AABB mGlobalIlluminationViewBox;
 };

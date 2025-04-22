@@ -1,14 +1,11 @@
 #pragma once
 
 #include "Components/Collider.h"
+#include "Gfx/IRender.h"
 #include "Physics/CollisionLayer.h"
 #include "Util/Types.h"
 #include "Util/Vector.h"
 #include "whalECS/src/ECS.h"
-
-#ifndef NDEBUG
-#include "Util/ImguiUtil.h"
-#endif
 
 namespace whal {
 

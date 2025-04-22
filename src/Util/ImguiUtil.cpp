@@ -4,30 +4,6 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-namespace whal {
-
-void DebugRenderMgr::drawEditor() {
-    for (IRenderDebug* pObj : instance().mObjs) {
-        pObj->drawEditor();
-    }
-}
-
-void DebugRenderMgr::drawDebug() {
-    for (IRenderDebug* pObj : instance().mObjs) {
-        pObj->drawDebug();
-    }
-}
-
-IRenderDebug::IRenderDebug() {
-    DebugRenderMgr::add(this);
-}
-
-IRenderDebug::~IRenderDebug() {
-    DebugRenderMgr::remove(this);
-}
-
-}  // namespace whal
-
 namespace ImGui {
 
 static const ImGuiDataTypeInfo S_DATA_TYPE_INFO[] = {

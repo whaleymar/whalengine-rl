@@ -2,10 +2,11 @@
 
 #ifndef NDEBUG
 
+#include "Components/Transform.h"
 #include "ECS.h"
 #include "Events/Events.h"
+#include "Gfx/IRender.h"
 #include "Sys/IListen.h"
-#include "Util/ImguiUtil.h"
 
 namespace whal {
 
