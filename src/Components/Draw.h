@@ -19,8 +19,6 @@ class Entity;
 struct Frame;
 class Shader;
 
-enum class DrawTag { Rect, Sprite, BezierQuad, Line };
-
 struct Sprite {
     // controls settings in the main sprite shader
     enum flag : u32 {

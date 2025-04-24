@@ -25,6 +25,8 @@ namespace ecs {
 class Entity;
 }
 
+enum class ParticleShape { Rect, Sprite, BezierQuad, Line };
+
 struct MaterialData {
     enum Flags : u32 {
         None = 0,
@@ -160,7 +162,7 @@ struct MaterialData {
     } decayParams;
     f32 minScale = 1.0f;
     f32 maxScale = 1.0f;
-    DrawTag particleShape = DrawTag::Rect;
+    ParticleShape particleShape = ParticleShape::Rect;
     f32 brightness = 1.0;
     f32 minRotationsPerSec = 0.0f;
     f32 maxRotationsPerSec = 0.0f;

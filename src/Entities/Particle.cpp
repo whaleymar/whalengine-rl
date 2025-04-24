@@ -44,7 +44,7 @@ void addParticleComponents(ecs::Entity particle, const MaterialData& materialDat
     particle.add<Velocity>();
 
     const Color color = materialData.getColor();
-    if (materialData.particleShape == DrawTag::Line) {
+    if (materialData.particleShape == ParticleShape::Line) {
         particle.add(DrawStraightLine{
             .length = 3,
             .color = color,

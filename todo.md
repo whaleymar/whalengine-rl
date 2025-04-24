@@ -1,6 +1,9 @@
 # To Do 
 
 ACTIVELY WORKING ON:
+- yet another Rendering pipeline rework:
+    - instead of separate systems for each drawable component type, I have one parent `Drawable` struct (trait?) which is a pseudo interface.
+    - it has a `draw` and `addToQueue` methods stored as function pointers
 
 ## Separating Game vs Engine 
 - want to edit CollisionLayers from Game 

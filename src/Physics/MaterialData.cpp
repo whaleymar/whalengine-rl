@@ -76,7 +76,7 @@ static const MaterialData S_MATERIAL_GRASS = {
     .gravityCoef = 0.0,
     .frictionCoefs = {0.0, 0.5},
     .decayParams = {.decayTime = {.decaySecondsMin = 5.0, .decaySecondsMax = 10.0}},
-    .particleShape = DrawTag::Line,
+    .particleShape = ParticleShape::Line,
     .minRotationsPerSec = 0.25f,
     .maxRotationsPerSec = 2.0f,
 };
