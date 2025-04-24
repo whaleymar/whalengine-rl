@@ -70,7 +70,6 @@ struct DrawBezierQuad {
     Vector2i endPointOffset;
     Color color = Colors::White;
     f32 thickness = 1.0;
-    Depth depth = Depth::Level;
 };
 
 struct DrawStraightLine {
