@@ -204,6 +204,10 @@ public:
     TransformBuilder& z(f32 globalHeight);
     TransformBuilder& depth(Depth depth);
     TransformBuilder& facing(Facing facing);
+    TransformBuilder& ignoreParentTranslation();
+    TransformBuilder& ignoreParentRotation();
+    TransformBuilder& ignoreParentScale();
+    TransformBuilder& ignoreParentAll();
     Transform build() const;
 
 private:

@@ -30,7 +30,25 @@ void onChildEntityCreated(ecs::Entity child, ecs::Entity parent) {
 }
 
 void onEntityAdopted(ecs::Entity child, ecs::Entity parent) {
-    child.get<Transform>().setParent(parent.get<Transform>(), child);
+    if (!parent.isValid()) {
+        // child was orphaned
+        ecs::Entity sceneRoot = System::getGame().getScene().self;
+        if (sceneRoot.isValid()) {
+            sceneRoot.addChild(child);
+        }
+
+    } else {
+        // want to update child's local transform without affecting its global transform
+        Transform& trans = child.get<Transform>();
+        bool ignoreVals[] = {trans.isIgnoreParentTranslation, trans.isIgnoreParentRotation, trans.isIgnoreParentScale};
+        trans.isIgnoreParentTranslation = true;
+        trans.isIgnoreParentRotation = true;
+        trans.isIgnoreParentScale = true;
+        trans.setParent(parent.get<Transform>(), child);
+        trans.isIgnoreParentTranslation = ignoreVals[0];
+        trans.isIgnoreParentRotation = ignoreVals[1];
+        trans.isIgnoreParentScale = ignoreVals[2];
+    }
 }
 
 }  // namespace whal

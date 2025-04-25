@@ -500,6 +500,28 @@ TransformBuilder& TransformBuilder::facing(Facing dir) {
     return *this;
 }
 
+TransformBuilder& TransformBuilder::ignoreParentTranslation() {
+    mTrans.isIgnoreParentTranslation = true;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::ignoreParentRotation() {
+    mTrans.isIgnoreParentRotation = true;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::ignoreParentScale() {
+    mTrans.isIgnoreParentScale = true;
+    return *this;
+}
+
+TransformBuilder& TransformBuilder::ignoreParentAll() {
+    mTrans.isIgnoreParentTranslation = true;
+    mTrans.isIgnoreParentRotation = true;
+    mTrans.isIgnoreParentScale = true;
+    return *this;
+}
+
 Transform TransformBuilder::build() const {
     return mTrans;
 }
