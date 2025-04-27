@@ -5,8 +5,11 @@
 #include "Components/Font.h"
 #include "Components/Tags.h"
 #include "Components/Transform.h"
+#include "ECS.h"
 #include "Gfx/Coordinates.h"
 #include "Gfx/RaylibUtil.h"
+#include "Gfx/Shader.h"
+#include "Gfx/ShaderManager.h"
 #include "Gfx/Texture.h"
 #include "Physics/OBB.h"
 #include "Settings.h"
@@ -14,6 +17,8 @@
 #include "Sys/Time.h"
 
 namespace whal {
+
+using namespace rutil;
 
 static bool isChildDrawable(ecs::Entity child, const ecs::SystemBase* system);
 static void tryDrawBehind(ecs::Entity child, const gfx::RenderContext& ctx, const ecs::SystemBase* system);
@@ -40,6 +45,9 @@ struct LinePoints {
 
 static LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStraightLine line);
 
+static const Shader* S_CURRENT_SHADER;
+static const Shader* S_DEFAULT_SHADER = nullptr;  // a pointer to the default shader, though I use nullptr as a sentinel mostly
+
 SpriteRenderSystem::SpriteRenderSystem() {
     // register drawable engine components
 
@@ -63,10 +71,14 @@ SpriteRenderSystem::SpriteRenderSystem() {
         .draw = drawBezier,
         .queue = queueBezier,
     });
+
+    // init shader pointers
+    S_DEFAULT_SHADER = &ShaderMgr::get("DefaultSprite");
 }
 
 void SpriteRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::RenderContext& ctx) const {
-    // TODO I will need to bring the Renderer's shader state tracker here. Right now the parent shader applies to all children
+    // this shader was set for us by the Renderer
+    S_CURRENT_SHADER = eCtx.shader == S_DEFAULT_SHADER ? nullptr : eCtx.shader;
     drawEntityAndChildren(eCtx.entity, ctx, this);
 }
 
@@ -86,6 +98,7 @@ void drawSprite(ecs::Entity child, const gfx::RenderContext& ctx) {
                                                 math::sign(transform.scale.y) * sprite.frameSize.y};
     const gfx::RaylibDrawParams params = gfx::getDrawParams(transform, sprite.frameSize);
 
+    trySetShader(sprite.shader);
     bool isUI = transform.depth == Depth::Debug || transform.depth == Depth::UIFar || transform.depth == Depth::UIClose;
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, transform.rotation, sprite.color.asRL(),
                        gfx::DrawMetaData{.depth = static_cast<u8>(transform.depth), .isUI = isUI}.asRL(sprite, ctx.atlas.getSize()), sprite.custom0b);
@@ -116,6 +129,7 @@ void drawRectangle(ecs::Entity entity, const gfx::RenderContext& ctx) {
     const auto frameSize = rect.frameSize.as<f32>();
     const gfx::RaylibDrawParams params = gfx::getDrawParams(trans, frameSize);
 
+    trySetDefaultShader();
     bool isUI = trans.depth == Depth::Debug || trans.depth == Depth::UIFar || trans.depth == Depth::UIClose;
     gfx::DrawRectangleHDR(params.rect, params.origin, trans.rotation, rect.color,
                           gfx::DrawMetaData{.depth = static_cast<u8>(trans.depth), .isUI = isUI});
@@ -146,6 +160,7 @@ void drawBezier(ecs::Entity entity, const gfx::RenderContext& ctx) {
     rl::Vector2 controlPoint = trans.apply(bezier.controlPointOffset.as<f32>()).asRL();
     rl::Vector2 p2 = trans.apply(bezier.endPointOffset.as<f32>()).asRL();
 
+    trySetDefaultShader();
     bool isUI = trans.depth == Depth::Debug || trans.depth == Depth::UIFar || trans.depth == Depth::UIClose;
     gfx::DrawSplineSegmentBezierQuadraticHDR(p1, controlPoint, p2, bezier.thickness * VIRTUAL_SCREEN_RATIO, bezier.color,
                                              gfx::DrawMetaData{.depth = static_cast<u8>(trans.depth), .isUI = isUI});
@@ -179,6 +194,7 @@ void drawLine(ecs::Entity entity, const gfx::RenderContext& ctx) {
         return;
     }
 
+    trySetDefaultShader();
     bool isUI = trans.depth == Depth::Debug || trans.depth == Depth::UIFar || trans.depth == Depth::UIClose;
     auto const colorBuf = gfx::DrawMetaData{.depth = static_cast<u8>(trans.depth), .isUI = isUI};
     if (line.segmentLength == 0 || line.segmentGapLength == 0) {
@@ -269,6 +285,7 @@ void drawTextSprite(ecs::Entity entity, const gfx::RenderContext& ctx) {
         .origin = rl::Vector2{0, 0},
     };
 
+    trySetDefaultShader();
     bool isUI = trans.depth == Depth::Debug || trans.depth == Depth::UIFar || trans.depth == Depth::UIClose;
     auto const colorBuf = gfx::DrawMetaData{.depth = static_cast<u8>(trans.depth), .isUI = isUI};
     gfx::DrawTextBoxed(World.get<Font>().normal, text.text.c_str(), params, getFontSize(), spacing, text.isWrapped, text.isCentered,
@@ -295,7 +312,8 @@ void queueTextSprite(ecs::Entity entity, gfx::RenderQueue& queue) {
 
 // TODO do I need to call invisible here? isMatch should cover that
 bool isChildDrawable(ecs::Entity child, const ecs::SystemBase* system) {
-    return !SpriteRenderSystem::getEntities().contains(child.id()) && !child.has<Invisible>() && system->isMatch(child);
+    return !SpriteRenderSystem::getEntities().contains(child.id()) && !child.has<Invisible>() && !child.has<ecs::OverrideAttributeIgnoreChildren>() &&
+           system->isMatch(child);
 }
 
 void tryDrawBehind(ecs::Entity child, const gfx::RenderContext& ctx, const ecs::SystemBase* system) {
@@ -312,9 +330,9 @@ void tryDrawOnTop(ecs::Entity child, const gfx::RenderContext& ctx, const ecs::S
 
 void drawEntityAndChildren(ecs::Entity e, const gfx::RenderContext& ctx, const ecs::SystemBase* system) {
     e.forChild(tryDrawBehind, false, ctx, system);
-    e.getTrait<IDrawable>().draw(e, ctx);
+    // e.getTrait<IDrawable>().draw(e, ctx);
     // if I want to draw all matching components:
-    // e.forTrait<IDrawable>([](ecs::Entity self, ecs::Entity cmp, const gfx::RenderContext& ctx) { cmp.get<IDrawable>().draw(self, ctx); }, ctx);
+    e.forTrait<IDrawable>([](ecs::Entity self, ecs::Entity cmp, const gfx::RenderContext& ctx) { cmp.get<IDrawable>().draw(self, ctx); }, ctx);
     // (i don't think I want that because draw order is arbitrarily based on component registration order -- easier to make a child component)
     e.forChild(tryDrawOnTop, false, ctx, system);
 }
@@ -334,4 +352,24 @@ LinePoints getRotatedPoints(Vector2f position, Transform trans, DrawStraightLine
     return LinePoints{startPos, endPos};
 }
 
+namespace rutil {
+
+void trySetShader(Shader* shader) {
+    if (shader == nullptr) {
+        trySetDefaultShader();
+    } else if (shader != S_CURRENT_SHADER) {
+        shader->bind();
+        S_CURRENT_SHADER = shader;
+    }
+}
+
+void trySetDefaultShader() {
+    if (S_CURRENT_SHADER != nullptr) {
+        assert(S_DEFAULT_SHADER != nullptr);
+        S_DEFAULT_SHADER->bind();
+        S_CURRENT_SHADER = nullptr;
+    }
+}
+
+}  // namespace rutil
 }  // namespace whal

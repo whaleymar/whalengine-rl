@@ -1,4 +1,5 @@
 #include "TileRenderSystem.h"
+
 #include <algorithm>
 #include <cstring>
 
@@ -206,12 +207,12 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         if (layer.overlayTex.size() > 0) {
             // note: overlays not supported for y sorted layers
             // note: resetting shader on every draw call because the texture may have changed
-            rl::BeginShaderMode(eCtx.shader->get());
             const rl::Texture& overlay = TextureManager::getTexture(layer.overlayTex);
             eCtx.shader->setTexture("_Overlay", overlay);
             eCtx.shader->setVector2(
                 "_Scale", (Vector2f(1.0f / VIRTUAL_SCREEN_RATIO, 1.0f / VIRTUAL_SCREEN_RATIO) / Vector2f(overlay.width, overlay.height)).asRL());
-            Graphics.setUniforms(eCtx.shader->get());
+
+            eCtx.shader->bind();
         }
 
         // Calculate which tiles are visible to the camera
@@ -279,7 +280,7 @@ void TileRenderSystem::draw(const gfx::EntityRenderInfo& eCtx, const gfx::Render
         rl::rlSetTexture(0);
         if (layer.overlayTex.size() > 0) {
             // note: resetting shader on every draw call because the texture may have changed
-            rl::EndShaderMode();
+            Graphics._internalEndShaderMode();
         }
     }
 

@@ -57,12 +57,12 @@ Shader::~Shader() {
 }
 
 void Shader::bind() const {
-    rl::BeginShaderMode(mHandle);
+    Graphics._internalBeginShaderMode(mHandle);
     Graphics.setUniforms(mHandle);
 }
 
 void Shader::unbind() const {
-    rl::EndShaderMode();
+    Graphics._internalEndShaderMode();
 }
 
 void Shader::setFloat(const char* name, f32 value) {

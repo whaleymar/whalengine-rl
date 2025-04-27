@@ -88,7 +88,7 @@ struct TextSprite {
     std::string text;
     Vector2i frameSize;
     Color color = Colors::White;
-    bool isCentered = false;
+    bool isCentered = true;
     bool isWrapped = true;
 };
 

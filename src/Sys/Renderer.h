@@ -109,6 +109,8 @@ public:
     // if `isPersistUniforms` is true, then calls to `blit` will not clear the uniforms set for that draw call.
     void fixedShaderMode(rl::Shader shader, bool isPersistUniforms = false);
     void endFixedShaderMode();
+    void _internalBeginShaderMode(rl::Shader shader);
+    void _internalEndShaderMode();
 
     gfx::RenderContext getRenderContext(bool useUnstretchedRenderWindow = true) const;
 
@@ -142,6 +144,7 @@ public:
 
 #ifndef NDEBUG
     void drawEditor() const;
+    s32 getShaderSwapCountThisFrame() const { return mNumShaderSwapsThisFrame; }
 #endif
 
 private:
@@ -174,8 +177,13 @@ private:
     std::vector<ShaderUniform> mUniformQueue;
 
     rl::Shader mFixedShader;
+    u32 mCurrentShaderId;
     Vector2i mPrevWindowSizeBeforeFullscreen;
     Vector2i mPrevWindowPosBeforeFullscreen;
+
+#ifndef NDEBUG
+    s32 mNumShaderSwapsThisFrame = 0;
+#endif
 
     /////////////////////
     // Global Uniforms //

@@ -159,6 +159,7 @@ void Renderer::update() {
 
     // Clear used list
     mUsedRTs.clear();
+    mNumShaderSwapsThisFrame = 0;
 
 // If the OS window was resized, we need to update the global screen size variables
 #ifdef __EMSCRIPTEN__
@@ -267,10 +268,10 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
 
     } else if (isCustomShader) {
-        rl::BeginShaderMode(shader);
+        _internalBeginShaderMode(shader);
         setUniforms(shader);
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
-        rl::EndShaderMode();
+        _internalEndShaderMode();
 
     } else {
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
@@ -371,20 +372,20 @@ void Renderer::drawRenderQueue(const MultiTexture& target, const gfx::RenderCont
     rl::ClearBackground(Colors::ClearRL);
     rl::BeginMode2D(renderContext.camera);
     const Shader* defaultShader = &ShaderMgr::get("DefaultSprite");
-    const Shader* lastShader = nullptr;
+    const u32 defaultShaderid = defaultShader->get().id;
     defaultShader->bind();
     for (const auto& renderInfo : queue) {
-        if (renderInfo.shader != lastShader) {
+        u32 nextShader = renderInfo.shader == nullptr ? defaultShaderid : renderInfo.shader->get().id;
+        if (nextShader != mCurrentShaderId) {
             if (renderInfo.shader == nullptr) {
                 defaultShader->bind();
             } else {
                 renderInfo.shader->bind();
             }
-            lastShader = renderInfo.shader == defaultShader ? nullptr : renderInfo.shader;
         }
         renderInfo.piRender->draw(renderInfo, renderContext);
     }
-    rl::EndShaderMode();
+    _internalEndShaderMode();
     rl::EndMode2D();
     gfx::EndTextureMode();
 }
@@ -576,16 +577,28 @@ void Renderer::fixedShaderMode(rl::Shader shader, bool isPersistUniforms) {
     mIsFixedShaderMode = true;
     mIsPersistUniforms = isPersistUniforms;
     mFixedShader = shader;
-    rl::BeginShaderMode(mFixedShader);
+    _internalBeginShaderMode(mFixedShader);
 }
 
 void Renderer::endFixedShaderMode() {
     mIsFixedShaderMode = false;
-    rl::EndShaderMode();
+    _internalEndShaderMode();
     if (mIsPersistUniforms) {
         mUniformQueue.clear();
         mIsPersistUniforms = false;
     }
+}
+
+void Renderer::_internalBeginShaderMode(rl::Shader shader) {
+    // no need to check shader.id == mCurrentShaderId. raylib does this for us
+    rl::BeginShaderMode(shader);
+    mCurrentShaderId = shader.id;
+    mNumShaderSwapsThisFrame++;
+}
+
+void Renderer::_internalEndShaderMode() {
+    rl::EndShaderMode();
+    mCurrentShaderId = 0;
 }
 
 void Renderer::updateWindowSizes(Vector2i renderSize, Vector2i parentSize, Vector2i windowPosition) {
