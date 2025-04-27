@@ -14,4 +14,7 @@ public:
     void update() override;
 };
 
+void syncSpriteWithParent(ecs::Entity child, Sprite parentSprite, bool syncShader = false, bool syncFlags = true);
+void trySyncSpriteWithParent(ecs::Entity child);
+
 }  // namespace whal

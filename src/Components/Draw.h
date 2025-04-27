@@ -3,7 +3,6 @@
 #include <string>
 
 #include "Gfx/Color.h"
-#include "Gfx/Depth.h"
 #include "Gfx/Frame.h"
 #include "Util/Vector.h"
 
@@ -26,6 +25,7 @@ struct Sprite {
         Silhouette = 1 << 0,
         MaskBlendAdditive = 1 << 1,
         Dissolve = 1 << 2,
+        PassSpriteCenter = 1 << 3,
         // mask blending (subtract)
         // outline
     };
@@ -39,6 +39,7 @@ struct Sprite {
     Vector2f maskPosRelative = Vector2f::ZERO;  // relative position of the sprite mask in the texture atlas (zero for no mask)
     u32 flags = flag::None;
     f32 custom0b;
+    f32 custom0a;
     Shader* shader = nullptr;
 
     static Expected<Sprite> fromPath(const char* spritePath, Color color_ = Colors::White);
@@ -95,5 +96,7 @@ struct TextSprite {
 struct SpriteOutline {
     Color color = Colors::White;
 };
+
+struct IsOutline {};
 
 }  // namespace whal

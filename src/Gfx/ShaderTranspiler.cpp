@@ -804,7 +804,8 @@ void main() {
 
 static const string S_DEFAULT_FRAGMENT_MRT = string(R"(#version 330
 layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 Depth;)") + S_FRAGMENT_INVARS +
+layout(location = 1) out vec4 Depth;
+uniform sampler2D texture0;)") + S_FRAGMENT_INVARS +
                                              S_FRAGMENT_UNIFORMS + S_FRAGMENT_INVARS_MRT + R"(void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
     if (isMask > 0.) {

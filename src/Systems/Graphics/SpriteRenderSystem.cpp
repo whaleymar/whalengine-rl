@@ -101,7 +101,8 @@ void drawSprite(ecs::Entity child, const gfx::RenderContext& ctx) {
     trySetShader(sprite.shader);
     bool isUI = transform.depth == Depth::Debug || transform.depth == Depth::UIFar || transform.depth == Depth::UIClose;
     gfx::DrawSpriteHDR(ctx.atlas.getTexture(), srcRect, params.rect, params.origin, transform.rotation, sprite.color.asRL(),
-                       gfx::DrawMetaData{.depth = static_cast<u8>(transform.depth), .isUI = isUI}.asRL(sprite, ctx.atlas.getSize()), sprite.custom0b);
+                       gfx::DrawMetaData{.depth = static_cast<u8>(transform.depth), .isUI = isUI}.asRL(sprite, ctx.atlas.getSize()), sprite.custom0b,
+                       sprite.custom0a, sprite.isFlagSet(Sprite::PassSpriteCenter));
 }
 
 void queueSprite(ecs::Entity entity, gfx::RenderQueue& queue) {

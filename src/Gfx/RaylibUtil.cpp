@@ -271,7 +271,7 @@ void DrawEllipseFromRect(rl::Rectangle rect, Color color, gfx::DrawMetaData cbi)
 }
 
 void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle dest, rl::Vector2 origin, float rotation, rl::Vector4 hdrColor,
-                   rl::Vector3 packedCBI, f32 custom0b, f32 custom0a) {
+                   rl::Vector3 packedCBI, f32 custom0b, f32 custom0a, bool passSpriteCenter) {
     // Check if texture is valid
     if (texture.id > 0) {
         float width = (float)texture.width;
@@ -328,6 +328,9 @@ void DrawSpriteHDR(rl::Texture2D texture, rl::Rectangle source, rl::Rectangle de
 
         // source.width gets abs'd above
         rl::rlSetCustom0(source.width, math::abs(source.height), custom0b, custom0a);
+        if (passSpriteCenter) {
+            rl::rlSetCustom1(dest.x + dest.width * 0.5f, dest.y + dest.height * 0.5f, 0.0f, 0.0f);
+        }
 
         const float texLeft = flipX ? (source.x + source.width) / width : source.x / width;
         const float texRight = flipX ? source.x / width : (source.x + source.width) / width;
