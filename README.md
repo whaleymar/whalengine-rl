@@ -1,3 +1,23 @@
+This is a 2D game engine written in C++ to learn game development. This project contains:
+- Custom fork of Raylib for graphics (formerly used OpenGL).
+- A bespoke pixel-perfect Physics engine.
+- FMOD audio integration.
+- Custom Entity Component System (ECS).
+- Custom Tweening library.
+- Tilemap support (Tiled).
+- Tweening.
+- Job Scheduling.
+- Hot Reloading. 
+- Ray-traced shadows.
+- Support for Linux, Windows, and Web builds.
+- Automatic struct serialization using compile-time reflection on C++ 20.
+- Dear ImGUI debug menu with realtime entity inspection.
+- And more!
+
+![Game Demo](images/whalEngine_ss1.png)
+
+![Debug menu](images/whalEngine_ss2.png)
+
 # Installation Requirements (Windows and Linux)
 - CMake 
 - Clang (any version that supports C++20)
