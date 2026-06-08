@@ -18,14 +18,40 @@ This is a 2D game engine written in C++ to learn game development. This project 
 
 ![Debug menu](images/whalEngine_ss2.png)
 
+# Usage
+
+Creating a game requires implementing the `IGame` interface and defining the following functions with the C ABI:
+
+```cpp
+// In this case Game implements IGame
+extern "C" whal::IGame* CreateGame() {
+    return new Game();
+}
+
+extern "C" void DestroyGame(whal::IGame* game) {
+    delete game;
+}
+```
+
+Building a Game implementation as a DLL allows for hot-reloading changes without closing the program.
+
 # Installation Requirements (Windows and Linux)
+
 - CMake 
 - Clang (any version that supports C++20)
 - Ninja
 
+## Building custom raylib fork 
+
+In addition to the above requirements, the current configuration requires building a custom fork of Raylib:
+
+- `cd` into `whalengine/lib/raylib/src`
+- run `make PLATFORM=<platform> RAYLIB_BUILD_MODE=<DEBUG or RELEASE> RAYLIB_LIBTYPE=<SHARED or STATIC>`
+    - must be SHARED for hot reloading setup
+    - put generated library files into `whalengine/core/bin/<platform>`
+
 # Building for Linux
 
-In addition to the above requirements, the current configuration requires Raylib 3.0+ to be installed via your package manager.
 
 ```
 git clone https://github.com/whaleymar/whalengine-rl.git
@@ -63,10 +89,3 @@ Requirements:
     - run `make PLATFORM=PLATFORM_WEB -B`
     - copy `raylib/src/build/raylib/libraylib.a` to `lib/`
     - back in your game's root directory, run `make webdebug` or `make webrelease`
-
-# Building custom raylib fork 
-
-- `cd` into `whalengine/lib/raylib/src`
-- run `make PLATFORM=<platform> RAYLIB_BUILD_MODE=<DEBUG or RELEASE> RAYLIB_LIBTYPE=<SHARED or STATIC>`
-    - must be SHARED for hot reloading setup
-    - put generated library files into `whalengine/core/bin/<platform>`
