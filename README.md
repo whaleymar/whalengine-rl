@@ -86,6 +86,6 @@ Requirements:
 - emscripten (and emcmake). Follow these instructions: https://emscripten.org/docs/getting_started/downloads.html
 - Compile raylib for web:
     - `cd` to raylib's `src` directory
-    - run `make PLATFORM=PLATFORM_WEB -B`
+    - run `make PLATFORM=PLATFORM_WEB GRAPHICS=GRAPHICS_API_OPENGL_ES3 -B` (the engine renders with WebGL 2; the Makefile defaults to WebGL 1)
     - copy `raylib/src/build/raylib/libraylib.a` to `lib/`
     - back in your game's root directory, run `make webdebug` or `make webrelease`

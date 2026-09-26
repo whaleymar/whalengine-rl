@@ -75,10 +75,6 @@ void Bloom::drawEditor() {
 
 // this will go somewhere else once I have a framework for built-in uniforms
 void Bloom::_blurPass(rl::RenderTexture src, rl::RenderTexture dst, Shader& shader) {
-// GLSL ES 2.0 doesn't have the textureSize function
-#ifdef __EMSCRIPTEN__
-    shader.setVector2("_TextureSize", Vector2f(src.texture.width, src.texture.height));
-#endif
     Graphics.blit(src, dst);
 }
 

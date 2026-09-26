@@ -276,7 +276,16 @@ void Renderer::blit(rl::RenderTexture src, rl::RenderTexture dst, rl::Shader sha
         _internalEndShaderMode();
 
     } else {
+#ifdef __EMSCRIPTEN__
+        // raylib's built-in shader writes a single output, which WebGL 2 rejects when `dst` has multiple render targets.
+        // The transpiled Blit shader writes to every target.
+        const rl::Shader blitShader = ShaderMgr::get("Blit").get();
+        _internalBeginShaderMode(blitShader);
         rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+        _internalEndShaderMode();
+#else
+        rl::DrawTexturePro(src.texture, srcRect, dstRect, rl::Vector2{0, 0}, 0.0f, rl::WHITE);
+#endif
     }
 
     if (blendMode != rl::BLEND_ALPHA) {

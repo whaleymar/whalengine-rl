@@ -18,7 +18,12 @@ static int N_PASSES = 10;
 DistanceField::DistanceField() {}
 
 void DistanceField::process(rl::RenderTexture src, rl::RenderTexture dst) {
+#ifdef __EMSCRIPTEN__
+    // WebGL 2 can't render to RGB16F textures, only RGBA16F
+    rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16A16;
+#else
     rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R16G16B16;
+#endif
     // rl::PixelFormat format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8; // too noisy
     auto tmpOutput1 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);
     auto tmpOutput2 = Graphics.getTemporaryRT(dst.texture.width, dst.texture.height, format);

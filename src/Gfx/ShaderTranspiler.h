@@ -67,7 +67,7 @@ struct ShaderMetaData {
 };
 
 /*
- * For now, this converts GLSL 3.3.0 shaders into WebGL for web builds, and does nothing otherwise.
+ * For now, this converts GLSL 3.3.0 shaders into GLSL ES 3.0 (WebGL 2) for web builds, and does nothing otherwise.
  * Eventually I want it to work on a gdshader-like language.
  * It can also output metadata about the shader, like which global uniforms it needs (e.g. Time)
  */

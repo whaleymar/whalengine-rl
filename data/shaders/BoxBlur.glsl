@@ -27,8 +27,8 @@ vec3 SampleBox(vec2 uv, float delta) {
     vec2 offset4 = _MainTex_TexelSize * vec2(delta, -delta);
 
     vec3
-    sample = Sample(uv+offset1)+ Sample(uv+offset2)+ Sample(uv+offset3)+ Sample(uv+offset4);
-return sample * 0.25 ;
+    boxSample = Sample(uv+offset1)+ Sample(uv+offset2)+ Sample(uv+offset3)+ Sample(uv+offset4);
+return boxSample * 0.25 ;
 }
 
 void fragment() {
