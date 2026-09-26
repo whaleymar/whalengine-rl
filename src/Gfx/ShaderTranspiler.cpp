@@ -538,7 +538,7 @@ Expected<void> CompileState::parse(const string& code) {
 }
 
 Expected<void> CompileState::parseMacro(const string& line) {
-    static constexpr std::string multipleRenderTargetMacro = "#pragma mrt ";
+    static constexpr std::string_view multipleRenderTargetMacro = "#pragma mrt ";
     constexpr u64 mrtPrefixLen = multipleRenderTargetMacro.size();
     if (line.starts_with(multipleRenderTargetMacro)) {
         if (currentLineNo != 1) {
