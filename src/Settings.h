@@ -111,7 +111,12 @@ extern const char* SHADER_DIR;
 /////////////////////////////////////////////////////////////
 
 enum class WorldType2D { TopDown, SideScroller };
+// games can define WHAL_SIDESCROLLER (e.g. with a compile definition) to use side-scroller physics
+#ifdef WHAL_SIDESCROLLER
+inline constexpr WorldType2D WORLD_TYPE = WorldType2D::SideScroller;
+#else
 inline constexpr WorldType2D WORLD_TYPE = WorldType2D::TopDown;
+#endif
 
 // This defines how an object's "Floating" parameter affects its screen position.
 // For example, if an object is floating 8 units in the air, then a mult of 0.5 means it's drawn 4px higher.

@@ -159,7 +159,9 @@ void Renderer::update() {
 
     // Clear used list
     mUsedRTs.clear();
+#ifndef NDEBUG
     mNumShaderSwapsThisFrame = 0;
+#endif
 
 // If the OS window was resized, we need to update the global screen size variables
 #ifdef __EMSCRIPTEN__
@@ -593,7 +595,9 @@ void Renderer::_internalBeginShaderMode(rl::Shader shader) {
     // no need to check shader.id == mCurrentShaderId. raylib does this for us
     rl::BeginShaderMode(shader);
     mCurrentShaderId = shader.id;
+#ifndef NDEBUG
     mNumShaderSwapsThisFrame++;
+#endif
 }
 
 void Renderer::_internalEndShaderMode() {
