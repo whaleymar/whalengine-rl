@@ -1,7 +1,4 @@
 uniform sampler2D texture0;
-#ifdef PLATFORM_WEB
-uniform vec2 _TextureSize;
-#endif
 
 out vec4 finalColor;
 
@@ -17,9 +14,7 @@ vec3 Sample(vec2 uv) {
 }
 
 vec3 SampleBox(vec2 uv, float delta) {
-    #ifndef PLATFORM_WEB
     vec2 _TextureSize = vec2(textureSize(texture0, 0).xy);
-    #endif
     vec2 _MainTex_TexelSize = 1. / _TextureSize;
     vec2 offset1 = _MainTex_TexelSize * vec2(-delta, delta);
     vec2 offset2 = _MainTex_TexelSize * vec2(delta, delta);

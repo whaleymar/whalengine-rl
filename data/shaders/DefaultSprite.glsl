@@ -2,11 +2,6 @@
 
 uniform sampler2D texture0;
 
-#ifdef PLATFORM_WEB
-float extractBit(int value, int bitPos) {
-    return 0.;
-}
-#else
 float extractBit(uint intData, int bitPosition) {
     uint bitPos = 0x1u << (uint(bitPosition) - 1u);
     if ((intData & bitPos) != 0u) {
@@ -15,22 +10,14 @@ float extractBit(uint intData, int bitPosition) {
         return 0.0;
     }
 }
-#endif
 
 void vertex() {
-    #ifdef PLATFORM_WEB
-    // nothing is working :(
-    int bitData = int(floor(NORMAL.r + 0.5));
-    fragDepth = 0.;
-
-    #else
     // Write the color buffer data
     uint bitData = floatBitsToUint(NORMAL.r);
 
     // Extract the depth (first 8 bits) and normalize
     fragDepth = float(bitData & 0xFFu) / 255.0;
 
-    #endif
 
     // Extract flags
     // isOccluder = extractBit(bitData, 9);

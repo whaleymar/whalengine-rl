@@ -8,11 +8,6 @@ uniform sampler2D _Overlay;
 // ratio should be (1/virtual_screen_ratio) / (texture_size)
 uniform vec2 _Scale;
 
-#ifdef PLATFORM_WEB
-float extractBit(int value, int bitPos) {
-    return 0.;
-}
-#else
 float extractBit(uint bitData, int bitPosition) {
     uint bitPos = 0x1u << (uint(bitPosition) - 1u);
     if ((bitData & bitPos) != 0u) {
@@ -21,23 +16,15 @@ float extractBit(uint bitData, int bitPosition) {
         return 0.0;
     }
 }
-#endif
 
 void vertex() {
     WorldPosition = (matModel * vec4(VERTEX.xy, 0.0, 1.0)).xy;
 
     // Write the color buffer data
-    #ifdef PLATFORM_WEB
-    // nothing is working
-    int bitData = int(floor(NORMAL.r + 0.5));
-    fragDepth = 0.;
-
-    #else
     uint bitData = floatBitsToUint(NORMAL.r);
 
     // Extract the depth (first 8 bits) and normalize
     fragDepth = float(bitData & 0xFFu) / 255.0;
-    #endif
 
     // isOccluder = extractBit(bitData, 9);
     isUI = extractBit(bitData, 10);

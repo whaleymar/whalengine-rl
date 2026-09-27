@@ -699,11 +699,6 @@ void main() {
 
 static const string S_DEFAULT_VERTEX_MRT =
     string("#version 330") + S_VERTEX_INVARS + S_VERTEX_UNIFORMS + S_VERTEX_OUTVARS + S_VERTEX_OUTVARS_MRT + R"(
-#ifdef PLATFORM_WEB
-float extractBit(int value, int bitPos) {
-    return 0.;
-}
-#else
 float extractBit(uint intData, int bitPosition) {
     uint bitPos = 0x1u << (uint(bitPosition) - 1u);
     if ((intData & bitPos) != 0u) {
@@ -712,18 +707,12 @@ float extractBit(uint intData, int bitPosition) {
         return 0.0;
     }
 }
-#endif
 void main() {
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
     spriteSize = vertexCustom0.rg;
-    #ifdef PLATFORM_WEB
-    int bitData = int(floor(vertexNormal.r + 0.5));
-    fragDepth = 0.;
-    #else
     uint bitData = floatBitsToUint(vertexNormal.r);
     fragDepth = float(bitData & 0xFFu) / 255.0;
-    #endif
     isUI = extractBit(bitData, 10);
     isMask = extractBit(bitData, 11);
     isSilhouette = extractBit(bitData, 12);
