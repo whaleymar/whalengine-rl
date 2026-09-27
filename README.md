@@ -14,7 +14,9 @@ This is a 2D game engine written in C++ to learn game development. This project 
 - Dear ImGUI debug menu with realtime entity inspection.
 - And more!
 
-![Game Demo](images/whalEngine_ss1.png)
+![Game Demo (Side Scroller)](images/whalEngine_ss3_sidescroller.png)
+
+![Game Demo (Top Down)](images/whalEngine_ss1.png)
 
 ![Debug menu](images/whalEngine_ss2.png)
 
